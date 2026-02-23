@@ -26,15 +26,20 @@ export function toggleFavorite(slug: string): boolean {
   }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
-  window.dispatchEvent(new CustomEvent("stealthis:favorites-changed", { detail: { slug, isFavorite: isNowFavorite } }));
+  window.dispatchEvent(
+    new CustomEvent("stealthis:favorites-changed", { detail: { slug, isFavorite: isNowFavorite } })
+  );
   return isNowFavorite;
 }
 
 export function exportFavorites(): void {
   const favorites = getFavorites();
-  const blob = new Blob([JSON.stringify({ favorites, exportedAt: new Date().toISOString() }, null, 2)], {
-    type: "application/json",
-  });
+  const blob = new Blob(
+    [JSON.stringify({ favorites, exportedAt: new Date().toISOString() }, null, 2)],
+    {
+      type: "application/json",
+    }
+  );
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

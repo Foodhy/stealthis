@@ -1,11 +1,9 @@
 // Magnetic Button — cursor proximity pull effect
-(function () {
-  "use strict";
-
+(() => {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const STRENGTH = 0.35; // pull intensity (0–1)
-  const RADIUS = 100;    // activation radius in px
+  const RADIUS = 100; // activation radius in px
 
   const buttons = document.querySelectorAll("[data-magnetic]");
 

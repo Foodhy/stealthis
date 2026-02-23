@@ -43,10 +43,10 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
 // ── Inline shaders (Vite can't import .vert/.frag by default) ──
 const vertexShader = `
@@ -97,28 +97,28 @@ void main() {
 
 // ── Demo shell ──
 initDemoShell({
-  title: 'Particle Tunnel',
-  category: '3d',
-  tech: ['three.js', 'shaders', 'postprocessing'],
+  title: "Particle Tunnel",
+  category: "3d",
+  tech: ["three.js", "shaders", "postprocessing"],
 });
 
 // ── State ──
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
 });
 
 const mouse = { x: 0, y: 0, smoothX: 0, smoothY: 0 };
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 });
 
 // ── Scene setup ──
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000000, 0.008);
 
@@ -137,9 +137,9 @@ composer.addPass(new RenderPass(scene, camera));
 
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  1.5,   // strength
-  0.4,   // radius
-  0.15   // threshold
+  1.5, // strength
+  0.4, // radius
+  0.15 // threshold
 );
 composer.addPass(bloomPass);
 
@@ -155,12 +155,12 @@ const colors = new Float32Array(PARTICLE_COUNT * 3);
 
 // Color palette
 const colorPalette = [
-  new THREE.Color('#86e8ff'), // cyan
-  new THREE.Color('#ae52ff'), // purple
-  new THREE.Color('#ff40d6'), // pink
-  new THREE.Color('#ffffff'), // white
-  new THREE.Color('#6ec1ff'), // soft blue
-  new THREE.Color('#ffcc66'), // warm gold
+  new THREE.Color("#86e8ff"), // cyan
+  new THREE.Color("#ae52ff"), // purple
+  new THREE.Color("#ff40d6"), // pink
+  new THREE.Color("#ffffff"), // white
+  new THREE.Color("#6ec1ff"), // soft blue
+  new THREE.Color("#ffcc66"), // warm gold
 ];
 
 for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -184,11 +184,11 @@ for (let i = 0; i < PARTICLE_COUNT; i++) {
   colors[i3 + 2] = color.b;
 }
 
-geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
-geometry.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1));
-geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
-geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+geometry.setAttribute("aSpeed", new THREE.BufferAttribute(speeds, 1));
+geometry.setAttribute("aOffset", new THREE.BufferAttribute(offsets, 1));
+geometry.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
 
 const material = new THREE.ShaderMaterial({
   vertexShader,
@@ -244,10 +244,10 @@ function onResize() {
   bloomPass.resolution.set(w, h);
 }
 
-window.addEventListener('resize', onResize);
+window.addEventListener("resize", onResize);
 
 // ── Cleanup ──
-window.addEventListener('beforeunload', () => {
+window.addEventListener("beforeunload", () => {
   geometry.dispose();
   material.dispose();
   renderer.dispose();

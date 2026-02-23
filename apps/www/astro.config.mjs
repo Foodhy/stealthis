@@ -1,19 +1,15 @@
-import { defineConfig } from "astro/config";
+import { fileURLToPath } from "node:url";
+import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
-import cloudflare from "@astrojs/cloudflare";
-import { fileURLToPath } from "node:url";
+import { defineConfig } from "astro/config";
 
 export default defineConfig({
   output: "static",
   site: "https://stealthis.dev",
   adapter: cloudflare(),
-  integrations: [
-    mdx(),
-    react(),
-    tailwind({ applyBaseStyles: false }),
-  ],
+  integrations: [mdx(), react(), tailwind({ applyBaseStyles: false })],
   i18n: {
     defaultLocale: "en",
     locales: ["en", "es"],

@@ -4,26 +4,26 @@ const data = {
       title: "Neon Raid",
       description: "Design a HUD overlay for a cyber bike chase sequence.",
       status: "Urgent",
-      reward: "1200 XP"
+      reward: "1200 XP",
     },
     {
       title: "Skyline Tower",
       description: "Prototype a vertical navigation system for a megacity map.",
       status: "Active",
-      reward: "860 XP"
+      reward: "860 XP",
     },
     {
       title: "Quantum Bazaar",
       description: "Create animated product cards for a futuristic marketplace.",
       status: "Active",
-      reward: "940 XP"
+      reward: "940 XP",
     },
     {
       title: "Specter Console",
       description: "Build a command deck UI for a stealth operations team.",
       status: "Queued",
-      reward: "760 XP"
-    }
+      reward: "760 XP",
+    },
   ],
   loadout: [
     { name: "HUD Design", level: "Epic" },
@@ -31,13 +31,13 @@ const data = {
     { name: "3D Layout", level: "Rare" },
     { name: "Audio Sync", level: "Rare" },
     { name: "UX Systems", level: "Epic" },
-    { name: "Prototype", level: "Legendary" }
+    { name: "Prototype", level: "Legendary" },
   ],
   stats: [
     { value: "48", label: "Missions completed" },
     { value: "12", label: "Live ops launches" },
-    { value: "6", label: "Teams led" }
-  ]
+    { value: "6", label: "Teams led" },
+  ],
 };
 
 const missionGrid = document.getElementById("mission-cards");
@@ -91,7 +91,7 @@ if (statsGrid) {
 const lenis = window.Lenis
   ? new Lenis({
       smoothWheel: true,
-      smoothTouch: false
+      smoothTouch: false,
     })
   : null;
 
@@ -103,15 +103,17 @@ requestAnimationFrame(raf);
 
 if (window.gsap) {
   gsap.from(".topbar", { opacity: 0, y: -20, duration: 1, ease: "power3.out" });
-  gsap.utils.toArray(".card, .loadout-item, .stats-grid div, .tool-card, .contact-card").forEach((item, index) => {
-    gsap.from(item, {
-      opacity: 0,
-      y: 20,
-      duration: 0.7,
-      delay: 0.05 * index,
-      ease: "power2.out"
+  gsap.utils
+    .toArray(".card, .loadout-item, .stats-grid div, .tool-card, .contact-card")
+    .forEach((item, index) => {
+      gsap.from(item, {
+        opacity: 0,
+        y: 20,
+        duration: 0.7,
+        delay: 0.05 * index,
+        ease: "power2.out",
+      });
     });
-  });
 }
 
 class GameBoyScene {
@@ -151,9 +153,21 @@ class GameBoyScene {
   buildGameBoy() {
     this.gameboy = new THREE.Group();
 
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xd8d0c0, roughness: 0.7, metalness: 0.1 });
-    const darkMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.6, metalness: 0.2 });
-    const accentMat = new THREE.MeshStandardMaterial({ color: 0xff6b6b, roughness: 0.5, metalness: 0.2 });
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: 0xd8d0c0,
+      roughness: 0.7,
+      metalness: 0.1,
+    });
+    const darkMat = new THREE.MeshStandardMaterial({
+      color: 0x3a3a3a,
+      roughness: 0.6,
+      metalness: 0.2,
+    });
+    const accentMat = new THREE.MeshStandardMaterial({
+      color: 0xff6b6b,
+      roughness: 0.5,
+      metalness: 0.2,
+    });
 
     const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, 4.2, 0.7), bodyMat);
     body.castShadow = true;
@@ -162,7 +176,10 @@ class GameBoyScene {
     const screenBezel = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 0.05), darkMat);
     screenBezel.position.set(0, 0.8, 0.38);
 
-    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.1), new THREE.MeshStandardMaterial({ color: 0x88aa55, emissive: 0x335511 }));
+    const screen = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.5, 1.1),
+      new THREE.MeshStandardMaterial({ color: 0x88aa55, emissive: 0x335511 })
+    );
     screen.position.set(0, 0.8, 0.405);
     this.screenMesh = screen;
 
@@ -254,10 +271,30 @@ class GameBoyScene {
     }
 
     const pieceFrames = [
-      [ [0,0],[1,0],[0,1],[1,1] ],
-      [ [0,0],[1,0],[2,0],[1,1] ],
-      [ [0,0],[1,0],[2,0],[3,0] ],
-      [ [0,0],[1,0],[1,1],[2,1] ]
+      [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [1, 1],
+      ],
+      [
+        [0, 0],
+        [1, 0],
+        [2, 0],
+        [1, 1],
+      ],
+      [
+        [0, 0],
+        [1, 0],
+        [2, 0],
+        [3, 0],
+      ],
+      [
+        [0, 0],
+        [1, 0],
+        [1, 1],
+        [2, 1],
+      ],
     ];
     const frame = Math.floor(time * 1.2) % pieceFrames.length;
     const fall = (time * 3) % (rows - stackRows - 2);
@@ -266,19 +303,19 @@ class GameBoyScene {
     const pieceY = Math.floor(fall);
 
     ctx.fillStyle = "#2f4e2d";
-    piece.forEach(([dx, dy]) => {
+    for (const [dx, dy] of piece) {
       ctx.fillRect(
         wellLeft + (pieceX + dx) * cell + 1,
         wellTop + (pieceY + dy) * cell + 1,
         cell - 2,
         cell - 2
       );
-    });
+    }
 
     ctx.fillStyle = "#2f4e2d";
     ctx.fillRect(80, 12, 36, 6);
     ctx.fillStyle = "#1f2f1e";
-    ctx.fillRect(80, 12, 10 + (frame * 6), 6);
+    ctx.fillRect(80, 12, 10 + frame * 6, 6);
 
     this.screenTexture.needsUpdate = true;
   }

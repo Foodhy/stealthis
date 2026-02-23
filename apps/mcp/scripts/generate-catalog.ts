@@ -4,24 +4,22 @@
  * Run: bun run scripts/generate-catalog.ts
  */
 
-import { fileURLToPath } from "node:url";
-import { writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadResources } from "@stealthis/schema";
 
-const CONTENT_DIR = fileURLToPath(
-  new URL("../../../packages/content", import.meta.url)
-);
+const CONTENT_DIR = fileURLToPath(new URL("../../../packages/content", import.meta.url));
 
 const SNIPPET_FILES: Record<string, string> = {
-  html:    "snippets/html.html",
-  css:     "snippets/style.css",
-  js:      "snippets/script.js",
-  react:   "snippets/react.tsx",
-  next:    "snippets/next.tsx",
-  vue:     "snippets/vue.vue",
-  svelte:  "snippets/svelte.svelte",
-  astro:   "snippets/astro.astro",
+  html: "snippets/html.html",
+  css: "snippets/style.css",
+  js: "snippets/script.js",
+  react: "snippets/react.tsx",
+  next: "snippets/next.tsx",
+  vue: "snippets/vue.vue",
+  svelte: "snippets/svelte.svelte",
+  astro: "snippets/astro.astro",
 };
 
 const resources = await loadResources(CONTENT_DIR);

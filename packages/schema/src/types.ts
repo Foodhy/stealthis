@@ -13,14 +13,31 @@ export type ResourceCategoryPhase2 =
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 
-export type ResourceType = "animation" | "page" | "component" | "pattern" | "prompt" | "skill" | "mcp-server" | "architecture" | "boilerplate";
+export type ResourceType =
+  | "animation"
+  | "page"
+  | "component"
+  | "pattern"
+  | "prompt"
+  | "skill"
+  | "mcp-server"
+  | "architecture"
+  | "boilerplate";
 
 export type ResourceDifficulty = "easy" | "med" | "hard";
 
 export type ResourceTarget =
-  | "html" | "react" | "next" | "vue" | "svelte" | "astro"
-  | "typescript" | "python"
-  | "markdown" | "yaml" | "json";
+  | "html"
+  | "react"
+  | "next"
+  | "vue"
+  | "svelte"
+  | "astro"
+  | "typescript"
+  | "python"
+  | "markdown"
+  | "yaml"
+  | "json";
 
 export interface ResourceMeta {
   slug: string;

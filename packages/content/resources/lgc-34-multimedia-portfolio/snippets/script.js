@@ -49,19 +49,19 @@ function initDemoShell() {
  * hero particle field, Lenis smooth scroll.
  */
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Flip } from 'gsap/Flip';
-import { SplitText } from 'gsap/SplitText';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { Flip } from "gsap/Flip";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger, Flip, SplitText);
 
 /* ── Shell ─────────────────────────────────────────────────────── */
 initDemoShell({
-  title: 'Multimedia Engineer Portfolio',
-  category: 'pages',
-  tech: ['gsap', 'flip', 'canvas-2d', 'lenis', 'scrolltrigger'],
+  title: "Multimedia Engineer Portfolio",
+  category: "pages",
+  tech: ["gsap", "flip", "canvas-2d", "lenis", "scrolltrigger"],
 });
 
 /* ── Helpers ───────────────────────────────────────────────────── */
@@ -77,7 +77,7 @@ function dur(base) {
    LENIS + SCROLLTRIGGER WIRING
    ══════════════════════════════════════════════════════════════════ */
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
@@ -85,15 +85,15 @@ gsap.ticker.lagSmoothing(0);
    HERO — PARTICLE WAVEFORM CANVAS
    ══════════════════════════════════════════════════════════════════ */
 (function initHeroCanvas() {
-  const canvas = $('#heroCanvas');
+  const canvas = $("#heroCanvas");
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
   let W, H;
   let mouseX = 0.5; // 0–1, normalised
   let mouseY = 0.5;
   let raf;
-  let startTime = performance.now();
+  const startTime = performance.now();
 
   /* ── Particles ─────────────────────────────────────────────── */
   const PARTICLE_COUNT = 220;
@@ -116,7 +116,7 @@ gsap.ticker.lagSmoothing(0);
       this.radius = Math.random() * 2.2 + 1;
       // Each particle gets its own phase & colour
       this.phase = (this.index / PARTICLE_COUNT) * Math.PI * 8;
-      const hues = ['#ff3cac', '#00f5d4', '#f5f700', '#ff6b2b'];
+      const hues = ["#ff3cac", "#00f5d4", "#f5f700", "#ff6b2b"];
       this.color = hues[Math.floor(Math.random() * hues.length)];
     }
     update(t, mxPx, myPx) {
@@ -124,7 +124,8 @@ gsap.ticker.lagSmoothing(0);
       const waveAmp = H * 0.18;
       const freq = 1.8 + mouseX * 1.2; // frequency shifts with mouse X
       this.baseXpx = (this.index / PARTICLE_COUNT) * W;
-      this.baseYpx = H / 2 +
+      this.baseYpx =
+        H / 2 +
         Math.sin(this.baseXpx * freq * 0.005 + t * 0.8 + this.phase) * waveAmp * 0.8 +
         Math.sin(this.baseXpx * freq * 0.012 + t * 1.4 + this.phase) * waveAmp * 0.4;
 
@@ -175,7 +176,7 @@ gsap.ticker.lagSmoothing(0);
   }
 
   function resize() {
-    W = canvas.width  = canvas.offsetWidth;
+    W = canvas.width = canvas.offsetWidth;
     H = canvas.height = canvas.offsetHeight;
     buildParticles();
   }
@@ -190,31 +191,31 @@ gsap.ticker.lagSmoothing(0);
 
     // Subtle radial gradient atmosphere
     const grd = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.7);
-    grd.addColorStop(0, 'rgba(255,60,172,0.05)');
-    grd.addColorStop(0.5, 'rgba(0,245,212,0.03)');
-    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    grd.addColorStop(0, "rgba(255,60,172,0.05)");
+    grd.addColorStop(0.5, "rgba(0,245,212,0.03)");
+    grd.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, W, H);
 
-    particles.forEach(p => {
+    particles.forEach((p) => {
       p.update(t, mxPx, myPx);
       p.draw(ctx);
     });
   }
 
   // Mouse tracking on hero section
-  const heroEl = $('#hero');
-  heroEl.addEventListener('mousemove', (e) => {
+  const heroEl = $("#hero");
+  heroEl.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
     mouseX = (e.clientX - rect.left) / rect.width;
     mouseY = (e.clientY - rect.top) / rect.height;
   });
-  heroEl.addEventListener('mouseleave', () => {
+  heroEl.addEventListener("mouseleave", () => {
     mouseX = 0.5;
     mouseY = 0.5;
   });
 
-  window.addEventListener('resize', resize);
+  window.addEventListener("resize", resize);
   resize();
   loop();
 })();
@@ -223,32 +224,32 @@ gsap.ticker.lagSmoothing(0);
    HERO — GLITCH HOVER
    ══════════════════════════════════════════════════════════════════ */
 (function initGlitch() {
-  const nameEl = $('.hero-name');
+  const nameEl = $(".hero-name");
   if (!nameEl) return;
 
   // Wrap name element in a glitch container if not already in HTML
   // The HTML already positions glitch spans absolutely inside .hero-content
   // We add/remove .is-hovered on the wrapper
-  const wrapper = document.createElement('div');
-  wrapper.className = 'hero-name-wrapper';
+  const wrapper = document.createElement("div");
+  wrapper.className = "hero-name-wrapper";
   nameEl.parentNode.insertBefore(wrapper, nameEl);
   // Move name and glitch spans into wrapper
-  const glitch1 = $('.hero-name-glitch--1');
-  const glitch2 = $('.hero-name-glitch--2');
+  const glitch1 = $(".hero-name-glitch--1");
+  const glitch2 = $(".hero-name-glitch--2");
   wrapper.appendChild(nameEl);
   if (glitch1) wrapper.appendChild(glitch1);
   if (glitch2) wrapper.appendChild(glitch2);
 
-  wrapper.addEventListener('mouseenter', () => {
-    if (!prefersReducedMotion()) wrapper.classList.add('is-hovered');
+  wrapper.addEventListener("mouseenter", () => {
+    if (!prefersReducedMotion()) wrapper.classList.add("is-hovered");
   });
-  wrapper.addEventListener('mouseleave', () => {
-    wrapper.classList.remove('is-hovered');
+  wrapper.addEventListener("mouseleave", () => {
+    wrapper.classList.remove("is-hovered");
   });
 
   // Motion preference change
-  window.addEventListener('motion-preference', () => {
-    wrapper.classList.remove('is-hovered');
+  window.addEventListener("motion-preference", () => {
+    wrapper.classList.remove("is-hovered");
   });
 })();
 
@@ -256,10 +257,10 @@ gsap.ticker.lagSmoothing(0);
    HERO — GSAP ENTRANCE ANIMATIONS
    ══════════════════════════════════════════════════════════════════ */
 (function initHeroEntrance() {
-  const eyebrow  = $('.hero-eyebrow');
-  const nameEl   = $('.hero-name');
-  const tagline  = $('.hero-tagline');
-  const scrollCue = $('.hero-scroll-cue');
+  const eyebrow = $(".hero-eyebrow");
+  const nameEl = $(".hero-name");
+  const tagline = $(".hero-tagline");
+  const scrollCue = $(".hero-scroll-cue");
 
   const tl = gsap.timeline({ delay: 0.15 });
 
@@ -267,52 +268,70 @@ gsap.ticker.lagSmoothing(0);
     opacity: 1,
     y: 0,
     duration: dur(0.6),
-    ease: 'expo.out',
-    onStart() { gsap.set(eyebrow, { y: 12 }); },
+    ease: "expo.out",
+    onStart() {
+      gsap.set(eyebrow, { y: 12 });
+    },
   });
 
-  tl.to(nameEl, {
-    opacity: 1,
-    y: 0,
-    duration: dur(0.9),
-    ease: 'expo.out',
-    onStart() { gsap.set(nameEl, { y: 30 }); },
-  }, '-=0.35');
+  tl.to(
+    nameEl,
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(0.9),
+      ease: "expo.out",
+      onStart() {
+        gsap.set(nameEl, { y: 30 });
+      },
+    },
+    "-=0.35"
+  );
 
-  tl.to(tagline, {
-    opacity: 1,
-    y: 0,
-    duration: dur(0.7),
-    ease: 'expo.out',
-    onStart() { gsap.set(tagline, { y: 16 }); },
-  }, '-=0.55');
+  tl.to(
+    tagline,
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(0.7),
+      ease: "expo.out",
+      onStart() {
+        gsap.set(tagline, { y: 16 });
+      },
+    },
+    "-=0.55"
+  );
 
-  tl.to(scrollCue, {
-    opacity: 1,
-    duration: dur(0.6),
-    ease: 'power2.out',
-  }, '-=0.2');
+  tl.to(
+    scrollCue,
+    {
+      opacity: 1,
+      duration: dur(0.6),
+      ease: "power2.out",
+    },
+    "-=0.2"
+  );
 })();
 
 /* ══════════════════════════════════════════════════════════════════
    GALLERY — GSAP FLIP LAYOUT TOGGLE
    ══════════════════════════════════════════════════════════════════ */
 (function initGallery() {
-  const gallery = $('#mediaGallery');
-  const toggleBtn = $('#layout-toggle');
+  const gallery = $("#mediaGallery");
+  const toggleBtn = $("#layout-toggle");
   if (!gallery || !toggleBtn) return;
 
-  toggleBtn.addEventListener('click', () => {
+  toggleBtn.addEventListener("click", () => {
     // Capture state BEFORE class change
-    const state = Flip.getState('.media-card');
+    const state = Flip.getState(".media-card");
 
-    gallery.classList.toggle('list-view');
-    toggleBtn.classList.toggle('is-list');
+    gallery.classList.toggle("list-view");
+    toggleBtn.classList.toggle("is-list");
 
     // Animate from old state to new
     Flip.from(state, {
       duration: dur(0.65),
-      ease: 'expo.out',
+      ease: "expo.out",
       stagger: { each: dur(0.06) },
       absolute: true,
       onEnter: (els) => gsap.fromTo(els, { opacity: 0 }, { opacity: 1, duration: dur(0.4) }),
@@ -325,7 +344,7 @@ gsap.ticker.lagSmoothing(0);
    SCROLL REVEAL — MEDIA CARDS
    ══════════════════════════════════════════════════════════════════ */
 (function initCardReveal() {
-  const cards = $$('.media-card');
+  const cards = $$(".media-card");
   if (!cards.length) return;
 
   cards.forEach((card, i) => {
@@ -333,12 +352,12 @@ gsap.ticker.lagSmoothing(0);
       opacity: 1,
       y: 0,
       duration: dur(0.7),
-      ease: 'expo.out',
+      ease: "expo.out",
       delay: i * dur(0.1),
       scrollTrigger: {
         trigger: card,
-        start: 'top 88%',
-        toggleActions: 'play none none none',
+        start: "top 88%",
+        toggleActions: "play none none none",
       },
     });
   });
@@ -348,16 +367,16 @@ gsap.ticker.lagSmoothing(0);
    CONTACT SECTION — SCROLL REVEAL
    ══════════════════════════════════════════════════════════════════ */
 (function initContactReveal() {
-  const heading = $('.contact-heading');
-  const sub     = $('.contact-sub');
-  const links   = $('.contact-links');
+  const heading = $(".contact-heading");
+  const sub = $(".contact-sub");
+  const links = $(".contact-links");
   if (!heading) return;
 
   const tl = gsap.timeline({
     scrollTrigger: {
-      trigger: '#contact',
-      start: 'top 78%',
-      toggleActions: 'play none none none',
+      trigger: "#contact",
+      start: "top 78%",
+      toggleActions: "play none none none",
     },
   });
 
@@ -365,46 +384,60 @@ gsap.ticker.lagSmoothing(0);
     opacity: 1,
     y: 0,
     duration: dur(0.9),
-    ease: 'expo.out',
-    onStart() { gsap.set(heading, { y: 40 }); },
+    ease: "expo.out",
+    onStart() {
+      gsap.set(heading, { y: 40 });
+    },
   });
-  tl.to(sub, {
-    opacity: 1,
-    y: 0,
-    duration: dur(0.6),
-    ease: 'expo.out',
-    onStart() { gsap.set(sub, { y: 16 }); },
-  }, '-=0.55');
-  tl.to(links, {
-    opacity: 1,
-    y: 0,
-    duration: dur(0.5),
-    ease: 'expo.out',
-    onStart() { gsap.set(links, { y: 12 }); },
-  }, '-=0.4');
+  tl.to(
+    sub,
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(0.6),
+      ease: "expo.out",
+      onStart() {
+        gsap.set(sub, { y: 16 });
+      },
+    },
+    "-=0.55"
+  );
+  tl.to(
+    links,
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(0.5),
+      ease: "expo.out",
+      onStart() {
+        gsap.set(links, { y: 12 });
+      },
+    },
+    "-=0.4"
+  );
 })();
 
 /* ══════════════════════════════════════════════════════════════════
    WAVEFORM VISUALIZER CANVAS
    ══════════════════════════════════════════════════════════════════ */
 (function initWaveform() {
-  const canvas = $('#waveformCanvas');
+  const canvas = $("#waveformCanvas");
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
   let W, H;
-  let mouseX = 0;   // raw px, updated on section mousemove
+  let mouseX = 0; // raw px, updated on section mousemove
   let animId;
   let startTime = performance.now();
 
   const waves = [
-    { freq: 0.022, amp: 0.15, speed: 1.0, color: '#ff3cac', lineWidth: 2.5 },
-    { freq: 0.034, amp: 0.10, speed: 1.6, color: '#00f5d4', lineWidth: 2   },
-    { freq: 0.055, amp: 0.06, speed: 2.3, color: '#f5f700', lineWidth: 1.5 },
+    { freq: 0.022, amp: 0.15, speed: 1.0, color: "#ff3cac", lineWidth: 2.5 },
+    { freq: 0.034, amp: 0.1, speed: 1.6, color: "#00f5d4", lineWidth: 2 },
+    { freq: 0.055, amp: 0.06, speed: 2.3, color: "#f5f700", lineWidth: 1.5 },
   ];
 
   function resize() {
-    W = canvas.width  = canvas.offsetWidth;
+    W = canvas.width = canvas.offsetWidth;
     H = canvas.height = canvas.offsetHeight;
     mouseX = W / 2;
   }
@@ -421,20 +454,20 @@ gsap.ticker.lagSmoothing(0);
       // Create horizontal gradient for this wave
       const grd = ctx.createLinearGradient(0, 0, W, 0);
       if (wi === 0) {
-        grd.addColorStop(0, 'rgba(255,60,172,0)');
-        grd.addColorStop(0.3, '#ff3cac');
-        grd.addColorStop(0.7, '#ff6b2b');
-        grd.addColorStop(1, 'rgba(255,107,43,0)');
+        grd.addColorStop(0, "rgba(255,60,172,0)");
+        grd.addColorStop(0.3, "#ff3cac");
+        grd.addColorStop(0.7, "#ff6b2b");
+        grd.addColorStop(1, "rgba(255,107,43,0)");
       } else if (wi === 1) {
-        grd.addColorStop(0, 'rgba(0,245,212,0)');
-        grd.addColorStop(0.25, '#00f5d4');
-        grd.addColorStop(0.75, '#ff3cac');
-        grd.addColorStop(1, 'rgba(255,60,172,0)');
+        grd.addColorStop(0, "rgba(0,245,212,0)");
+        grd.addColorStop(0.25, "#00f5d4");
+        grd.addColorStop(0.75, "#ff3cac");
+        grd.addColorStop(1, "rgba(255,60,172,0)");
       } else {
-        grd.addColorStop(0, 'rgba(245,247,0,0)');
-        grd.addColorStop(0.4, '#f5f700');
-        grd.addColorStop(0.6, '#00f5d4');
-        grd.addColorStop(1, 'rgba(0,245,212,0)');
+        grd.addColorStop(0, "rgba(245,247,0,0)");
+        grd.addColorStop(0.4, "#f5f700");
+        grd.addColorStop(0.6, "#00f5d4");
+        grd.addColorStop(1, "rgba(0,245,212,0)");
       }
 
       ctx.beginPath();
@@ -442,14 +475,15 @@ gsap.ticker.lagSmoothing(0);
       ctx.lineWidth = wave.lineWidth;
       ctx.shadowBlur = 16;
       ctx.shadowColor = wave.color;
-      ctx.lineJoin = 'round';
-      ctx.lineCap  = 'round';
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
 
       for (let x = 0; x <= W; x += 2) {
         const freqMod = wave.freq + mxInfluence;
-        const y = centerY
-          + Math.sin(x * freqMod + t * wave.speed) * amp
-          + Math.sin(x * freqMod * 2.1 + t * wave.speed * 0.5) * amp * 0.3;
+        const y =
+          centerY +
+          Math.sin(x * freqMod + t * wave.speed) * amp +
+          Math.sin(x * freqMod * 2.1 + t * wave.speed * 0.5) * amp * 0.3;
         x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
 
@@ -460,7 +494,7 @@ gsap.ticker.lagSmoothing(0);
     // Subtle center line
     ctx.beginPath();
     ctx.setLineDash([4, 8]);
-    ctx.strokeStyle = 'rgba(68,68,102,0.5)';
+    ctx.strokeStyle = "rgba(68,68,102,0.5)";
     ctx.lineWidth = 1;
     ctx.moveTo(0, centerY);
     ctx.lineTo(W, centerY);
@@ -481,17 +515,17 @@ gsap.ticker.lagSmoothing(0);
   }
 
   // Mousemove on the waveform section
-  const wfSection = $('#waveform');
-  wfSection.addEventListener('mousemove', (e) => {
+  const wfSection = $("#waveform");
+  wfSection.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
   });
-  wfSection.addEventListener('mouseleave', () => {
+  wfSection.addEventListener("mouseleave", () => {
     mouseX = W / 2;
   });
 
   // Restart animation on motion preference change
-  window.addEventListener('motion-preference', () => {
+  window.addEventListener("motion-preference", () => {
     cancelAnimationFrame(animId);
     if (!prefersReducedMotion()) {
       startTime = performance.now();
@@ -501,7 +535,7 @@ gsap.ticker.lagSmoothing(0);
     }
   });
 
-  window.addEventListener('resize', resize);
+  window.addEventListener("resize", resize);
   resize();
   loop();
 })();
@@ -510,39 +544,40 @@ gsap.ticker.lagSmoothing(0);
    DISCIPLINES MARQUEE — CSS animation, paused when reduced-motion
    ══════════════════════════════════════════════════════════════════ */
 (function initDisciplinesMarquee() {
-  const marquee = $('#disciplinesMarquee');
+  const marquee = $("#disciplinesMarquee");
   if (!marquee) return;
 
   // If user prefers reduced motion, freeze the animation immediately
   function applyMotion() {
     if (prefersReducedMotion()) {
-      marquee.style.setProperty('--marquee-play-state', 'paused');
+      marquee.style.setProperty("--marquee-play-state", "paused");
     } else {
-      marquee.style.removeProperty('--marquee-play-state');
+      marquee.style.removeProperty("--marquee-play-state");
     }
   }
 
   applyMotion();
-  window.addEventListener('motion-preference', applyMotion);
+  window.addEventListener("motion-preference", applyMotion);
 })();
 
 /* ══════════════════════════════════════════════════════════════════
    SECTION TITLE ANIMATIONS
    ══════════════════════════════════════════════════════════════════ */
 (function initSectionTitles() {
-  const titles = $$('.section-title');
+  const titles = $$(".section-title");
   titles.forEach((title) => {
-    gsap.fromTo(title,
+    gsap.fromTo(
+      title,
       { opacity: 0, x: -30 },
       {
         opacity: 1,
         x: 0,
         duration: dur(0.8),
-        ease: 'expo.out',
+        ease: "expo.out",
         scrollTrigger: {
           trigger: title,
-          start: 'top 85%',
-          toggleActions: 'play none none none',
+          start: "top 85%",
+          toggleActions: "play none none none",
         },
       }
     );
@@ -552,18 +587,18 @@ gsap.ticker.lagSmoothing(0);
 /* ══════════════════════════════════════════════════════════════════
    REDUCED MOTION HANDLING (runtime toggle)
    ══════════════════════════════════════════════════════════════════ */
-window.addEventListener('motion-preference', () => {
+window.addEventListener("motion-preference", () => {
   if (prefersReducedMotion()) {
-    document.documentElement.classList.add('reduced-motion');
+    document.documentElement.classList.add("reduced-motion");
     lenis.stop();
   } else {
-    document.documentElement.classList.remove('reduced-motion');
+    document.documentElement.classList.remove("reduced-motion");
     lenis.start();
   }
 });
 
 // Apply on load if needed
 if (prefersReducedMotion()) {
-  document.documentElement.classList.add('reduced-motion');
+  document.documentElement.classList.add("reduced-motion");
   lenis.stop();
 }

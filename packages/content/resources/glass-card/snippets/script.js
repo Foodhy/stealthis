@@ -1,8 +1,6 @@
 // Glassmorphism Card — no JS required for the base effect.
 // This script adds an optional mouse-tracking shine effect.
-(function () {
-  "use strict";
-
+(() => {
   const card = document.querySelector(".glass-card");
   if (!card) return;
 

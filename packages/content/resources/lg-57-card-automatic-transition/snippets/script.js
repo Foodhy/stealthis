@@ -3,26 +3,26 @@ const cardsData = [
     title: "Mountain View",
     copy: "Check out these high-altitude escapes with crisp air and cinematic horizons.",
     button: "View Trips",
-    theme: "media-sky"
+    theme: "media-sky",
   },
   {
     title: "To The Beach",
     copy: "Plan your next shoreline getaway with warm sunsets and deep blue water.",
     button: "View Trips",
-    theme: "media-tide"
+    theme: "media-tide",
   },
   {
     title: "Desert Destinations",
     copy: "Wind-shaped dunes and amber tones for your most surreal journey yet.",
     button: "Book Now",
-    theme: "media-dune"
+    theme: "media-dune",
   },
   {
     title: "Explore The Galaxy",
     copy: "Lift off into a night-sky adventure with glowing stardust and nebula haze.",
     button: "Book Now",
-    theme: "media-orbit"
-  }
+    theme: "media-orbit",
+  },
 ];
 
 const stack = document.getElementById("card-stack");
@@ -95,9 +95,7 @@ function animate(now) {
   const segmentTime = loopTime % segment;
   const t = clamp(segmentTime / transitionMs, 0, 1);
 
-  const eased = t < 0.5
-    ? 4 * t * t * t
-    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   const scaled = activeIndex + eased;
   applyProgress(scaled);
@@ -113,4 +111,3 @@ prefersReducedMotion.addEventListener("change", () => {
   startTime = 0;
   rafId = window.requestAnimationFrame(animate);
 });
-

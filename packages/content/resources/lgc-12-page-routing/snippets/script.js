@@ -43,14 +43,18 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-initDemoShell({ title: 'Page Routing Transitions', category: 'transitions', tech: ['view-transitions-api', 'spa-routing'] });
+initDemoShell({
+  title: "Page Routing Transitions",
+  category: "transitions",
+  tech: ["view-transitions-api", "spa-routing"],
+});
 
-const supportsVT = typeof document.startViewTransition === 'function';
-const pages = ['home', 'about', 'work', 'contact'];
-let currentPage = 'home';
+const supportsVT = typeof document.startViewTransition === "function";
+const pages = ["home", "about", "work", "contact"];
+let currentPage = "home";
 let currentIndex = 0;
 
-const navLinks = document.querySelectorAll('.nav-link');
+const navLinks = document.querySelectorAll(".nav-link");
 
 function navigateTo(pageName) {
   if (pageName === currentPage) return;
@@ -60,14 +64,14 @@ function navigateTo(pageName) {
 
   const updateDOM = () => {
     // Hide current page
-    document.getElementById(`page-${currentPage}`).classList.remove('active');
+    document.getElementById(`page-${currentPage}`).classList.remove("active");
 
     // Show new page
-    document.getElementById(`page-${pageName}`).classList.add('active');
+    document.getElementById(`page-${pageName}`).classList.add("active");
 
     // Update nav
     navLinks.forEach((link) => {
-      link.classList.toggle('active', link.dataset.page === pageName);
+      link.classList.toggle("active", link.dataset.page === pageName);
     });
 
     currentPage = pageName;
@@ -76,7 +80,7 @@ function navigateTo(pageName) {
 
   if (supportsVT && !prefersReducedMotion()) {
     // Set direction class for CSS animation direction
-    document.documentElement.classList.toggle('nav-back', !goingForward);
+    document.documentElement.classList.toggle("nav-back", !goingForward);
 
     document.startViewTransition(updateDOM);
   } else {
@@ -86,7 +90,7 @@ function navigateTo(pageName) {
 
 // Nav click handlers
 navLinks.forEach((link) => {
-  link.addEventListener('click', (e) => {
+  link.addEventListener("click", (e) => {
     e.preventDefault();
     navigateTo(link.dataset.page);
   });
@@ -94,21 +98,21 @@ navLinks.forEach((link) => {
 
 // Handle hash-based navigation
 function handleHash() {
-  const hash = window.location.hash.replace('#', '') || 'home';
+  const hash = window.location.hash.replace("#", "") || "home";
   if (pages.includes(hash)) {
     navigateTo(hash);
   }
 }
 
-window.addEventListener('hashchange', handleHash);
+window.addEventListener("hashchange", handleHash);
 
 // Keyboard navigation
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight') {
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") {
     const next = pages[Math.min(currentIndex + 1, pages.length - 1)];
     navigateTo(next);
     window.location.hash = next;
-  } else if (e.key === 'ArrowLeft') {
+  } else if (e.key === "ArrowLeft") {
     const prev = pages[Math.max(currentIndex - 1, 0)];
     navigateTo(prev);
     window.location.hash = prev;

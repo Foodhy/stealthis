@@ -43,38 +43,63 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-initDemoShell({ title: 'Morphing Blobs', category: 'css-canvas', tech: ['css-border-radius', 'svg-path', 'canvas-bezier'] });
+initDemoShell({
+  title: "Morphing Blobs",
+  category: "css-canvas",
+  tech: ["css-border-radius", "svg-path", "canvas-bezier"],
+});
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
 // ─── SVG Path Morphing ───────────────────────────────────────────────
 
-const svgPath = document.getElementById('svg-morph-path');
+const svgPath = document.getElementById("svg-morph-path");
 
 // Two blob shapes with matching point counts (cubic bezier, 6 segments)
 const shapeA = [
-  [100, 20], [160, 30], [190, 80], [180, 140],
-  [150, 180], [90, 190], [30, 160], [10, 100],
-  [20, 50], [60, 20]
+  [100, 20],
+  [160, 30],
+  [190, 80],
+  [180, 140],
+  [150, 180],
+  [90, 190],
+  [30, 160],
+  [10, 100],
+  [20, 50],
+  [60, 20],
 ];
 
 const shapeB = [
-  [100, 10], [170, 40], [195, 100], [170, 160],
-  [130, 195], [70, 185], [20, 150], [5, 90],
-  [30, 40], [70, 10]
+  [100, 10],
+  [170, 40],
+  [195, 100],
+  [170, 160],
+  [130, 195],
+  [70, 185],
+  [20, 150],
+  [5, 90],
+  [30, 40],
+  [70, 10],
 ];
 
 const shapeC = [
-  [110, 15], [180, 50], [185, 110], [160, 170],
-  [110, 190], [50, 175], [15, 130], [10, 70],
-  [40, 25], [80, 10]
+  [110, 15],
+  [180, 50],
+  [185, 110],
+  [160, 170],
+  [110, 190],
+  [50, 175],
+  [15, 130],
+  [10, 70],
+  [40, 25],
+  [80, 10],
 ];
 
 const svgShapes = [shapeA, shapeB, shapeC, shapeB];
 
 function pointsToPath(points) {
-  if (points.length < 3) return '';
+  if (points.length < 3) return "";
   let d = `M ${points[0][0]} ${points[0][1]}`;
   for (let i = 1; i < points.length; i++) {
     const prev = points[i - 1];
@@ -88,15 +113,12 @@ function pointsToPath(points) {
 
     d += ` C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${curr[0]} ${curr[1]}`;
   }
-  d += ' Z';
+  d += " Z";
   return d;
 }
 
 function lerpPoints(a, b, t) {
-  return a.map((pt, i) => [
-    pt[0] + (b[i][0] - pt[0]) * t,
-    pt[1] + (b[i][1] - pt[1]) * t
-  ]);
+  return a.map((pt, i) => [pt[0] + (b[i][0] - pt[0]) * t, pt[1] + (b[i][1] - pt[1]) * t]);
 }
 
 let svgTime = 0;
@@ -111,20 +133,18 @@ function animateSVG(timestamp) {
   const segT = (loopTime % SVG_SEGMENT_DURATION) / SVG_SEGMENT_DURATION;
 
   // Smooth easing
-  const eased = segT < 0.5
-    ? 4 * segT * segT * segT
-    : 1 - Math.pow(-2 * segT + 2, 3) / 2;
+  const eased = segT < 0.5 ? 4 * segT * segT * segT : 1 - Math.pow(-2 * segT + 2, 3) / 2;
 
   const from = svgShapes[segIndex];
   const to = svgShapes[(segIndex + 1) % svgShapes.length];
   const interpolated = lerpPoints(from, to, eased);
 
-  svgPath.setAttribute('d', pointsToPath(interpolated));
+  svgPath.setAttribute("d", pointsToPath(interpolated));
   svgRAF = requestAnimationFrame(animateSVG);
 }
 
 // Set initial shape
-svgPath.setAttribute('d', pointsToPath(shapeA));
+svgPath.setAttribute("d", pointsToPath(shapeA));
 
 if (!reduced) {
   svgRAF = requestAnimationFrame(animateSVG);
@@ -132,8 +152,8 @@ if (!reduced) {
 
 // ─── Canvas Bezier Blob ──────────────────────────────────────────────
 
-const canvas = document.getElementById('canvas-blob');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("canvas-blob");
+const ctx = canvas.getContext("2d");
 const W = canvas.width;
 const H = canvas.height;
 const CX = W / 2;
@@ -148,7 +168,7 @@ const blobPoints = Array.from({ length: NUM_POINTS }, (_, i) => ({
   angle: (i / NUM_POINTS) * Math.PI * 2,
   freq: 0.5 + Math.random() * 1.5,
   phase: Math.random() * Math.PI * 2,
-  amp: WOBBLE * (0.6 + Math.random() * 0.4)
+  amp: WOBBLE * (0.6 + Math.random() * 0.4),
 }));
 
 let canvasTime = 0;
@@ -159,19 +179,19 @@ function drawBlob() {
   ctx.clearRect(0, 0, W, H);
 
   // Calculate points on the blob
-  const pts = blobPoints.map(p => {
+  const pts = blobPoints.map((p) => {
     const r = BASE_RADIUS + Math.sin(canvasTime * p.freq + p.phase) * p.amp;
     return {
       x: CX + Math.cos(p.angle) * r,
-      y: CY + Math.sin(p.angle) * r
+      y: CY + Math.sin(p.angle) * r,
     };
   });
 
   // Draw using smooth bezier curves (Catmull-Rom to Bezier conversion)
   const gradient = ctx.createRadialGradient(CX - 20, CY - 20, 10, CX, CY, BASE_RADIUS + WOBBLE);
-  gradient.addColorStop(0, 'rgba(134, 232, 255, 0.9)');
-  gradient.addColorStop(0.5, 'rgba(61, 158, 255, 0.7)');
-  gradient.addColorStop(1, 'rgba(174, 82, 255, 0.4)');
+  gradient.addColorStop(0, "rgba(134, 232, 255, 0.9)");
+  gradient.addColorStop(0.5, "rgba(61, 158, 255, 0.7)");
+  gradient.addColorStop(1, "rgba(174, 82, 255, 0.4)");
 
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
@@ -198,7 +218,7 @@ function drawBlob() {
   ctx.fill();
 
   // Subtle inner glow
-  ctx.shadowColor = 'rgba(134, 232, 255, 0.3)';
+  ctx.shadowColor = "rgba(134, 232, 255, 0.3)";
   ctx.shadowBlur = 30;
   ctx.fill();
   ctx.shadowBlur = 0;
@@ -209,15 +229,15 @@ function drawBlob() {
 // Draw static blob for reduced motion
 function drawStaticBlob() {
   ctx.clearRect(0, 0, W, H);
-  const pts = blobPoints.map(p => ({
+  const pts = blobPoints.map((p) => ({
     x: CX + Math.cos(p.angle) * BASE_RADIUS,
-    y: CY + Math.sin(p.angle) * BASE_RADIUS
+    y: CY + Math.sin(p.angle) * BASE_RADIUS,
   }));
 
   const gradient = ctx.createRadialGradient(CX - 20, CY - 20, 10, CX, CY, BASE_RADIUS);
-  gradient.addColorStop(0, 'rgba(134, 232, 255, 0.9)');
-  gradient.addColorStop(0.5, 'rgba(61, 158, 255, 0.7)');
-  gradient.addColorStop(1, 'rgba(174, 82, 255, 0.4)');
+  gradient.addColorStop(0, "rgba(134, 232, 255, 0.9)");
+  gradient.addColorStop(0.5, "rgba(61, 158, 255, 0.7)");
+  gradient.addColorStop(1, "rgba(174, 82, 255, 0.4)");
 
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
@@ -248,9 +268,9 @@ if (!reduced) {
 
 // ─── Motion Preference Toggle ────────────────────────────────────────
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
 
   if (reduced) {
     // Stop SVG animation

@@ -89,7 +89,7 @@ const perfState = document.getElementById("perfState");
 const state = {
   reduced: window.MotionPreference.prefersReducedMotion(),
   sound: null,
-  meterRaf: 0
+  meterRaf: 0,
 };
 const cleanup = createCleanupRegistry();
 const lowPower = applyLowPowerClass(document.documentElement);
@@ -105,7 +105,7 @@ const orchestrator = initSectionTransitionOrchestrator({
   },
   onExit: (section) => {
     debuggerPanel.log(`exit: ${section.querySelector("h1, h2")?.textContent || "section"}`);
-  }
+  },
 });
 const perfMonitor = initPerformanceMonitor({ lowPower: lowPower.enabled });
 let lastPerfRender = 0;
@@ -125,7 +125,9 @@ cleanup.add(
   })
 );
 
-debuggerPanel.log(lowPower.enabled ? `low power detected: ${lowPower.reasons.join(", ")}` : "standard power mode");
+debuggerPanel.log(
+  lowPower.enabled ? `low power detected: ${lowPower.reasons.join(", ")}` : "standard power mode"
+);
 
 function applyMotionMode() {
   document.body.classList.toggle("no-motion", state.reduced);

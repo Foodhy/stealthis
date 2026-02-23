@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 type GlowMetricCardProps = {
   label: string;
@@ -63,7 +63,15 @@ const GlowMetricCard = ({ label, value, delta, note }: GlowMetricCardProps) => {
         >
           {value}
         </p>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: "0.85rem", color: "#94a3b8" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: "0.85rem",
+            color: "#94a3b8",
+          }}
+        >
           <span
             style={{
               padding: "4px 10px",

@@ -2,7 +2,7 @@ const lenis = window.Lenis
   ? new Lenis({
       smoothWheel: true,
       smoothTouch: false,
-      lerp: 0.08
+      lerp: 0.08,
     })
   : null;
 
@@ -11,33 +11,33 @@ const projects = [
     id: "01",
     title: "Night City Grid",
     copy: "Realtime city telemetry dashboard with adaptive neon layers.",
-    tags: ["UI/UX", "2026"]
+    tags: ["UI/UX", "2026"],
   },
   {
     id: "02",
     title: "Ghostwire Relay",
     copy: "Cyberpunk launch site with kinetic typography and motion gates.",
-    tags: ["WebGL", "2025"]
+    tags: ["WebGL", "2025"],
   },
   {
     id: "03",
     title: "Synapse Archive",
     copy: "Data storytelling interface for biotech intelligence.",
-    tags: ["Brand", "2025"]
+    tags: ["Brand", "2025"],
   },
   {
     id: "04",
     title: "Signal Loom",
     copy: "Identity system with neon typography and modular UI kits.",
-    tags: ["System", "2024"]
-  }
+    tags: ["System", "2024"],
+  },
 ];
 
 const abilities = [
   "Realtime HUD systems",
   "Motion-first UI choreography",
   "Neon brand systems",
-  "3D dashboards and data overlays"
+  "3D dashboards and data overlays",
 ];
 
 const skills = ["Figma", "Three.js", "GSAP", "Lenis", "WebGL", "TypeScript", "Framer"];
@@ -45,13 +45,13 @@ const skills = ["Figma", "Three.js", "GSAP", "Lenis", "WebGL", "TypeScript", "Fr
 const stats = [
   { value: "12", label: "Years crafting motion-forward narratives." },
   { value: "38", label: "Launches for cyber-native brands." },
-  { value: "94%", label: "Repeat collaboration rate." }
+  { value: "94%", label: "Repeat collaboration rate." },
 ];
 
 const lab = [
   { title: "Drift Ticker", desc: "Marquee speed reacts to Lenis velocity." },
   { title: "Neon Pulse", desc: "Ambient glow synced to scroll momentum." },
-  { title: "City Grid", desc: "3D skyline driven by motion signals." }
+  { title: "City Grid", desc: "3D skyline driven by motion signals." },
 ];
 
 const projectGrid = document.getElementById("project-cards");
@@ -151,7 +151,7 @@ if (window.gsap) {
       y: 24,
       duration: 0.8,
       delay: index * 0.04,
-      ease: "power2.out"
+      ease: "power2.out",
     });
   });
 }
@@ -208,7 +208,7 @@ class NeonCity {
       roughness: 0.4,
       metalness: 0.6,
       emissive: 0x2af1ff,
-      emissiveIntensity: 0.2
+      emissiveIntensity: 0.2,
     });
 
     for (let i = 0; i < 80; i++) {
@@ -216,11 +216,7 @@ class NeonCity {
       const h = 1 + Math.random() * 8;
       const d = 0.6 + Math.random() * 1.4;
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), blockMat.clone());
-      mesh.position.set(
-        (Math.random() - 0.5) * 30,
-        h / 2 - 2,
-        (Math.random() - 0.5) * 30
-      );
+      mesh.position.set((Math.random() - 0.5) * 30, h / 2 - 2, (Math.random() - 0.5) * 30);
       mesh.material.emissiveIntensity = 0.2 + Math.random() * 0.6;
       this.city.add(mesh);
     }

@@ -43,39 +43,44 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger);
 
-initDemoShell({ title: 'Parallax Depth Card Grid', category: 'scroll', tech: ['gsap', 'scrolltrigger', 'css-3d-transforms'] });
+initDemoShell({
+  title: "Parallax Depth Card Grid",
+  category: "scroll",
+  tech: ["gsap", "scrolltrigger", "css-3d-transforms"],
+});
 
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 const reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
 // Intro animation
 if (!reduced) {
-  gsap.set('.hero .eyebrow', { opacity: 0, y: 20 });
-  gsap.set('.hero h1', { opacity: 0, y: 40 });
-  gsap.set('.hero .subtitle', { opacity: 0, y: 25 });
+  gsap.set(".hero .eyebrow", { opacity: 0, y: 20 });
+  gsap.set(".hero h1", { opacity: 0, y: 40 });
+  gsap.set(".hero .subtitle", { opacity: 0, y: 25 });
 
-  gsap.timeline({ defaults: { ease: 'expo.out' } })
-    .to('.hero .eyebrow', { opacity: 1, y: 0, duration: 0.7, delay: 0.3 })
-    .to('.hero h1', { opacity: 1, y: 0, duration: 0.9 }, '-=0.4')
-    .to('.hero .subtitle', { opacity: 1, y: 0, duration: 0.7 }, '-=0.5');
+  gsap
+    .timeline({ defaults: { ease: "expo.out" } })
+    .to(".hero .eyebrow", { opacity: 1, y: 0, duration: 0.7, delay: 0.3 })
+    .to(".hero h1", { opacity: 1, y: 0, duration: 0.9 }, "-=0.4")
+    .to(".hero .subtitle", { opacity: 1, y: 0, duration: 0.7 }, "-=0.5");
 }
 
 // Card entrance animations with depth stagger
-const cards = document.querySelectorAll('.card');
+const cards = document.querySelectorAll(".card");
 cards.forEach((card) => {
-  const depth = parseFloat(card.style.getPropertyValue('--depth')) || 0.5;
-  const index = parseInt(card.style.getPropertyValue('--index'), 10) || 0;
+  const depth = Number.parseFloat(card.style.getPropertyValue("--depth")) || 0.5;
+  const index = Number.parseInt(card.style.getPropertyValue("--index"), 10) || 0;
 
   // Initial state
   gsap.set(card, {
@@ -95,31 +100,31 @@ cards.forEach((card) => {
       rotationY: 0,
       rotationX: 0,
       duration: 1,
-      ease: 'expo.out',
+      ease: "expo.out",
       delay: depth * 0.3, // Depth determines stagger
       scrollTrigger: {
-        trigger: '.cards-container',
-        start: 'top 70%',
-        toggleActions: 'play none none reverse',
+        trigger: ".cards-container",
+        start: "top 70%",
+        toggleActions: "play none none reverse",
       },
     });
 
     // Hover lift effect
-    card.addEventListener('mouseenter', () => {
+    card.addEventListener("mouseenter", () => {
       gsap.to(card, {
         y: -20,
-        boxShadow: '0 30px 60px rgba(134, 232, 255, 0.2)',
+        boxShadow: "0 30px 60px rgba(134, 232, 255, 0.2)",
         duration: 0.4,
-        overwrite: 'auto',
+        overwrite: "auto",
       });
     });
 
-    card.addEventListener('mouseleave', () => {
+    card.addEventListener("mouseleave", () => {
       gsap.to(card, {
         y: 0,
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",
         duration: 0.4,
-        overwrite: 'auto',
+        overwrite: "auto",
       });
     });
   }
@@ -127,17 +132,17 @@ cards.forEach((card) => {
 
 // Parallax depth during scroll
 if (!reduced) {
-  gsap.to('.cards-grid', {
+  gsap.to(".cards-grid", {
     scrollTrigger: {
-      trigger: '.cards-container',
-      start: 'top center',
-      end: 'bottom center',
+      trigger: ".cards-container",
+      start: "top center",
+      end: "bottom center",
       scrub: 1,
       onUpdate: (self) => {
         cards.forEach((card, i) => {
-          const depth = parseFloat(card.style.getPropertyValue('--depth')) || 0.5;
+          const depth = Number.parseFloat(card.style.getPropertyValue("--depth")) || 0.5;
           const offset = self.progress * depth * 50; // Parallax amount
-          gsap.set(card, { y: offset, overwrite: 'auto' });
+          gsap.set(card, { y: offset, overwrite: "auto" });
         });
       },
     },
@@ -145,44 +150,44 @@ if (!reduced) {
 }
 
 // Details section reveals
-document.querySelectorAll('.details h2, .details h3, .details p, .details ul').forEach((el) => {
+document.querySelectorAll(".details h2, .details h3, .details p, .details ul").forEach((el) => {
   if (!reduced) {
     gsap.set(el, { opacity: 0, y: 30 });
     gsap.to(el, {
       opacity: 1,
       y: 0,
       duration: 0.7,
-      ease: 'expo.out',
+      ease: "expo.out",
       scrollTrigger: {
         trigger: el,
-        start: 'top 75%',
-        toggleActions: 'play none none reverse',
+        start: "top 75%",
+        toggleActions: "play none none reverse",
       },
     });
   }
 });
 
 // List items
-document.querySelectorAll('.details ul li').forEach((li, i) => {
+document.querySelectorAll(".details ul li").forEach((li, i) => {
   if (!reduced) {
     gsap.set(li, { opacity: 0, x: -20 });
     gsap.to(li, {
       opacity: 1,
       x: 0,
       duration: 0.6,
-      ease: 'expo.out',
+      ease: "expo.out",
       delay: 0.05 * i,
       scrollTrigger: {
         trigger: li,
-        start: 'top 75%',
-        toggleActions: 'play none none reverse',
+        start: "top 75%",
+        toggleActions: "play none none reverse",
       },
     });
   }
 });
 
 // Motion preference listener
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   if (e.detail.reduced) {
     gsap.globalTimeline.paused(true);
   } else {

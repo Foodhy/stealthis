@@ -43,49 +43,47 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import Lenis from "lenis";
+import * as THREE from "three";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 
 initDemoShell({
-  title: 'Travel Experience',
-  category: 'pages',
-  tech: ['three.js', 'gsap', 'lenis', 'scrolltrigger'],
+  title: "Travel Experience",
+  category: "pages",
+  tech: ["three.js", "gsap", "lenis", "scrolltrigger"],
 });
 
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
-const dur = (d) => reduced ? 0 : d;
+const dur = (d) => (reduced ? 0 : d);
 
 // =============================================================================
 // THREE.JS SETUP
 // =============================================================================
 
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#0b1628');
+scene.background = new THREE.Color("#0b1628");
 scene.fog = new THREE.FogExp2(0x0b1628, 0.015);
 
-const camera = new THREE.PerspectiveCamera(
-  50, window.innerWidth / window.innerHeight, 0.1, 200
-);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
 camera.position.set(0, 3, 12);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -224,7 +222,7 @@ for (let i = 0; i < cloudCount; i++) {
   cloudPositions[i * 3 + 2] = (Math.random() - 0.5) * 100 - 20;
 }
 
-cloudGeo.setAttribute('position', new THREE.BufferAttribute(cloudPositions, 3));
+cloudGeo.setAttribute("position", new THREE.BufferAttribute(cloudPositions, 3));
 
 const cloudMat = new THREE.PointsMaterial({
   color: 0x4a6a90,
@@ -242,15 +240,20 @@ scene.add(clouds);
 // FLIGHT PATH
 // =============================================================================
 
-const flightPath = new THREE.CatmullRomCurve3([
-  new THREE.Vector3(0, 0, 8),
-  new THREE.Vector3(3, 2, 4),
-  new THREE.Vector3(0, 4, 0),
-  new THREE.Vector3(-4, 3, -4),
-  new THREE.Vector3(-2, 5, -8),
-  new THREE.Vector3(2, 4, -12),
-  new THREE.Vector3(0, 6, -16),
-], false, 'catmullrom', 0.3);
+const flightPath = new THREE.CatmullRomCurve3(
+  [
+    new THREE.Vector3(0, 0, 8),
+    new THREE.Vector3(3, 2, 4),
+    new THREE.Vector3(0, 4, 0),
+    new THREE.Vector3(-4, 3, -4),
+    new THREE.Vector3(-2, 5, -8),
+    new THREE.Vector3(2, 4, -12),
+    new THREE.Vector3(0, 6, -16),
+  ],
+  false,
+  "catmullrom",
+  0.3
+);
 
 // =============================================================================
 // SCROLL-DRIVEN FLIGHT ANIMATION
@@ -260,11 +263,11 @@ const scrollState = { progress: 0 };
 
 gsap.to(scrollState, {
   progress: 1,
-  ease: 'none',
+  ease: "none",
   scrollTrigger: {
-    trigger: '.flight-track',
-    start: 'top top',
-    end: 'bottom bottom',
+    trigger: ".flight-track",
+    start: "top top",
+    end: "bottom bottom",
     scrub: 1.5,
   },
 });
@@ -281,11 +284,11 @@ if (reduced) {
 // HERO ENTRANCE
 // =============================================================================
 
-const heroTitle = document.querySelector('.hero-title');
-const heroSubtitle = document.getElementById('hero-subtitle');
+const heroTitle = document.querySelector(".hero-title");
+const heroSubtitle = document.getElementById("hero-subtitle");
 
 // SplitText for hero title
-const titleSplit = new SplitText(heroTitle, { type: 'chars', charsClass: 'char' });
+const titleSplit = new SplitText(heroTitle, { type: "chars", charsClass: "char" });
 gsap.set(titleSplit.chars, {
   opacity: 0,
   y: reduced ? 0 : 60,
@@ -296,41 +299,51 @@ const heroTl = gsap.timeline({ delay: 0.3 });
 
 heroTl
   .to(titleSplit.chars, {
-    opacity: 1, y: 0, rotateX: 0,
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
     duration: dur(0.6),
-    ease: 'back.out(1.4)',
+    ease: "back.out(1.4)",
     stagger: { each: 0.03 },
   })
-  .to(heroSubtitle, {
-    opacity: 1,
-    duration: dur(0.1),
-    onComplete: () => {
-      if (!reduced) {
-        gsap.to(heroSubtitle, {
-          duration: dur(1.2),
-          scrambleText: {
-            text: 'Scroll to take flight',
-            chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-            speed: 0.4,
-          },
-        });
-      } else {
-        heroSubtitle.textContent = 'Scroll to take flight';
-      }
+  .to(
+    heroSubtitle,
+    {
+      opacity: 1,
+      duration: dur(0.1),
+      onComplete: () => {
+        if (!reduced) {
+          gsap.to(heroSubtitle, {
+            duration: dur(1.2),
+            scrambleText: {
+              text: "Scroll to take flight",
+              chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+              speed: 0.4,
+            },
+          });
+        } else {
+          heroSubtitle.textContent = "Scroll to take flight";
+        }
+      },
     },
-  }, 0.5)
-  .to('#scroll-indicator', {
-    opacity: 1,
-    duration: dur(0.6),
-    ease: 'expo.out',
-  }, 1.0);
+    0.5
+  )
+  .to(
+    "#scroll-indicator",
+    {
+      opacity: 1,
+      duration: dur(0.6),
+      ease: "expo.out",
+    },
+    1.0
+  );
 
 // =============================================================================
 // DESTINATION CARDS (ScrollTrigger per flight-section)
 // =============================================================================
 
-const destCards = document.querySelectorAll('.dest-card');
-const flightSections = document.querySelectorAll('.flight-section');
+const destCards = document.querySelectorAll(".dest-card");
+const flightSections = document.querySelectorAll(".flight-section");
 
 flightSections.forEach((section, i) => {
   const card = destCards[i];
@@ -339,22 +352,22 @@ flightSections.forEach((section, i) => {
   if (reduced) {
     // In reduced motion, cards are simply visible when in viewport
     gsap.set(card, { opacity: 1, x: 0 });
-    card.classList.add('visible');
+    card.classList.add("visible");
     return;
   }
 
   // Card entrance
   ScrollTrigger.create({
     trigger: section,
-    start: 'top 60%',
-    end: 'bottom 40%',
+    start: "top 60%",
+    end: "bottom 40%",
     onEnter: () => {
-      card.classList.add('visible');
+      card.classList.add("visible");
       gsap.to(card, {
         opacity: 1,
         x: 0,
         duration: dur(0.8),
-        ease: 'expo.out',
+        ease: "expo.out",
       });
     },
     onLeave: () => {
@@ -362,17 +375,17 @@ flightSections.forEach((section, i) => {
         opacity: 0,
         x: -30,
         duration: dur(0.4),
-        ease: 'power2.in',
-        onComplete: () => card.classList.remove('visible'),
+        ease: "power2.in",
+        onComplete: () => card.classList.remove("visible"),
       });
     },
     onEnterBack: () => {
-      card.classList.add('visible');
+      card.classList.add("visible");
       gsap.to(card, {
         opacity: 1,
         x: 0,
         duration: dur(0.8),
-        ease: 'expo.out',
+        ease: "expo.out",
       });
     },
     onLeaveBack: () => {
@@ -380,8 +393,8 @@ flightSections.forEach((section, i) => {
         opacity: 0,
         x: 60,
         duration: dur(0.4),
-        ease: 'power2.in',
-        onComplete: () => card.classList.remove('visible'),
+        ease: "power2.in",
+        onComplete: () => card.classList.remove("visible"),
       });
     },
   });
@@ -394,44 +407,45 @@ flightSections.forEach((section, i) => {
 // DESTINATIONS GRID
 // =============================================================================
 
-const gridHeading = document.querySelector('.grid-heading');
+const gridHeading = document.querySelector(".grid-heading");
 
 if (gridHeading) {
-  const gridSplit = new SplitText(gridHeading, { type: 'words', wordsClass: 'word' });
+  const gridSplit = new SplitText(gridHeading, { type: "words", wordsClass: "word" });
   gsap.set(gridSplit.words, {
     opacity: 0,
     y: reduced ? 0 : 30,
   });
 
   gsap.to(gridSplit.words, {
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     duration: dur(0.6),
-    ease: 'back.out(1.2)',
+    ease: "back.out(1.2)",
     stagger: { each: 0.08 },
     scrollTrigger: {
-      trigger: '.grid-section',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".grid-section",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Grid cards staggered entrance
-gsap.to('.grid-card', {
+gsap.to(".grid-card", {
   opacity: 1,
   y: 0,
   scale: 1,
   duration: dur(0.7),
-  ease: 'expo.out',
+  ease: "expo.out",
   stagger: {
     each: 0.1,
-    from: 'center',
+    from: "center",
     grid: [2, 2],
   },
   scrollTrigger: {
-    trigger: '.destinations-grid',
-    start: 'top 80%',
-    toggleActions: 'play none none reverse',
+    trigger: ".destinations-grid",
+    start: "top 80%",
+    toggleActions: "play none none reverse",
   },
 });
 
@@ -439,10 +453,10 @@ gsap.to('.grid-card', {
 // CTA SECTION
 // =============================================================================
 
-const ctaHeading = document.querySelector('.cta-heading');
+const ctaHeading = document.querySelector(".cta-heading");
 
 if (ctaHeading) {
-  const ctaSplit = new SplitText(ctaHeading, { type: 'chars', charsClass: 'char' });
+  const ctaSplit = new SplitText(ctaHeading, { type: "chars", charsClass: "char" });
   gsap.set(ctaSplit.chars, {
     opacity: 0,
     y: reduced ? 0 : 40,
@@ -451,34 +465,45 @@ if (ctaHeading) {
 
   if (reduced) {
     gsap.set(ctaSplit.chars, { opacity: 1 });
-    gsap.set('.cta-subtitle', { opacity: 1 });
-    gsap.set('.btn', { opacity: 1, y: 0 });
+    gsap.set(".cta-subtitle", { opacity: 1 });
+    gsap.set(".btn", { opacity: 1, y: 0 });
   } else {
     ScrollTrigger.create({
-      trigger: '.cta-section',
-      start: 'top 60%',
+      trigger: ".cta-section",
+      start: "top 60%",
       once: true,
       onEnter: () => {
         const ctaTl = gsap.timeline();
 
         ctaTl
           .to(ctaSplit.chars, {
-            opacity: 1, y: 0, rotateX: 0,
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
             duration: dur(0.6),
-            ease: 'back.out(1.4)',
+            ease: "back.out(1.4)",
             stagger: { each: 0.02 },
           })
-          .to('.cta-subtitle', {
-            opacity: 1,
-            duration: dur(0.6),
-            ease: 'expo.out',
-          }, '-=0.3')
-          .to('.btn', {
-            opacity: 1, y: 0,
-            duration: dur(0.5),
-            ease: 'back.out(1.7)',
-            stagger: 0.1,
-          }, '-=0.2');
+          .to(
+            ".cta-subtitle",
+            {
+              opacity: 1,
+              duration: dur(0.6),
+              ease: "expo.out",
+            },
+            "-=0.3"
+          )
+          .to(
+            ".btn",
+            {
+              opacity: 1,
+              y: 0,
+              duration: dur(0.5),
+              ease: "back.out(1.7)",
+              stagger: 0.1,
+            },
+            "-=0.2"
+          );
       },
     });
   }
@@ -533,7 +558,7 @@ animate();
 // RESIZE
 // =============================================================================
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -543,7 +568,7 @@ window.addEventListener('resize', () => {
 // CLEANUP
 // =============================================================================
 
-window.addEventListener('beforeunload', () => {
+window.addEventListener("beforeunload", () => {
   airplane.traverse((child) => {
     if (child.geometry) child.geometry.dispose();
   });

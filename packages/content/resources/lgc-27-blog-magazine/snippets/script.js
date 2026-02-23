@@ -43,31 +43,31 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 
 initDemoShell({
-  title: 'Blog Magazine',
-  category: 'pages',
-  tech: ['gsap', 'lenis', 'splittext', 'view-transitions-api'],
+  title: "Blog Magazine",
+  category: "pages",
+  tech: ["gsap", "lenis", "splittext", "view-transitions-api"],
 });
 
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
@@ -77,13 +77,13 @@ const dur = (d) => (reduced ? 0 : d);
 // SECTION 1: MASTHEAD — SplitText + ScrambleText entrance
 // ═══════════════════════════════════════════════════════════════════
 
-const mastheadTitle = document.getElementById('masthead-title');
-const mastheadSubtitle = document.getElementById('masthead-subtitle');
+const mastheadTitle = document.getElementById("masthead-title");
+const mastheadSubtitle = document.getElementById("masthead-subtitle");
 
 // SplitText char-by-char reveal for title
 const titleSplit = new SplitText(mastheadTitle, {
-  type: 'chars',
-  charsClass: 'char',
+  type: "chars",
+  charsClass: "char",
 });
 
 gsap.set(titleSplit.chars, {
@@ -100,14 +100,14 @@ mastheadTl.to(titleSplit.chars, {
   y: 0,
   rotateX: 0,
   duration: dur(0.7),
-  ease: 'expo.out',
+  ease: "expo.out",
   stagger: { each: 0.03 },
 });
 
 // ScrambleText for subtitle
 if (reduced) {
   // Skip scramble, just show immediately
-  mastheadSubtitle.style.opacity = '1';
+  mastheadSubtitle.style.opacity = "1";
 } else {
   const subtitleText = mastheadSubtitle.textContent;
   gsap.set(mastheadSubtitle, { opacity: 1 });
@@ -126,7 +126,7 @@ if (reduced) {
       duration: dur(1.2),
       scrambleText: {
         text: subtitleText,
-        chars: 'lowerCase',
+        chars: "lowerCase",
         speed: 0.5,
         revealDelay: 0.3,
       },
@@ -139,20 +139,20 @@ if (reduced) {
 // THEME TOGGLE — View Transitions API with circular clip-path wipe
 // ═══════════════════════════════════════════════════════════════════
 
-const supportsVT = typeof document.startViewTransition === 'function';
-const themeToggle = document.getElementById('theme-toggle');
+const supportsVT = typeof document.startViewTransition === "function";
+const themeToggle = document.getElementById("theme-toggle");
 
 function updateToggleIcon(theme) {
   // Icon visibility handled by CSS data-theme selectors — no JS needed
   themeToggle.setAttribute(
-    'aria-label',
-    theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
+    "aria-label",
+    theme === "dark" ? "Switch to light theme" : "Switch to dark theme"
   );
 }
 
-themeToggle.addEventListener('click', (e) => {
-  const isDark = document.documentElement.dataset.theme === 'dark';
-  const newTheme = isDark ? 'light' : 'dark';
+themeToggle.addEventListener("click", (e) => {
+  const isDark = document.documentElement.dataset.theme === "dark";
+  const newTheme = isDark ? "light" : "dark";
 
   if (!supportsVT || reduced) {
     document.documentElement.dataset.theme = newTheme;
@@ -166,9 +166,9 @@ themeToggle.addEventListener('click', (e) => {
     Math.max(y, window.innerHeight - y)
   );
 
-  document.documentElement.style.setProperty('--wipe-x', `${x}px`);
-  document.documentElement.style.setProperty('--wipe-y', `${y}px`);
-  document.documentElement.style.setProperty('--wipe-radius', `${radius}px`);
+  document.documentElement.style.setProperty("--wipe-x", `${x}px`);
+  document.documentElement.style.setProperty("--wipe-y", `${y}px`);
+  document.documentElement.style.setProperty("--wipe-radius", `${radius}px`);
 
   document.startViewTransition(() => {
     document.documentElement.dataset.theme = newTheme;
@@ -180,12 +180,12 @@ themeToggle.addEventListener('click', (e) => {
 // SECTION 2: FEATURED ARTICLE — SplitText line reveal on scroll
 // ═══════════════════════════════════════════════════════════════════
 
-const featuredTitle = document.getElementById('featured-title');
+const featuredTitle = document.getElementById("featured-title");
 
 if (featuredTitle) {
   const featuredSplit = new SplitText(featuredTitle, {
-    type: 'lines',
-    linesClass: 'line',
+    type: "lines",
+    linesClass: "line",
   });
 
   gsap.set(featuredSplit.lines, {
@@ -197,18 +197,18 @@ if (featuredTitle) {
     opacity: 1,
     y: 0,
     duration: dur(0.7),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: 0.12 },
     scrollTrigger: {
-      trigger: '.featured',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".featured",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Featured card entrance
-const featuredCard = document.querySelector('.featured-card');
+const featuredCard = document.querySelector(".featured-card");
 if (featuredCard) {
   gsap.set(featuredCard, { opacity: 0, y: reduced ? 0 : 30 });
 
@@ -216,11 +216,11 @@ if (featuredCard) {
     opacity: 1,
     y: 0,
     duration: dur(0.8),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.featured',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
+      trigger: ".featured",
+      start: "top 80%",
+      toggleActions: "play none none reverse",
     },
   });
 }
@@ -229,8 +229,8 @@ if (featuredCard) {
 // SECTION 3: ARTICLE GRID — stagger entrance + reading view
 // ═══════════════════════════════════════════════════════════════════
 
-const articlesGrid = document.getElementById('articles-grid');
-const articleCards = document.querySelectorAll('.article-card');
+const articlesGrid = document.getElementById("articles-grid");
+const articleCards = document.querySelectorAll(".article-card");
 
 // Card entrance animation
 articleCards.forEach((card, i) => {
@@ -240,12 +240,12 @@ articleCards.forEach((card, i) => {
     opacity: 1,
     y: 0,
     duration: dur(0.6),
-    ease: 'expo.out',
+    ease: "expo.out",
     delay: i * 0.1,
     scrollTrigger: {
-      trigger: '.articles-section',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".articles-section",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 });
@@ -263,12 +263,12 @@ function openReadingView(card) {
   }
 
   const doOpen = () => {
-    card.classList.add('reading-view');
-    articlesGrid.classList.add('has-reading-view');
+    card.classList.add("reading-view");
+    articlesGrid.classList.add("has-reading-view");
     activeReadingCard = card;
 
     // Scroll to the card
-    card.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
 
     // Refresh ScrollTrigger after layout change
     setTimeout(() => ScrollTrigger.refresh(), 100);
@@ -276,13 +276,15 @@ function openReadingView(card) {
 
   if (supportsVT && !reduced) {
     // Set a view-transition-name on the card dynamically
-    card.style.viewTransitionName = 'article-expand';
+    card.style.viewTransitionName = "article-expand";
 
-    document.startViewTransition(() => {
-      doOpen();
-    }).finished.then(() => {
-      card.style.viewTransitionName = '';
-    });
+    document
+      .startViewTransition(() => {
+        doOpen();
+      })
+      .finished.then(() => {
+        card.style.viewTransitionName = "";
+      });
   } else {
     doOpen();
   }
@@ -294,8 +296,8 @@ function closeReadingView(useTransition = true) {
   const card = activeReadingCard;
 
   const doClose = () => {
-    card.classList.remove('reading-view');
-    articlesGrid.classList.remove('has-reading-view');
+    card.classList.remove("reading-view");
+    articlesGrid.classList.remove("has-reading-view");
     activeReadingCard = null;
 
     // Refresh ScrollTrigger after layout change
@@ -303,13 +305,15 @@ function closeReadingView(useTransition = true) {
   };
 
   if (supportsVT && !reduced && useTransition) {
-    card.style.viewTransitionName = 'article-expand';
+    card.style.viewTransitionName = "article-expand";
 
-    document.startViewTransition(() => {
-      doClose();
-    }).finished.then(() => {
-      card.style.viewTransitionName = '';
-    });
+    document
+      .startViewTransition(() => {
+        doClose();
+      })
+      .finished.then(() => {
+        card.style.viewTransitionName = "";
+      });
   } else {
     doClose();
   }
@@ -317,27 +321,27 @@ function closeReadingView(useTransition = true) {
 
 // Click handlers for cards
 articleCards.forEach((card) => {
-  const closeBtn = card.querySelector('.card-close-btn');
+  const closeBtn = card.querySelector(".card-close-btn");
 
-  card.addEventListener('click', (e) => {
+  card.addEventListener("click", (e) => {
     // Do not open if we're clicking the close button
-    if (e.target.closest('.card-close-btn')) return;
+    if (e.target.closest(".card-close-btn")) return;
 
     // Only open if not already in reading view
-    if (!card.classList.contains('reading-view')) {
+    if (!card.classList.contains("reading-view")) {
       openReadingView(card);
     }
   });
 
-  closeBtn.addEventListener('click', (e) => {
+  closeBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     closeReadingView();
   });
 });
 
 // Close reading view on Escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && activeReadingCard) {
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && activeReadingCard) {
     closeReadingView();
   }
 });
@@ -346,12 +350,12 @@ document.addEventListener('keydown', (e) => {
 // SECTION 4: NEWSLETTER — SplitText word reveal
 // ═══════════════════════════════════════════════════════════════════
 
-const newsletterHeading = document.getElementById('newsletter-heading');
+const newsletterHeading = document.getElementById("newsletter-heading");
 
 if (newsletterHeading) {
   const nlSplit = new SplitText(newsletterHeading, {
-    type: 'words',
-    wordsClass: 'word',
+    type: "words",
+    wordsClass: "word",
   });
 
   gsap.set(nlSplit.words, {
@@ -363,18 +367,18 @@ if (newsletterHeading) {
     opacity: 1,
     y: 0,
     duration: dur(0.6),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: 0.08 },
     scrollTrigger: {
-      trigger: '.newsletter',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".newsletter",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Newsletter subtitle entrance
-const nlSubtitle = document.querySelector('.newsletter-subtitle');
+const nlSubtitle = document.querySelector(".newsletter-subtitle");
 if (nlSubtitle) {
   gsap.set(nlSubtitle, { opacity: 0, y: reduced ? 0 : 15 });
 
@@ -382,17 +386,17 @@ if (nlSubtitle) {
     opacity: 1,
     y: 0,
     duration: dur(0.6),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.newsletter',
-      start: 'top 70%',
-      toggleActions: 'play none none reverse',
+      trigger: ".newsletter",
+      start: "top 70%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Newsletter form entrance
-const nlForm = document.querySelector('.newsletter-form');
+const nlForm = document.querySelector(".newsletter-form");
 if (nlForm) {
   gsap.set(nlForm, { opacity: 0, y: reduced ? 0 : 15 });
 
@@ -400,28 +404,28 @@ if (nlForm) {
     opacity: 1,
     y: 0,
     duration: dur(0.6),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.newsletter',
-      start: 'top 65%',
-      toggleActions: 'play none none reverse',
+      trigger: ".newsletter",
+      start: "top 65%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Footer entrance
-const siteFooter = document.querySelector('.site-footer');
+const siteFooter = document.querySelector(".site-footer");
 if (siteFooter) {
   gsap.set(siteFooter, { opacity: 0 });
 
   gsap.to(siteFooter, {
     opacity: 1,
     duration: dur(0.5),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
       trigger: siteFooter,
-      start: 'top 95%',
-      toggleActions: 'play none none reverse',
+      start: "top 95%",
+      toggleActions: "play none none reverse",
     },
   });
 }

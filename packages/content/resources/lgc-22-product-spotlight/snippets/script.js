@@ -43,41 +43,36 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import * as THREE from "three";
 
 gsap.registerPlugin(ScrollTrigger);
 
 initDemoShell({
-  title: '3D Product Spotlight',
-  category: '3d',
-  tech: ['three.js', 'gsap', 'lenis', 'scrolltrigger'],
+  title: "3D Product Spotlight",
+  category: "3d",
+  tech: ["three.js", "gsap", "lenis", "scrolltrigger"],
 });
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
 // ─── Lenis smooth scroll ─────────────────────────────────────────────
 
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 // ─── Three.js Setup ──────────────────────────────────────────────────
 
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#050508');
+scene.background = new THREE.Color("#050508");
 
-const camera = new THREE.PerspectiveCamera(
-  45,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
-);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -157,18 +152,18 @@ scene.fog = new THREE.FogExp2(0x050508, 0.04);
 // ─── Camera Rail — Smooth Orbital Path ───────────────────────────────
 
 const railPoints = [
-  new THREE.Vector3(5, 3, 5),      // Front-right, elevated
-  new THREE.Vector3(0, 2.5, 6),    // Front center
-  new THREE.Vector3(-5, 2, 4),     // Left side
-  new THREE.Vector3(-5.5, 3.5, -2),// Left-back, higher
-  new THREE.Vector3(-3, 4.5, -5),  // Behind, high angle
-  new THREE.Vector3(2, 4, -5.5),   // Behind-right, high
-  new THREE.Vector3(5.5, 2, -3),   // Right side
-  new THREE.Vector3(6, 1.8, 2),    // Right-front, lower
-  new THREE.Vector3(5, 3, 5),      // Return to start
+  new THREE.Vector3(5, 3, 5), // Front-right, elevated
+  new THREE.Vector3(0, 2.5, 6), // Front center
+  new THREE.Vector3(-5, 2, 4), // Left side
+  new THREE.Vector3(-5.5, 3.5, -2), // Left-back, higher
+  new THREE.Vector3(-3, 4.5, -5), // Behind, high angle
+  new THREE.Vector3(2, 4, -5.5), // Behind-right, high
+  new THREE.Vector3(5.5, 2, -3), // Right side
+  new THREE.Vector3(6, 1.8, 2), // Right-front, lower
+  new THREE.Vector3(5, 3, 5), // Return to start
 ];
 
-const rail = new THREE.CatmullRomCurve3(railPoints, false, 'catmullrom', 0.4);
+const rail = new THREE.CatmullRomCurve3(railPoints, false, "catmullrom", 0.4);
 const productCenter = new THREE.Vector3(0, 0.5, 0);
 
 // Set initial camera position
@@ -179,15 +174,15 @@ camera.lookAt(productCenter);
 // ─── Scroll → Orbit Progress ─────────────────────────────────────────
 
 const scrollState = { progress: 0 };
-const orbitFill = document.getElementById('orbit-fill');
+const orbitFill = document.getElementById("orbit-fill");
 
 gsap.to(scrollState, {
   progress: 1,
-  ease: 'none',
+  ease: "none",
   scrollTrigger: {
-    trigger: '.scroll-track',
-    start: 'top top',
-    end: 'bottom bottom',
+    trigger: ".scroll-track",
+    start: "top top",
+    end: "bottom bottom",
     scrub: 1.5,
     onUpdate: () => {
       if (orbitFill) {
@@ -199,19 +194,19 @@ gsap.to(scrollState, {
 
 // ─── Info Card Visibility ────────────────────────────────────────────
 
-const sections = document.querySelectorAll('.rail-section');
+const sections = document.querySelectorAll(".rail-section");
 sections.forEach((section) => {
-  const card = section.querySelector('.info-card');
+  const card = section.querySelector(".info-card");
   if (!card) return;
 
   ScrollTrigger.create({
     trigger: section,
-    start: 'top 55%',
-    end: 'bottom 45%',
-    onEnter: () => card.classList.add('visible'),
-    onLeave: () => card.classList.remove('visible'),
-    onEnterBack: () => card.classList.add('visible'),
-    onLeaveBack: () => card.classList.remove('visible'),
+    start: "top 55%",
+    end: "bottom 45%",
+    onEnter: () => card.classList.add("visible"),
+    onLeave: () => card.classList.remove("visible"),
+    onEnterBack: () => card.classList.add("visible"),
+    onLeaveBack: () => card.classList.remove("visible"),
   });
 });
 
@@ -248,11 +243,7 @@ function animate() {
   camera.lookAt(productCenter);
 
   // Place accent light near camera but offset
-  accentLight.position.set(
-    cameraPos.x * 0.6,
-    cameraPos.y + 1,
-    cameraPos.z * 0.6
-  );
+  accentLight.position.set(cameraPos.x * 0.6, cameraPos.y + 1, cameraPos.z * 0.6);
 
   // Shift product color based on scroll progress
   const color = getInterpolatedColor(t);
@@ -271,7 +262,7 @@ animate();
 
 // ─── Resize ──────────────────────────────────────────────────────────
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -279,15 +270,15 @@ window.addEventListener('resize', () => {
 
 // ─── Motion Preference ───────────────────────────────────────────────
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
 // ─── Cleanup ─────────────────────────────────────────────────────────
 
-window.addEventListener('beforeunload', () => {
+window.addEventListener("beforeunload", () => {
   productGeo.dispose();
   productMat.dispose();
   groundGeo.dispose();

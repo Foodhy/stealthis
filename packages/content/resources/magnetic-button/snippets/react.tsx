@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 interface MagneticButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   strength?: number;
@@ -17,8 +17,7 @@ export function MagneticButton({
   const btnRef = useRef<HTMLButtonElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);
   const reducedMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {

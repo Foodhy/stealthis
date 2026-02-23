@@ -45,22 +45,22 @@ function initDemoShell() {
 
 // ── Demo shell ──
 initDemoShell({
-  title: 'Spotlight Reveal',
-  category: 'css-canvas',
-  tech: ['css-mask', 'mouse-tracking'],
+  title: "Spotlight Reveal",
+  category: "css-canvas",
+  tech: ["css-mask", "mouse-tracking"],
 });
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
 });
 
 // ── Refs ──
-const coverLayer = document.getElementById('cover-layer');
-const trailContainer = document.getElementById('trail');
+const coverLayer = document.getElementById("cover-layer");
+const trailContainer = document.getElementById("trail");
 
 // ── Mouse state ──
 const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
@@ -73,8 +73,8 @@ const TRAIL_COUNT = 8;
 const trailDots = [];
 
 for (let i = 0; i < TRAIL_COUNT; i++) {
-  const dot = document.createElement('div');
-  dot.className = 'trail-dot';
+  const dot = document.createElement("div");
+  dot.className = "trail-dot";
   dot.style.opacity = String(1 - (i / TRAIL_COUNT) * 0.8);
   dot.style.width = `${8 - i * 0.6}px`;
   dot.style.height = `${8 - i * 0.6}px`;
@@ -83,17 +83,17 @@ for (let i = 0; i < TRAIL_COUNT; i++) {
 }
 
 // ── Events ──
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   mouse.x = e.clientX;
   mouse.y = e.clientY;
   targetRadius = 140;
 });
 
-document.addEventListener('mousedown', () => {
+document.addEventListener("mousedown", () => {
   targetRadius = 220; // expand spotlight on click
 });
 
-document.addEventListener('mouseup', () => {
+document.addEventListener("mouseup", () => {
   targetRadius = 140;
 });
 
@@ -134,10 +134,10 @@ function tick() {
 requestAnimationFrame(tick);
 
 // ── Hide trail when mouse leaves ──
-document.addEventListener('mouseleave', () => {
-  trailContainer.style.opacity = '0';
+document.addEventListener("mouseleave", () => {
+  trailContainer.style.opacity = "0";
 });
 
-document.addEventListener('mouseenter', () => {
-  trailContainer.style.opacity = '1';
+document.addEventListener("mouseenter", () => {
+  trailContainer.style.opacity = "1";
 });

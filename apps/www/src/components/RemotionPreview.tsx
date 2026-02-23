@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from "react";
-import { Player } from "@remotion/player";
+import { remotionCodeById } from "@lib/remotion-code";
 import {
   COMPOSITION_FPS,
   COMPOSITION_HEIGHT,
   COMPOSITION_WIDTH,
   remotionCompositions,
 } from "@remotion-app/compositions";
-import { remotionCodeById } from "@lib/remotion-code";
+import { Player } from "@remotion/player";
+import type React from "react";
+import { useMemo, useState } from "react";
 
 const playerWrapper: React.CSSProperties = {
   position: "relative",
@@ -30,7 +31,7 @@ export default function RemotionPreview() {
 
   const current = useMemo(
     () => remotionCompositions.find((composition) => composition.id === selectedId),
-    [selectedId],
+    [selectedId]
   );
   const codeEntry = remotionCodeById[selectedId as keyof typeof remotionCodeById];
 
@@ -47,15 +48,15 @@ export default function RemotionPreview() {
 
   if (!current) {
     return (
-      <div style={{ color: "#94a3b8", fontSize: 14 }}>
-        No Remotion compositions available.
-      </div>
+      <div style={{ color: "#94a3b8", fontSize: 14 }}>No Remotion compositions available.</div>
     );
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <label style={{ display: "flex", flexDirection: "column", gap: 8, color: "#94a3b8", fontSize: 12 }}>
+      <label
+        style={{ display: "flex", flexDirection: "column", gap: 8, color: "#94a3b8", fontSize: 12 }}
+      >
         Composition
         <select
           value={selectedId}

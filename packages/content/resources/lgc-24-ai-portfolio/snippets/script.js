@@ -43,57 +43,58 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
-import { TextPlugin } from 'gsap/TextPlugin';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { TextPlugin } from "gsap/TextPlugin";
+import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, TextPlugin);
 
 // ── Demo Shell ──
 initDemoShell({
-  title: 'AI Engineer Portfolio',
-  category: 'pages',
-  tech: ['canvas-2d', 'gsap', 'scrambletext', 'lenis'],
+  title: "AI Engineer Portfolio",
+  category: "pages",
+  tech: ["canvas-2d", "gsap", "scrambletext", "lenis"],
 });
 
 // ── Lenis ──
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
-const dur = (d) => reduced ? 0 : d;
+const dur = (d) => (reduced ? 0 : d);
 
 // ═══════════════════════════════════════════════════════════════════════
 // SECTION 1: Neural Network Canvas Background
 // ═══════════════════════════════════════════════════════════════════════
 
-const neuralCanvas = document.getElementById('neural-canvas');
-const nCtx = neuralCanvas.getContext('2d');
+const neuralCanvas = document.getElementById("neural-canvas");
+const nCtx = neuralCanvas.getContext("2d");
 let nodes = [];
 let connections = [];
-let pulses = [];
-let mouseX = -1000, mouseY = -1000;
+const pulses = [];
+let mouseX = -1000,
+  mouseY = -1000;
 let neuralRAF = 0;
 
 function resizeNeuralCanvas() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   neuralCanvas.width = Math.floor(window.innerWidth * dpr);
   neuralCanvas.height = Math.floor(window.innerHeight * dpr);
-  neuralCanvas.style.width = window.innerWidth + 'px';
-  neuralCanvas.style.height = window.innerHeight + 'px';
+  neuralCanvas.style.width = window.innerWidth + "px";
+  neuralCanvas.style.height = window.innerHeight + "px";
   nCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   initNetwork();
 }
@@ -162,14 +163,17 @@ function renderNeural() {
     for (let i = pulses.length - 1; i >= 0; i--) {
       const p = pulses[i];
       p.progress += p.speed;
-      if (p.progress > 1) { pulses.splice(i, 1); continue; }
+      if (p.progress > 1) {
+        pulses.splice(i, 1);
+        continue;
+      }
       const a = nodes[p.conn.from];
       const b = nodes[p.conn.to];
       const px = a.x + (b.x - a.x) * p.progress;
       const py = a.y + (b.y - a.y) * p.progress;
       const grad = nCtx.createRadialGradient(px, py, 0, px, py, 8);
-      grad.addColorStop(0, 'rgba(0, 255, 135, 0.8)');
-      grad.addColorStop(1, 'rgba(0, 255, 135, 0)');
+      grad.addColorStop(0, "rgba(0, 255, 135, 0.8)");
+      grad.addColorStop(1, "rgba(0, 255, 135, 0)");
       nCtx.fillStyle = grad;
       nCtx.beginPath();
       nCtx.arc(px, py, 8, 0, Math.PI * 2);
@@ -191,9 +195,16 @@ function renderNeural() {
     nCtx.fill();
 
     if (mouseInfluence > 0.1) {
-      const glowGrad = nCtx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.radius * 4);
+      const glowGrad = nCtx.createRadialGradient(
+        node.x,
+        node.y,
+        0,
+        node.x,
+        node.y,
+        node.radius * 4
+      );
       glowGrad.addColorStop(0, `rgba(0, 255, 135, ${mouseInfluence * 0.3})`);
-      glowGrad.addColorStop(1, 'rgba(0, 255, 135, 0)');
+      glowGrad.addColorStop(1, "rgba(0, 255, 135, 0)");
       nCtx.fillStyle = glowGrad;
       nCtx.beginPath();
       nCtx.arc(node.x, node.y, node.radius * 4, 0, Math.PI * 2);
@@ -205,10 +216,10 @@ function renderNeural() {
 }
 
 resizeNeuralCanvas();
-window.addEventListener('resize', resizeNeuralCanvas);
+window.addEventListener("resize", resizeNeuralCanvas);
 neuralRAF = requestAnimationFrame(renderNeural);
 
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   mouseX = e.clientX;
   mouseY = e.clientY;
 });
@@ -217,42 +228,58 @@ document.addEventListener('mousemove', (e) => {
 // SECTION 2: Hero Terminal ScrambleText
 // ═══════════════════════════════════════════════════════════════════════
 
-const scrambleChars = '01!<>-_\\/[]{}=+*^?#';
+const scrambleChars = "01!<>-_\\/[]{}=+*^?#";
 
 if (reduced) {
   // Show text immediately in reduced motion
-  document.querySelector('.cmd-text').textContent = 'kai.init()';
-  document.querySelector('.name-text').textContent = 'Kai Nomura';
-  document.querySelector('.role-text').textContent = 'AI/ML Engineer';
-  document.querySelector('.tagline1-text').textContent = 'Building intelligent systems';
-  document.querySelector('.tagline2-text').textContent = 'that understand the world.';
-  document.getElementById('cursor').style.display = 'none';
-  gsap.set('#scroll-hint', { opacity: 1 });
+  document.querySelector(".cmd-text").textContent = "kai.init()";
+  document.querySelector(".name-text").textContent = "Kai Nomura";
+  document.querySelector(".role-text").textContent = "AI/ML Engineer";
+  document.querySelector(".tagline1-text").textContent = "Building intelligent systems";
+  document.querySelector(".tagline2-text").textContent = "that understand the world.";
+  document.getElementById("cursor").style.display = "none";
+  gsap.set("#scroll-hint", { opacity: 1 });
 } else {
   const heroTl = gsap.timeline({ delay: 0.5 });
 
   heroTl
-    .to('.cmd-text', {
+    .to(".cmd-text", {
       duration: 0.8,
-      scrambleText: { text: 'kai.init()', chars: scrambleChars, speed: 0.4 },
+      scrambleText: { text: "kai.init()", chars: scrambleChars, speed: 0.4 },
     })
-    .to('.name-text', {
-      duration: 0.6,
-      scrambleText: { text: 'Kai Nomura', chars: scrambleChars, speed: 0.3 },
-    }, '+=0.3')
-    .to('.role-text', {
-      duration: 0.5,
-      scrambleText: { text: 'AI/ML Engineer', chars: scrambleChars, speed: 0.3 },
-    }, '+=0.1')
-    .to('.tagline1-text', {
-      duration: 0.8,
-      scrambleText: { text: 'Building intelligent systems', chars: scrambleChars, speed: 0.3 },
-    }, '+=0.4')
-    .to('.tagline2-text', {
-      duration: 0.7,
-      scrambleText: { text: 'that understand the world.', chars: scrambleChars, speed: 0.3 },
-    }, '+=0.1')
-    .to('#scroll-hint', { opacity: 1, duration: 0.6, ease: 'expo.out' }, '+=0.5');
+    .to(
+      ".name-text",
+      {
+        duration: 0.6,
+        scrambleText: { text: "Kai Nomura", chars: scrambleChars, speed: 0.3 },
+      },
+      "+=0.3"
+    )
+    .to(
+      ".role-text",
+      {
+        duration: 0.5,
+        scrambleText: { text: "AI/ML Engineer", chars: scrambleChars, speed: 0.3 },
+      },
+      "+=0.1"
+    )
+    .to(
+      ".tagline1-text",
+      {
+        duration: 0.8,
+        scrambleText: { text: "Building intelligent systems", chars: scrambleChars, speed: 0.3 },
+      },
+      "+=0.4"
+    )
+    .to(
+      ".tagline2-text",
+      {
+        duration: 0.7,
+        scrambleText: { text: "that understand the world.", chars: scrambleChars, speed: 0.3 },
+      },
+      "+=0.1"
+    )
+    .to("#scroll-hint", { opacity: 1, duration: 0.6, ease: "expo.out" }, "+=0.5");
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -260,65 +287,68 @@ if (reduced) {
 // ═══════════════════════════════════════════════════════════════════════
 
 // Bio text — line reveal
-const bioText = document.querySelector('.bio-text');
+const bioText = document.querySelector(".bio-text");
 if (bioText) {
-  const bioSplit = new SplitText(bioText, { type: 'lines', linesClass: 'line' });
+  const bioSplit = new SplitText(bioText, { type: "lines", linesClass: "line" });
   gsap.set(bioSplit.lines, { opacity: 0, x: reduced ? 0 : -40 });
 
   gsap.to(bioSplit.lines, {
-    opacity: 1, x: 0,
+    opacity: 1,
+    x: 0,
     duration: dur(0.7),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: 0.1 },
     scrollTrigger: {
-      trigger: '.about-section',
-      start: 'top 70%',
-      toggleActions: 'play none none reverse',
+      trigger: ".about-section",
+      start: "top 70%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Section label
-const aboutLabel = document.querySelector('.about-section .section-label');
+const aboutLabel = document.querySelector(".about-section .section-label");
 if (aboutLabel) {
   gsap.set(aboutLabel, { opacity: 0, y: reduced ? 0 : 15 });
   gsap.to(aboutLabel, {
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     duration: dur(0.5),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.about-section',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
+      trigger: ".about-section",
+      start: "top 80%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Stat counters
-document.querySelectorAll('.stat-card').forEach((card, i) => {
+document.querySelectorAll(".stat-card").forEach((card, i) => {
   gsap.set(card, { opacity: 0, x: reduced ? 0 : 40 });
 
   gsap.to(card, {
-    opacity: 1, x: 0,
+    opacity: 1,
+    x: 0,
     duration: dur(0.6),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.about-section',
-      start: 'top 65%',
-      toggleActions: 'play none none reverse',
+      trigger: ".about-section",
+      start: "top 65%",
+      toggleActions: "play none none reverse",
     },
     delay: i * 0.15,
   });
 
   // Counter animation
-  const numberEl = card.querySelector('.stat-number');
-  const target = parseInt(numberEl.dataset.target, 10);
-  const suffix = numberEl.dataset.suffix || '';
+  const numberEl = card.querySelector(".stat-number");
+  const target = Number.parseInt(numberEl.dataset.target, 10);
+  const suffix = numberEl.dataset.suffix || "";
   const counter = { val: 0 };
 
   ScrollTrigger.create({
     trigger: card,
-    start: 'top 80%',
+    start: "top 80%",
     once: true,
     onEnter: () => {
       if (reduced) {
@@ -328,7 +358,7 @@ document.querySelectorAll('.stat-card').forEach((card, i) => {
       gsap.to(counter, {
         val: target,
         duration: 1.5,
-        ease: 'power2.out',
+        ease: "power2.out",
         onUpdate: () => {
           numberEl.textContent = Math.round(counter.val) + suffix;
         },
@@ -342,32 +372,33 @@ document.querySelectorAll('.stat-card').forEach((card, i) => {
 // ═══════════════════════════════════════════════════════════════════════
 
 // Projects section label
-const projLabel = document.querySelector('.projects-section .section-label');
+const projLabel = document.querySelector(".projects-section .section-label");
 if (projLabel) {
   gsap.set(projLabel, { opacity: 0, y: reduced ? 0 : 15 });
   gsap.to(projLabel, {
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     duration: dur(0.5),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.projects-section',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
+      trigger: ".projects-section",
+      start: "top 80%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // Card entrance animations
-document.querySelectorAll('.project-card').forEach((card) => {
+document.querySelectorAll(".project-card").forEach((card) => {
   gsap.to(card, {
     opacity: 1,
     y: 0,
     duration: dur(0.8),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
       trigger: card,
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
+      start: "top 80%",
+      toggleActions: "play none none reverse",
     },
   });
 });
@@ -377,7 +408,7 @@ document.querySelectorAll('.project-card').forEach((card) => {
 function setupVizCanvas(id) {
   const canvas = document.getElementById(id);
   if (!canvas) return null;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   let animating = false;
   let raf = 0;
 
@@ -386,18 +417,24 @@ function setupVizCanvas(id) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.floor(rect.width * dpr);
     canvas.height = Math.floor(rect.height * dpr);
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = rect.height + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener("resize", resize);
 
   return {
-    canvas, ctx, resize,
-    get w() { return canvas.parentElement.getBoundingClientRect().width; },
-    get h() { return canvas.parentElement.getBoundingClientRect().height; },
+    canvas,
+    ctx,
+    resize,
+    get w() {
+      return canvas.parentElement.getBoundingClientRect().width;
+    },
+    get h() {
+      return canvas.parentElement.getBoundingClientRect().height;
+    },
     start(renderFn) {
       if (animating) return;
       animating = true;
@@ -417,7 +454,7 @@ function setupVizCanvas(id) {
 
 // ── Viz 1: NeuroVox — Audio Waveform ──
 
-const vizNV = setupVizCanvas('viz-neurovox');
+const vizNV = setupVizCanvas("viz-neurovox");
 if (vizNV) {
   let nvTime = 0;
 
@@ -445,12 +482,18 @@ if (vizNV) {
   }
 
   ScrollTrigger.create({
-    trigger: '#viz-neurovox',
-    start: 'top 90%',
-    end: 'bottom 10%',
-    onEnter: () => { vizNV.resize(); vizNV.start(renderNeurovox); },
+    trigger: "#viz-neurovox",
+    start: "top 90%",
+    end: "bottom 10%",
+    onEnter: () => {
+      vizNV.resize();
+      vizNV.start(renderNeurovox);
+    },
     onLeave: () => vizNV.stop(),
-    onEnterBack: () => { vizNV.resize(); vizNV.start(renderNeurovox); },
+    onEnterBack: () => {
+      vizNV.resize();
+      vizNV.start(renderNeurovox);
+    },
     onLeaveBack: () => vizNV.stop(),
   });
 
@@ -463,7 +506,7 @@ if (vizNV) {
 
 // ── Viz 2: DeepSight — Particle Eye Cluster ──
 
-const vizDS = setupVizCanvas('viz-deepsight');
+const vizDS = setupVizCanvas("viz-deepsight");
 if (vizDS) {
   let dsTime = 0;
   const dsParticles = [];
@@ -508,9 +551,9 @@ if (vizDS) {
 
     // Central "pupil" glow
     const pupilGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 15 * scale);
-    pupilGrad.addColorStop(0, 'rgba(255, 184, 0, 0.6)');
-    pupilGrad.addColorStop(0.5, 'rgba(255, 184, 0, 0.15)');
-    pupilGrad.addColorStop(1, 'rgba(255, 184, 0, 0)');
+    pupilGrad.addColorStop(0, "rgba(255, 184, 0, 0.6)");
+    pupilGrad.addColorStop(0.5, "rgba(255, 184, 0, 0.15)");
+    pupilGrad.addColorStop(1, "rgba(255, 184, 0, 0)");
     ctx.fillStyle = pupilGrad;
     ctx.beginPath();
     ctx.arc(cx, cy, 15 * scale, 0, Math.PI * 2);
@@ -518,12 +561,18 @@ if (vizDS) {
   }
 
   ScrollTrigger.create({
-    trigger: '#viz-deepsight',
-    start: 'top 90%',
-    end: 'bottom 10%',
-    onEnter: () => { vizDS.resize(); vizDS.start(renderDeepsight); },
+    trigger: "#viz-deepsight",
+    start: "top 90%",
+    end: "bottom 10%",
+    onEnter: () => {
+      vizDS.resize();
+      vizDS.start(renderDeepsight);
+    },
     onLeave: () => vizDS.stop(),
-    onEnterBack: () => { vizDS.resize(); vizDS.start(renderDeepsight); },
+    onEnterBack: () => {
+      vizDS.resize();
+      vizDS.start(renderDeepsight);
+    },
     onLeaveBack: () => vizDS.stop(),
   });
 
@@ -535,7 +584,7 @@ if (vizDS) {
 
 // ── Viz 3: SynthMind — Cellular Automata Grid ──
 
-const vizSM = setupVizCanvas('viz-synthmind');
+const vizSM = setupVizCanvas("viz-synthmind");
 if (vizSM) {
   let smTime = 0;
 
@@ -570,12 +619,18 @@ if (vizSM) {
   }
 
   ScrollTrigger.create({
-    trigger: '#viz-synthmind',
-    start: 'top 90%',
-    end: 'bottom 10%',
-    onEnter: () => { vizSM.resize(); vizSM.start(renderSynthmind); },
+    trigger: "#viz-synthmind",
+    start: "top 90%",
+    end: "bottom 10%",
+    onEnter: () => {
+      vizSM.resize();
+      vizSM.start(renderSynthmind);
+    },
     onLeave: () => vizSM.stop(),
-    onEnterBack: () => { vizSM.resize(); vizSM.start(renderSynthmind); },
+    onEnterBack: () => {
+      vizSM.resize();
+      vizSM.start(renderSynthmind);
+    },
     onLeaveBack: () => vizSM.stop(),
   });
 
@@ -589,36 +644,36 @@ if (vizSM) {
 // SECTION 5: Contact Terminal
 // ═══════════════════════════════════════════════════════════════════════
 
-const contactLines = [
-  'Email:    kai@example.dev',
-  'GitHub:   @kai-nomura',
-  'Twitter:  @kai_ml',
-];
+const contactLines = ["Email:    kai@example.dev", "GitHub:   @kai-nomura", "Twitter:  @kai_ml"];
 
 if (reduced) {
-  const cmdEl = document.querySelector('.contact-cmd');
-  if (cmdEl) cmdEl.textContent = 'kai.contact()';
-  document.querySelectorAll('.contact-line').forEach((el, i) => {
+  const cmdEl = document.querySelector(".contact-cmd");
+  if (cmdEl) cmdEl.textContent = "kai.contact()";
+  document.querySelectorAll(".contact-line").forEach((el, i) => {
     el.textContent = contactLines[i];
   });
 } else {
   ScrollTrigger.create({
-    trigger: '.contact-section',
-    start: 'top 60%',
+    trigger: ".contact-section",
+    start: "top 60%",
     once: true,
     onEnter: () => {
       const contactTl = gsap.timeline();
 
-      contactTl.to('.contact-cmd', {
+      contactTl.to(".contact-cmd", {
         duration: 0.6,
-        scrambleText: { text: 'kai.contact()', chars: scrambleChars, speed: 0.4 },
+        scrambleText: { text: "kai.contact()", chars: scrambleChars, speed: 0.4 },
       });
 
-      document.querySelectorAll('.contact-line').forEach((el, i) => {
-        contactTl.to(el, {
-          duration: 0.5,
-          scrambleText: { text: contactLines[i], chars: scrambleChars, speed: 0.3 },
-        }, `+=${i === 0 ? 0.3 : 0.1}`);
+      document.querySelectorAll(".contact-line").forEach((el, i) => {
+        contactTl.to(
+          el,
+          {
+            duration: 0.5,
+            scrambleText: { text: contactLines[i], chars: scrambleChars, speed: 0.3 },
+          },
+          `+=${i === 0 ? 0.3 : 0.1}`
+        );
       });
     },
   });

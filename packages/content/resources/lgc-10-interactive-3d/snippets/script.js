@@ -43,13 +43,19 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
-initDemoShell({ title: 'Interactive 3D Scene', category: '3d', tech: ['three.js', 'instanced-mesh', 'raycaster'] });
+initDemoShell({
+  title: "Interactive 3D Scene",
+  category: "3d",
+  tech: ["three.js", "instanced-mesh", "raycaster"],
+});
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
-window.addEventListener('motion-preference', (e) => { reduced = e.detail.reduced; });
+if (reduced) document.documentElement.classList.add("reduced-motion");
+window.addEventListener("motion-preference", (e) => {
+  reduced = e.detail.reduced;
+});
 
 // Config
 const GRID = 20; // 20x20 = 400 spheres
@@ -60,9 +66,9 @@ const SPRING = 0.04;
 const DAMPING = 0.88;
 
 // Scene
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#030510');
+scene.background = new THREE.Color("#030510");
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 8, 10);
@@ -93,16 +99,21 @@ scene.add(mesh);
 const dummy = new THREE.Object3D();
 const color = new THREE.Color();
 const particles = [];
-const halfGrid = (GRID - 1) * SPACING / 2;
+const halfGrid = ((GRID - 1) * SPACING) / 2;
 
 for (let i = 0; i < GRID; i++) {
   for (let j = 0; j < GRID; j++) {
     const x = i * SPACING - halfGrid;
     const z = j * SPACING - halfGrid;
     particles.push({
-      homeX: x, homeZ: z,
-      x, y: 0, z,
-      vx: 0, vy: 0, vz: 0,
+      homeX: x,
+      homeZ: z,
+      x,
+      y: 0,
+      z,
+      vx: 0,
+      vy: 0,
+      vz: 0,
     });
   }
 }
@@ -113,14 +124,14 @@ const raycaster = new THREE.Raycaster();
 const intersectPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const mouseWorld = new THREE.Vector3();
 
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 });
 
 // Color palette
-const coldColor = new THREE.Color('#86e8ff');
-const warmColor = new THREE.Color('#ff40d6');
+const coldColor = new THREE.Color("#86e8ff");
+const warmColor = new THREE.Color("#ff40d6");
 
 // Animate
 const clock = new THREE.Clock();
@@ -174,9 +185,7 @@ function animate() {
     mesh.setMatrixAt(i, dummy.matrix);
 
     // Color by distance from mouse
-    const dist = Math.sqrt(
-      (p.x - mouseWorld.x) ** 2 + (p.z - mouseWorld.z) ** 2
-    );
+    const dist = Math.sqrt((p.x - mouseWorld.x) ** 2 + (p.z - mouseWorld.z) ** 2);
     const t2 = Math.min(dist / REPULSION_RADIUS, 1);
     color.copy(warmColor).lerp(coldColor, t2);
     mesh.setColorAt(i, color);
@@ -196,10 +205,14 @@ function animate() {
 animate();
 
 // Resize
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-window.addEventListener('beforeunload', () => { geo.dispose(); mat.dispose(); renderer.dispose(); });
+window.addEventListener("beforeunload", () => {
+  geo.dispose();
+  mat.dispose();
+  renderer.dispose();
+});

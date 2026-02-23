@@ -13,7 +13,8 @@ export const ui = {
     "hero.eyebrow": "Steal This",
     "hero.titlePrefix": "Steal this ",
     "hero.titleSuffix": " — all free to copy.",
-    "hero.rotatingWords": "design,pages,components,animations,patterns,skills,templates,prompts,MCPs",
+    "hero.rotatingWords":
+      "design,pages,components,animations,patterns,skills,templates,prompts,MCPs",
     "hero.subtitle.before": "Ready-to-use snippets and demos. ",
     "hero.subtitle.mcp": "MCP",
     "hero.subtitle.after": " server included. Browse, copy, integrate.",
@@ -72,7 +73,8 @@ export const ui = {
     "favorites.import": "Import Favorites",
     "changelog.title": "Changelog",
     "changelog.description": "Recent updates and changes to StealThis.dev.",
-    "changelog.intro": "Notable changes, new resources, and improvements. For full release history see GitHub.",
+    "changelog.intro":
+      "Notable changes, new resources, and improvements. For full release history see GitHub.",
     "changelog.seeGitHub": "Releases on GitHub",
     "lang.toggle": "Español",
   },
@@ -85,7 +87,8 @@ export const ui = {
     "hero.eyebrow": "Steal This",
     "hero.titlePrefix": "Steal this ",
     "hero.titleSuffix": " — todos gratuitos para copiar.",
-    "hero.rotatingWords": "diseño,páginas,componentes,animaciones,patrones,skills,plantillas,prompts,MCPs",
+    "hero.rotatingWords":
+      "diseño,páginas,componentes,animaciones,patrones,skills,plantillas,prompts,MCPs",
     "hero.subtitle.before": "Snippets y demos listos para usar. Servidor ",
     "hero.subtitle.mcp": "MCP",
     "hero.subtitle.after": " incluido. Explora, copia, integra.",
@@ -144,7 +147,8 @@ export const ui = {
     "favorites.import": "Importar Favoritos",
     "changelog.title": "Changelog",
     "changelog.description": "Novedades y cambios recientes en StealThis.dev.",
-    "changelog.intro": "Cambios destacados, nuevos recursos e mejoras. Para el historial completo ver GitHub.",
+    "changelog.intro":
+      "Cambios destacados, nuevos recursos e mejoras. Para el historial completo ver GitHub.",
     "changelog.seeGitHub": "Releases en GitHub",
     "lang.toggle": "English",
   },
@@ -152,7 +156,11 @@ export const ui = {
 
 export function useTranslations(locale: Locale = DEFAULT_LOCALE) {
   return function t(key: keyof (typeof ui)[typeof DEFAULT_LOCALE]): string {
-    return (ui[locale] as Record<string, string>)[key] ?? (ui[DEFAULT_LOCALE] as Record<string, string>)[key] ?? key;
+    return (
+      (ui[locale] as Record<string, string>)[key] ??
+      (ui[DEFAULT_LOCALE] as Record<string, string>)[key] ??
+      key
+    );
   };
 }
 

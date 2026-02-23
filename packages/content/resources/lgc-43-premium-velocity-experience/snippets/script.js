@@ -43,26 +43,30 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 gsap.registerPlugin(ScrollTrigger);
 
-initDemoShell({ title: 'Premium Velocity Experience', category: 'pages', tech: ['three.js', 'lenis', 'gsap', 'canvas-2d', 'velocity'] });
+initDemoShell({
+  title: "Premium Velocity Experience",
+  category: "pages",
+  tech: ["three.js", "lenis", "gsap", "canvas-2d", "velocity"],
+});
 
 const reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
 // ─── Lenis Setup ──────────────────────────────────────────────────────────────
 const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.lagSmoothing(0);
 
 // ─── Three.js Hero ───────────────────────────────────────────────────────────
-const heroCanvas = document.getElementById('hero-canvas');
+const heroCanvas = document.getElementById("hero-canvas");
 const renderer = new THREE.WebGLRenderer({ canvas: heroCanvas, alpha: true, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -102,8 +106,13 @@ for (let i = 0; i < particleCount; i++) {
   positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
 }
 const partGeo = new THREE.BufferGeometry();
-partGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-const partMat = new THREE.PointsMaterial({ color: 0x86e8ff, size: 0.03, transparent: true, opacity: 0.4 });
+partGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+const partMat = new THREE.PointsMaterial({
+  color: 0x86e8ff,
+  size: 0.03,
+  transparent: true,
+  opacity: 0.4,
+});
 const particles = new THREE.Points(partGeo, partMat);
 scene.add(particles);
 
@@ -111,20 +120,22 @@ scene.add(particles);
 let scrollProgress = 0;
 ScrollTrigger.create({
   trigger: document.body,
-  start: 'top top',
-  end: 'bottom bottom',
-  onUpdate: (self) => { scrollProgress = self.progress; },
+  start: "top top",
+  end: "bottom bottom",
+  onUpdate: (self) => {
+    scrollProgress = self.progress;
+  },
 });
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // ─── Velocity Canvas (Demo 39 technique) ─────────────────────────────────────
-const velCanvas = document.getElementById('velocity-canvas');
-const ctx = velCanvas.getContext('2d');
+const velCanvas = document.getElementById("velocity-canvas");
+const ctx = velCanvas.getContext("2d");
 let velocity = 0;
 let smoothVelocity = 0;
 
@@ -133,7 +144,7 @@ function resizeVelCanvas() {
   velCanvas.height = window.innerHeight;
 }
 resizeVelCanvas();
-window.addEventListener('resize', resizeVelCanvas);
+window.addEventListener("resize", resizeVelCanvas);
 
 function drawSpeedLines(vel) {
   const cx = velCanvas.width / 2;
@@ -157,7 +168,7 @@ function drawSpeedLines(vel) {
     const grad = ctx.createLinearGradient(sx, sy, ex, ey);
     grad.addColorStop(0, `rgba(134, 232, 255, ${opacity})`);
     grad.addColorStop(0.5, `rgba(174, 82, 255, ${opacity * 0.5})`);
-    grad.addColorStop(1, 'rgba(134, 232, 255, 0)');
+    grad.addColorStop(1, "rgba(134, 232, 255, 0)");
 
     ctx.beginPath();
     ctx.moveTo(sx, sy);
@@ -169,17 +180,17 @@ function drawSpeedLines(vel) {
 }
 
 // Speed indicator UI
-const speedFill = document.getElementById('speed-fill');
-const speedValue = document.getElementById('speed-value');
+const speedFill = document.getElementById("speed-fill");
+const speedValue = document.getElementById("speed-value");
 
 // ─── Lenis scroll event ───────────────────────────────────────────────────────
-lenis.on('scroll', (e) => {
+lenis.on("scroll", (e) => {
   velocity = e.velocity;
 
   // Update speed UI
   const absVel = Math.abs(velocity);
   const pct = Math.min(100, absVel * 6);
-  if (speedFill) speedFill.style.width = pct + '%';
+  if (speedFill) speedFill.style.width = pct + "%";
   if (speedValue) speedValue.textContent = absVel.toFixed(1);
 });
 
@@ -216,27 +227,28 @@ gsap.ticker.add((time) => {
 if (!reduced) {
   ScrollTrigger.create({
     trigger: document.body,
-    start: 'top top',
-    end: 'bottom bottom',
+    start: "top top",
+    end: "bottom bottom",
     onUpdate: (self) => {
-      document.documentElement.style.setProperty('--hue-shift', `${self.progress * 300}deg`);
+      document.documentElement.style.setProperty("--hue-shift", `${self.progress * 300}deg`);
     },
   });
 }
 
 // ─── Hero entrance ────────────────────────────────────────────────────────────
 if (!reduced) {
-  gsap.set(['.hero-tag', '.hero h1', '.hero-desc', '.speed-indicator'], { opacity: 0, y: 30 });
-  gsap.timeline({ defaults: { ease: 'expo.out' } })
-    .to('.hero-tag', { opacity: 1, y: 0, duration: 0.7, delay: 0.5 })
-    .to('.hero h1', { opacity: 1, y: 0, duration: 1 }, '-=0.4')
-    .to('.hero-desc', { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
-    .to('.speed-indicator', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4');
+  gsap.set([".hero-tag", ".hero h1", ".hero-desc", ".speed-indicator"], { opacity: 0, y: 30 });
+  gsap
+    .timeline({ defaults: { ease: "expo.out" } })
+    .to(".hero-tag", { opacity: 1, y: 0, duration: 0.7, delay: 0.5 })
+    .to(".hero h1", { opacity: 1, y: 0, duration: 1 }, "-=0.4")
+    .to(".hero-desc", { opacity: 1, y: 0, duration: 0.7 }, "-=0.5")
+    .to(".speed-indicator", { opacity: 1, y: 0, duration: 0.6 }, "-=0.4");
 }
 
 // ─── Depth cards entrance (Demo 38 technique) ─────────────────────────────────
-document.querySelectorAll('.depth-card').forEach((card, i) => {
-  const depth = parseFloat(card.style.getPropertyValue('--depth')) || 0.5;
+document.querySelectorAll(".depth-card").forEach((card, i) => {
+  const depth = Number.parseFloat(card.style.getPropertyValue("--depth")) || 0.5;
 
   if (!reduced) {
     gsap.set(card, { opacity: 0, y: 60, rotationX: 15, scale: 0.85 });
@@ -246,21 +258,29 @@ document.querySelectorAll('.depth-card').forEach((card, i) => {
       rotationX: 0,
       scale: 1,
       duration: 1,
-      ease: 'expo.out',
+      ease: "expo.out",
       delay: depth * 0.3,
-      scrollTrigger: { trigger: '.depth-section', start: 'top 70%', toggleActions: 'play none none reverse' },
+      scrollTrigger: {
+        trigger: ".depth-section",
+        start: "top 70%",
+        toggleActions: "play none none reverse",
+      },
     });
 
-    card.addEventListener('mouseenter', () => gsap.to(card, { y: -12, duration: 0.4, overwrite: 'auto' }));
-    card.addEventListener('mouseleave', () => gsap.to(card, { y: 0, duration: 0.4, overwrite: 'auto' }));
+    card.addEventListener("mouseenter", () =>
+      gsap.to(card, { y: -12, duration: 0.4, overwrite: "auto" })
+    );
+    card.addEventListener("mouseleave", () =>
+      gsap.to(card, { y: 0, duration: 0.4, overwrite: "auto" })
+    );
   }
 });
 
 // ─── Stats counters ───────────────────────────────────────────────────────────
-document.querySelectorAll('.stat-card').forEach((card, i) => {
-  const valEl = card.querySelector('.stat-value');
-  const target = parseFloat(card.dataset.target);
-  const suffix = card.dataset.suffix || '';
+document.querySelectorAll(".stat-card").forEach((card, i) => {
+  const valEl = card.querySelector(".stat-value");
+  const target = Number.parseFloat(card.dataset.target);
+  const suffix = card.dataset.suffix || "";
 
   if (!reduced) {
     gsap.set(card, { opacity: 0, y: 30 });
@@ -268,15 +288,19 @@ document.querySelectorAll('.stat-card').forEach((card, i) => {
       opacity: 1,
       y: 0,
       duration: 0.7,
-      ease: 'expo.out',
+      ease: "expo.out",
       delay: i * 0.08,
-      scrollTrigger: { trigger: '.stats-grid', start: 'top 75%', toggleActions: 'play none none reverse' },
+      scrollTrigger: {
+        trigger: ".stats-grid",
+        start: "top 75%",
+        toggleActions: "play none none reverse",
+      },
     });
 
     ScrollTrigger.create({
       trigger: card,
-      start: 'top 80%',
-      end: 'top 25%',
+      start: "top 80%",
+      end: "top 25%",
       onUpdate: (self) => {
         const val = target * self.progress;
         const display = target % 1 !== 0 ? val.toFixed(1) : Math.round(val);
@@ -289,42 +313,54 @@ document.querySelectorAll('.stat-card').forEach((card, i) => {
 });
 
 // ─── Features list ────────────────────────────────────────────────────────────
-document.querySelectorAll('.feature-item').forEach((item, i) => {
+document.querySelectorAll(".feature-item").forEach((item, i) => {
   if (!reduced) {
     gsap.set(item, { opacity: 0, x: -30 });
     gsap.to(item, {
       opacity: 1,
       x: 0,
       duration: 0.8,
-      ease: 'expo.out',
+      ease: "expo.out",
       delay: i * 0.1,
-      scrollTrigger: { trigger: item, start: 'top 75%', toggleActions: 'play none none reverse' },
+      scrollTrigger: { trigger: item, start: "top 75%", toggleActions: "play none none reverse" },
     });
   }
 });
 
 // Section headers
-document.querySelectorAll('.section-header').forEach((h) => {
+document.querySelectorAll(".section-header").forEach((h) => {
   if (!reduced) {
     gsap.set(h.children, { opacity: 0, y: 25 });
     gsap.to(h.children, {
-      opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: 'expo.out',
-      scrollTrigger: { trigger: h, start: 'top 75%', toggleActions: 'play none none reverse' },
+      opacity: 1,
+      y: 0,
+      duration: 0.7,
+      stagger: 0.1,
+      ease: "expo.out",
+      scrollTrigger: { trigger: h, start: "top 75%", toggleActions: "play none none reverse" },
     });
   }
 });
 
 // CTA
 if (!reduced) {
-  gsap.set('.cta-section h2, .cta-section p, .cta-section a', { opacity: 0, y: 25 });
-  gsap.to('.cta-section h2, .cta-section p, .cta-section a', {
-    opacity: 1, y: 0, duration: 0.8, stagger: 0.12, ease: 'expo.out',
-    scrollTrigger: { trigger: '.cta-section', start: 'top 75%', toggleActions: 'play none none reverse' },
+  gsap.set(".cta-section h2, .cta-section p, .cta-section a", { opacity: 0, y: 25 });
+  gsap.to(".cta-section h2, .cta-section p, .cta-section a", {
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+    stagger: 0.12,
+    ease: "expo.out",
+    scrollTrigger: {
+      trigger: ".cta-section",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
+    },
   });
 }
 
 // ─── Motion preference ────────────────────────────────────────────────────────
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   if (e.detail.reduced) {
     gsap.globalTimeline.paused(true);
     ctx.clearRect(0, 0, velCanvas.width, velCanvas.height);

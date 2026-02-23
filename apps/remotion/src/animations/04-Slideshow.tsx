@@ -20,8 +20,8 @@
 
 import {
   AbsoluteFill,
-  interpolate,
   Series,
+  interpolate,
   spring,
   useCurrentFrame,
   useVideoConfig,
@@ -122,7 +122,7 @@ const Slide3: React.FC = () => {
   const count = Math.round(
     interpolate(frame, [0, 2 * fps], [0, 100], {
       extrapolateRight: "clamp",
-    }),
+    })
   );
 
   // Pulse: scale oscillates using Math.sin — this is fine since it's frame-driven
@@ -178,7 +178,6 @@ export const SlideshowAnimation: React.FC = () => {
   return (
     // Series plays each child one after another
     <Series>
-
       {/* Each Series.Sequence defines how many frames that slide is visible */}
       <Series.Sequence durationInFrames={2.5 * fps} premountFor={fps}>
         <Slide1 />
@@ -191,7 +190,6 @@ export const SlideshowAnimation: React.FC = () => {
       <Series.Sequence durationInFrames={3.5 * fps} premountFor={fps}>
         <Slide3 />
       </Series.Sequence>
-
     </Series>
   );
 };

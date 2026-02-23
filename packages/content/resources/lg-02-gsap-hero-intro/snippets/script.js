@@ -64,9 +64,22 @@ function play() {
     .from(".subtitle", { y: 18, opacity: 0, duration: 0.45 }, "<0.08")
     .from(".actions", { y: 20, opacity: 0, duration: 0.4 }, "<0.12");
 
-  track(window.gsap.to(".a", { x: 24, y: -16, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" }));
-  track(window.gsap.to(".b", { x: -22, y: 16, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut" }));
-  track(window.gsap.to(".c", { x: 16, y: -12, duration: 3.2, repeat: -1, yoyo: true, ease: "sine.inOut" }));
+  track(
+    window.gsap.to(".a", { x: 24, y: -16, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" })
+  );
+  track(
+    window.gsap.to(".b", { x: -22, y: 16, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut" })
+  );
+  track(
+    window.gsap.to(".c", {
+      x: 16,
+      y: -12,
+      duration: 3.2,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    })
+  );
 }
 
 function apply() {

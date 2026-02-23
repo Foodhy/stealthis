@@ -1,29 +1,53 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
-import { fileURLToPath } from "node:url";
 
 const ResourceCategorySchema = z.enum([
-  "web-animations", "web-pages", "ui-components", "patterns",
-  "components", "pages", "prompts", "skills", "mcp-servers", "architectures", "boilerplates", "remotion",
+  "web-animations",
+  "web-pages",
+  "ui-components",
+  "patterns",
+  "components",
+  "pages",
+  "prompts",
+  "skills",
+  "mcp-servers",
+  "architectures",
+  "boilerplates",
+  "remotion",
 ]);
 
 const ResourceTypeSchema = z.enum([
-  "animation", "page", "component", "pattern",
-  "prompt", "skill", "mcp-server", "architecture", "boilerplate",
+  "animation",
+  "page",
+  "component",
+  "pattern",
+  "prompt",
+  "skill",
+  "mcp-server",
+  "architecture",
+  "boilerplate",
 ]);
 
 const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
 
 const ResourceTargetSchema = z.enum([
-  "html", "react", "next", "vue", "svelte", "astro",
-  "typescript", "python",
-  "markdown", "yaml", "json",
+  "html",
+  "react",
+  "next",
+  "vue",
+  "svelte",
+  "astro",
+  "typescript",
+  "python",
+  "markdown",
+  "yaml",
+  "json",
 ]);
 
 const resources = defineCollection({
   loader: glob({
     pattern: "*/index.mdx",
-    base: fileURLToPath(new URL("../../../../packages/content/resources", import.meta.url)),
+    base: new URL("../../../../packages/content/resources", import.meta.url),
   }),
   schema: z.object({
     slug: z.string(),
@@ -38,12 +62,12 @@ const resources = defineCollection({
     preview: z.string().optional(),
     labRoute: z.string().optional(),
     license: z.string().default("MIT"),
-    createdAt: z.union([z.string(), z.date()]).transform((v) =>
-      v instanceof Date ? v.toISOString().slice(0, 10) : v
-    ),
-    updatedAt: z.union([z.string(), z.date()]).transform((v) =>
-      v instanceof Date ? v.toISOString().slice(0, 10) : v
-    ),
+    createdAt: z
+      .union([z.string(), z.date()])
+      .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
+    updatedAt: z
+      .union([z.string(), z.date()])
+      .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
   }),
 });
 

@@ -2,48 +2,48 @@ const services = [
   {
     title: "Growth Marketing",
     copy: "Paid media, lifecycle strategy, and multi-channel acquisition.",
-    meta: "Performance"
+    meta: "Performance",
   },
   {
     title: "Web + App Development",
     copy: "Full-stack product builds with scalable infrastructure.",
-    meta: "Engineering"
+    meta: "Engineering",
   },
   {
     title: "Conversion Optimization",
     copy: "A/B testing, funnel audits, and pricing experimentation.",
-    meta: "CRO"
+    meta: "CRO",
   },
   {
     title: "Brand + Positioning",
     copy: "Narratives, identity systems, and launch storytelling.",
-    meta: "Strategy"
-  }
+    meta: "Strategy",
+  },
 ];
 
 const work = [
   {
     title: "Helio Analytics",
     copy: "Rebuilt onboarding and growth loops for a B2B SaaS.",
-    meta: "+57% activation"
+    meta: "+57% activation",
   },
   {
     title: "Flux Commerce",
     copy: "Performance storefront and retention playbooks.",
-    meta: "-32% churn"
+    meta: "-32% churn",
   },
   {
     title: "Orbit Health",
     copy: "HIPAA-ready platform with marketing automation.",
-    meta: "Series B launch"
-  }
+    meta: "Series B launch",
+  },
 ];
 
 const capabilities = [
   "Go-to-market planning",
   "Experimentation frameworks",
   "Full-funnel analytics",
-  "Design systems + UI engineering"
+  "Design systems + UI engineering",
 ];
 
 const stack = ["Figma", "Webflow", "React", "Next.js", "GSAP", "Three.js", "HubSpot", "GA4"];
@@ -51,7 +51,7 @@ const stack = ["Figma", "Webflow", "React", "Next.js", "GSAP", "Three.js", "HubS
 const stats = [
   { value: "120+", label: "Growth sprints shipped" },
   { value: "$48M", label: "Pipeline influenced" },
-  { value: "4.9", label: "Client satisfaction" }
+  { value: "4.9", label: "Client satisfaction" },
 ];
 
 const serviceGrid = document.getElementById("serviceGrid");
@@ -113,7 +113,7 @@ const lenis = window.Lenis
   ? new Lenis({
       smoothWheel: true,
       smoothTouch: false,
-      lerp: 0.08
+      lerp: 0.08,
     })
   : null;
 
@@ -154,20 +154,21 @@ if (window.gsap) {
     opacity: 0,
     duration: 0.6,
     delay: 1.2,
-    pointerEvents: "none"
+    pointerEvents: "none",
   });
 
   gsap.from(".hero-copy", { opacity: 0, y: 30, duration: 1, ease: "power3.out" });
   gsap.from(".hero-panel", { opacity: 0, x: 30, duration: 1, delay: 0.2, ease: "power3.out" });
-  gsap.utils.toArray(".service-card, .work-card, .panel, .stats div").forEach((item, index) => {
+  const revealItems = gsap.utils.toArray(".service-card, .work-card, .panel, .stats div");
+  for (const [index, item] of revealItems.entries()) {
     gsap.from(item, {
       opacity: 0,
       y: 24,
       duration: 0.8,
       delay: index * 0.05,
-      ease: "power2.out"
+      ease: "power2.out",
     });
-  });
+  }
 }
 
 const topbar = document.getElementById("topbar");
@@ -180,21 +181,21 @@ const navItems = document.querySelectorAll(".nav-item");
 function updateActiveNav() {
   const sections = document.querySelectorAll("section[id]");
   const scrollPos = window.scrollY || (lenis ? lenis.scroll : 0);
-  
-  sections.forEach((section) => {
+
+  for (const section of sections) {
     const sectionTop = section.offsetTop - 100;
     const sectionHeight = section.offsetHeight;
     const sectionId = section.getAttribute("id");
-    
+
     if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-      navItems.forEach((item) => {
+      for (const item of navItems) {
         item.classList.remove("active");
         if (item.getAttribute("href") === `#${sectionId}`) {
           item.classList.add("active");
         }
-      });
+      }
     }
-  });
+  }
 }
 
 if (lenis) {
@@ -204,11 +205,11 @@ if (lenis) {
 }
 
 // Smooth scroll for nav links
-navItems.forEach((link) => {
+for (const link of navItems) {
   link.addEventListener("click", (e) => {
     e.preventDefault();
     const targetId = link.getAttribute("href");
-    
+
     if (targetId.startsWith("#")) {
       if (lenis) {
         lenis.scrollTo(targetId, { duration: 1.5, offset: -80 });
@@ -219,7 +220,7 @@ navItems.forEach((link) => {
         }
       }
     }
-    
+
     // Close mobile menu
     if (window.innerWidth <= 640) {
       burger.classList.remove("is-open");
@@ -227,7 +228,7 @@ navItems.forEach((link) => {
       burger.setAttribute("aria-expanded", "false");
     }
   });
-});
+}
 
 if (burger && mainNav) {
   burger.addEventListener("click", () => {
@@ -239,7 +240,7 @@ if (burger && mainNav) {
     burger.setAttribute("aria-expanded", String(isOpen));
   });
 
-  mainNav.querySelectorAll("a").forEach((link) => {
+  for (const link of mainNav.querySelectorAll("a")) {
     link.addEventListener("click", () => {
       if (window.innerWidth <= 640) {
         burger.classList.remove("is-open");
@@ -250,7 +251,7 @@ if (burger && mainNav) {
         burger.setAttribute("aria-expanded", "false");
       }
     });
-  });
+  }
 }
 
 class HaloField {
@@ -280,7 +281,7 @@ class HaloField {
       color: 0xffb347,
       transparent: true,
       opacity: 0.35,
-      wireframe: true
+      wireframe: true,
     });
 
     for (let i = 0; i < 5; i++) {

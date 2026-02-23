@@ -39,7 +39,6 @@ export function GlassCard({
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      style={{ transition: "transform 0.1s ease" }}
       className="
         w-full max-w-sm p-10 rounded-3xl flex flex-col gap-4
         text-slate-100

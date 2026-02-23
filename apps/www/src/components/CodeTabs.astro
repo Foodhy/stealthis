@@ -1,8 +1,8 @@
 ---
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { Code } from "astro:components";
 import { marked } from "marked";
+import { Code } from "astro:components";
 
 interface Props {
   slug: string;
@@ -73,23 +73,38 @@ const tabs: Tab[] = [];
 if (normalizedTargets.includes("html")) {
   const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
   const htmlPath = path.join(snippetsDir, "html.html");
-  const cssPath  = path.join(snippetsDir, "style.css");
-  const jsPath   = path.join(snippetsDir, "script.js");
+  const cssPath = path.join(snippetsDir, "style.css");
+  const jsPath = path.join(snippetsDir, "script.js");
 
   if (existsSync(cssPath)) {
-    tabs.push({ id: "css",  label: "CSS",  code: readFileSync(cssPath,  "utf-8").trim(), lang: "css"        });
+    tabs.push({
+      id: "css",
+      label: "CSS",
+      code: readFileSync(cssPath, "utf-8").trim(),
+      lang: "css",
+    });
   }
   if (existsSync(jsPath)) {
-    tabs.push({ id: "js",   label: "JS",   code: readFileSync(jsPath,   "utf-8").trim(), lang: "javascript" });
+    tabs.push({
+      id: "js",
+      label: "JS",
+      code: readFileSync(jsPath, "utf-8").trim(),
+      lang: "javascript",
+    });
   }
   if (existsSync(htmlPath)) {
-    tabs.push({ id: "html", label: "HTML", code: readFileSync(htmlPath, "utf-8").trim(), lang: "html"       });
+    tabs.push({
+      id: "html",
+      label: "HTML",
+      code: readFileSync(htmlPath, "utf-8").trim(),
+      lang: "html",
+    });
   }
 }
 
 // All other targets
 for (const target of normalizedTargets.filter((t) => t !== "html")) {
-  const ext      = EXT_MAP[target] ?? target;
+  const ext = EXT_MAP[target] ?? target;
   const filePath = path.join(CONTENT_DIR, `resources/${slug}/snippets/${target}.${ext}`);
   if (!existsSync(filePath)) continue;
 
@@ -133,7 +148,7 @@ for (const target of normalizedTargets.filter((t) => t !== "html")) {
     continue;
   }
 
-  const label = LABEL_MAP[target] ?? (target.charAt(0).toUpperCase() + target.slice(1));
+  const label = LABEL_MAP[target] ?? target.charAt(0).toUpperCase() + target.slice(1);
   tabs.push({ id: target, label, code, lang: LANG_MAP[target] ?? "text" });
 }
 ---

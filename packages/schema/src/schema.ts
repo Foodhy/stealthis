@@ -62,12 +62,12 @@ export const ResourceMetaSchema = z.object({
   preview: z.string().optional(),
   labRoute: z.string().optional(),
   license: z.string().default("MIT"),
-  createdAt: z.union([z.string(), z.date()]).transform((v) =>
-    v instanceof Date ? v.toISOString().slice(0, 10) : v
-  ),
-  updatedAt: z.union([z.string(), z.date()]).transform((v) =>
-    v instanceof Date ? v.toISOString().slice(0, 10) : v
-  ),
+  createdAt: z
+    .union([z.string(), z.date()])
+    .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
+  updatedAt: z
+    .union([z.string(), z.date()])
+    .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
 });
 
 export type ResourceMetaInput = z.input<typeof ResourceMetaSchema>;

@@ -43,42 +43,37 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import * as THREE from "three";
 
 gsap.registerPlugin(ScrollTrigger);
 
 initDemoShell({
-  title: 'Scroll Camera Narrative',
-  category: '3d',
-  tech: ['three.js', 'gsap', 'lenis', 'scrolltrigger'],
+  title: "Scroll Camera Narrative",
+  category: "3d",
+  tech: ["three.js", "gsap", "lenis", "scrolltrigger"],
 });
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
 // ─── Lenis smooth scroll ─────────────────────────────────────────────
 
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 // ─── Three.js Setup ──────────────────────────────────────────────────
 
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#050508');
+scene.background = new THREE.Color("#050508");
 scene.fog = new THREE.FogExp2(0x050508, 0.018);
 
-const camera = new THREE.PerspectiveCamera(
-  55,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  200
-);
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -135,7 +130,7 @@ for (let i = 0; i < ringParticleCount; i++) {
   ringPositions[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
   ringPositions[i * 3 + 2] = Math.sin(angle) * radius;
 }
-ringGeo.setAttribute('position', new THREE.BufferAttribute(ringPositions, 3));
+ringGeo.setAttribute("position", new THREE.BufferAttribute(ringPositions, 3));
 const ringMat = new THREE.PointsMaterial({
   color: 0x86e8ff,
   size: 0.06,
@@ -243,7 +238,7 @@ for (let i = 0; i < dustCount; i++) {
   dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 20;
   dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 80 - 10;
 }
-dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
 const dustMat = new THREE.PointsMaterial({
   color: 0xffffff,
   size: 0.04,
@@ -260,7 +255,10 @@ scene.add(dust);
 const waypoints = [
   { pos: new THREE.Vector3(0, 2, 10), look: new THREE.Vector3(0, 0, 0) },
   { pos: new THREE.Vector3(-8, 4, -4), look: nebulaCenter.clone() },
-  { pos: new THREE.Vector3(6, 5, -16), look: monolith.position.clone().add(new THREE.Vector3(0, 1, 0)) },
+  {
+    pos: new THREE.Vector3(6, 5, -16),
+    look: monolith.position.clone().add(new THREE.Vector3(0, 1, 0)),
+  },
   { pos: new THREE.Vector3(10, 3, -30), look: orbitCenter.clone() },
   { pos: new THREE.Vector3(0, 12, -15), look: new THREE.Vector3(0, 0, -15) },
 ];
@@ -269,13 +267,13 @@ const waypoints = [
 const posCurve = new THREE.CatmullRomCurve3(
   waypoints.map((w) => w.pos),
   false,
-  'catmullrom',
+  "catmullrom",
   0.3
 );
 const lookCurve = new THREE.CatmullRomCurve3(
   waypoints.map((w) => w.look),
   false,
-  'catmullrom',
+  "catmullrom",
   0.3
 );
 
@@ -289,48 +287,45 @@ const scrollState = { progress: 0 };
 
 gsap.to(scrollState, {
   progress: 1,
-  ease: 'none',
+  ease: "none",
   scrollTrigger: {
-    trigger: '.scroll-container',
-    start: 'top top',
-    end: 'bottom bottom',
+    trigger: ".scroll-container",
+    start: "top top",
+    end: "bottom bottom",
     scrub: 1.5,
   },
 });
 
 // ─── Chapter Panel Visibility ────────────────────────────────────────
 
-const chapters = document.querySelectorAll('.chapter');
+const chapters = document.querySelectorAll(".chapter");
 chapters.forEach((ch) => {
   ScrollTrigger.create({
     trigger: ch,
-    start: 'top 60%',
-    end: 'bottom 40%',
-    onEnter: () => ch.querySelector('.chapter-panel')?.classList.add('visible'),
-    onLeave: () => ch.querySelector('.chapter-panel')?.classList.remove('visible'),
-    onEnterBack: () => ch.querySelector('.chapter-panel')?.classList.add('visible'),
-    onLeaveBack: () => ch.querySelector('.chapter-panel')?.classList.remove('visible'),
+    start: "top 60%",
+    end: "bottom 40%",
+    onEnter: () => ch.querySelector(".chapter-panel")?.classList.add("visible"),
+    onLeave: () => ch.querySelector(".chapter-panel")?.classList.remove("visible"),
+    onEnterBack: () => ch.querySelector(".chapter-panel")?.classList.add("visible"),
+    onLeaveBack: () => ch.querySelector(".chapter-panel")?.classList.remove("visible"),
   });
 });
 
 // ─── Progress Dots ───────────────────────────────────────────────────
 
-const progressContainer = document.createElement('div');
-progressContainer.className = 'scroll-progress';
+const progressContainer = document.createElement("div");
+progressContainer.className = "scroll-progress";
 for (let i = 0; i < 5; i++) {
-  const dot = document.createElement('div');
-  dot.className = 'progress-dot';
+  const dot = document.createElement("div");
+  dot.className = "progress-dot";
   progressContainer.appendChild(dot);
 }
 document.body.appendChild(progressContainer);
-const dots = progressContainer.querySelectorAll('.progress-dot');
+const dots = progressContainer.querySelectorAll(".progress-dot");
 
 function updateProgressDots() {
-  const activeIndex = Math.min(
-    Math.floor(scrollState.progress * 5),
-    4
-  );
-  dots.forEach((d, i) => d.classList.toggle('active', i === activeIndex));
+  const activeIndex = Math.min(Math.floor(scrollState.progress * 5), 4);
+  dots.forEach((d, i) => d.classList.toggle("active", i === activeIndex));
 }
 
 // ─── Animation Loop ──────────────────────────────────────────────────
@@ -383,7 +378,7 @@ animate();
 
 // ─── Resize ──────────────────────────────────────────────────────────
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -391,15 +386,15 @@ window.addEventListener('resize', () => {
 
 // ─── Motion Preference ───────────────────────────────────────────────
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
 // ─── Cleanup ─────────────────────────────────────────────────────────
 
-window.addEventListener('beforeunload', () => {
+window.addEventListener("beforeunload", () => {
   torusKnotGeo.dispose();
   torusKnotMat.dispose();
   nebulaSphereGeo.dispose();

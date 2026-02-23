@@ -38,12 +38,16 @@ if (!window.MotionPreference) {
 const reduced = window.MotionPreference.prefersReducedMotion();
 if (!reduced && window.gsap) {
   window.gsap.utils.toArray(".line span").forEach((w, i) => {
-    window.gsap.fromTo(w, { y: 38, opacity: 0 }, {
-      y: 0,
-      opacity: 1,
-      duration: 0.45,
-      delay: i * 0.07,
-      ease: "back.out(1.4)"
-    });
+    window.gsap.fromTo(
+      w,
+      { y: 38, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.45,
+        delay: i * 0.07,
+        ease: "back.out(1.4)",
+      }
+    );
   });
 }

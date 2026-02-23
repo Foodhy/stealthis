@@ -45,7 +45,7 @@ const mobileQuery = window.matchMedia("(max-width: 1000px)");
 const state = {
   reduced: Boolean(window.MotionPreference && window.MotionPreference.prefersReducedMotion()),
   mobile: mobileQuery.matches,
-  raf: 0
+  raf: 0,
 };
 
 const thresholds = [0, 0.36, 0.72];

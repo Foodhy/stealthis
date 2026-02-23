@@ -1,9 +1,9 @@
 ---
-import Base from "@layouts/Base.astro";
-import ResourceCard from "@components/ResourceCard.astro";
-import FilterBar from "@components/FilterBar.astro";
 import { getCollection } from "astro:content";
-import { useTranslations, getLocaleFromUrl } from "@i18n/index";
+import { getLocaleFromUrl, useTranslations } from "@i18n/index";
+import Base from "@layouts/Base.astro";
+import FilterBar from "@components/FilterBar.astro";
+import ResourceCard from "@components/ResourceCard.astro";
 import { curatedCollections } from "@lib/collections";
 
 const locale = getLocaleFromUrl(Astro.url);
@@ -15,14 +15,15 @@ const allResources = (await getCollection("resources")).sort(
 );
 
 const categories = [...new Set(allResources.map((r) => r.data.category))].sort();
-const techs      = [...new Set(allResources.flatMap((r) => r.data.tech))].sort();
+const techs = [...new Set(allResources.flatMap((r) => r.data.tech))].sort();
 
 // Group resources by category
 const byCategory = new Map<string, typeof allResources>();
 for (const r of allResources) {
   const cat = r.data.category;
   if (!byCategory.has(cat)) byCategory.set(cat, []);
-  byCategory.get(cat)!.push(r);
+  const list = byCategory.get(cat);
+  if (list) list.push(r);
 }
 
 const CATEGORY_GROUPS = [
@@ -30,7 +31,15 @@ const CATEGORY_GROUPS = [
     id: "visual",
     label: "Visual & Code",
     description: "Copy-paste UI, animations, and components",
-    categories: ["web-animations", "web-pages", "pages", "ui-components", "patterns", "components", "remotion"],
+    categories: [
+      "web-animations",
+      "web-pages",
+      "pages",
+      "ui-components",
+      "patterns",
+      "components",
+      "remotion",
+    ],
   },
   {
     id: "ai",
@@ -41,9 +50,18 @@ const CATEGORY_GROUPS = [
 ] as const;
 
 type CategoryKey =
-  | "category.web-animations" | "category.web-pages" | "category.ui-components" | "category.patterns"
-  | "category.components" | "category.pages" | "category.prompts" | "category.skills"
-  | "category.mcp-servers" | "category.architectures" | "category.boilerplates" | "category.remotion";
+  | "category.web-animations"
+  | "category.web-pages"
+  | "category.ui-components"
+  | "category.patterns"
+  | "category.components"
+  | "category.pages"
+  | "category.prompts"
+  | "category.skills"
+  | "category.mcp-servers"
+  | "category.architectures"
+  | "category.boilerplates"
+  | "category.remotion";
 
 const buildCollectionUrl = (filters: Record<string, string | undefined>) => {
   const params = new URLSearchParams();
@@ -53,7 +71,8 @@ const buildCollectionUrl = (filters: Record<string, string | undefined>) => {
   const query = params.toString();
   return `${prefix}/library${query ? `?${query}` : ""}`;
 };
-const libraryDescription = "Browse all open-source web resources — animations, pages, components, and patterns.";
+const libraryDescription =
+  "Browse all open-source web resources — animations, pages, components, and patterns.";
 const alternateLinks = [
   { hreflang: "en", href: "https://stealthis.dev/library/" },
   { hreflang: "es", href: "https://stealthis.dev/es/library/" },

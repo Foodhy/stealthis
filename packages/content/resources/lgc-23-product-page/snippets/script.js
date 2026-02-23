@@ -43,50 +43,48 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import Lenis from "lenis";
+import * as THREE from "three";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 
 // ── Demo Shell ──
 initDemoShell({
-  title: 'Product Landing Page',
-  category: 'pages',
-  tech: ['three.js', 'gsap', 'lenis', 'splittext'],
+  title: "Product Landing Page",
+  category: "pages",
+  tech: ["three.js", "gsap", "lenis", "splittext"],
 });
 
 // ── Lenis ──
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
-const dur = (d) => reduced ? 0 : d;
+const dur = (d) => (reduced ? 0 : d);
 
 // ═══════════════════════════════════════════════════════════════════════
 // THREE.JS SETUP
 // ═══════════════════════════════════════════════════════════════════════
 
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#0a0a0f');
+scene.background = new THREE.Color("#0a0a0f");
 
-const camera = new THREE.PerspectiveCamera(
-  45, window.innerWidth / window.innerHeight, 0.1, 100
-);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 0.5, 5);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -123,16 +121,16 @@ const productMat = new THREE.MeshPhysicalMaterial({
 
 // Earbud body profile (LatheGeometry) — traces cross-section of an earbud
 const earbudProfile = [
-  new THREE.Vector2(0.00, -0.30),  // Bottom center (stem junction)
-  new THREE.Vector2(0.12, -0.25),  // Slight outward taper at base
-  new THREE.Vector2(0.22, -0.15),  // Widening toward body
-  new THREE.Vector2(0.32,  0.00),  // Main body widest point (lower)
-  new THREE.Vector2(0.35,  0.15),  // Body maximum width
-  new THREE.Vector2(0.34,  0.30),  // Still wide, slight taper
-  new THREE.Vector2(0.30,  0.42),  // Tapering toward speaker face
-  new THREE.Vector2(0.24,  0.50),  // Speaker face edge
-  new THREE.Vector2(0.15,  0.55),  // Speaker face rounding
-  new THREE.Vector2(0.00,  0.57),  // Top center (speaker face)
+  new THREE.Vector2(0.0, -0.3), // Bottom center (stem junction)
+  new THREE.Vector2(0.12, -0.25), // Slight outward taper at base
+  new THREE.Vector2(0.22, -0.15), // Widening toward body
+  new THREE.Vector2(0.32, 0.0), // Main body widest point (lower)
+  new THREE.Vector2(0.35, 0.15), // Body maximum width
+  new THREE.Vector2(0.34, 0.3), // Still wide, slight taper
+  new THREE.Vector2(0.3, 0.42), // Tapering toward speaker face
+  new THREE.Vector2(0.24, 0.5), // Speaker face edge
+  new THREE.Vector2(0.15, 0.55), // Speaker face rounding
+  new THREE.Vector2(0.0, 0.57), // Top center (speaker face)
 ];
 
 function createEarbud() {
@@ -184,11 +182,11 @@ const state = {
 // HERO ENTRANCE
 // ═══════════════════════════════════════════════════════════════════════
 
-const heroTitle = document.querySelector('.hero-title');
-const heroTagline = document.querySelector('.hero-tagline');
+const heroTitle = document.querySelector(".hero-title");
+const heroTagline = document.querySelector(".hero-tagline");
 
 // SplitText for hero
-const titleSplit = new SplitText(heroTitle, { type: 'chars', charsClass: 'char' });
+const titleSplit = new SplitText(heroTitle, { type: "chars", charsClass: "char" });
 gsap.set(titleSplit.chars, {
   opacity: 0,
   y: reduced ? 0 : 60,
@@ -202,24 +200,39 @@ heroTl
   .to(state, {
     productScale: 1,
     duration: dur(1.4),
-    ease: 'expo.out',
+    ease: "expo.out",
   })
-  .to(titleSplit.chars, {
-    opacity: 1, y: 0, rotateX: 0,
-    duration: dur(0.6),
-    ease: 'back.out(1.4)',
-    stagger: { each: 0.03 },
-  }, 0.3)
-  .to(heroTagline, {
-    opacity: 1, y: 0,
-    duration: dur(0.8),
-    ease: 'expo.out',
-  }, 0.7)
-  .to('#scroll-indicator', {
-    opacity: 1,
-    duration: dur(0.6),
-    ease: 'expo.out',
-  }, 1.2);
+  .to(
+    titleSplit.chars,
+    {
+      opacity: 1,
+      y: 0,
+      rotateX: 0,
+      duration: dur(0.6),
+      ease: "back.out(1.4)",
+      stagger: { each: 0.03 },
+    },
+    0.3
+  )
+  .to(
+    heroTagline,
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(0.8),
+      ease: "expo.out",
+    },
+    0.7
+  )
+  .to(
+    "#scroll-indicator",
+    {
+      opacity: 1,
+      duration: dur(0.6),
+      ease: "expo.out",
+    },
+    1.2
+  );
 
 // ═══════════════════════════════════════════════════════════════════════
 // SCROLL: Hero → Features transition (product shifts right)
@@ -228,11 +241,11 @@ heroTl
 gsap.to(state, {
   productX: 2.5,
   productScale: 0.7,
-  ease: 'none',
+  ease: "none",
   scrollTrigger: {
-    trigger: '.hero-section',
-    start: 'bottom bottom',
-    end: '+=300',
+    trigger: ".hero-section",
+    start: "bottom bottom",
+    end: "+=300",
     scrub: 1.5,
   },
 });
@@ -241,17 +254,17 @@ gsap.to(state, {
 // FEATURES: Pinned section with content swap
 // ═══════════════════════════════════════════════════════════════════════
 
-const featureCards = document.querySelectorAll('.feature-card');
-const stepDots = document.querySelectorAll('.step-dot');
+const featureCards = document.querySelectorAll(".feature-card");
+const stepDots = document.querySelectorAll(".step-dot");
 
 // Show first card initially
-featureCards[0].classList.add('active');
+featureCards[0].classList.add("active");
 
 // Feature stat targets
 const statTargets = [
-  { id: 'stat-anc', target: 40, suffix: '' },
-  { id: 'stat-spatial', target: 360, suffix: '°' },
-  { id: 'stat-battery', target: 50, suffix: '' },
+  { id: "stat-anc", target: 40, suffix: "" },
+  { id: "stat-spatial", target: 360, suffix: "°" },
+  { id: "stat-battery", target: 50, suffix: "" },
 ];
 
 // Product rotation angles per feature
@@ -263,28 +276,28 @@ const featureColors = [
 ];
 
 function setActiveFeature(index) {
-  if (index === state.activeFeature && featureCards[index].classList.contains('active')) return;
+  if (index === state.activeFeature && featureCards[index].classList.contains("active")) return;
 
-  featureCards.forEach(c => c.classList.remove('active'));
-  stepDots.forEach(d => d.classList.remove('active'));
+  featureCards.forEach((c) => c.classList.remove("active"));
+  stepDots.forEach((d) => d.classList.remove("active"));
 
-  featureCards[index].classList.add('active');
-  stepDots[index].classList.add('active');
+  featureCards[index].classList.add("active");
+  stepDots[index].classList.add("active");
 
   // Animate product rotation and color
   if (!reduced) {
     gsap.to(state, {
       productRotY: featureRotations[index],
       duration: 0.8,
-      ease: 'expo.out',
+      ease: "expo.out",
     });
   }
 
   // Animate counter
   const stat = statTargets[index];
   const el = document.getElementById(stat.id);
-  if (el && el.dataset.animated !== 'true') {
-    el.dataset.animated = 'true';
+  if (el && el.dataset.animated !== "true") {
+    el.dataset.animated = "true";
     if (reduced) {
       el.textContent = stat.target + stat.suffix;
     } else {
@@ -292,7 +305,7 @@ function setActiveFeature(index) {
       gsap.to(counter, {
         val: stat.target,
         duration: 1.2,
-        ease: 'power2.out',
+        ease: "power2.out",
         onUpdate: () => {
           el.textContent = Math.round(counter.val) + stat.suffix;
         },
@@ -305,9 +318,9 @@ function setActiveFeature(index) {
 
 // ScrollTrigger for feature track
 ScrollTrigger.create({
-  trigger: '.feature-track',
-  start: 'top top',
-  end: 'bottom bottom',
+  trigger: ".feature-track",
+  start: "top top",
+  end: "bottom bottom",
   scrub: 0,
   onUpdate: (self) => {
     const p = self.progress;
@@ -329,39 +342,40 @@ ScrollTrigger.create({
 // SPECS GRID: Staggered entrance
 // ═══════════════════════════════════════════════════════════════════════
 
-const specsHeading = document.querySelector('.specs-heading');
+const specsHeading = document.querySelector(".specs-heading");
 if (specsHeading) {
-  const specsSplit = new SplitText(specsHeading, { type: 'chars', charsClass: 'char' });
+  const specsSplit = new SplitText(specsHeading, { type: "chars", charsClass: "char" });
   gsap.set(specsSplit.chars, { opacity: 0, y: reduced ? 0 : 30 });
 
   gsap.to(specsSplit.chars, {
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     duration: dur(0.5),
-    ease: 'back.out(1.2)',
+    ease: "back.out(1.2)",
     stagger: { each: 0.02 },
     scrollTrigger: {
-      trigger: '.specs-section',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".specs-section",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
-gsap.to('.spec-card', {
+gsap.to(".spec-card", {
   opacity: 1,
   y: 0,
   scale: 1,
   duration: dur(0.6),
-  ease: 'expo.out',
+  ease: "expo.out",
   stagger: {
     each: 0.08,
-    from: 'center',
+    from: "center",
     grid: [2, 3],
   },
   scrollTrigger: {
-    trigger: '.specs-grid',
-    start: 'top 80%',
-    toggleActions: 'play none none reverse',
+    trigger: ".specs-grid",
+    start: "top 80%",
+    toggleActions: "play none none reverse",
   },
 });
 
@@ -369,18 +383,18 @@ gsap.to('.spec-card', {
 // CTA: ScrambleText price reveal
 // ═══════════════════════════════════════════════════════════════════════
 
-const ctaPrice = document.getElementById('cta-price');
+const ctaPrice = document.getElementById("cta-price");
 
 if (reduced) {
-  ctaPrice.textContent = '$299';
-  gsap.set('.cta-tagline', { opacity: 1 });
-  gsap.set('.btn', { opacity: 1, y: 0 });
+  ctaPrice.textContent = "$299";
+  gsap.set(".cta-tagline", { opacity: 1 });
+  gsap.set(".btn", { opacity: 1, y: 0 });
 } else {
   gsap.set(ctaPrice, { opacity: 0 });
 
   ScrollTrigger.create({
-    trigger: '.cta-section',
-    start: 'top 60%',
+    trigger: ".cta-section",
+    start: "top 60%",
     once: true,
     onEnter: () => {
       const ctaTl = gsap.timeline();
@@ -390,22 +404,31 @@ if (reduced) {
         .to(ctaPrice, {
           duration: 1.0,
           scrambleText: {
-            text: '$299',
-            chars: '0123456789$',
+            text: "$299",
+            chars: "0123456789$",
             speed: 0.3,
           },
         })
-        .to('.cta-tagline', {
-          opacity: 1,
-          duration: 0.6,
-          ease: 'expo.out',
-        }, '-=0.3')
-        .to('.btn', {
-          opacity: 1, y: 0,
-          duration: 0.5,
-          ease: 'back.out(1.7)',
-          stagger: 0.1,
-        }, '-=0.2');
+        .to(
+          ".cta-tagline",
+          {
+            opacity: 1,
+            duration: 0.6,
+            ease: "expo.out",
+          },
+          "-=0.3"
+        )
+        .to(
+          ".btn",
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: "back.out(1.7)",
+            stagger: 0.1,
+          },
+          "-=0.2"
+        );
     },
   });
 }
@@ -438,14 +461,14 @@ function animate() {
 animate();
 
 // ── Resize ──
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // ── Cleanup ──
-window.addEventListener('beforeunload', () => {
+window.addEventListener("beforeunload", () => {
   leftEarbud.bodyGeo.dispose();
   leftEarbud.stemGeo.dispose();
   rightEarbud.bodyGeo.dispose();

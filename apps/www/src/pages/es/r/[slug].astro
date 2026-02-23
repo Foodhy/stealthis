@@ -1,12 +1,12 @@
 ---
-import Base from "@layouts/Base.astro";
-import CodeTabs from "@components/CodeTabs.astro";
-import ActionMenu from "@components/ActionMenu.astro";
-import RemotionPreview from "@components/RemotionPreview";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { getCollection, render } from "astro:content";
 import { useTranslations } from "@i18n/index";
+import ActionMenu from "../../../components/ActionMenu.astro";
+import CodeTabs from "../../../components/CodeTabs.astro";
+import RemotionPreview from "../../../components/RemotionPreview";
+import Base from "../../../layouts/Base.astro";
 import { SITE_URLS } from "@lib/urls";
 
 export async function getStaticPaths() {
@@ -20,16 +20,41 @@ export async function getStaticPaths() {
 const { resource } = Astro.props;
 const locale = "es" as const;
 const t = useTranslations(locale);
-const { slug, title, description, category, difficulty, tags, tech, targets, labRoute, license, createdAt, updatedAt } = resource.data;
+const {
+  slug,
+  title,
+  description,
+  category,
+  difficulty,
+  tags,
+  tech,
+  targets,
+  labRoute,
+  license,
+  createdAt,
+  updatedAt,
+} = resource.data;
 const { Content } = await render(resource);
 
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
-const difficultyKey = `resource.difficulty.${difficulty}` as "resource.difficulty.easy" | "resource.difficulty.med" | "resource.difficulty.hard";
+const difficultyKey = `resource.difficulty.${difficulty}` as
+  | "resource.difficulty.easy"
+  | "resource.difficulty.med"
+  | "resource.difficulty.hard";
 const difficultyLabel = t(difficultyKey);
 const categoryKey = `category.${category}` as
-  | "category.web-animations" | "category.web-pages" | "category.ui-components" | "category.patterns"
-  | "category.components" | "category.pages" | "category.prompts" | "category.skills"
-  | "category.mcp-servers" | "category.architectures" | "category.boilerplates" | "category.remotion";
+  | "category.web-animations"
+  | "category.web-pages"
+  | "category.ui-components"
+  | "category.patterns"
+  | "category.components"
+  | "category.pages"
+  | "category.prompts"
+  | "category.skills"
+  | "category.mcp-servers"
+  | "category.architectures"
+  | "category.boilerplates"
+  | "category.remotion";
 const categoryLabel = t(categoryKey);
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -41,10 +66,7 @@ const hasTS =
   existsSync(path.join(snippetsDir, "typescript.ts")) ||
   existsSync(path.join(snippetsDir, "typescript.tsx"));
 
-const languageBadges = [
-  ...(hasTS ? ["TS"] : []),
-  ...(hasJS ? ["JS"] : []),
-];
+const languageBadges = [...(hasTS ? ["TS"] : []), ...(hasJS ? ["JS"] : [])];
 
 const TARGET_LABELS: Record<string, string> = {
   html: "HTML",

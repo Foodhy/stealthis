@@ -77,7 +77,14 @@ for (let i = 0; i < count; i += 1) {
 
 const geometry = new THREE.BufferGeometry();
 geometry.setAttribute("position", new THREE.BufferAttribute(current, 3));
-const material = new THREE.PointsMaterial({ size: 0.06, color: 0x9adfff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+const material = new THREE.PointsMaterial({
+  size: 0.06,
+  color: 0x9adfff,
+  transparent: true,
+  opacity: 0.95,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+});
 const cloud = new THREE.Points(geometry, material);
 scene.add(cloud);
 scene.add(new THREE.AmbientLight(0xa2bfff, 0.42));
@@ -89,7 +96,7 @@ function setLabel() {
 function animate(time) {
   requestAnimationFrame(animate);
 
-  const t = motionEnabled ? (Math.sin(time * 0.0007) * 0.5 + 0.5) : 0;
+  const t = motionEnabled ? Math.sin(time * 0.0007) * 0.5 + 0.5 : 0;
   const pos = geometry.attributes.position.array;
   for (let i = 0; i < pos.length; i += 1) pos[i] = from[i] + (to[i] - from[i]) * t;
   geometry.attributes.position.needsUpdate = true;

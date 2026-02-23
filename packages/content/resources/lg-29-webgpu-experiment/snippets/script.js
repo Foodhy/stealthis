@@ -69,7 +69,9 @@ runBtn.addEventListener("click", async () => {
     }
 
     const info = adapter.info ? await adapter.info : null;
-    const label = info ? `${info.vendor || "vendor"} / ${info.architecture || "architecture"}` : "adapter detected";
+    const label = info
+      ? `${info.vendor || "vendor"} / ${info.architecture || "architecture"}`
+      : "adapter detected";
     statusEl.textContent = `WebGPU available: ${label}`;
     fallbackRender(`WebGPU path detected (${label}). Extend this branch with render pipelines.`);
   } catch (error) {

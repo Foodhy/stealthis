@@ -43,7 +43,7 @@ const state = {
   motionEnabled: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   blobs: [],
   raf: 0,
-  t: 0
+  t: 0,
 };
 
 function resize() {
@@ -68,7 +68,7 @@ function pickColor() {
     "rgba(229, 247, 255, 0.52)",
     "rgba(255, 236, 183, 0.42)",
     "rgba(174, 82, 255, 0.36)",
-    "rgba(255, 64, 214, 0.34)"
+    "rgba(255, 64, 214, 0.34)",
   ];
   return palette[Math.floor(Math.random() * palette.length)];
 }
@@ -82,7 +82,7 @@ function createBlob() {
     vx: rand(-0.11, 0.11),
     vy: rand(-0.08, 0.08),
     wobble: rand(0, Math.PI * 2),
-    wobbleSpeed: rand(0.002, 0.011)
+    wobbleSpeed: rand(0.002, 0.011),
   };
 }
 

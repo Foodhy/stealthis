@@ -55,7 +55,13 @@ host.appendChild(renderer.domElement);
 
 const count = 1800;
 const geometry = new THREE.IcosahedronGeometry(0.11, 0);
-const material = new THREE.MeshStandardMaterial({ color: 0x88dcff, emissive: 0x2f6782, emissiveIntensity: 0.35, roughness: 0.35, metalness: 0.25 });
+const material = new THREE.MeshStandardMaterial({
+  color: 0x88dcff,
+  emissive: 0x2f6782,
+  emissiveIntensity: 0.35,
+  roughness: 0.35,
+  metalness: 0.25,
+});
 const instanced = new THREE.InstancedMesh(geometry, material, count);
 scene.add(instanced);
 
@@ -67,7 +73,7 @@ for (let i = 0; i < count; i += 1) {
     y: (Math.random() - 0.5) * 16,
     z: -Math.random() * 80,
     speed: 0.08 + Math.random() * 0.16,
-    rot: Math.random() * Math.PI
+    rot: Math.random() * Math.PI,
   });
 }
 

@@ -36,14 +36,62 @@ if (!window.MotionPreference) {
 }
 
 const items = [
-  { id: "n1", title: "Pulse Launcher", category: "product", blurb: "Launch-focused hero with CTA pacing.", color: "linear-gradient(130deg,#59c8ff,#294bff)" },
-  { id: "n2", title: "Studio Grid", category: "portfolio", blurb: "Project archive with retained card identity.", color: "linear-gradient(130deg,#ff88e9,#8f3fff)" },
-  { id: "n3", title: "Arena Promo", category: "campaign", blurb: "High-energy campaign teaser cards.", color: "linear-gradient(130deg,#7da3d8,#293f63)" },
-  { id: "n4", title: "Nova Metrics", category: "dashboard", blurb: "Data cards opening deep detail routes.", color: "linear-gradient(130deg,#ffd983,#ff8f3b)" },
-  { id: "n5", title: "Cover Story", category: "campaign", blurb: "Magazine-style featured narrative block.", color: "linear-gradient(130deg,#7ce0ff,#00a8c7)" },
-  { id: "n6", title: "Studio Case", category: "portfolio", blurb: "Portfolio details with animation fallback.", color: "linear-gradient(130deg,#cb8aff,#7642cf)" },
-  { id: "n7", title: "Ops Console", category: "dashboard", blurb: "Operational cards with dense metadata.", color: "linear-gradient(130deg,#ffe7a9,#d38d30)" },
-  { id: "n8", title: "Nova Device", category: "product", blurb: "Product card with staged reveal sections.", color: "linear-gradient(130deg,#98f0ff,#4e82ff)" }
+  {
+    id: "n1",
+    title: "Pulse Launcher",
+    category: "product",
+    blurb: "Launch-focused hero with CTA pacing.",
+    color: "linear-gradient(130deg,#59c8ff,#294bff)",
+  },
+  {
+    id: "n2",
+    title: "Studio Grid",
+    category: "portfolio",
+    blurb: "Project archive with retained card identity.",
+    color: "linear-gradient(130deg,#ff88e9,#8f3fff)",
+  },
+  {
+    id: "n3",
+    title: "Arena Promo",
+    category: "campaign",
+    blurb: "High-energy campaign teaser cards.",
+    color: "linear-gradient(130deg,#7da3d8,#293f63)",
+  },
+  {
+    id: "n4",
+    title: "Nova Metrics",
+    category: "dashboard",
+    blurb: "Data cards opening deep detail routes.",
+    color: "linear-gradient(130deg,#ffd983,#ff8f3b)",
+  },
+  {
+    id: "n5",
+    title: "Cover Story",
+    category: "campaign",
+    blurb: "Magazine-style featured narrative block.",
+    color: "linear-gradient(130deg,#7ce0ff,#00a8c7)",
+  },
+  {
+    id: "n6",
+    title: "Studio Case",
+    category: "portfolio",
+    blurb: "Portfolio details with animation fallback.",
+    color: "linear-gradient(130deg,#cb8aff,#7642cf)",
+  },
+  {
+    id: "n7",
+    title: "Ops Console",
+    category: "dashboard",
+    blurb: "Operational cards with dense metadata.",
+    color: "linear-gradient(130deg,#ffe7a9,#d38d30)",
+  },
+  {
+    id: "n8",
+    title: "Nova Device",
+    category: "product",
+    blurb: "Product card with staged reveal sections.",
+    color: "linear-gradient(130deg,#98f0ff,#4e82ff)",
+  },
 ];
 
 const filters = ["all", "product", "portfolio", "campaign", "dashboard"];

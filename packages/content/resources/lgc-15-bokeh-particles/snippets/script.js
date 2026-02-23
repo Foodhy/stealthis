@@ -35,12 +35,12 @@ if (!window.MotionPreference) {
   window.MotionPreference = MotionPreference;
 }
 
-const canvas = document.getElementById('scene');
-const ctx = canvas.getContext('2d', { alpha: true });
-const toggleBtn = document.getElementById('toggleMotion');
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d", { alpha: true });
+const toggleBtn = document.getElementById("toggleMotion");
 
 const state = {
-  motionEnabled: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  motionEnabled: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   blobs: [],
   raf: 0,
   t: 0,
@@ -52,12 +52,12 @@ const state = {
 
 // ── Palette ──
 const palette = [
-  { r: 114, g: 178, b: 255 },  // cyan-blue
-  { r: 229, g: 247, b: 255 },  // white-blue
-  { r: 255, g: 236, b: 183 },  // warm gold
-  { r: 174, g: 82,  b: 255 },  // purple
-  { r: 255, g: 64,  b: 214 },  // pink
-  { r: 134, g: 232, b: 255 },  // accent cyan
+  { r: 114, g: 178, b: 255 }, // cyan-blue
+  { r: 229, g: 247, b: 255 }, // white-blue
+  { r: 255, g: 236, b: 183 }, // warm gold
+  { r: 174, g: 82, b: 255 }, // purple
+  { r: 255, g: 64, b: 214 }, // pink
+  { r: 134, g: 232, b: 255 }, // accent cyan
 ];
 
 function rand(min, max) {
@@ -136,7 +136,7 @@ function drawBlob(b) {
   ctx.fill();
 
   if (b.blur > 0.5) {
-    ctx.filter = 'none';
+    ctx.filter = "none";
   }
 }
 
@@ -163,37 +163,37 @@ function render() {
   ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
   // Subtle dark overlay for trailing
-  ctx.fillStyle = 'rgba(5, 6, 8, 0.35)';
+  ctx.fillStyle = "rgba(5, 6, 8, 0.35)";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-  ctx.globalCompositeOperation = 'screen';
+  ctx.globalCompositeOperation = "screen";
   for (const b of state.blobs) {
     if (state.motionEnabled) stepBlob(b);
     drawBlob(b);
   }
-  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalCompositeOperation = "source-over";
 
   state.raf = requestAnimationFrame(render);
 }
 
 // ── Motion toggle ──
 function setMotionLabel() {
-  toggleBtn.textContent = state.motionEnabled ? 'Disable Motion' : 'Enable Motion';
+  toggleBtn.textContent = state.motionEnabled ? "Disable Motion" : "Enable Motion";
 }
 
-toggleBtn.addEventListener('click', () => {
+toggleBtn.addEventListener("click", () => {
   state.motionEnabled = !state.motionEnabled;
   setMotionLabel();
 });
 
 // ── Mouse tracking ──
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   state.mouseX = e.clientX;
   state.mouseY = e.clientY;
 });
 
 // ── Init ──
-window.addEventListener('resize', resize);
+window.addEventListener("resize", resize);
 resize();
 setMotionLabel();
 state.raf = requestAnimationFrame(render);

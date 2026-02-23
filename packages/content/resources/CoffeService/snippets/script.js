@@ -2,18 +2,18 @@ const services = [
   {
     title: "Coffee Catering",
     copy: "Full espresso bar, seasonal menu, and barista team.",
-    meta: "Events"
+    meta: "Events",
   },
   {
     title: "Bread & Bake Lab",
     copy: "Custom bread programs for restaurants and hotels.",
-    meta: "Wholesale"
+    meta: "Wholesale",
   },
   {
     title: "Cake Studio",
     copy: "Bespoke cakes with curated flavor journeys.",
-    meta: "Custom"
-  }
+    meta: "Custom",
+  },
 ];
 
 const products = [
@@ -21,59 +21,66 @@ const products = [
     title: "Single-Origin Espresso",
     copy: "Chocolate notes with bright citrus finish.",
     price: 18,
-    tag: "Coffee"
+    tag: "Coffee",
   },
   {
     title: "Sourdough Starter Kit",
     copy: "Active culture, rye blend, and care guide.",
     price: 24,
-    tag: "Bakery"
+    tag: "Bakery",
   },
   {
     title: "Vanilla Bean Cake",
     copy: "Signature sponge with berry glaze.",
     price: 42,
-    tag: "Cake"
+    tag: "Cake",
   },
   {
     title: "Brunch Box",
     copy: "Croissant, jam, latte sachet, and granola.",
     price: 32,
-    tag: "Bundle"
-  }
+    tag: "Bundle",
+  },
 ];
 
 const people = [
   {
     name: "Lina Torres",
     role: "Head Barista",
-    specialty: "Milk chemistry + latte art"
+    specialty: "Milk chemistry + latte art",
   },
   {
     name: "Milo Chen",
     role: "Bread Lead",
-    specialty: "Sourdough fermentation"
+    specialty: "Sourdough fermentation",
   },
   {
     name: "Ava Ruiz",
     role: "Pastry Chef",
-    specialty: "Seasonal tart design"
-  }
+    specialty: "Seasonal tart design",
+  },
 ];
 
 const workshops = [
   "Latte Art Immersion",
   "Sourdough Fundamentals",
   "Seasonal Cake Design",
-  "Coffee + Dessert Pairings"
+  "Coffee + Dessert Pairings",
 ];
 
-const stack = ["Single-Origin", "Stone Milling", "Wild Yeast", "Ganache", "Milk Lab", "Roast Profiles"];
+const stack = [
+  "Single-Origin",
+  "Stone Milling",
+  "Wild Yeast",
+  "Ganache",
+  "Milk Lab",
+  "Roast Profiles",
+];
 
 const stats = [
   { value: "9", label: "Daily coffee origins" },
   { value: "120", label: "Weekly loaves" },
-  { value: "46", label: "Signature pastries" }
+  { value: "46", label: "Signature pastries" },
 ];
 
 const serviceGrid = document.getElementById("serviceGrid");
@@ -124,7 +131,10 @@ if (peopleGrid) {
     .map(
       (person) => `
         <article class="person-card">
-          <div class="avatar">${person.name.split(" ").map((part) => part[0]).join("")}</div>
+          <div class="avatar">${person.name
+            .split(" ")
+            .map((part) => part[0])
+            .join("")}</div>
           <h3>${person.name}</h3>
           <div class="person-chip">${person.role}</div>
           <p>${person.specialty}</p>
@@ -200,7 +210,7 @@ const lenis = window.Lenis
   ? new Lenis({
       smoothWheel: true,
       smoothTouch: false,
-      lerp: 0.08
+      lerp: 0.08,
     })
   : null;
 
@@ -238,7 +248,7 @@ if (window.gsap) {
     opacity: 0,
     duration: 0.6,
     delay: 1.2,
-    pointerEvents: "none"
+    pointerEvents: "none",
   });
 
   gsap.from(".hero-copy", { opacity: 0, y: 30, duration: 1, ease: "power3.out" });
@@ -249,7 +259,7 @@ if (window.gsap) {
       y: 24,
       duration: 0.8,
       delay: index * 0.05,
-      ease: "power2.out"
+      ease: "power2.out",
     });
   });
 }
@@ -280,7 +290,7 @@ class BeanField {
     const material = new THREE.MeshStandardMaterial({
       color: 0xb36b3e,
       metalness: 0.2,
-      roughness: 0.7
+      roughness: 0.7,
     });
 
     const light = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -312,7 +322,12 @@ class BeanField {
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const material = new THREE.PointsMaterial({ color: 0xf4b183, size: 0.1, transparent: true, opacity: 0.4 });
+    const material = new THREE.PointsMaterial({
+      color: 0xf4b183,
+      size: 0.1,
+      transparent: true,
+      opacity: 0.4,
+    });
     this.steam = new THREE.Points(geometry, material);
     this.scene.add(this.steam);
   }

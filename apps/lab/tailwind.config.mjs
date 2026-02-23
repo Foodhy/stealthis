@@ -1,5 +1,5 @@
-import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -9,9 +9,9 @@ export default {
   theme: {
     extend: {
       opacity: {
-        "6": "0.06",
-        "8": "0.08",
-        "14": "0.14",
+        6: "0.06",
+        8: "0.08",
+        14: "0.14",
       },
     },
   },

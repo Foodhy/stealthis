@@ -1,7 +1,5 @@
 // Hero Parallax — multi-layer scroll-driven parallax
-(function () {
-  "use strict";
-
+(() => {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const layers = document.querySelectorAll(".layer[data-speed]");
@@ -13,7 +11,7 @@
     const scrollY = window.scrollY;
 
     layers.forEach((layer) => {
-      const speed = parseFloat(layer.dataset.speed ?? "0");
+      const speed = Number.parseFloat(layer.dataset.speed ?? "0");
       if (speed === 0) return; // content layer: no parallax
 
       const offset = scrollY * speed;
@@ -23,10 +21,14 @@
     ticking = false;
   }
 
-  window.addEventListener("scroll", () => {
-    if (!ticking) {
-      requestAnimationFrame(updateLayers);
-      ticking = true;
-    }
-  }, { passive: true });
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        requestAnimationFrame(updateLayers);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
 })();

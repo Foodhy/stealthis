@@ -3,55 +3,55 @@ const data = {
     {
       title: "Pulse Atlas",
       desc: "Realtime logistics map with motion-safe alerts.",
-      tag: "Dashboard"
+      tag: "Dashboard",
     },
     {
       title: "Vanta Ops",
       desc: "Command UI for an autonomous fleet control room.",
-      tag: "Systems"
+      tag: "Systems",
     },
     {
       title: "Signal Forge",
       desc: "Design system + motion kit for an AI platform.",
-      tag: "Design"
+      tag: "Design",
     },
     {
       title: "Redline Launch",
       desc: "Immersive product site with staggered cinematic scroll.",
-      tag: "Web"
-    }
+      tag: "Web",
+    },
   ],
   capabilities: [
     "Realtime dashboard UX",
     "Motion systems and interaction design",
     "Interface sound + haptic choreography",
-    "High-contrast product branding"
+    "High-contrast product branding",
   ],
   stack: ["Figma", "Three.js", "GSAP", "Lenis", "Framer", "WebGL"],
   stats: [
     { value: "38", label: "Product launches" },
     { value: "11", label: "Design systems" },
-    { value: "4", label: "Global teams" }
+    { value: "4", label: "Global teams" },
   ],
   lab: [
     {
       title: "Velocity Ticker",
-      desc: "Scroll-driven marquee tied to Lenis momentum."
+      desc: "Scroll-driven marquee tied to Lenis momentum.",
     },
     {
       title: "Speed Lines",
-      desc: "Background parallax reacting to scroll velocity."
+      desc: "Background parallax reacting to scroll velocity.",
     },
     {
       title: "Focus Beam",
-      desc: "Hover-triggered light sweeps across panels."
-    }
+      desc: "Hover-triggered light sweeps across panels.",
+    },
   ],
   contacts: [
     { label: "Email", value: "redline@studio.com" },
     { label: "LinkedIn", value: "/redline" },
-    { label: "GitHub", value: "@redline" }
-  ]
+    { label: "GitHub", value: "@redline" },
+  ],
 };
 
 const projectGrid = document.getElementById("project-grid");
@@ -76,9 +76,7 @@ if (projectGrid) {
 }
 
 if (capabilityList) {
-  capabilityList.innerHTML = data.capabilities
-    .map((item) => `<li>${item}</li>`)
-    .join("");
+  capabilityList.innerHTML = data.capabilities.map((item) => `<li>${item}</li>`).join("");
 }
 
 if (stackGrid) {
@@ -128,7 +126,7 @@ const lenis = window.Lenis
   ? new Lenis({
       smoothWheel: true,
       smoothTouch: false,
-      lerp: 0.08
+      lerp: 0.08,
     })
   : null;
 
@@ -165,15 +163,17 @@ if (marquee) {
 if (window.gsap) {
   gsap.from(".hero-copy", { opacity: 0, y: 30, duration: 1, ease: "power3.out" });
   gsap.from(".hero-panel", { opacity: 0, x: 30, duration: 1, delay: 0.2, ease: "power3.out" });
-  gsap.utils.toArray(".card, .list li, .pill-grid span, .stats div, .lab-card").forEach((item, index) => {
-    gsap.from(item, {
-      opacity: 0,
-      y: 24,
-      duration: 0.8,
-      delay: index * 0.05,
-      ease: "power2.out"
+  gsap.utils
+    .toArray(".card, .list li, .pill-grid span, .stats div, .lab-card")
+    .forEach((item, index) => {
+      gsap.from(item, {
+        opacity: 0,
+        y: 24,
+        duration: 0.8,
+        delay: index * 0.05,
+        ease: "power2.out",
+      });
     });
-  });
 }
 
 class SpeedField {
@@ -232,13 +232,13 @@ class SpeedField {
     const material = new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
-      opacity: 0.35
+      opacity: 0.35,
     });
 
     return new THREE.LineSegments(geometry, material);
   }
 
-  updateLines(delta) {
+  updateLines(_delta) {
     const positions = this.lines.geometry.attributes.position.array;
     for (let i = 0; i < positions.length; i += 6) {
       positions[i + 2] += this.speed + Math.abs(scrollVelocity) * 0.04;

@@ -17,13 +17,7 @@
  *   3. Render a div with height = targetHeight * progress
  */
 
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
 // --- Data ---
 const DATA = [
@@ -36,8 +30,8 @@ const DATA = [
   { label: "Sun", value: 47 },
 ];
 
-const MAX_BAR_HEIGHT = 380;  // Max pixel height a bar can reach
-const STAGGER_DELAY = 6;     // Frames between each bar starting its animation
+const MAX_BAR_HEIGHT = 380; // Max pixel height a bar can reach
+const STAGGER_DELAY = 6; // Frames between each bar starting its animation
 const BAR_COLOR = "#6366f1";
 const BAR_COLOR_PEAK = "#a78bfa"; // Color of the tallest bar
 
@@ -49,12 +43,11 @@ const Bar: React.FC<{
   index: number;
   maxValue: number;
 }> = ({ frame, fps, item, index, maxValue }) => {
-
   // spring grows from 0 → 1, delayed by index so bars stagger in
   const progress = spring({
     frame: frame - index * STAGGER_DELAY,
     fps,
-    config: { damping: 200 },  // smooth, no bounce — good for data viz
+    config: { damping: 200 }, // smooth, no bounce — good for data viz
   });
 
   // Scale data value to pixel height
@@ -113,11 +106,7 @@ export const BarChartAnimation: React.FC = () => {
   const maxValue = Math.max(...DATA.map((d) => d.value));
 
   // Title slides down with a spring
-  const titleY = interpolate(
-    spring({ frame, fps, config: { damping: 200 } }),
-    [0, 1],
-    [-60, 0],
-  );
+  const titleY = interpolate(spring({ frame, fps, config: { damping: 200 } }), [0, 1], [-60, 0]);
 
   return (
     <AbsoluteFill

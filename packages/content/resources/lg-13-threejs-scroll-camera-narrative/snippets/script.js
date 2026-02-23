@@ -64,7 +64,7 @@ for (let i = 0; i < 140; i += 1) {
       emissive: palette[i % palette.length],
       emissiveIntensity: 0.28,
       roughness: 0.35,
-      metalness: 0.2
+      metalness: 0.2,
     })
   );
   sphere.position.set((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 6, -i * 0.48);
@@ -80,7 +80,7 @@ const chapters = [
   { pos: new THREE.Vector3(0, 0.4, 12), look: new THREE.Vector3(0, 0, -2) },
   { pos: new THREE.Vector3(2.6, 0.8, -1), look: new THREE.Vector3(0, 0, -12) },
   { pos: new THREE.Vector3(-1.8, 0.6, -16), look: new THREE.Vector3(0.5, 0, -26) },
-  { pos: new THREE.Vector3(0, 1.2, -33), look: new THREE.Vector3(0, 0, -46) }
+  { pos: new THREE.Vector3(0, 1.2, -33), look: new THREE.Vector3(0, 0, -46) },
 ];
 
 function progress() {
@@ -113,7 +113,7 @@ function animate() {
 
   points.children.forEach((m, i) => {
     if (!motionEnabled) return;
-    m.position.y += Math.sin((performance.now() * 0.001) + i) * 0.0009;
+    m.position.y += Math.sin(performance.now() * 0.001 + i) * 0.0009;
     m.rotation.y += 0.004;
   });
 

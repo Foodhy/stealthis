@@ -48,27 +48,27 @@ function initDemoShell() {
  * Dr. Yuki Tanaka // Three.js neural net + GSAP + Canvas 2D
  */
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
-import Lenis from 'lenis';
-import * as THREE from 'three';
+import gsap from "gsap";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import * as THREE from "three";
 
 // ── Register GSAP plugins ────────────────────────────────────────────
 gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin);
 
 // ── Init shell ───────────────────────────────────────────────────────
 initDemoShell({
-  title: 'AI Engineer Portfolio',
-  category: 'pages',
-  tech: ['three.js', 'gsap', 'scrambletext', 'lenis', 'canvas-2d']
+  title: "AI Engineer Portfolio",
+  category: "pages",
+  tech: ["three.js", "gsap", "scrambletext", "lenis", "canvas-2d"],
 });
 
 const reduced = prefersReducedMotion();
 
 // ── Lenis smooth scroll ──────────────────────────────────────────────
 const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
@@ -76,7 +76,7 @@ gsap.ticker.lagSmoothing(0);
 //  THREE.JS NEURAL NETWORK
 // ══════════════════════════════════════════════════════════════════════
 function initNeuralNet() {
-  const canvas = document.getElementById('neural-canvas');
+  const canvas = document.getElementById("neural-canvas");
   const W = canvas.clientWidth || window.innerWidth;
   const H = canvas.clientHeight || window.innerHeight;
 
@@ -102,17 +102,23 @@ function initNeuralNet() {
     const x = r * Math.sin(phi) * Math.cos(theta);
     const y = r * Math.sin(phi) * Math.sin(theta);
     const z = r * Math.cos(phi);
-    positions[i * 3]     = x;
+    positions[i * 3] = x;
     positions[i * 3 + 1] = y;
     positions[i * 3 + 2] = z;
-    nodes.push({ x, y, z, baseSize: 0.04 + Math.random() * 0.04, phase: Math.random() * Math.PI * 2 });
+    nodes.push({
+      x,
+      y,
+      z,
+      baseSize: 0.04 + Math.random() * 0.04,
+      phase: Math.random() * Math.PI * 2,
+    });
   }
 
   const nodeGeo = new THREE.BufferGeometry();
-  nodeGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  nodeGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   const nodeSizes = new Float32Array(NODE_COUNT);
   nodeSizes.fill(0.05);
-  nodeGeo.setAttribute('size', new THREE.BufferAttribute(nodeSizes, 1));
+  nodeGeo.setAttribute("size", new THREE.BufferAttribute(nodeSizes, 1));
 
   const nodeMat = new THREE.ShaderMaterial({
     uniforms: { color: { value: new THREE.Color(0x00ff88) } },
@@ -133,7 +139,7 @@ function initNeuralNet() {
       }
     `,
     transparent: true,
-    depthWrite: false
+    depthWrite: false,
   });
 
   const points = new THREE.Points(nodeGeo, nodeMat);
@@ -158,11 +164,11 @@ function initNeuralNet() {
   }
 
   const edgeGeo = new THREE.BufferGeometry();
-  edgeGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(edgePositions), 3));
+  edgeGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(edgePositions), 3));
   const edgeMat = new THREE.LineBasicMaterial({
     color: 0x9945ff,
     transparent: true,
-    opacity: 0.18
+    opacity: 0.18,
   });
   scene.add(new THREE.LineSegments(edgeGeo, edgeMat));
 
@@ -170,14 +176,14 @@ function initNeuralNet() {
   const PARTICLE_COUNT = 50;
   const particlePositions = new Float32Array(PARTICLE_COUNT * 3);
   const particleGeo = new THREE.BufferGeometry();
-  particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+  particleGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
 
   const particleMat = new THREE.PointsMaterial({
     color: 0x00d4ff,
     size: 0.08,
     transparent: true,
     opacity: 0.9,
-    depthWrite: false
+    depthWrite: false,
   });
 
   const particleMesh = new THREE.Points(particleGeo, particleMat);
@@ -191,7 +197,7 @@ function initNeuralNet() {
       edgeIdx,
       t: Math.random(),
       speed: 0.003 + Math.random() * 0.005,
-      direction: Math.random() > 0.5 ? 1 : -1
+      direction: Math.random() > 0.5 ? 1 : -1,
     });
   }
 
@@ -203,7 +209,7 @@ function initNeuralNet() {
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
-  window.addEventListener('resize', onResize);
+  window.addEventListener("resize", onResize);
 
   // ── Animation loop ───────────────────────────────────────────────
   let cameraAngle = 0;
@@ -244,7 +250,7 @@ function initNeuralNet() {
       }
 
       const edge = edges[pd.edgeIdx];
-      posAttr.array[i * 3]     = edge.from.x + (edge.to.x - edge.from.x) * pd.t;
+      posAttr.array[i * 3] = edge.from.x + (edge.to.x - edge.from.x) * pd.t;
       posAttr.array[i * 3 + 1] = edge.from.y + (edge.to.y - edge.from.y) * pd.t;
       posAttr.array[i * 3 + 2] = edge.from.z + (edge.to.z - edge.from.z) * pd.t;
     }
@@ -265,11 +271,12 @@ function initNeuralNet() {
 //  HERO TEXT ANIMATIONS
 // ══════════════════════════════════════════════════════════════════════
 function initHeroText() {
-  const nameEl = document.getElementById('hero-name');
+  const nameEl = document.getElementById("hero-name");
 
   if (!reduced) {
     // Scramble reveal
-    gsap.fromTo(nameEl,
+    gsap.fromTo(
+      nameEl,
       { opacity: 0 },
       {
         opacity: 1,
@@ -279,33 +286,49 @@ function initHeroText() {
             duration: 1.5,
             delay: 0.3,
             scrambleText: {
-              text: 'DR. YUKI TANAKA',
-              chars: '01ABCDEF!@#$%',
+              text: "DR. YUKI TANAKA",
+              chars: "01ABCDEF!@#$%",
               speed: 0.4,
-              delimiter: ''
-            }
+              delimiter: "",
+            },
           });
-        }
+        },
       }
     );
 
     // Fade in hero elements
-    gsap.fromTo('#hero-meta', { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.2 });
-    gsap.fromTo('#hero-title', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, delay: 1.4 });
-    gsap.fromTo('#hero-spec-wrapper', { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.6, delay: 1.8 });
-    gsap.fromTo('#hero-stats', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 2.0 });
-    gsap.fromTo('#hero-scroll-hint', { opacity: 0 }, { opacity: 1, duration: 0.8, delay: 2.6 });
+    gsap.fromTo(
+      "#hero-meta",
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.8, delay: 0.2 }
+    );
+    gsap.fromTo(
+      "#hero-title",
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, delay: 1.4 }
+    );
+    gsap.fromTo(
+      "#hero-spec-wrapper",
+      { opacity: 0, scale: 0.95 },
+      { opacity: 1, scale: 1, duration: 0.6, delay: 1.8 }
+    );
+    gsap.fromTo(
+      "#hero-stats",
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.8, delay: 2.0 }
+    );
+    gsap.fromTo("#hero-scroll-hint", { opacity: 0 }, { opacity: 1, duration: 0.8, delay: 2.6 });
   }
 
   // Typewriter specializations — runs regardless
-  const specs = ['LLM Fine-tuning', 'Diffusion Models', 'RL Systems', 'Neural Architecture'];
+  const specs = ["LLM Fine-tuning", "Diffusion Models", "RL Systems", "Neural Architecture"];
   let si = 0;
   let typeTimeout = null;
 
   function typeSpec() {
-    const el = document.getElementById('spec-text');
+    const el = document.getElementById("spec-text");
     const text = specs[si % specs.length];
-    el.textContent = '';
+    el.textContent = "";
     let ci = 0;
 
     const interval = setInterval(() => {
@@ -336,10 +359,13 @@ function initHeroText() {
 //  PAPER CARDS — scroll reveal
 // ══════════════════════════════════════════════════════════════════════
 function initPaperCards() {
-  const cards = document.querySelectorAll('.paper-card');
+  const cards = document.querySelectorAll(".paper-card");
 
   if (reduced) {
-    cards.forEach(c => { c.style.opacity = '1'; c.style.transform = 'none'; });
+    cards.forEach((c) => {
+      c.style.opacity = "1";
+      c.style.transform = "none";
+    });
     return;
   }
 
@@ -348,13 +374,13 @@ function initPaperCards() {
       opacity: 1,
       y: 0,
       duration: 0.7,
-      ease: 'power3.out',
+      ease: "power3.out",
       delay: i * 0.12,
       scrollTrigger: {
         trigger: card,
-        start: 'top 88%',
-        once: true
-      }
+        start: "top 88%",
+        once: true,
+      },
     });
   });
 }
@@ -363,8 +389,8 @@ function initPaperCards() {
 //  CANVAS 2D — Training Loss Curve
 // ══════════════════════════════════════════════════════════════════════
 function initLossCanvas() {
-  const canvas = document.getElementById('loss-canvas');
-  const ctx = canvas.getContext('2d');
+  const canvas = document.getElementById("loss-canvas");
+  const ctx = canvas.getContext("2d");
 
   // Generate a realistic loss curve: starts ~2.5, drops fast, levels off ~0.15
   function generateLossData(numPoints) {
@@ -387,7 +413,7 @@ function initLossCanvas() {
   function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    canvas.width  = rect.width  * dpr;
+    canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
     return { w: rect.width, h: rect.height };
@@ -402,13 +428,13 @@ function initLossCanvas() {
     ctx.clearRect(0, 0, w, h);
 
     // Background
-    ctx.fillStyle = '#020508';
+    ctx.fillStyle = "#020508";
     ctx.fillRect(0, 0, w, h);
 
     // Grid lines
     const gridCols = 8;
     const gridRows = 5;
-    ctx.strokeStyle = 'rgba(15,32,32,1)';
+    ctx.strokeStyle = "rgba(15,32,32,1)";
     ctx.lineWidth = 1;
 
     for (let i = 0; i <= gridCols; i++) {
@@ -427,9 +453,9 @@ function initLossCanvas() {
     }
 
     // Y axis labels
-    ctx.fillStyle = '#3a5a4a';
-    ctx.font = '9px JetBrains Mono, monospace';
-    ctx.textAlign = 'right';
+    ctx.fillStyle = "#3a5a4a";
+    ctx.font = "9px JetBrains Mono, monospace";
+    ctx.textAlign = "right";
     const yMax = 2.6;
     const yMin = 0.0;
     for (let i = 0; i <= gridRows; i++) {
@@ -439,15 +465,15 @@ function initLossCanvas() {
     }
 
     // X axis labels
-    ctx.textAlign = 'center';
+    ctx.textAlign = "center";
     for (let i = 0; i <= gridCols; i++) {
       const val = Math.round((i / gridCols) * 100);
       const x = PAD.left + (i / gridCols) * plotW;
-      ctx.fillText(val + 'k', x, PAD.top + plotH + 16);
+      ctx.fillText(val + "k", x, PAD.top + plotH + 16);
     }
 
     // Axes
-    ctx.strokeStyle = '#1a2435';
+    ctx.strokeStyle = "#1a2435";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(PAD.left, PAD.top);
@@ -467,11 +493,11 @@ function initLossCanvas() {
 
     // Glow fill under curve
     const firstPt = dataToCanvas(0, lossData[0]);
-    const lastPt  = dataToCanvas(drawCount - 1, lossData[drawCount - 1]);
+    const lastPt = dataToCanvas(drawCount - 1, lossData[drawCount - 1]);
 
     const gradient = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + plotH);
-    gradient.addColorStop(0, 'rgba(0,255,136,0.18)');
-    gradient.addColorStop(1, 'rgba(0,255,136,0.00)');
+    gradient.addColorStop(0, "rgba(0,255,136,0.18)");
+    gradient.addColorStop(1, "rgba(0,255,136,0.00)");
 
     ctx.beginPath();
     ctx.moveTo(firstPt.x, PAD.top + plotH);
@@ -486,11 +512,11 @@ function initLossCanvas() {
     ctx.fill();
 
     // Glowing line
-    ctx.shadowColor = '#00ff88';
+    ctx.shadowColor = "#00ff88";
     ctx.shadowBlur = 12;
-    ctx.strokeStyle = '#00ff88';
+    ctx.strokeStyle = "#00ff88";
     ctx.lineWidth = 2;
-    ctx.lineJoin = 'round';
+    ctx.lineJoin = "round";
 
     ctx.beginPath();
     const startPt = dataToCanvas(0, lossData[0]);
@@ -506,8 +532,8 @@ function initLossCanvas() {
     const leadPt = dataToCanvas(drawCount - 1, lossData[drawCount - 1]);
     ctx.beginPath();
     ctx.arc(leadPt.x, leadPt.y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#00ff88';
-    ctx.shadowColor = '#00ff88';
+    ctx.fillStyle = "#00ff88";
+    ctx.shadowColor = "#00ff88";
     ctx.shadowBlur = 16;
     ctx.fill();
     ctx.shadowBlur = 0;
@@ -524,8 +550,8 @@ function initLossCanvas() {
   // Animate on scroll entry
   let animated = false;
   ScrollTrigger.create({
-    trigger: '#loss-panel',
-    start: 'top 80%',
+    trigger: "#loss-panel",
+    start: "top 80%",
     onEnter: () => {
       if (animated) return;
       animated = true;
@@ -533,23 +559,23 @@ function initLossCanvas() {
       gsap.to(obj, {
         progress: 1,
         duration: 2.2,
-        ease: 'power2.inOut',
-        onUpdate: () => drawChart(obj.progress)
+        ease: "power2.inOut",
+        onUpdate: () => drawChart(obj.progress),
       });
-    }
+    },
   });
 
-  window.addEventListener('resize', () => drawChart(animated ? 1 : 0));
+  window.addEventListener("resize", () => drawChart(animated ? 1 : 0));
 }
 
 // ══════════════════════════════════════════════════════════════════════
 //  CANVAS 2D — Confusion Matrix (8×8 heatmap)
 // ══════════════════════════════════════════════════════════════════════
 function initConfusionMatrix() {
-  const container = document.getElementById('confusion-matrix');
+  const container = document.getElementById("confusion-matrix");
 
   // Simulate a realistic 8x8 confusion matrix (high diagonal, some off-diagonal)
-  const labels = ['NLI', 'QA', 'SUM', 'CLS', 'GEN', 'COD', 'MAT', 'RLX'];
+  const labels = ["NLI", "QA", "SUM", "CLS", "GEN", "COD", "MAT", "RLX"];
   const N = 8;
 
   // Build matrix: diagonal values high, off-diagonal noise
@@ -558,7 +584,7 @@ function initConfusionMatrix() {
     const row = [];
     for (let j = 0; j < N; j++) {
       if (i === j) {
-        row.push(0.82 + Math.random() * 0.17);    // diagonal: 0.82–0.99
+        row.push(0.82 + Math.random() * 0.17); // diagonal: 0.82–0.99
       } else {
         const off = Math.random() * 0.12;
         row.push(off * (Math.random() > 0.65 ? 1 : 0.3)); // sparse off-diagonal
@@ -571,17 +597,17 @@ function initConfusionMatrix() {
   for (let i = 0; i < N; i++) {
     for (let j = 0; j < N; j++) {
       const val = matrix[i][j];
-      const cell = document.createElement('div');
-      cell.className = 'cm-cell';
+      const cell = document.createElement("div");
+      cell.className = "cm-cell";
 
       // Color: green for diagonal, purple for off-diagonal confusion, dark for zero
       let r, g, b, a;
       if (i === j) {
         // Green diagonal
         const intensity = val;
-        r = Math.round(0   + intensity * 0);
+        r = Math.round(0 + intensity * 0);
         g = Math.round(100 + intensity * 155);
-        b = Math.round(60  + intensity * 76);
+        b = Math.round(60 + intensity * 76);
         a = 0.3 + intensity * 0.7;
       } else if (val > 0.04) {
         // Purple off-diagonal errors
@@ -591,7 +617,10 @@ function initConfusionMatrix() {
         b = Math.round(120 + intensity * 135);
         a = 0.2 + intensity * 0.7;
       } else {
-        r = 10; g = 20; b = 30; a = 0.4;
+        r = 10;
+        g = 20;
+        b = 30;
+        a = 0.4;
       }
 
       cell.style.background = `rgba(${r},${g},${b},${a})`;
@@ -601,35 +630,35 @@ function initConfusionMatrix() {
       }
 
       // Stagger reveal
-      cell.style.opacity = '0';
-      cell.style.transform = 'scale(0.5)';
+      cell.style.opacity = "0";
+      cell.style.transform = "scale(0.5)";
       container.appendChild(cell);
     }
   }
 
   if (reduced) {
-    container.querySelectorAll('.cm-cell').forEach(c => {
-      c.style.opacity = '1';
-      c.style.transform = 'none';
+    container.querySelectorAll(".cm-cell").forEach((c) => {
+      c.style.opacity = "1";
+      c.style.transform = "none";
     });
     return;
   }
 
   ScrollTrigger.create({
-    trigger: '#confusion-panel',
-    start: 'top 80%',
+    trigger: "#confusion-panel",
+    start: "top 80%",
     onEnter: () => {
-      const cells = container.querySelectorAll('.cm-cell');
+      const cells = container.querySelectorAll(".cm-cell");
       cells.forEach((cell, i) => {
         gsap.to(cell, {
           opacity: 1,
           scale: 1,
           duration: 0.35,
           delay: i * 0.008,
-          ease: 'back.out(1.4)'
+          ease: "back.out(1.4)",
         });
       });
-    }
+    },
   });
 }
 
@@ -637,17 +666,22 @@ function initConfusionMatrix() {
 //  TERMINAL STACK — stagger reveal
 // ══════════════════════════════════════════════════════════════════════
 function initTerminal() {
-  const lines = document.querySelectorAll('.term-line, .term-output');
+  const lines = document.querySelectorAll(".term-line, .term-output");
 
   if (reduced) {
-    lines.forEach(l => { l.style.opacity = '1'; l.style.transform = 'none'; });
-    document.querySelectorAll('.term-bar-fill').forEach(b => { b.style.width = b.style.getPropertyValue('--pct'); });
+    lines.forEach((l) => {
+      l.style.opacity = "1";
+      l.style.transform = "none";
+    });
+    document.querySelectorAll(".term-bar-fill").forEach((b) => {
+      b.style.width = b.style.getPropertyValue("--pct");
+    });
     return;
   }
 
   ScrollTrigger.create({
-    trigger: '#terminal-body',
-    start: 'top 82%',
+    trigger: "#terminal-body",
+    start: "top 82%",
     onEnter: () => {
       lines.forEach((line, i) => {
         const delay = i * 0.1;
@@ -656,22 +690,22 @@ function initTerminal() {
           x: 0,
           duration: 0.4,
           delay,
-          ease: 'power2.out'
+          ease: "power2.out",
         });
 
         // Animate skill bars
-        const bar = line.querySelector('.term-bar-fill');
+        const bar = line.querySelector(".term-bar-fill");
         if (bar) {
-          const targetPct = bar.style.getPropertyValue('--pct');
+          const targetPct = bar.style.getPropertyValue("--pct");
           gsap.to(bar, {
             width: targetPct,
             duration: 1.0,
             delay: delay + 0.15,
-            ease: 'power2.out'
+            ease: "power2.out",
           });
         }
       });
-    }
+    },
   });
 }
 
@@ -681,32 +715,36 @@ function initTerminal() {
 function initContact() {
   if (reduced) return;
 
-  gsap.fromTo('.contact-terminal',
+  gsap.fromTo(
+    ".contact-terminal",
     { opacity: 0, y: 30 },
     {
-      opacity: 1, y: 0,
+      opacity: 1,
+      y: 0,
       duration: 0.9,
-      ease: 'power3.out',
+      ease: "power3.out",
       scrollTrigger: {
-        trigger: '#contact',
-        start: 'top 85%',
-        once: true
-      }
+        trigger: "#contact",
+        start: "top 85%",
+        once: true,
+      },
     }
   );
 
-  gsap.fromTo('.contact-row',
+  gsap.fromTo(
+    ".contact-row",
     { opacity: 0, x: -20 },
     {
-      opacity: 1, x: 0,
+      opacity: 1,
+      x: 0,
       duration: 0.5,
       stagger: 0.1,
-      ease: 'power2.out',
+      ease: "power2.out",
       scrollTrigger: {
-        trigger: '.contact-output',
-        start: 'top 88%',
-        once: true
-      }
+        trigger: ".contact-output",
+        start: "top 88%",
+        once: true,
+      },
     }
   );
 }
@@ -717,18 +755,20 @@ function initContact() {
 function initSectionHeaders() {
   if (reduced) return;
 
-  document.querySelectorAll('.section-header').forEach(header => {
-    gsap.fromTo(header,
+  document.querySelectorAll(".section-header").forEach((header) => {
+    gsap.fromTo(
+      header,
       { opacity: 0, y: 20 },
       {
-        opacity: 1, y: 0,
+        opacity: 1,
+        y: 0,
         duration: 0.7,
-        ease: 'power2.out',
+        ease: "power2.out",
         scrollTrigger: {
           trigger: header,
-          start: 'top 90%',
-          once: true
-        }
+          start: "top 90%",
+          once: true,
+        },
       }
     );
   });
@@ -737,7 +777,7 @@ function initSectionHeaders() {
 // ══════════════════════════════════════════════════════════════════════
 //  REDUCED MOTION LISTENER
 // ══════════════════════════════════════════════════════════════════════
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   // If user toggles motion mid-session, refresh page to reinitialize
   // (complex animation state makes incremental change impractical)
   location.reload();

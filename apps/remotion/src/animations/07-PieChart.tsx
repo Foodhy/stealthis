@@ -22,27 +22,21 @@
  *   5. Use `transform="rotate(-90 cx cy)"` to start at 12 o'clock
  */
 
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
 // --- Chart data ---
 const DATA = [
-  { label: "React",   value: 38, color: "#61dafb" },
-  { label: "Vue",     value: 24, color: "#42b883" },
+  { label: "React", value: 38, color: "#61dafb" },
+  { label: "Vue", value: 24, color: "#42b883" },
   { label: "Angular", value: 20, color: "#dd0031" },
-  { label: "Svelte",  value: 11, color: "#ff3e00" },
-  { label: "Other",   value: 7,  color: "#94a3b8" },
+  { label: "Svelte", value: 11, color: "#ff3e00" },
+  { label: "Other", value: 7, color: "#94a3b8" },
 ];
 
-const CX = 250;       // SVG circle center X
-const CY = 250;       // SVG circle center Y
-const RADIUS = 180;   // Circle radius
-const STROKE_W = 80;  // Stroke width (thicker = more donut-like)
+const CX = 250; // SVG circle center X
+const CY = 250; // SVG circle center Y
+const RADIUS = 180; // Circle radius
+const STROKE_W = 80; // Stroke width (thicker = more donut-like)
 
 // --- Single donut segment ---
 const Segment: React.FC<{
@@ -54,7 +48,6 @@ const Segment: React.FC<{
   color: string;
   index: number;
 }> = ({ frame, fps, circumference, segmentLength, startOffset, color, index }) => {
-
   // Each segment animates with a spring, staggered by index
   const progress = spring({
     frame: frame - index * 8,
@@ -99,7 +92,6 @@ const LegendItem: React.FC<{
   color: string;
   total: number;
 }> = ({ frame, fps, index, label, value, color, total }) => {
-
   const progress = spring({
     frame: frame - index * 8,
     fps,
@@ -121,9 +113,7 @@ const LegendItem: React.FC<{
       <div
         style={{ width: 20, height: 20, borderRadius: 4, backgroundColor: color, flexShrink: 0 }}
       />
-      <span style={{ color: "#94a3b8", fontSize: 22, fontFamily: "sans-serif" }}>
-        {label}
-      </span>
+      <span style={{ color: "#94a3b8", fontSize: 22, fontFamily: "sans-serif" }}>{label}</span>
       <span style={{ color: "#e2e8f0", fontSize: 22, fontFamily: "monospace", marginLeft: "auto" }}>
         {pct}%
       </span>
@@ -165,6 +155,7 @@ export const PieChartAnimation: React.FC = () => {
       {/* Left: SVG donut chart */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
         <svg width={CX * 2} height={CY * 2}>
+          <title>Framework usage donut chart</title>
           {segments.map((seg) => (
             <Segment
               key={seg.label}

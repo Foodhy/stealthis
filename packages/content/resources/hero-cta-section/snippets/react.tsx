@@ -26,17 +26,18 @@ export default function HeroCTASection() {
             backgroundClip: "text",
           }}
         >
-          Build faster.<br />Ship better.
+          Build faster.
+          <br />
+          Ship better.
         </h1>
 
         <p className="text-lg text-slate-400 leading-relaxed mb-10">
-          A collection of ready-to-use components, animations, and patterns.
-          Free to copy, forever.
+          A collection of ready-to-use components, animations, and patterns. Free to copy, forever.
         </p>
 
         <div className="flex items-center justify-center gap-3.5 flex-wrap">
           <a
-            href="#"
+            href="https://stealthis.dev/library"
             className="inline-flex items-center px-7 py-3 rounded-xl text-[0.9375rem] font-semibold text-white transition-all hover:-translate-y-0.5"
             style={{
               background: "linear-gradient(135deg,#6366f1,#38bdf8)",
@@ -46,7 +47,7 @@ export default function HeroCTASection() {
             Get Started →
           </a>
           <a
-            href="#"
+            href="https://github.com/Foodhy/stealthis"
             className="inline-flex items-center px-7 py-3 rounded-xl text-[0.9375rem] font-semibold text-slate-400 border border-white/12 bg-white/6 hover:bg-white/10 hover:text-slate-100 transition-all"
           >
             View on GitHub

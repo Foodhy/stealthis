@@ -2,18 +2,18 @@ const highlights = [
   {
     title: "Aurora Wallet",
     detail: "Redesigned onboarding lifted activation by 38%",
-    year: "2025"
+    year: "2025",
   },
   {
     title: "Nexa XR Studio",
     detail: "WebGL showroom for wearable launch",
-    year: "2024"
+    year: "2024",
   },
   {
     title: "Pulse Health",
     detail: "Motion system for a 12-country rollout",
-    year: "2023"
-  }
+    year: "2023",
+  },
 ];
 
 const projects = [
@@ -22,47 +22,47 @@ const projects = [
     role: "Product system + 3D brand refresh",
     year: "2026",
     impact: "Reduced time-to-value from 10 to 4 days",
-    tags: ["Design System", "WebGL", "Fintech"]
+    tags: ["Design System", "WebGL", "Fintech"],
   },
   {
     name: "Lumen Mobility",
     role: "Spatial UI for autonomous fleet ops",
     year: "2025",
     impact: "Live ops dashboard for 2,000+ vehicles",
-    tags: ["Interaction", "Data Viz", "Motion"]
+    tags: ["Interaction", "Data Viz", "Motion"],
   },
   {
     name: "Glasshouse",
     role: "Immersive e-commerce flagship",
     year: "2024",
     impact: "+62% engagement on hero modules",
-    tags: ["E-commerce", "3D", "Brand"]
+    tags: ["E-commerce", "3D", "Brand"],
   },
   {
     name: "Aether Wellness",
     role: "Ritual library + responsive motion",
     year: "2024",
     impact: "Expanded retention to 9.2 months",
-    tags: ["Mobile", "Wellness", "Animation"]
-  }
+    tags: ["Mobile", "Wellness", "Animation"],
+  },
 ];
 
 const timeline = [
   {
     title: "Studio Lead — Liquid Gradient",
     time: "2022 → Present",
-    detail: "Built a distributed team shipping premium web experiences."
+    detail: "Built a distributed team shipping premium web experiences.",
   },
   {
     title: "Principal Designer — Halo Labs",
     time: "2018 → 2022",
-    detail: "Led motion-first design systems for global brands."
+    detail: "Led motion-first design systems for global brands.",
   },
   {
     title: "Senior UX Designer — Northwind",
     time: "2013 → 2018",
-    detail: "Shipped cross-platform products for SaaS teams."
-  }
+    detail: "Shipped cross-platform products for SaaS teams.",
+  },
 ];
 
 const highlightGrid = document.getElementById("highlightGrid");
@@ -186,7 +186,7 @@ class TouchTexture {
   drawPoint(point) {
     const pos = {
       x: point.x * this.width,
-      y: (1 - point.y) * this.height
+      y: (1 - point.y) * this.height,
     };
 
     const intensity = 1 - point.age / this.maxAge;
@@ -206,7 +206,7 @@ class GradientScene {
   constructor() {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: true
+      alpha: true,
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -214,12 +214,7 @@ class GradientScene {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      100
-    );
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
     this.camera.position.z = 6;
 
     this.clock = new THREE.Clock();
@@ -231,35 +226,35 @@ class GradientScene {
       uTouch: { value: this.touchTexture.texture },
       uColorA: { value: new THREE.Color("#f26b3a") },
       uColorB: { value: new THREE.Color("#3de0c3") },
-      uColorC: { value: new THREE.Color("#0a1222") }
+      uColorC: { value: new THREE.Color("#0a1222") },
     };
 
     this.colorSchemes = [
       {
         a: "#f26b3a",
         b: "#3de0c3",
-        c: "#0a1222"
+        c: "#0a1222",
       },
       {
         a: "#1d3b4f",
         b: "#58ffd0",
-        c: "#05060a"
+        c: "#05060a",
       },
       {
         a: "#ffb347",
         b: "#ffe66d",
-        c: "#0b1b16"
+        c: "#0b1b16",
       },
       {
         a: "#ffdf3a",
         b: "#ff2d55",
-        c: "#1a0b12"
+        c: "#1a0b12",
       },
       {
         a: "#8b5bff",
         b: "#57ff6b",
-        c: "#0a0e16"
-      }
+        c: "#0a0e16",
+      },
     ];
 
     this.initMesh();
@@ -319,7 +314,7 @@ class GradientScene {
 
           gl_FragColor = vec4(color, 1.0);
         }
-      `
+      `,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
@@ -376,7 +371,7 @@ schemeButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     schemeButtons.forEach((button) => button.classList.remove("active"));
     btn.classList.add("active");
-    gradientScene.setScheme(parseInt(btn.dataset.scheme, 10));
+    gradientScene.setScheme(Number.parseInt(btn.dataset.scheme, 10));
   });
 });
 

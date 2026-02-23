@@ -45,23 +45,23 @@ function initDemoShell() {
 
 // ── Demo shell ──
 initDemoShell({
-  title: 'Magnetic Cursor',
-  category: 'css-canvas',
-  tech: ['vanilla-js', 'spring-physics'],
+  title: "Magnetic Cursor",
+  category: "css-canvas",
+  tech: ["vanilla-js", "spring-physics"],
 });
 
 // ── Reduced motion ──
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
 });
 
 // ── Cursor elements ──
-const ring = document.getElementById('cursor-ring');
-const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById("cursor-ring");
+const dot = document.getElementById("cursor-dot");
 
 // ── State ──
 const cursor = {
@@ -75,35 +75,35 @@ const cursor = {
 };
 
 // ── Mouse tracking ──
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   cursor.x = e.clientX;
   cursor.y = e.clientY;
 });
 
-document.addEventListener('mousedown', () => {
-  ring.classList.add('clicking');
+document.addEventListener("mousedown", () => {
+  ring.classList.add("clicking");
 });
 
-document.addEventListener('mouseup', () => {
-  ring.classList.remove('clicking');
+document.addEventListener("mouseup", () => {
+  ring.classList.remove("clicking");
 });
 
 // ── Magnetic elements ──
-const magneticEls = document.querySelectorAll('[data-magnetic]');
+const magneticEls = document.querySelectorAll("[data-magnetic]");
 const MAGNETIC_RADIUS = 80; // px detection radius
 
 const magneticStates = new Map();
 magneticEls.forEach((el) => {
   magneticStates.set(el, { offsetX: 0, offsetY: 0 });
 
-  el.addEventListener('mouseenter', () => {
+  el.addEventListener("mouseenter", () => {
     cursor.hovering = true;
-    ring.classList.add('hovering');
+    ring.classList.add("hovering");
   });
 
-  el.addEventListener('mouseleave', () => {
+  el.addEventListener("mouseleave", () => {
     cursor.hovering = false;
-    ring.classList.remove('hovering');
+    ring.classList.remove("hovering");
     // Reset element position
     const state = magneticStates.get(el);
     state.offsetX = 0;
@@ -140,7 +140,7 @@ function tick() {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     const state = magneticStates.get(el);
-    const strength = parseFloat(el.dataset.magneticStrength) || 0.3;
+    const strength = Number.parseFloat(el.dataset.magneticStrength) || 0.3;
 
     if (dist < MAGNETIC_RADIUS) {
       // Pull element toward cursor
@@ -157,7 +157,7 @@ function tick() {
     if (Math.abs(state.offsetX) > 0.01 || Math.abs(state.offsetY) > 0.01) {
       el.style.transform = `translate(${state.offsetX}px, ${state.offsetY}px)`;
     } else {
-      el.style.transform = '';
+      el.style.transform = "";
     }
   });
 
@@ -167,12 +167,12 @@ function tick() {
 requestAnimationFrame(tick);
 
 // ── Hide cursor when leaving window ──
-document.addEventListener('mouseleave', () => {
-  ring.style.opacity = '0';
-  dot.style.opacity = '0';
+document.addEventListener("mouseleave", () => {
+  ring.style.opacity = "0";
+  dot.style.opacity = "0";
 });
 
-document.addEventListener('mouseenter', () => {
-  ring.style.opacity = '1';
-  dot.style.opacity = '1';
+document.addEventListener("mouseenter", () => {
+  ring.style.opacity = "1";
+  dot.style.opacity = "1";
 });

@@ -1,5 +1,5 @@
-import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
 const STATIC_PATHS = ["/", "/library/", "/es/", "/es/library/", "/llms.txt"];
@@ -24,7 +24,10 @@ export const GET: APIRoute = async ({ site }) => {
   }
 
   const body = urls
-    .map(({ loc, lastmod }) => `<url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`)
+    .map(
+      ({ loc, lastmod }) =>
+        `<url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`
+    )
     .join("");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`;

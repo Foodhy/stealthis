@@ -234,21 +234,24 @@ function main() {
       const labRoute = `/${mapped.category}/${slug}`;
 
       mkdirSync(snippetsDir, { recursive: true });
-      writeFileSync(path.join(resourceDir, "index.mdx"), buildMdx({
-        slug,
-        title: `${entry.title}`,
-        description: description || `Imported example from ${source.key}: ${entry.title}.`,
-        category: mapped.category,
-        type: mapped.type,
-        tags,
-        tech,
-        difficulty,
-        targets: ["html"],
-        labRoute,
-        source: source.key,
-        sourceId: entry.id,
-        notes,
-      }));
+      writeFileSync(
+        path.join(resourceDir, "index.mdx"),
+        buildMdx({
+          slug,
+          title: `${entry.title}`,
+          description: description || `Imported example from ${source.key}: ${entry.title}.`,
+          category: mapped.category,
+          type: mapped.type,
+          tags,
+          tech,
+          difficulty,
+          targets: ["html"],
+          labRoute,
+          source: source.key,
+          sourceId: entry.id,
+          notes,
+        })
+      );
       writeFileSync(path.join(snippetsDir, "html.html"), html);
       writeFileSync(path.join(snippetsDir, "style.css"), css);
       writeFileSync(path.join(snippetsDir, "script.js"), rewrite.script);
@@ -267,10 +270,7 @@ function main() {
 
 function sanitizeText(value) {
   if (!value) return "";
-  return String(value)
-    .replace(/\r\n/g, "\n")
-    .replace(/\s+/g, " ")
-    .trim();
+  return String(value).replace(/\r\n/g, "\n").replace(/\s+/g, " ").trim();
 }
 
 function normalizeTech(value) {
@@ -320,14 +320,18 @@ function mapCategoryAndType(sourceKey, entry) {
 }
 
 function buildTags(sourceKey, id, tech, mappedCategory) {
-  const sourceTag = sourceKey === "libs-genclaude" ? "imported-libs-genclaude" : "imported-libs-gen";
+  const sourceTag =
+    sourceKey === "libs-genclaude" ? "imported-libs-genclaude" : "imported-libs-gen";
   const normalizedIdTokens = String(id)
     .replace(/^[0-9]+-/, "")
     .split("-")
     .map((token) => token.trim().toLowerCase())
     .filter((token) => token && !/^[0-9]+$/.test(token));
   const techTags = tech.map((token) =>
-    token.toLowerCase().replace(/[^a-z0-9.-]+/g, "-").replace(/^-+|-+$/g, "")
+    token
+      .toLowerCase()
+      .replace(/[^a-z0-9.-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
   );
   return [...new Set([sourceTag, mappedCategory, ...normalizedIdTokens, ...techTags])]
     .filter(Boolean)
@@ -340,26 +344,17 @@ function rewriteHtml(input, isModule, needsLenisCssShim = false) {
     ? '<script type="module" src="script.js"></script>'
     : '<script src="script.js"></script>';
 
-  html = html.replace(
-    /<link[^>]+href=["'][^"']*shared\/[^"']+["'][^>]*>\s*/gi,
-    ""
-  );
-  html = html.replace(
-    /<script[^>]+src=["'][^"']*shared\/[^"']+["'][^>]*>\s*<\/script>\s*/gi,
-    ""
-  );
+  html = html.replace(/<link[^>]+href=["'][^"']*shared\/[^"']+["'][^>]*>\s*/gi, "");
+  html = html.replace(/<script[^>]+src=["'][^"']*shared\/[^"']+["'][^>]*>\s*<\/script>\s*/gi, "");
 
   html = html.replace(/href=(['"])(?:\.\/)?styles\.css\1/gi, 'href="style.css"');
   html = html.replace(/href=(['"])(?:\.\/)?style\.css\1/gi, 'href="style.css"');
 
   let replacedMain = false;
-  html = html.replace(
-    /<script\b[^>]*\bsrc=(['"])(?:\.\/)?main\.js\1[^>]*>\s*<\/script>/gi,
-    () => {
-      replacedMain = true;
-      return scriptTag;
-    }
-  );
+  html = html.replace(/<script\b[^>]*\bsrc=(['"])(?:\.\/)?main\.js\1[^>]*>\s*<\/script>/gi, () => {
+    replacedMain = true;
+    return scriptTag;
+  });
 
   if (!replacedMain && !/src=(['"])(?:\.\/)?script\.js\1/i.test(html)) {
     html = html.replace(/<\/body>/i, `  ${scriptTag}\n</body>`);

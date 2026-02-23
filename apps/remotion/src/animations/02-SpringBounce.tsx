@@ -17,21 +17,15 @@
  *   3. Add `delay` to stagger multiple elements
  */
 
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
 // --- Spring config presets ---
 // Adjust these to feel the difference between spring behaviors
 const CONFIGS = {
-  smooth:  { damping: 200 },                           // No bounce, silky
-  snappy:  { damping: 20, stiffness: 200 },            // Quick with tiny bounce
-  bouncy:  { damping: 8 },                             // Playful overshoot
-  heavy:   { damping: 15, stiffness: 80, mass: 2 },   // Slow, weighty entrance
+  smooth: { damping: 200 }, // No bounce, silky
+  snappy: { damping: 20, stiffness: 200 }, // Quick with tiny bounce
+  bouncy: { damping: 8 }, // Playful overshoot
+  heavy: { damping: 15, stiffness: 80, mass: 2 }, // Slow, weighty entrance
 } as const;
 
 type ConfigKey = keyof typeof CONFIGS;
@@ -45,11 +39,10 @@ const Box: React.FC<{
   color: string;
   label: string;
 }> = ({ frame, fps, delay, configKey, color, label }) => {
-
   // spring() returns a value 0→1 (with possible overshoot on bouncy configs)
   // `frame - delay` shifts when the animation starts — negative frames clamp to 0
   const progress = spring({
-    frame: frame - delay,  // subtract delay to stagger entrance
+    frame: frame - delay, // subtract delay to stagger entrance
     fps,
     config: CONFIGS[configKey],
   });
@@ -104,10 +97,10 @@ export const SpringBounceAnimation: React.FC = () => {
   const { fps } = useVideoConfig();
 
   const boxes: { config: ConfigKey; color: string; delay: number }[] = [
-    { config: "smooth",  color: "#6366f1", delay: 0  },
-    { config: "snappy",  color: "#22d3ee", delay: 8  },
-    { config: "bouncy",  color: "#f59e0b", delay: 16 },
-    { config: "heavy",   color: "#ec4899", delay: 24 },
+    { config: "smooth", color: "#6366f1", delay: 0 },
+    { config: "snappy", color: "#22d3ee", delay: 8 },
+    { config: "bouncy", color: "#f59e0b", delay: 16 },
+    { config: "heavy", color: "#ec4899", delay: 24 },
   ];
 
   return (
