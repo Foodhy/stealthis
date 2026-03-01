@@ -104,7 +104,7 @@ Continue the `lgc-XX` series from `lgc-58`.
 
 ---
 
-## Phase 6 — UI Components Extended (shadcn gap fill)
+## Phase 6 — UI Components Extended (shadcn gap fill) ✅ DONE
 
 Components present in shadcn/ui that don't yet exist in the library.
 Grouped by complexity. All are vanilla HTML/CSS/JS unless noted.
@@ -116,41 +116,41 @@ Grouped by complexity. All are vanilla HTML/CSS/JS unless noted.
 
 | Slug | shadcn equiv | Tech | Status |
 |---|---|---|---|
-| `alert-banner` | Alert | css | [ ] |
-| `badge` | Badge | css | [ ] |
-| `avatar-group` | Avatar | css | [ ] |
-| `breadcrumb` | Breadcrumb | css, vanilla-js | [ ] |
-| `progress-bar` | Progress | css, vanilla-js | [ ] |
-| `checkbox-group` | Checkbox | css | [ ] |
-| `radio-group` | Radio Group | css | [ ] |
-| `hover-card` | Hover Card | css | [ ] |
-| `input-variants` | Input / Input Group | css | [ ] |
-| `separator` | Separator | css | [ ] |
+| `alert-banner` | Alert | css | ✅ |
+| `badge` | Badge | css | ✅ |
+| `avatar-group` | Avatar | css | ✅ |
+| `breadcrumb` | Breadcrumb | css, vanilla-js | ✅ |
+| `progress-bar` | Progress | css, vanilla-js | ✅ |
+| `checkbox-group` | Checkbox | css | ✅ |
+| `radio-group` | Radio Group | css | ✅ |
+| `hover-card` | Hover Card | css | ✅ |
+| `input-variants` | Input / Input Group | css | ✅ |
+| `separator` | Separator | css | ✅ |
 
 ### Medium — JS required
 
 | Slug | shadcn equiv | Tech | Status |
 |---|---|---|---|
-| `modal-dialog` | Dialog / Alert Dialog | vanilla-js, css | [ ] |
-| `dropdown-menu` | Dropdown Menu | vanilla-js, css | [ ] |
-| `popover` | Popover | vanilla-js, css | [ ] |
-| `custom-select` | Select / Combobox | vanilla-js, css | [ ] |
-| `range-slider` | Slider | vanilla-js, css | [ ] |
-| `pagination` | Pagination | vanilla-js, css | [ ] |
-| `sheet-drawer` | Sheet / Drawer | vanilla-js, css | [ ] |
-| `carousel` | Carousel | vanilla-js, css | [ ] |
-| `context-menu` | Context Menu | vanilla-js, css | [ ] |
-| `navigation-menu` | Navigation Menu | vanilla-js, css | [ ] |
-| `otp-input` | Input OTP | vanilla-js, css | [ ] |
-| `scroll-area` | Scroll Area | css | [ ] |
+| `modal-dialog` | Dialog / Alert Dialog | vanilla-js, css | ✅ |
+| `dropdown-menu` | Dropdown Menu | vanilla-js, css | ✅ |
+| `popover` | Popover | vanilla-js, css | ✅ |
+| `custom-select` | Select / Combobox | vanilla-js, css | ✅ |
+| `range-slider` | Slider | vanilla-js, css | ✅ |
+| `pagination` | Pagination | vanilla-js, css | ✅ |
+| `sheet-drawer` | Sheet / Drawer | vanilla-js, css | ✅ |
+| `carousel` | Carousel | vanilla-js, css | ✅ |
+| `context-menu` | Context Menu | vanilla-js, css | ✅ |
+| `navigation-menu` | Navigation Menu | vanilla-js, css | ✅ |
+| `otp-input` | Input OTP | vanilla-js, css | ✅ |
+| `scroll-area` | Scroll Area | css | ✅ |
 
 ### Hard — complex state / layout
 
 | Slug | shadcn equiv | Tech | Status |
 |---|---|---|---|
-| `resizable-panels` | Resizable | vanilla-js, css | [ ] |
-| `date-picker` | Date Picker / Calendar | vanilla-js, css | [ ] |
-| `data-table` | Data Table | vanilla-js, css | [ ] |
+| `resizable-panels` | Resizable | vanilla-js, css | ✅ |
+| `date-picker` | Date Picker / Calendar | vanilla-js, css | ✅ |
+| `data-table` | Data Table | vanilla-js, css | ✅ |
 
 ---
 
