@@ -38,6 +38,10 @@ const resources = defineCollection({
     preview: z.string().optional(),
     labRoute: z.string().optional(),
     license: z.string().default("MIT"),
+    author: z.object({
+      name: z.string(),
+      src: z.string(),
+    }).optional(),
     createdAt: z.union([z.string(), z.date()]).transform((v) =>
       v instanceof Date ? v.toISOString().slice(0, 10) : v
     ),

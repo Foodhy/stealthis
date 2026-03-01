@@ -22,6 +22,11 @@ export type ResourceTarget =
   | "typescript" | "python"
   | "markdown" | "yaml" | "json";
 
+export interface ResourceAuthor {
+  name: string;
+  src: string;
+}
+
 export interface ResourceMeta {
   slug: string;
   title: string;
@@ -35,6 +40,7 @@ export interface ResourceMeta {
   preview?: string;
   labRoute?: string;
   license: string;
+  author?: ResourceAuthor;
   createdAt: string;
   updatedAt: string;
 }

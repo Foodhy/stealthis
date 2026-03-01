@@ -5,6 +5,7 @@ import FilterBar from "@components/FilterBar.astro";
 import { getCollection } from "astro:content";
 import { useTranslations, getLocaleFromUrl } from "@i18n/index";
 import { curatedCollections } from "@lib/collections";
+import { SHOW_SORT_BAR } from "@lib/constant";
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -16,6 +17,7 @@ const allResources = (await getCollection("resources")).sort(
 
 const categories = [...new Set(allResources.map((r) => r.data.category))].sort();
 const techs      = [...new Set(allResources.flatMap((r) => r.data.tech))].sort();
+const authors    = [...new Set(allResources.flatMap((r) => r.data.author ? [r.data.author.name] : []))].sort();
 
 // Group resources by category
 const byCategory = new Map<string, typeof allResources>();
@@ -113,7 +115,7 @@ const structuredData = {
     <div class="flex flex-col lg:flex-row gap-8">
       <!-- Sidebar: filters -->
       <aside class="w-full lg:w-64 shrink-0">
-        <FilterBar locale={locale} categories={categories} techs={techs} />
+        <FilterBar locale={locale} categories={categories} techs={techs} authors={authors} />
 
         <div class="mt-6 flex flex-col gap-2">
           <button
@@ -129,8 +131,20 @@ const structuredData = {
         </div>
       </aside>
 
-      <!-- Resource grid grouped by category -->
+      <!-- Resource grid -->
       <div class="flex-1 min-w-0" id="resource-grid">
+
+        <!-- Sort bar -->
+        {SHOW_SORT_BAR && (
+        <div class="flex items-center gap-2 mb-6">
+          <span class="text-xs text-slate-500 shrink-0">{t("library.sort.grouped").split(" ")[0]}:</span>
+          <button id="sort-grouped" class="chip chip--active">{t("library.sort.grouped")}</button>
+          <button id="sort-latest" class="chip">{t("library.sort.latest")}</button>
+        </div>
+        )}
+
+        <!-- Flat grid — shown in "latest" mode -->
+        <div id="flat-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-12"></div>
 
         {CATEGORY_GROUPS.map((group) => {
           const hasAny = group.categories.some((c) => (byCategory.get(c)?.length ?? 0) > 0);
@@ -177,6 +191,80 @@ const structuredData = {
 
 <script>
   import { exportFavorites, importFavorites } from "@lib/favorites";
+
+  // ── Sort: grouped vs latest ──────────────────────────────────────
+  const flatGrid     = document.getElementById("flat-grid") as HTMLElement;
+  const sortGrouped  = document.getElementById("sort-grouped") as HTMLButtonElement;
+  const sortLatest   = document.getElementById("sort-latest") as HTMLButtonElement;
+
+  // Store each card's original parent grid + next sibling before any moves
+  type CardOrigin = { parent: Element; nextSibling: Element | null };
+  const origins = new Map<Element, CardOrigin>();
+  document.querySelectorAll<HTMLElement>("[data-slug]").forEach((card) => {
+    origins.set(card, { parent: card.parentElement!, nextSibling: card.nextElementSibling });
+  });
+
+  let sortMode: "grouped" | "latest" = "grouped";
+
+  function activateLatest() {
+    if (sortMode === "latest") return;
+    sortMode = "latest";
+    sortGrouped.classList.remove("chip--active");
+    sortLatest.classList.add("chip--active");
+
+    // Collect all cards, sort newest first
+    const cards = [...origins.keys()] as HTMLElement[];
+    cards.sort((a, b) => {
+      const tA = new Date(a.dataset.createdAt ?? "").getTime();
+      const tB = new Date(b.dataset.createdAt ?? "").getTime();
+      return tB - tA;
+    });
+
+    flatGrid.innerHTML = "";
+    for (const card of cards) flatGrid.appendChild(card);
+
+    // Hide category groups, clear any inline display override, then show flat grid
+    document.querySelectorAll<HTMLElement>("[data-category-group]").forEach((g) => (g.style.display = "none"));
+    flatGrid.style.display = "";
+    flatGrid.classList.remove("hidden");
+  }
+
+  function activateGrouped() {
+    if (sortMode === "grouped") return;
+    sortMode = "grouped";
+    sortLatest.classList.remove("chip--active");
+    sortGrouped.classList.add("chip--active");
+
+    // Restore in REVERSE document order so each nextSibling is already back
+    // in its parent before we insertBefore it (forward order causes HierarchyRequestError
+    // because nextSibling is still in flatGrid when we try to use it as reference).
+    const entries = [...origins.entries()];
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const [card, { parent, nextSibling }] = entries[i];
+      parent.insertBefore(card, nextSibling);
+    }
+
+    flatGrid.classList.add("hidden");
+    flatGrid.style.display = "";
+
+    // Re-evaluate section visibility based on each card's current display state
+    // (FilterBar already applied filters while cards were in flat-grid).
+    document.querySelectorAll<HTMLElement>("[data-category-section]").forEach((section) => {
+      const hasVisible = [...section.querySelectorAll<HTMLElement>("[data-slug]")]
+        .some((c) => c.style.display !== "none");
+      section.style.display = hasVisible ? "" : "none";
+    });
+
+    // Re-evaluate group visibility based on whether any of its sections are visible.
+    document.querySelectorAll<HTMLElement>("[data-category-group]").forEach((g) => {
+      const hasVisible = [...g.querySelectorAll<HTMLElement>("[data-category-section]")]
+        .some((s) => s.style.display !== "none");
+      g.style.display = hasVisible ? "" : "none";
+    });
+  }
+
+  sortLatest.addEventListener("click", activateLatest);
+  sortGrouped.addEventListener("click", activateGrouped);
 
   document.getElementById("export-favorites")?.addEventListener("click", exportFavorites);
 

@@ -12,7 +12,8 @@ interface Props {
 
 const { resource, locale = "en" } = Astro.props;
 const t = useTranslations(locale);
-const { slug, title, description, category, difficulty, tags, tech, targets, labRoute } = resource.data;
+const { slug, title, description, category, difficulty, tags, tech, targets, labRoute, author } = resource.data;
+const authorName = author?.name;
 
 const prefix = locale === "es" ? "/es" : "";
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
@@ -62,6 +63,8 @@ const allBadges = [...languageBadges, ...targetLabels];
   data-difficulty={difficulty}
   data-tech={tech.join(",")}
   data-tags={tags.join(",")}
+  data-author={authorName ?? ""}
+  data-created-at={resource.data.createdAt}
 >
   <!-- Header -->
   <div class="flex items-start justify-between gap-3">
@@ -92,8 +95,8 @@ const allBadges = [...languageBadges, ...targetLabels];
     </div>
   )}
 
-  <!-- Actions row -->
-  <div class="flex items-center gap-2 mt-auto pt-1">
+  <!-- Actions row — relative z-10 lifts everything above the ::after card overlay -->
+  <div class="relative z-10 flex items-center gap-2 mt-auto pt-1">
     <!-- Targets -->
     <div class="flex gap-1 mr-auto">
       {allBadges.map((label) => (
@@ -103,8 +106,8 @@ const allBadges = [...languageBadges, ...targetLabels];
       ))}
     </div>
 
-    <!-- Quick actions -->
-    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+    <!-- Quick actions — always visible so heart is reachable without hover -->
+    <div class="flex items-center gap-1 opacity-100 transition-opacity">
       {labRoute && (
         <a
           href={`${SITE_URLS.lab}${labRoute}`}

@@ -1,0 +1,51 @@
+---
+slug: lg-40-gradient-mesh-bg
+title: "Animated Gradient Mesh BG"
+description: "An organic animated gradient mesh background using Canvas 2D. Multiple color orbs drift and blend in real-time — no WebGL required."
+category: web-animations
+type: animation
+tags: [gradient, mesh, canvas, background, ambient, generative, vanilla-js]
+tech: [canvas, vanilla-js]
+difficulty: hard
+targets: [html]
+labRoute: /web-animations/lg-40-gradient-mesh-bg
+license: MIT
+createdAt: 2026-02-28
+updatedAt: 2026-02-28
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## Animated Gradient Mesh BG
+
+An organic animated background built on Canvas 2D — no WebGL, no Three.js. Multiple radial gradient "orbs" drift independently using sine/cosine oscillation, blending into a fluid mesh.
+
+### How it works
+
+Each orb has:
+- An origin point `(cx, cy)`
+- Amplitude and frequency for X/Y oscillation
+- A phase offset so orbs never move in sync
+- A `createRadialGradient()` with a vivid color at center → transparent at edge
+
+Every frame all orbs are redrawn with `globalCompositeOperation: "screen"` — the additive blending creates rich color overlap:
+
+```js
+ctx.globalCompositeOperation = "screen";
+orbs.forEach(orb => {
+  const x = orb.cx + Math.sin(t * orb.fx + orb.px) * orb.ax;
+  const y = orb.cy + Math.cos(t * orb.fy + orb.py) * orb.ay;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, orb.r);
+  g.addColorStop(0, orb.color);
+  g.addColorStop(1, "transparent");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+});
+```
+
+### Performance
+
+- Pure Canvas 2D — runs on any device that supports `<canvas>`
+- `will-change: transform` on the canvas for GPU compositing
+- Resize observer keeps canvas pixel-perfect on window resize

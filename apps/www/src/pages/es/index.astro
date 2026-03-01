@@ -1,7 +1,7 @@
 ---
 // Spanish homepage — same structure, locale detected from URL
 import Base from "@layouts/Base.astro";
-import ResourceCard from "@components/ResourceCard.astro";
+import HeroCodeSpaceBackground from "@components/HeroCodeSpaceBackground.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
@@ -9,7 +9,17 @@ import { SITE_URLS } from "@lib/urls";
 const locale = "es" as const;
 const t = useTranslations(locale);
 const allResources = await getCollection("resources");
-const featured = allResources.slice(0, 6);
+const labExamples = allResources.filter((resource: any) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0);
+const easyMarquee = labExamples.filter((resource: any) => resource.data.difficulty === "easy").slice(0, 12);
+const medMarquee = labExamples.filter((resource: any) => resource.data.difficulty === "med").slice(0, 12);
+const hardPriorityCategories = new Set(["web-pages", "pages"]);
+const hardOnlyExamples = labExamples.filter((resource: any) => resource.data.difficulty === "hard");
+const hardPriorityExamples = hardOnlyExamples.filter((resource: any) => hardPriorityCategories.has(resource.data.category));
+const hardOtherExamples = hardOnlyExamples.filter((resource: any) => !hardPriorityCategories.has(resource.data.category));
+const hardFallbackPages = labExamples.filter(
+  (resource: any) => resource.data.difficulty === "med" && hardPriorityCategories.has(resource.data.category)
+);
+const hardMarquee = [...hardPriorityExamples, ...hardOtherExamples, ...hardFallbackPages].slice(0, 20);
 const categoryCount = new Set(allResources.map((resource: any) => resource.data.category)).size;
 const rotatingWords = (t("hero.rotatingWords") as string).split(",").map((w) => w.trim());
 const wordHues = [0, 45, 120, 200, 280, 320];
@@ -36,52 +46,14 @@ const structuredData = {
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >
-  <section class="hero-stage relative overflow-hidden pt-20 pb-16 min-w-0">
-    <div class="hero-bg absolute inset-0 -z-10" aria-hidden="true">
-      <div class="hero-bg-tunnel"></div>
-      <div class="hero-bg-noise"></div>
-      <div class="hero-bg-glow hero-bg-glow-left"></div>
-      <div class="hero-bg-glow hero-bg-glow-right"></div>
-      <div class="hero-bg-beam hero-bg-beam-1"></div>
-      <div class="hero-bg-beam hero-bg-beam-2"></div>
-      <div class="hero-bg-panels">
-        <div class="hero-code-card hero-code-card-a">
-          <p class="hero-code-lang">HTML</p>
-          <p>&lt;button class="btn-primary"&gt;</p>
-          <p>  Browse Library</p>
-          <p>&lt;/button&gt;</p>
-        </div>
-        <div class="hero-code-card hero-code-card-b">
-          <p class="hero-code-lang">CSS</p>
-          <p>.btn-primary &#123;</p>
-          <p>  background: #0ea5e9;</p>
-          <p>  border-radius: 14px;</p>
-          <p>&#125;</p>
-        </div>
-        <div class="hero-code-card hero-code-card-c">
-          <p class="hero-code-lang">JS</p>
-          <p>const cta = document.querySelector(".cta");</p>
-          <p>cta?.classList.add("ready");</p>
-        </div>
-        <div class="hero-code-card hero-code-card-d">
-          <p class="hero-code-lang">TSX</p>
-          <p>&lt;Card variant="glass"&gt;</p>
-          <p>  &lt;CTA /&gt;</p>
-          <p>&lt;/Card&gt;</p>
-        </div>
-        <div class="hero-code-card hero-code-card-e">
-          <p class="hero-code-lang">Tailwind</p>
-          <p>className="rounded-2xl</p>
-          <p>border border-cyan-400/30"</p>
-        </div>
-        <div class="hero-code-card hero-code-card-f">
-          <p class="hero-code-lang">Config</p>
-          <p>mcp: true</p>
-          <p>targets: ["html", "react"]</p>
-        </div>
+  <div class="home-page-shell relative isolate">
+    <div class="home-page-bg absolute inset-0 -z-10" aria-hidden="true">
+      <div class="home-page-bg-sticky sticky top-0 h-screen">
+        <HeroCodeSpaceBackground />
       </div>
     </div>
 
+  <section class="hero-stage relative overflow-hidden pt-20 pb-16 min-w-0">
     <div class="container-xl text-center hero-container min-w-0 relative">
       <div class="hero-cta-shell mx-auto max-w-5xl px-5 py-9 sm:px-10 sm:py-12">
         <h1 class="hero-anim-item text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] mb-6 hero-title-gradient min-w-0">
@@ -154,9 +126,91 @@ const structuredData = {
 
   <script>
     import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const SCRAMBLE_CHARS = "!<>-_\\/[]{}=+*^?#________";
 
     const prefersReducedMotion = () =>
       typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    class TextScramble {
+      el: HTMLElement;
+      queue: Array<{ from: string; to: string; start: number; end: number; char: string }>;
+      frame: number;
+      frameReq: number | null;
+      resolve: (() => void) | null;
+      update: () => void;
+
+      constructor(el: HTMLElement) {
+        this.el = el;
+        this.queue = [];
+        this.frame = 0;
+        this.frameReq = null;
+        this.resolve = null;
+        this.update = this.updateFrame.bind(this);
+      }
+
+      randomChar() {
+        return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+      }
+
+      setText(nextText: string) {
+        const oldText = this.el.textContent ?? "";
+        const length = Math.max(oldText.length, nextText.length);
+        this.queue = [];
+
+        for (let i = 0; i < length; i += 1) {
+          const from = oldText[i] ?? "";
+          const to = nextText[i] ?? "";
+          const start = Math.floor(Math.random() * 10);
+          const end = start + Math.floor(Math.random() * 12) + 6;
+          this.queue.push({ from, to, start, end, char: "" });
+        }
+
+        if (this.frameReq != null) {
+          window.cancelAnimationFrame(this.frameReq);
+        }
+
+        this.frame = 0;
+        return new Promise<void>((resolve) => {
+          this.resolve = resolve;
+          this.update();
+        });
+      }
+
+      updateFrame() {
+        let output = "";
+        let complete = 0;
+
+        for (let i = 0; i < this.queue.length; i += 1) {
+          const item = this.queue[i];
+          if (this.frame >= item.end) {
+            complete += 1;
+            output += item.to;
+          } else if (this.frame >= item.start) {
+            if (!item.char || Math.random() < 0.28) {
+              item.char = this.randomChar();
+            }
+            output += `<span class="scramble-char">${item.char}</span>`;
+          } else {
+            output += item.from;
+          }
+        }
+
+        this.el.innerHTML = output;
+        this.frame += 1;
+
+        if (complete === this.queue.length) {
+          if (this.resolve) this.resolve();
+          this.resolve = null;
+          this.frameReq = null;
+        } else {
+          this.frameReq = window.requestAnimationFrame(this.update);
+        }
+      }
+    }
 
     function initHeroRotatingWords() {
       const wrap = document.querySelector(".hero-rotating-wrap");
@@ -194,7 +248,8 @@ const structuredData = {
         if (!isLast) index = next;
       }
 
-      setInterval(cycle, 2500);
+      const interval = setInterval(cycle, 2500);
+      return () => clearInterval(interval);
     }
 
     function initHeroEntrance() {
@@ -235,185 +290,303 @@ const structuredData = {
       );
     }
 
+    function initExamplesMarquee() {
+      const rows = document.querySelectorAll<HTMLElement>("[data-examples-marquee-row]");
+      if (!rows.length) return;
+
+      const reduceMotion = prefersReducedMotion();
+
+      rows.forEach((row) => {
+        const wrapper = row.querySelector<HTMLElement>("[data-examples-marquee-wrap]");
+        const originalTrack = row.querySelector<HTMLElement>("[data-examples-marquee-track]");
+        if (!wrapper || !originalTrack) return;
+
+        if (reduceMotion) {
+          row.setAttribute("data-static", "true");
+          return;
+        }
+
+        const createClone = () => {
+          const clone = originalTrack.cloneNode(true) as HTMLElement;
+          clone.setAttribute("aria-hidden", "true");
+          clone.dataset.clone = "true";
+          wrapper.appendChild(clone);
+        };
+
+        createClone();
+        while (wrapper.scrollWidth < row.clientWidth * 2.5) {
+          createClone();
+        }
+
+        const singleWidth = originalTrack.scrollWidth;
+        if (!singleWidth) return;
+
+        const direction = row.dataset.direction === "right" ? 1 : -1;
+        const speed = Number(row.dataset.speed ?? "0.36");
+        const baseVelocity = speed * direction;
+        const state = {
+          x: direction > 0 ? -singleWidth : 0,
+          velocity: baseVelocity,
+          target: baseVelocity,
+        };
+
+        const ticker = () => {
+          state.velocity += (state.target - state.velocity) * 0.12;
+          state.x += state.velocity;
+
+          if (direction < 0 && state.x <= -singleWidth) state.x += singleWidth;
+          if (direction > 0 && state.x >= 0) state.x -= singleWidth;
+
+          wrapper.style.transform = `translate3d(${state.x}px, 0, 0)`;
+        };
+
+        gsap.ticker.add(ticker);
+
+        const slowDown = () => {
+          gsap.killTweensOf(state, "target");
+          gsap.to(state, { target: baseVelocity * 0.25, duration: 0.42, ease: "power2.out" });
+        };
+
+        const speedUp = () => {
+          gsap.killTweensOf(state, "target");
+          gsap.to(state, { target: baseVelocity, duration: 0.58, ease: "power3.out" });
+        };
+
+        row.addEventListener("mouseenter", slowDown);
+        row.addEventListener("mouseleave", speedUp);
+
+        ScrollTrigger.create({
+          trigger: row,
+          start: "top bottom",
+          end: "bottom top",
+          onUpdate: (self) => {
+            const scrollBoost = gsap.utils.clamp(-2.8, 2.8, self.getVelocity() / 900);
+            const nextTarget = baseVelocity + scrollBoost * direction;
+            state.target = Math.sign(nextTarget) === Math.sign(baseVelocity) ? nextTarget : baseVelocity * 0.2;
+            gsap.killTweensOf(state, "target");
+            gsap.to(state, {
+              target: baseVelocity,
+              delay: 0.05,
+              duration: 0.55,
+              ease: "power3.out",
+              overwrite: true,
+            });
+          },
+          onLeave: speedUp,
+          onLeaveBack: speedUp,
+        });
+      });
+    }
+
+    function initRoadmapAnimation() {
+      const section = document.querySelector<HTMLElement>(".roadmap-section");
+      if (!section) return;
+
+      const reduceMotion = prefersReducedMotion();
+      const drawPaths = section.querySelectorAll<SVGPathElement>(".roadmap-draw-path");
+      const dots = section.querySelectorAll<SVGCircleElement>(".roadmap-dot");
+      const labels = section.querySelectorAll<SVGTextElement>(".roadmap-dot-label");
+      const phaseItems = section.querySelectorAll<HTMLElement>(".roadmap-phase-item");
+
+      // Set up path drawing
+      drawPaths.forEach((path) => {
+        const len = path.getTotalLength();
+        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
+
+        if (reduceMotion) {
+          gsap.set(path, { strokeDashoffset: 0 });
+          return;
+        }
+
+        gsap.to(path, {
+          strokeDashoffset: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "top 75%",
+            end: "center 40%",
+            scrub: 1.5,
+          },
+        });
+      });
+
+      if (reduceMotion) {
+        gsap.set([...dots, ...labels, ...phaseItems], { opacity: 1, y: 0, scale: 1 });
+        return;
+      }
+
+      // Dots + labels fade/scale in with stagger
+      gsap.set(dots, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%" });
+      gsap.set(labels, { opacity: 0, y: 6 });
+      gsap.set(phaseItems, { opacity: 0, y: 20 });
+
+      gsap.to(dots, {
+        opacity: 1, scale: 1, duration: 0.5,
+        ease: "back.out(1.7)", stagger: 0.2,
+        scrollTrigger: { trigger: section, start: "top 70%", toggleActions: "play none none reverse" },
+      });
+
+      gsap.to(labels, {
+        opacity: 1, y: 0, duration: 0.4,
+        ease: "power3.out", stagger: 0.15,
+        scrollTrigger: { trigger: section, start: "top 68%", toggleActions: "play none none reverse" },
+      });
+
+      gsap.to(phaseItems, {
+        opacity: 1, y: 0, duration: 0.5,
+        ease: "power3.out", stagger: 0.1,
+        scrollTrigger: { trigger: section, start: "top 55%", toggleActions: "play none none reverse" },
+      });
+    }
+
+    function initKeywordReveal() {
+      const section = document.querySelector<HTMLElement>(".keywords-section");
+      if (!section) return;
+
+      const rows = section.querySelectorAll<HTMLElement>(".keyword-row");
+      const reduceMotion = prefersReducedMotion();
+
+      if (reduceMotion) {
+        rows.forEach((row) => {
+          const chars = row.querySelectorAll(".kw-char");
+          const copy = row.querySelector(".keyword-copy");
+          if (chars.length) gsap.set(chars, { opacity: 1, y: 0, rotateX: 0 });
+          if (copy) gsap.set(copy, { opacity: 1, y: 0 });
+        });
+        return;
+      }
+
+      rows.forEach((row) => {
+        const line = row.querySelector<HTMLElement>(".keyword-line");
+        const copy = row.querySelector<HTMLElement>(".keyword-copy");
+        if (!line) return;
+
+        // Split keyword into individual chars
+        const text = line.textContent ?? "";
+        line.innerHTML = text.split("").map((ch) =>
+          ch === " " ? `<span class="kw-char" style="display:inline-block;white-space:pre"> </span>` :
+          `<span class="kw-char" style="display:inline-block">${ch}</span>`
+        ).join("");
+
+        const chars = row.querySelectorAll<HTMLElement>(".kw-char");
+        gsap.set(chars, { opacity: 0, y: 60, rotateX: -55, transformOrigin: "50% 100%" });
+
+        gsap.to(chars, {
+          opacity: 1,
+          y: 0,
+          rotateX: 0,
+          duration: 0.55,
+          ease: "back.out(1.3)",
+          stagger: { each: 0.03, from: "start" },
+          scrollTrigger: {
+            trigger: row,
+            start: "top 88%",
+            toggleActions: "play none none reverse",
+          },
+        });
+
+        if (copy) {
+          gsap.set(copy, { opacity: 0, y: 20 });
+          gsap.to(copy, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            delay: 0.1,
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: row,
+              start: "top 88%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        }
+      });
+    }
+
+    function initScramblePhilosophy() {
+      const section = document.querySelector<HTMLElement>(".scramble-section");
+      if (!section) return;
+
+      const cycleEl = section.querySelector<HTMLElement>(".scramble-cycle-line");
+      const staticLines = section.querySelectorAll<HTMLElement>(".scramble-static-line");
+      const reduceMotion = prefersReducedMotion();
+
+      // Cycling scramble hero
+      if (cycleEl) {
+        const phrases = JSON.parse(cycleEl.dataset.phrases ?? "[]") as string[];
+        if (reduceMotion) {
+          cycleEl.textContent = phrases[0] ?? "";
+        } else {
+          const fx = new TextScramble(cycleEl);
+          let idx = 0;
+          const cycle = () => {
+            void fx.setText(phrases[idx]).then(() => {
+              setTimeout(cycle, 2600);
+            });
+            idx = (idx + 1) % phrases.length;
+          };
+
+          ScrollTrigger.create({
+            trigger: section,
+            start: "top 82%",
+            once: true,
+            onEnter: () => {
+              gsap.to(cycleEl, { opacity: 1, duration: 0.5, ease: "power2.out" });
+              cycle();
+            },
+          });
+        }
+      }
+
+      // Static styled lines: scramble-in on scroll
+      if (reduceMotion) {
+        staticLines.forEach((line) => {
+          const text = line.dataset.text ?? "";
+          line.textContent = text;
+        });
+        return;
+      }
+
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top 75%",
+        once: true,
+        onEnter: () => {
+          let delay = 0;
+          staticLines.forEach((line) => {
+            const text = line.dataset.text ?? "";
+            const fx = new TextScramble(line);
+            setTimeout(() => {
+              void fx.setText(text);
+            }, delay);
+            delay += 320;
+          });
+        },
+      });
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       initHeroRotatingWords();
       initHeroEntrance();
+      initExamplesMarquee();
+      initRoadmapAnimation();
+      initKeywordReveal();
+      initScramblePhilosophy();
     });
   </script>
 
   <style>
-    .hero-stage {
+    .home-page-shell {
       isolation: isolate;
     }
-    .hero-bg {
-      background:
-        radial-gradient(120% 95% at 12% 12%, rgb(56 189 248 / 24%) 0%, rgb(56 189 248 / 0%) 55%),
-        radial-gradient(80% 75% at 85% 15%, rgb(52 211 153 / 20%) 0%, rgb(52 211 153 / 0%) 62%),
-        radial-gradient(90% 85% at 50% 100%, rgb(99 102 241 / 14%) 0%, rgb(99 102 241 / 0%) 64%),
-        #020813;
-    }
-    .hero-bg-tunnel {
-      position: absolute;
-      inset: -20% -50%;
-      perspective: 800px;
-      transform-style: preserve-3d;
+    .home-page-bg {
       pointer-events: none;
     }
-    .hero-bg-tunnel::before,
-    .hero-bg-tunnel::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      width: 100vw;
-      height: 200%;
-      background-image:
-        linear-gradient(rgba(0, 242, 255, 0.4) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 242, 255, 0.4) 1px, transparent 1px);
-      background-size: 60px 40px;
-      opacity: 0.6;
+    .home-page-bg-sticky {
+      overflow: hidden;
     }
-    .hero-bg-tunnel::before {
-      left: 0;
-      transform-origin: left center;
-      transform: rotateY(75deg) translateZ(-400px);
-      mask-image: linear-gradient(to right, black, transparent 80%);
-      animation: tunnel-slide-left 15s linear infinite;
-    }
-    .hero-bg-tunnel::after {
-      right: 0;
-      transform-origin: right center;
-      transform: rotateY(-75deg) translateZ(-400px);
-      background-image:
-        linear-gradient(rgba(0, 255, 102, 0.3) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 102, 0.3) 1px, transparent 1px);
-      mask-image: linear-gradient(to left, black, transparent 80%);
-      animation: tunnel-slide-right 15s linear infinite;
-    }
-    .hero-bg-noise {
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        rgb(148 163 184 / 6%) 0px,
-        rgb(148 163 184 / 6%) 1px,
-        transparent 1px,
-        transparent 3px
-      );
-      mix-blend-mode: soft-light;
-      opacity: 0.2;
-      animation: hero-noise-scan 9s linear infinite;
-    }
-    .hero-bg-glow {
-      position: absolute;
-      width: 36rem;
-      height: 36rem;
-      border-radius: 9999px;
-      filter: blur(80px);
-      opacity: 0.32;
-      animation: hero-glow-orbit 14s ease-in-out infinite;
-    }
-    .hero-bg-glow-left {
-      top: -22%;
-      left: -8%;
-      background: rgb(56 189 248 / 62%);
-      animation-delay: -4s;
-    }
-    .hero-bg-glow-right {
-      top: -18%;
-      right: -10%;
-      background: rgb(34 197 94 / 42%);
-    }
-    .hero-bg-beam {
-      position: absolute;
-      width: 40rem;
-      height: 2px;
-      opacity: 0.6;
-      background: linear-gradient(90deg, transparent, rgb(56 189 248 / 72%), transparent);
-      filter: blur(0.3px);
-      animation: hero-beam-shift 8s ease-in-out infinite;
-    }
-    .hero-bg-beam-1 {
-      top: 24%;
-      left: -12%;
-      transform: rotate(14deg);
-    }
-    .hero-bg-beam-2 {
-      top: 18%;
-      right: -12%;
-      transform: rotate(-14deg);
-      animation-delay: -4s;
-    }
-    .hero-bg-panels {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-    .hero-code-card {
-      position: absolute;
-      width: min(18rem, 32vw);
-      padding: 0.9rem 1rem;
-      border-radius: 18px;
-      border: 1px solid rgb(125 211 252 / 24%);
-      background: linear-gradient(160deg, rgb(7 20 38 / 86%), rgb(7 20 38 / 46%));
-      box-shadow:
-        inset 0 0 0 1px rgb(15 23 42 / 55%),
-        0 0 30px rgb(14 165 233 / 15%);
-      backdrop-filter: blur(4px);
-      text-align: left;
-      font-size: 0.72rem;
-      line-height: 1.45;
-      letter-spacing: 0.01em;
-      color: rgb(186 230 253 / 82%);
-      animation: hero-card-float 10s ease-in-out infinite;
-    }
-    .hero-code-card p {
-      margin: 0;
-      white-space: pre;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-    .hero-code-lang {
-      margin-bottom: 0.35rem !important;
-      color: rgb(125 211 252 / 95%);
-      text-transform: uppercase;
-      font-size: 0.62rem;
-      letter-spacing: 0.08em;
-      font-weight: 600;
-    }
-    .hero-code-card-a {
-      top: 9%;
-      left: 2%;
-      --hero-card-rot: -7deg;
-      animation-delay: -1s;
-    }
-    .hero-code-card-b {
-      top: 6%;
-      right: 3%;
-      --hero-card-rot: 8deg;
-      animation-delay: -2.5s;
-    }
-    .hero-code-card-c {
-      top: 36%;
-      left: -2%;
-      --hero-card-rot: -4deg;
-      animation-delay: -3.5s;
-    }
-    .hero-code-card-d {
-      top: 33%;
-      right: -1%;
-      --hero-card-rot: 5deg;
-      animation-delay: -2.2s;
-    }
-    .hero-code-card-e {
-      bottom: 9%;
-      left: 6%;
-      --hero-card-rot: -6deg;
-      animation-delay: -4.2s;
-    }
-    .hero-code-card-f {
-      bottom: 7%;
-      right: 8%;
-      --hero-card-rot: 6deg;
-      animation-delay: -5.1s;
+    .hero-stage {
+      isolation: isolate;
     }
     .hero-cta-shell {
       position: relative;
@@ -426,21 +599,6 @@ const structuredData = {
         0 0 40px rgb(14 165 233 / 15%);
       backdrop-filter: blur(10px);
       overflow: hidden;
-    }
-    .hero-cta-shell::before {
-      content: "";
-      position: absolute;
-      inset: -45% -25%;
-      background: conic-gradient(
-        from 90deg at 50% 50%,
-        transparent 0deg,
-        rgb(56 189 248 / 34%) 95deg,
-        transparent 185deg,
-        rgb(52 211 153 / 26%) 280deg,
-        transparent 360deg
-      );
-      opacity: 0.42;
-      animation: hero-shell-spin 18s linear infinite;
     }
     .hero-cta-shell::after {
       content: "";
@@ -567,6 +725,523 @@ const structuredData = {
       background: rgb(30 41 59 / 56%);
       border-color: rgb(148 163 184 / 40%);
     }
+    .examples-marquee-section {
+      position: relative;
+    }
+    .examples-marquee-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .examples-marquee-eyebrow {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      color: rgb(56 189 248 / 90%);
+      font-weight: 600;
+    }
+    .examples-marquee-title {
+      margin: 0.48rem 0 0;
+      font-size: clamp(1.2rem, 2.1vw, 1.6rem);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: rgb(241 245 249 / 98%);
+    }
+    .examples-marquee-lead {
+      margin: 0.58rem 0 0;
+      color: rgb(148 163 184 / 92%);
+      line-height: 1.6;
+      max-width: 68ch;
+      font-size: 0.92rem;
+    }
+    .examples-marquee-stack {
+      display: grid;
+      gap: 1.25rem;
+    }
+    .examples-marquee-row {
+      border: 1px solid rgb(148 163 184 / 14%);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 0% 0%, rgb(56 189 248 / 9%), transparent 42%),
+        rgb(2 10 24 / 50%);
+      overflow: hidden;
+      padding: 0.62rem;
+    }
+    .examples-marquee-row[data-tone="easy"] {
+      box-shadow: inset 0 0 0 1px rgb(16 185 129 / 12%);
+    }
+    .examples-marquee-row[data-tone="med"] {
+      box-shadow: inset 0 0 0 1px rgb(251 191 36 / 12%);
+    }
+    .examples-marquee-row[data-tone="hard"] {
+      box-shadow: inset 0 0 0 1px rgb(244 63 94 / 14%);
+    }
+    .examples-marquee-track-wrap {
+      display: flex;
+      width: max-content;
+      will-change: transform;
+    }
+    .examples-marquee-track {
+      display: flex;
+      gap: 0.95rem;
+      flex-shrink: 0;
+    }
+    .examples-marquee-card {
+      width: clamp(260px, 25vw, 338px);
+      flex: 0 0 auto;
+      border-radius: 14px;
+      border: 1px solid rgb(148 163 184 / 16%);
+      background: linear-gradient(165deg, rgb(5 13 28 / 94%), rgb(6 16 34 / 82%));
+      box-shadow: inset 0 0 0 1px rgb(148 163 184 / 6%);
+      padding: 0.92rem 1rem;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.34rem;
+      min-height: 190px;
+      transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+    }
+    .examples-marquee-card:hover {
+      transform: translateY(-2px);
+      border-color: rgb(56 189 248 / 42%);
+      box-shadow:
+        inset 0 0 0 1px rgb(56 189 248 / 16%),
+        0 10px 24px rgb(2 6 23 / 45%);
+    }
+    .examples-marquee-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.45rem;
+      margin-bottom: 0.45rem;
+    }
+    .examples-marquee-category {
+      font-size: 0.74rem;
+      color: rgb(148 163 184 / 86%);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .examples-marquee-name {
+      margin: 0;
+      color: rgb(241 245 249 / 98%);
+      font-size: 0.98rem;
+      line-height: 1.35;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+    .examples-marquee-description {
+      margin: 0.45rem 0 0;
+      color: rgb(148 163 184 / 88%);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .examples-marquee-footer {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.55rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid rgb(148 163 184 / 12%);
+    }
+    .examples-marquee-tag-list {
+      display: flex;
+      align-items: center;
+      gap: 0.38rem;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .examples-marquee-tag {
+      font-size: 0.68rem;
+      line-height: 1;
+      color: rgb(148 163 184 / 95%);
+      background: rgb(15 23 42 / 78%);
+      border: 1px solid rgb(148 163 184 / 22%);
+      border-radius: 999px;
+      padding: 0.28rem 0.48rem;
+      max-width: 12ch;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .examples-marquee-lab {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgb(125 211 252 / 95%);
+      border: 1px solid rgb(56 189 248 / 30%);
+      border-radius: 999px;
+      padding: 0.25rem 0.46rem;
+      background: rgb(2 10 24 / 70%);
+      flex-shrink: 0;
+    }
+    .examples-marquee-difficulty {
+      font-size: 0.66rem;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 0.25rem 0.48rem;
+      border: 1px solid transparent;
+      flex-shrink: 0;
+    }
+    .examples-marquee-difficulty--easy {
+      color: rgb(52 211 153 / 95%);
+      background: rgb(16 185 129 / 12%);
+      border-color: rgb(16 185 129 / 35%);
+    }
+    .examples-marquee-difficulty--med {
+      color: rgb(251 191 36 / 95%);
+      background: rgb(251 191 36 / 12%);
+      border-color: rgb(251 191 36 / 35%);
+    }
+    .examples-marquee-difficulty--hard {
+      color: rgb(251 113 133 / 95%);
+      background: rgb(244 63 94 / 12%);
+      border-color: rgb(244 63 94 / 35%);
+    }
+    .manifesto-section {
+      position: relative;
+    }
+    .manifesto-shell {
+      position: relative;
+      border-radius: 28px;
+      border: 1px solid rgb(148 163 184 / 20%);
+      background:
+        radial-gradient(circle at 10% 10%, rgb(14 165 233 / 12%), transparent 38%),
+        radial-gradient(circle at 90% 0%, rgb(16 185 129 / 12%), transparent 34%),
+        linear-gradient(165deg, rgb(5 13 28 / 88%), rgb(6 16 34 / 72%));
+      box-shadow:
+        inset 0 0 0 1px rgb(148 163 184 / 8%),
+        0 20px 55px rgb(2 6 23 / 50%);
+      backdrop-filter: blur(8px);
+      padding: clamp(1.25rem, 2.5vw, 2.2rem);
+      display: grid;
+      gap: 1.35rem;
+    }
+    .manifesto-eyebrow {
+      margin: 0 0 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      color: rgb(56 189 248 / 92%);
+      font-weight: 600;
+    }
+    .manifesto-title {
+      margin: 0;
+      font-size: clamp(1.55rem, 2.2vw, 2.35rem);
+      line-height: 1.1;
+      color: rgb(241 245 249);
+      letter-spacing: -0.02em;
+    }
+    .manifesto-lead {
+      margin: 0.8rem 0 0;
+      font-size: clamp(1rem, 1.3vw, 1.2rem);
+      color: rgb(186 230 253 / 94%);
+      line-height: 1.55;
+    }
+    .manifesto-body {
+      margin: 0.7rem 0 0;
+      color: rgb(148 163 184 / 92%);
+      line-height: 1.72;
+      max-width: 82ch;
+    }
+    .manifesto-category-head {
+      margin: 0 0 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: rgb(226 232 240 / 92%);
+    }
+    .manifesto-text-flow {
+      margin-top: 0.35rem;
+      display: grid;
+      gap: 0.48rem;
+    }
+    .manifesto-flow-line {
+      margin: 0;
+      font-size: 0.9rem;
+      color: rgb(186 230 253 / 90%);
+      line-height: 1.55;
+      border-left: 2px solid rgb(56 189 248 / 32%);
+      padding-left: 0.75rem;
+    }
+    .manifesto-step {
+      display: inline-block;
+      min-width: 2.3ch;
+      margin-right: 0.28rem;
+      color: rgb(56 189 248 / 95%);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .manifesto-accent {
+      color: rgb(226 232 240 / 95%);
+      font-weight: 600;
+    }
+    .manifesto-animate-pulse {
+      animation: manifesto-pulse 4.8s ease-in-out infinite;
+    }
+    .manifesto-animate-float {
+      animation: manifesto-float 6.4s ease-in-out infinite;
+    }
+    .manifesto-animate-glow {
+      animation: manifesto-glow 5.6s ease-in-out infinite;
+    }
+    .manifesto-micro {
+      margin: 0.15rem 0 0;
+      font-size: 0.82rem;
+      color: rgb(148 163 184 / 82%);
+      letter-spacing: 0.01em;
+    }
+    .manifesto-subsection {
+      margin-top: 0.2rem;
+    }
+    .manifesto-divider {
+      width: 100%;
+      height: 1px;
+      margin: 0.15rem 0 0.55rem;
+      background: linear-gradient(90deg, rgb(56 189 248 / 0%), rgb(56 189 248 / 35%), rgb(56 189 248 / 0%));
+    }
+    .roadmap-section,
+    .keywords-section,
+    .scramble-section {
+      position: relative;
+    }
+    /* ---- Roadmap: simple, clean ---- */
+    .roadmap-shell {
+      padding: clamp(1.5rem, 3vw, 3rem) 0;
+    }
+    .roadmap-eyebrow,
+    .keywords-eyebrow,
+    .scramble-eyebrow {
+      margin: 0;
+      font-size: clamp(0.7rem, 1vw, 0.82rem);
+      line-height: 1;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgb(56 189 248 / 92%);
+      font-weight: 600;
+    }
+    .roadmap-title,
+    .keywords-title,
+    .scramble-title {
+      margin: 0.55rem 0 0;
+      font-size: clamp(1.6rem, 2.8vw, 2.8rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: rgb(241 245 249 / 98%);
+    }
+    .roadmap-lead,
+    .keywords-lead,
+    .scramble-lead {
+      margin: 1rem 0 0;
+      max-width: 72ch;
+      line-height: 1.72;
+      color: rgb(148 163 184 / 92%);
+      font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+    }
+    /* Roadmap SVG — full width, simple */
+    .roadmap-svg {
+      margin-top: 2.5rem;
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+    .roadmap-draw-path {
+      fill: none;
+      stroke-linecap: round;
+    }
+    .roadmap-dot {
+      fill: rgb(5 13 28);
+      stroke-width: 2.4;
+    }
+    .roadmap-dot[data-c="1"] { stroke: rgb(56 189 248); }
+    .roadmap-dot[data-c="2"] { stroke: rgb(168 85 247); }
+    .roadmap-dot[data-c="3"] { stroke: rgb(251 191 36); }
+    .roadmap-dot[data-c="4"] { stroke: rgb(244 114 182); }
+    .roadmap-dot-label {
+      font-size: 12px;
+      font-weight: 600;
+      fill: rgb(203 213 225 / 85%);
+      letter-spacing: 0.02em;
+    }
+    .roadmap-dot-num {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+    .roadmap-dot-num[data-c="1"] { fill: rgb(56 189 248); }
+    .roadmap-dot-num[data-c="2"] { fill: rgb(216 180 254); }
+    .roadmap-dot-num[data-c="3"] { fill: rgb(251 191 36); }
+    .roadmap-dot-num[data-c="4"] { fill: rgb(249 168 212); }
+    /* Phase descriptions — simple 2-col grid */
+    .roadmap-phases {
+      margin-top: 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem 3rem;
+    }
+    .roadmap-phase-item {
+      padding-left: 1rem;
+      border-left: 2px solid rgb(148 163 184 / 14%);
+    }
+    .roadmap-phase-item[data-c="1"] { border-left-color: rgb(56 189 248 / 40%); }
+    .roadmap-phase-item[data-c="2"] { border-left-color: rgb(168 85 247 / 40%); }
+    .roadmap-phase-item[data-c="3"] { border-left-color: rgb(251 191 36 / 40%); }
+    .roadmap-phase-item[data-c="4"] { border-left-color: rgb(244 114 182 / 40%); }
+    .roadmap-phase-item h3 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+      font-weight: 700;
+      color: rgb(241 245 249 / 95%);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+    .roadmap-phase-item p {
+      margin: 0;
+      color: rgb(148 163 184 / 78%);
+      line-height: 1.65;
+      font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+    }
+    /* ---- Keywords: open layout (no card) ---- */
+    .keywords-shell {
+      padding: clamp(1.5rem, 3vw, 3rem) 0;
+    }
+    .keywords-list {
+      margin-top: 3.5rem;
+      display: grid;
+      gap: 6rem;
+    }
+    .keyword-row {
+      padding: 0 0 0 1.25rem;
+      border-left: 3px solid rgb(56 189 248 / 28%);
+    }
+    .keyword-row[data-align="center"] {
+      padding: 0 1.25rem;
+      border-left: none;
+      border-right: none;
+      text-align: center;
+    }
+    .keyword-row[data-align="center"] .keyword-copy {
+      margin-inline: auto;
+    }
+    .keyword-row[data-align="right"] {
+      padding: 0 1.25rem 0 0;
+      border-left: none;
+      border-right: 3px solid rgb(56 189 248 / 28%);
+      text-align: right;
+    }
+    .keyword-row[data-align="right"] .keyword-copy {
+      margin-inline: auto 0;
+      text-align: right;
+    }
+    .keyword-line {
+      margin: 0;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      font-weight: 900;
+      color: rgb(241 245 249 / 98%);
+      perspective: 600px;
+      overflow: hidden;
+    }
+    .keyword-copy {
+      margin: 1.1rem 0 0;
+      color: rgb(148 163 184 / 90%);
+      line-height: 1.7;
+      max-width: 68ch;
+      font-size: clamp(0.92rem, 1.3vw, 1.05rem);
+    }
+    .keyword-accent {
+      color: rgb(125 211 252 / 96%);
+      font-weight: 600;
+    }
+    /* ---- Scramble: open, no card ---- */
+    .scramble-shell {
+      padding: clamp(1.5rem, 3vw, 3rem) 0;
+    }
+    /* Cycling scramble hero — centered */
+    .scramble-cycle-line {
+      display: block;
+      margin: 3rem 0 0;
+      text-align: center;
+      font-family: "Courier New", Courier, monospace;
+      font-size: clamp(2rem, 6vw, 5rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgb(56 189 248);
+      text-shadow: 0 0 40px rgb(56 189 248 / 35%);
+      min-height: 1.2em;
+      opacity: 0;
+      line-height: 1.15;
+    }
+    .scramble-char {
+      color: rgb(125 211 252 / 70%);
+      text-shadow: 0 0 18px rgb(56 189 248 / 30%);
+    }
+    .scramble-static-line .scramble-char {
+      color: inherit;
+      text-shadow: inherit;
+    }
+    /* Static styled lines below the cycling one — centered, smaller, scramble-in */
+    .scramble-statics {
+      margin-top: 4rem;
+      display: grid;
+      gap: 1rem;
+      text-align: center;
+    }
+    .scramble-static-line {
+      margin: 0;
+      font-size: clamp(0.95rem, 2.2vw, 1.35rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+    /* Style variants */
+    .scramble-static-line[data-style="plain"] {
+      color: rgb(241 245 249 / 95%);
+    }
+    .scramble-static-line[data-style="gradient"] {
+      background: linear-gradient(90deg, rgb(56 189 248), rgb(168 85 247));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .scramble-static-line[data-style="outline"] {
+      color: transparent;
+      -webkit-text-stroke: 1.5px rgb(56 189 248 / 70%);
+      letter-spacing: 0.04em;
+    }
+    .scramble-static-line[data-style="muted"] {
+      color: rgb(100 116 139 / 80%);
+      font-weight: 700;
+    }
+    @keyframes manifesto-pulse {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+    @keyframes manifesto-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+    @keyframes manifesto-glow {
+      0%, 100% { text-shadow: 0 0 0 rgb(56 189 248 / 0%); }
+      50% { text-shadow: 0 0 16px rgb(56 189 248 / 22%); }
+    }
     @keyframes hero-word-gradient-shift {
       0%, 100% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -575,63 +1250,16 @@ const structuredData = {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-3px); }
     }
-    @keyframes tunnel-slide-left {
-      0% { transform: rotateY(75deg) translateZ(-400px) translateY(0); }
-      100% { transform: rotateY(75deg) translateZ(-400px) translateY(-60px); }
-    }
-    @keyframes tunnel-slide-right {
-      0% { transform: rotateY(-75deg) translateZ(-400px) translateY(0); }
-      100% { transform: rotateY(-75deg) translateZ(-400px) translateY(-60px); }
-    }
-    @keyframes hero-noise-scan {
-      0% { transform: translateY(-6%); }
-      100% { transform: translateY(6%); }
-    }
-    @keyframes hero-glow-orbit {
-      0%, 100% { transform: translate3d(0, 0, 0); }
-      50% { transform: translate3d(1.25rem, 1rem, 0); }
-    }
-    @keyframes hero-beam-shift {
-      0%, 100% { opacity: 0.32; }
-      50% { opacity: 0.9; }
-    }
-    @keyframes hero-card-float {
-      0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--hero-card-rot, 0deg)); }
-      50% { transform: translate3d(0, -9px, 0) rotate(var(--hero-card-rot, 0deg)); }
-    }
-    @keyframes hero-shell-spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @media (max-width: 1024px) {
-      .hero-code-card {
-        width: min(15.25rem, 44vw);
-      }
-      .hero-code-card-e,
-      .hero-code-card-f {
-        display: none;
-      }
-    }
     @media (max-width: 768px) {
+      .roadmap-phases {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
       .hero-rotating-wrap {
         min-width: 0;
         max-width: 100%;
         width: fit-content;
         margin-inline: auto;
-      }
-      .hero-code-card-c,
-      .hero-code-card-d {
-        display: none;
-      }
-      .hero-code-card-a {
-        top: 6%;
-        left: -8%;
-        opacity: 0.7;
-      }
-      .hero-code-card-b {
-        top: 5%;
-        right: -8%;
-        opacity: 0.7;
       }
       .hero-cta-shell {
         border-radius: 24px;
@@ -639,34 +1267,345 @@ const structuredData = {
       .hero-cta-shell::after {
         border-radius: 23px;
       }
+      .examples-marquee-stack {
+        gap: 0.95rem;
+      }
+      .examples-marquee-row {
+        padding: 0.45rem;
+      }
+      .examples-marquee-card {
+        width: min(84vw, 322px);
+        min-height: 174px;
+      }
+      .manifesto-shell {
+        border-radius: 22px;
+      }
+      .keywords-list {
+        gap: 4.5rem;
+      }
+      .keyword-line {
+        font-size: clamp(2.2rem, 12vw, 3.5rem);
+      }
+      .scramble-cycle-line {
+        font-size: clamp(1.5rem, 8vw, 3rem);
+      }
+      .scramble-static-line {
+        font-size: clamp(0.85rem, 4vw, 1.15rem);
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       .hero-rotating-word-gradient,
       .hero-integrate-link,
-      .hero-bg-tunnel::before,
-      .hero-bg-tunnel::after,
-      .hero-bg-noise,
-      .hero-bg-glow,
-      .hero-bg-beam,
-      .hero-code-card,
-      .hero-cta-shell::before {
+      .manifesto-animate-pulse,
+      .manifesto-animate-float,
+      .manifesto-animate-glow {
         animation: none !important;
       }
       .hero-rotating-word-gradient {
         background-position: 0% 50%;
       }
+      .examples-marquee-row[data-static="true"] {
+        overflow-x: auto;
+        scrollbar-width: thin;
+      }
+      .examples-marquee-row[data-static="true"] .examples-marquee-track-wrap {
+        transform: none !important;
+        width: auto;
+      }
     }
   </style>
 
-  <section class="container-xl pb-20">
-    <div class="flex items-center justify-between mb-8">
-      <h2 class="text-xl font-semibold text-white">Recursos destacados</h2>
+  <section class="container-xl pb-20 examples-marquee-section" aria-labelledby="featured-resources-title-es">
+    <div class="examples-marquee-head">
+      <div>
+        <h2 id="featured-resources-title-es" class="text-xl font-semibold text-white">Recursos destacados</h2>
+        <p class="examples-marquee-lead">
+          Abre demos ejecutables directo en Lab. Compara dificultad, revisa tags de stack y elige mejor referencia antes de construir.
+        </p>
+      </div>
       <a href="/es/library" class="text-sm text-brand-400 hover:text-brand-300 font-medium">Ver todos →</a>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {featured.map((resource: any) => (
-        <ResourceCard resource={resource} locale={locale} />
-      ))}
+
+    <div class="examples-marquee-stack">
+      <div class="examples-marquee-row" data-tone="easy" data-examples-marquee-row data-direction="left" data-speed="0.48">
+        <div class="examples-marquee-track-wrap" data-examples-marquee-wrap>
+          <div class="examples-marquee-track" data-examples-marquee-track>
+            {easyMarquee.map((resource: any) => (
+              <a href={`${SITE_URLS.lab}${resource.data.labRoute}`} target="_blank" rel="noopener" class="examples-marquee-card">
+                <div class="examples-marquee-meta">
+                  <span class="examples-marquee-category">{t(`category.${resource.data.category}` as any)}</span>
+                  <span class={`examples-marquee-difficulty examples-marquee-difficulty--${resource.data.difficulty}`}>
+                    {t(`resource.difficulty.${resource.data.difficulty}` as any)}
+                  </span>
+                </div>
+                <p class="examples-marquee-name">{resource.data.title}</p>
+                <p class="examples-marquee-description">{resource.data.description}</p>
+                <div class="examples-marquee-footer">
+                  <div class="examples-marquee-tag-list">
+                    {resource.data.tech.slice(0, 2).map((tech: string) => (
+                      <span class="examples-marquee-tag">{tech}</span>
+                    ))}
+                  </div>
+                  <span class="examples-marquee-lab">Lab</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="examples-marquee-row" data-tone="med" data-examples-marquee-row data-direction="right" data-speed="0.58">
+        <div class="examples-marquee-track-wrap" data-examples-marquee-wrap>
+          <div class="examples-marquee-track" data-examples-marquee-track>
+            {medMarquee.map((resource: any) => (
+              <a href={`${SITE_URLS.lab}${resource.data.labRoute}`} target="_blank" rel="noopener" class="examples-marquee-card">
+                <div class="examples-marquee-meta">
+                  <span class="examples-marquee-category">{t(`category.${resource.data.category}` as any)}</span>
+                  <span class={`examples-marquee-difficulty examples-marquee-difficulty--${resource.data.difficulty}`}>
+                    {t(`resource.difficulty.${resource.data.difficulty}` as any)}
+                  </span>
+                </div>
+                <p class="examples-marquee-name">{resource.data.title}</p>
+                <p class="examples-marquee-description">{resource.data.description}</p>
+                <div class="examples-marquee-footer">
+                  <div class="examples-marquee-tag-list">
+                    {resource.data.tech.slice(0, 2).map((tech: string) => (
+                      <span class="examples-marquee-tag">{tech}</span>
+                    ))}
+                  </div>
+                  <span class="examples-marquee-lab">Lab</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="examples-marquee-row" data-tone="hard" data-examples-marquee-row data-direction="left" data-speed="0.72">
+        <div class="examples-marquee-track-wrap" data-examples-marquee-wrap>
+          <div class="examples-marquee-track" data-examples-marquee-track>
+            {hardMarquee.map((resource: any) => (
+              <a href={`${SITE_URLS.lab}${resource.data.labRoute}`} target="_blank" rel="noopener" class="examples-marquee-card">
+                <div class="examples-marquee-meta">
+                  <span class="examples-marquee-category">{t(`category.${resource.data.category}` as any)}</span>
+                  <span class={`examples-marquee-difficulty examples-marquee-difficulty--${resource.data.difficulty}`}>
+                    {t(`resource.difficulty.${resource.data.difficulty}` as any)}
+                  </span>
+                </div>
+                <p class="examples-marquee-name">{resource.data.title}</p>
+                <p class="examples-marquee-description">{resource.data.description}</p>
+                <div class="examples-marquee-footer">
+                  <div class="examples-marquee-tag-list">
+                    {resource.data.tech.slice(0, 2).map((tech: string) => (
+                      <span class="examples-marquee-tag">{tech}</span>
+                    ))}
+                  </div>
+                  <span class="examples-marquee-lab">Lab</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   </section>
+
+  <section class="container-xl pb-24 manifesto-section" aria-labelledby="manifesto-title-es">
+    <div class="manifesto-shell">
+      <div>
+        <p class="manifesto-eyebrow manifesto-animate-pulse">Construye con control</p>
+        <h2 id="manifesto-title-es" class="manifesto-title manifesto-animate-float">Toma lo que funciona. Crea lo que quieras.</h2>
+        <p class="manifesto-lead manifesto-animate-glow">Para humanos y bots que quieren construir software sin empezar desde cero.</p>
+        <p class="manifesto-body">
+          StealThis es una librería de referencia. Revisa cada elemento, entiende cómo funciona y reutilízalo en tu stack.
+          Menos fragmentación, menos complejidad y más control sobre el estilo gráfico y las configuraciones que quieres crear.
+        </p>
+        <p class="manifesto-body">
+          La idea es directa: un lugar colaborativo donde conocimiento, buenas prácticas y referencias reales vivan juntos.
+          Tomas una base, la adaptas a tu necesidad y avanzas sin reconstruir lo mismo en cada proyecto.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="manifesto-category-head">Cómo usar este lugar</h3>
+        <div class="manifesto-text-flow" role="list" aria-label="Cómo usar este lugar">
+          <p class="manifesto-flow-line" role="listitem">
+            <span class="manifesto-step">01</span>
+            <span class="manifesto-accent">Encuentra una referencia</span> que ya resuelva parte de tu problema.
+          </p>
+          <p class="manifesto-flow-line manifesto-animate-pulse" role="listitem">
+            <span class="manifesto-step">02</span>
+            <span class="manifesto-accent">Entiéndela rápido</span>: estructura, comportamiento e implementación.
+          </p>
+          <p class="manifesto-flow-line" role="listitem">
+            <span class="manifesto-step">03</span>
+            <span class="manifesto-accent">Adáptala</span> a tu stack, estilo y restricciones reales. <br>
+          </p>
+          <p class="manifesto-flow-line manifesto-animate-float" role="listitem">
+            <span class="manifesto-step">04</span>
+            <span class="manifesto-accent">Publica antes</span> sin perder calidad técnica.
+          </p>
+        </div>
+        <p class="manifesto-micro manifesto-animate-pulse">
+          Menos complejidad. Menos ruido. Más construir.
+        </p>
+      </div>
+
+      <div class="manifesto-subsection">
+        <div class="manifesto-divider" aria-hidden="true"></div>
+        <h3 class="manifesto-category-head manifesto-animate-glow">Lo que ganas en la práctica</h3>
+        <p class="manifesto-body">
+          Ganas una primera versión más rápida, mejores referencias de implementación y menos bloqueos al iniciar.
+          En lugar de unir contexto de muchas fuentes, trabajas desde un solo lugar y avanzas con dirección.
+        </p>
+        <div class="manifesto-text-flow" role="list" aria-label="Resultados prácticos">
+          <p class="manifesto-flow-line" role="listitem">
+            <span class="manifesto-step">A</span>
+            <span class="manifesto-accent">Velocidad con control:</span> empiezas desde una base real y mantienes tus criterios.
+          </p>
+          <p class="manifesto-flow-line manifesto-animate-pulse" role="listitem">
+            <span class="manifesto-step">B</span>
+            <span class="manifesto-accent">Lenguaje compartido:</span> humanos y bots razonan sobre las mismas referencias.
+          </p>
+          <p class="manifesto-flow-line" role="listitem">
+            <span class="manifesto-step">C</span>
+            <span class="manifesto-accent">Conocimiento acumulativo:</span> cada reutilización vuelve más fácil el siguiente build.
+          </p>
+        </div>
+        <p class="manifesto-body">
+          Dirección futura: crear sistemas visuales propios, flujos propios y software en cualquier lugar con tus propias reglas.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-xl pb-24 roadmap-section" aria-labelledby="roadmap-title-es">
+    <div class="roadmap-shell">
+      <p class="roadmap-eyebrow">Roadmap en progreso</p>
+      <h2 id="roadmap-title-es" class="roadmap-title">De los cimientos a un framework web con IA</h2>
+      <p class="roadmap-lead">
+        Estamos construyendo esto en público, paso a paso. El camino empieza con cimientos sólidos, luego documentación con
+        mejores prácticas, después un builder más útil para crear proyectos y finalmente un framework liviano para crear con IA.
+      </p>
+
+      <!-- Horizontal SVG path draw -->
+      <svg class="roadmap-svg" viewBox="0 0 900 120" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+        <!-- Flowing S-curve connecting dots -->
+        <path class="roadmap-draw-path" d="M 80 60 C 180 10, 240 110, 340 60 S 500 10, 560 60 S 720 110, 820 60" stroke="rgb(56 189 248 / 45%)" stroke-width="2" />
+
+        <!-- Dot 1 -->
+        <circle class="roadmap-dot" data-c="1" cx="80" cy="60" r="18" />
+        <text class="roadmap-dot-num" data-c="1" x="80" y="64" text-anchor="middle">01</text>
+        <text class="roadmap-dot-label" x="80" y="95" text-anchor="middle">Cimientos</text>
+
+        <!-- Dot 2 -->
+        <circle class="roadmap-dot" data-c="2" cx="340" cy="60" r="18" />
+        <text class="roadmap-dot-num" data-c="2" x="340" y="64" text-anchor="middle">02</text>
+        <text class="roadmap-dot-label" x="340" y="95" text-anchor="middle">Calidad docs</text>
+
+        <!-- Dot 3 -->
+        <circle class="roadmap-dot" data-c="3" cx="560" cy="60" r="18" />
+        <text class="roadmap-dot-num" data-c="3" x="560" y="64" text-anchor="middle">03</text>
+        <text class="roadmap-dot-label" x="560" y="95" text-anchor="middle">Builder</text>
+
+        <!-- Dot 4 -->
+        <circle class="roadmap-dot" data-c="4" cx="820" cy="60" r="18" />
+        <text class="roadmap-dot-num" data-c="4" x="820" y="64" text-anchor="middle">04</text>
+        <text class="roadmap-dot-label" x="820" y="95" text-anchor="middle">Framework</text>
+      </svg>
+
+      <!-- Phase descriptions: 2-col grid -->
+      <div class="roadmap-phases">
+        <div class="roadmap-phase-item" data-c="1">
+          <h3>Construir los cimientos</h3>
+          <p>Estabilizar arquitectura base, páginas nucleares, primitives reutilizables y lenguaje visual.</p>
+        </div>
+        <div class="roadmap-phase-item" data-c="2">
+          <h3>Mejorar docs con buenas prácticas</h3>
+          <p>Hacer la guía más clara y accionable para implementar más rápido y con menos confusión.</p>
+        </div>
+        <div class="roadmap-phase-item" data-c="3">
+          <h3>Mejorar el builder para crear proyectos</h3>
+          <p>Reducir fricción de inicio y dar más control en la generación de proyectos desde referencias reales.</p>
+        </div>
+        <div class="roadmap-phase-item" data-c="4">
+          <h3>Crear el framework básico de StealThis</h3>
+          <p>Un framework simple para web, inspirado en flujos tipo Astro y orientado a construir con IA.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-xl pb-24 keywords-section" aria-labelledby="keywords-title-es">
+    <div class="keywords-shell">
+      <p class="keywords-eyebrow">Lenguaje del proyecto</p>
+      <h2 id="keywords-title-es" class="keywords-title">Palabras clave que definen este proyecto</h2>
+      <p class="keywords-lead">
+        No son frases vacías. Son principios de ejecución para construir, compartir y publicar software con menos complejidad
+        y más control real sobre lo que haces.
+      </p>
+
+      <div class="keywords-list" role="list" aria-label="Palabras clave del proyecto y su significado">
+        <article class="keyword-row" role="listitem" data-align="left">
+          <p class="keyword-line">CONTROL</p>
+          <p class="keyword-copy"><span class="keyword-accent">Control</span> es elegir tu stack, tu sistema visual y tu ritmo de entrega sin quedar atrapado en defaults cerrados.</p>
+        </article>
+        <article class="keyword-row" role="listitem" data-align="center">
+          <p class="keyword-line">REFERENCIA</p>
+          <p class="keyword-copy"><span class="keyword-accent">Referencia</span> es aprender de implementaciones concretas, no de contexto fragmentado en fuentes separadas.</p>
+        </article>
+        <article class="keyword-row" role="listitem" data-align="right">
+          <p class="keyword-line">REUTILIZACIÓN</p>
+          <p class="keyword-copy"><span class="keyword-accent">Reutilización</span> como regla base: empezar desde algo probado, adaptarlo y enfocarte en diferenciar.</p>
+        </article>
+        <article class="keyword-row" role="listitem" data-align="left">
+          <p class="keyword-line">COLABORACIÓN</p>
+          <p class="keyword-copy"><span class="keyword-accent">Colaboración</span> significa humanos y bots construyendo desde el mismo contexto y los mismos criterios.</p>
+        </article>
+        <article class="keyword-row" role="listitem" data-align="center">
+          <p class="keyword-line">PRÁCTICA</p>
+          <p class="keyword-copy"><span class="keyword-accent">Práctica</span> es repetición con criterio: flujos claros, patrones útiles y calidad técnica constante.</p>
+        </article>
+        <article class="keyword-row" role="listitem" data-align="right">
+          <p class="keyword-line">AUTONOMÍA</p>
+          <p class="keyword-copy"><span class="keyword-accent">Autonomía</span> es entender lo que ejecutas, por qué funciona y cómo evolucionarlo sin depender de magia.</p>
+        </article>
+        <article class="keyword-row" role="listitem" data-align="left">
+          <p class="keyword-line">CLARIDAD</p>
+          <p class="keyword-copy"><span class="keyword-accent">Claridad</span> reduce fricción: un lugar para referencias, un lenguaje para decisiones, un camino para publicar.</p>
+        </article>
+        <article class="keyword-row" role="listitem" data-align="center">
+          <p class="keyword-line">PUBLICAR</p>
+          <p class="keyword-copy"><span class="keyword-accent">Publicar</span> antes, sin bajar estándares de arquitectura, accesibilidad ni mantenibilidad.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-xl pb-28 scramble-section" aria-labelledby="scramble-title-es">
+    <div class="scramble-shell">
+      <p class="scramble-eyebrow">Filosofía Steal This</p>
+      <h2 id="scramble-title-es" class="scramble-title">Frases que revelamos mientras construimos</h2>
+      <p class="scramble-lead">
+        Cada línea es un compromiso con una forma más práctica de crear software: referencias reales, contexto compartido y
+        ejecución rápida con control.
+      </p>
+
+      <!-- Single cycling scramble hero line -->
+      <p
+        class="scramble-cycle-line"
+        aria-live="polite"
+        data-phrases={JSON.stringify(["STEAL THIS →", "CONSTRUYE CON CONTROL", "PARTE DESDE REFERENCIAS", "HUMANOS + BOTS", "MENOS FRICCIÓN, MÁS ENVÍO"])}
+      ></p>
+
+      <!-- Static styled lines (scramble-in on scroll) -->
+      <div class="scramble-statics" role="list" aria-label="Frases de filosofía StealThis">
+        <p class="scramble-static-line" role="listitem" data-style="plain" data-text="CONSTRUYE CON CONTROL"></p>
+        <p class="scramble-static-line" role="listitem" data-style="gradient" data-text="PARTE DESDE REFERENCIAS"></p>
+        <p class="scramble-static-line" role="listitem" data-style="muted" data-text="MENOS FRICCIÓN, MÁS ENVÍO"></p>
+        <p class="scramble-static-line" role="listitem" data-style="outline" data-text="HUMANOS + BOTS, MISMO CONTEXTO"></p>
+      </div>
+    </div>
+  </section>
+  </div>
 </Base>

@@ -1,0 +1,45 @@
+---
+slug: lg-35-stagger-fade-scroll
+title: "Stagger Fade-in on Scroll"
+description: "Grid of cards that fade and slide in with a stagger when they enter the viewport. GSAP ScrollTrigger batch."
+category: web-animations
+type: animation
+tags: [stagger, fade, scroll, gsap, scrolltrigger, grid, reveal]
+tech: [gsap, scrolltrigger]
+difficulty: easy
+targets: [html]
+labRoute: /web-animations/lg-35-stagger-fade-scroll
+license: MIT
+createdAt: 2026-02-28
+updatedAt: 2026-02-28
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## Stagger Fade-in on Scroll
+
+A grid of cards that stagger-animate into view as they enter the viewport. Uses `ScrollTrigger.batch()` — the most performant way to stagger multiple elements without creating one ScrollTrigger per element.
+
+### How it works
+
+`ScrollTrigger.batch()` collects elements that enter the viewport within the same animation frame and fires a single `onEnter` callback with all of them at once:
+
+```js
+ScrollTrigger.batch(".card", {
+  onEnter: (batch) =>
+    gsap.from(batch, {
+      opacity: 0, y: 40,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: "power2.out"
+    }),
+  start: "top 88%"
+});
+```
+
+### Why batch() over individual ScrollTriggers
+
+- One RAF call handles all elements entering together
+- Prevents the "wave" effect when many elements enter simultaneously
+- Significantly less memory and CPU overhead on large grids

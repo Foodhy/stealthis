@@ -1,0 +1,53 @@
+---
+slug: rc-04-animated-counter
+title: useAnimatedCounter Hook
+description: A React hook that animates a number from zero to a target value when the element enters the viewport, with configurable easing, duration, prefix, and suffix.
+category: components
+type: component
+tags: [hook, counter, number, animation, scroll, intersectionobserver, react]
+tech: [react, typescript]
+difficulty: easy
+targets: [react]
+license: MIT
+createdAt: 2026-03-01
+updatedAt: 2026-03-01
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## useAnimatedCounter Hook
+
+Animate any number when it scrolls into view. Returns a ref to attach to the container and the current display value as a string.
+
+### Usage
+
+```tsx
+const { ref, display } = useAnimatedCounter({
+  target: 12500,
+  prefix: "$",
+  suffix: "+",
+  duration: 1800,
+});
+
+<div ref={ref}>{display}</div>
+```
+
+### Options
+
+| Prop | Default | Description |
+|---|---|---|
+| `target` | — | The number to count up to |
+| `duration` | `1800` | Animation duration in ms |
+| `prefix` | `""` | String prepended to the value (e.g. `"$"`) |
+| `suffix` | `""` | String appended to the value (e.g. `"+"`, `"%"`) |
+| `decimals` | `0` | Decimal places to display |
+| `easing` | `"easeOut"` | `"easeOut"` \| `"easeInOut"` \| `"linear"` |
+
+### How it works
+
+1. An `IntersectionObserver` watches the returned ref
+2. When the element enters the viewport, a `requestAnimationFrame` loop runs the easing function over `duration` ms
+3. Each frame, the current value is formatted with `toLocaleString()` + prefix/suffix and stored in state
+
+Respects `prefers-reduced-motion` — immediately shows the final value without animation.
