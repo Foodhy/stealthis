@@ -1,0 +1,174 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: #050910;
+  color: #f2f6ff;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ── Demo shell ── */
+.demo {
+  width: min(520px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.demo-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f2f6ff;
+}
+
+.demo-sub {
+  font-size: 0.9rem;
+  color: #8090b0;
+  line-height: 1.6;
+}
+
+/* ── Grid of swap demos ── */
+.swap-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.swap-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.swap-card:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.swap-card__label {
+  font-size: 0.75rem;
+  color: #5a6a8a;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Swap base ── */
+.swap {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #8090b0;
+  transition: color 0.2s ease;
+}
+
+.swap:hover { color: #c5d3f0; }
+
+/* Hide native checkbox */
+.swap input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.swap:focus-within {
+  outline: 2px solid rgba(79,110,247,0.6);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+/* Both slots overlap */
+.swap-on,
+.swap-off {
+  grid-area: 1 / 1;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.3s;
+}
+
+/* ── Default: swap-off visible, swap-on hidden ── */
+.swap-off { opacity: 1; }
+.swap-on  { opacity: 0; pointer-events: none; }
+
+.swap input:checked ~ .swap-off { opacity: 0; pointer-events: none; }
+.swap input:checked ~ .swap-on  { opacity: 1; pointer-events: auto; }
+
+/* ─────────────────────────── Rotate variant ─────────────────────────── */
+.swap-rotate .swap-off {
+  transform: rotate(0deg);
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+}
+
+.swap-rotate .swap-on {
+  transform: rotate(-180deg);
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+}
+
+.swap-rotate input:checked ~ .swap-off {
+  transform: rotate(180deg);
+  opacity: 0;
+}
+
+.swap-rotate input:checked ~ .swap-on {
+  transform: rotate(0deg);
+  opacity: 1;
+}
+
+/* ─────────────────────────── Flip variant ─────────────────────────── */
+.swap-flip {
+  perspective: 120px;
+}
+
+.swap-flip .swap-off {
+  transform: rotateY(0deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.4s ease, opacity 0.1s ease 0.2s;
+}
+
+.swap-flip .swap-on {
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.4s ease, opacity 0.1s ease 0.2s;
+}
+
+.swap-flip input:checked ~ .swap-off {
+  transform: rotateY(-180deg);
+  opacity: 0;
+}
+
+.swap-flip input:checked ~ .swap-on {
+  transform: rotateY(0deg);
+  opacity: 1;
+}
+
+/* ─────────────────────────── Fade variant ─────────────────────────── */
+.swap-fade .swap-off,
+.swap-fade .swap-on {
+  transition: opacity 0.25s ease;
+}
+
+/* ── Accent color for star ── */
+.swap--accent input:checked ~ .swap-on {
+  color: #f59e0b;
+}
+
+/* Responsive */
+@media (max-width: 380px) {
+  .swap-grid { grid-template-columns: repeat(2, 1fr); }
+}

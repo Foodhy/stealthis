@@ -1,11 +1,12 @@
-import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
 
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site ?? new URL(DEFAULT_SITE)).toString().replace(/\/$/, "");
   const resources = await getCollection("resources");
+  const showcaseCount = resources.filter((resource) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0).length;
 
   const categoryCounts = new Map<string, number>();
   for (const resource of resources) {
@@ -35,7 +36,11 @@ export const GET: APIRoute = async ({ site }) => {
     "## Canonical links",
     `- Main site: ${origin}/`,
     `- Library: ${origin}/library/`,
+    `- Showcase: ${origin}/showcase/`,
     `- Spanish library: ${origin}/es/library/`,
+    `- Sitemap: ${origin}/sitemap.xml`,
+    `- Full LLM context: ${origin}/llms-full.txt`,
+    `- Structured AI index (JSON): ${origin}/ai-index.json`,
     "- Docs: https://docs.stealthis.dev/",
     "- Docs llms.txt: https://docs.stealthis.dev/llms.txt",
     "- MCP Server: https://mcp.stealthis.dev/mcp",
@@ -47,6 +52,7 @@ export const GET: APIRoute = async ({ site }) => {
     "",
     "## Coverage",
     `- Total resources: ${resources.length}`,
+    `- Total showcase previews: ${showcaseCount}`,
     `- Total categories: ${categoryCounts.size}`,
     "",
     "## Categories by volume",

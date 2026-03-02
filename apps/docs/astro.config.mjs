@@ -11,7 +11,18 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "StealThis.dev",
-      description: "Documentation for StealThis.dev — the open-source web resource library.",
+      description:
+        "Official StealThis.dev docs: setup, integrations, MCP server usage, resource format, and AI agent workflows.",
+      head: [
+        {
+          tag: "meta",
+          attrs: { property: "og:image", content: "https://docs.stealthis.dev/og/docs.webp" },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "twitter:image", content: "https://docs.stealthis.dev/og/docs.webp" },
+        },
+      ],
       logo: {
         light: "./src/assets/logo-light.svg",
         dark: "./src/assets/logo-dark.svg",

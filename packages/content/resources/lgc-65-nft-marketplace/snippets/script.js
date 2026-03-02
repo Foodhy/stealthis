@@ -2,39 +2,48 @@
 
 /* ── Bid Price Ticker ──────────────────────────────────────────────────────── */
 (function initBidTicker() {
-  var prices = document.querySelectorAll('.bid-price');
+  var prices = document.querySelectorAll('.bid-eth');
   if (!prices.length) return;
 
   function randomBetween(min, max) {
     return Math.random() * (max - min) + min;
   }
 
+  // Update only the text node to preserve the inner SVG icon
+  function getTextNode(el) {
+    for (var i = el.childNodes.length - 1; i >= 0; i--) {
+      if (el.childNodes[i].nodeType === 3) return el.childNodes[i];
+    }
+    return null;
+  }
+
   function tick() {
     var idx = Math.floor(Math.random() * prices.length);
     var el = prices[idx];
-    var raw = parseFloat(el.textContent.replace(/[^\d.]/g, '')) || 0;
+    var textNode = getTextNode(el);
+    if (!textNode) return;
+
+    var raw = parseFloat(textNode.textContent.replace(/[^\d.]/g, '')) || 0;
     var increment = parseFloat(randomBetween(0.01, 0.05).toFixed(2));
     var newVal = (raw + increment).toFixed(2);
 
-    el.textContent = newVal + ' ETH';
+    textNode.textContent = ' ' + newVal + ' ETH';
     el.classList.add('flash');
 
     setTimeout(function() {
       el.classList.remove('flash');
     }, 600);
 
-    // schedule next tick between 3-8 seconds
     var delay = Math.floor(randomBetween(3000, 8000));
     setTimeout(tick, delay);
   }
 
-  // start after a short initial delay
   setTimeout(tick, 2000);
 })();
 
 /* ── Countdown Timers ──────────────────────────────────────────────────────── */
 (function initCountdowns() {
-  var timers = document.querySelectorAll('.auction-countdown[data-end]');
+  var timers = document.querySelectorAll('.auction-timer');
   if (!timers.length) return;
 
   function pad(n) { return n < 10 ? '0' + n : String(n); }
@@ -52,7 +61,7 @@
     });
   }
 
-  // For demo: if no data-end is set, create fake future timestamps
+  // Assign fake future timestamps for demo timers without data-end
   timers.forEach(function(el) {
     if (!el.dataset.end) {
       var offset = Math.floor(Math.random() * 3600 * 24) + 3600;
@@ -66,7 +75,7 @@
 
 /* ── Connect Wallet Button ─────────────────────────────────────────────────── */
 (function initWallet() {
-  var btn = document.querySelector('.wallet-btn');
+  var btn = document.querySelector('.btn-wallet');
   if (!btn) return;
 
   var connected = false;

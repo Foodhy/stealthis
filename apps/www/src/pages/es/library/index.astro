@@ -2,16 +2,22 @@
 import Base from "@layouts/Base.astro";
 import ResourceCard from "@components/ResourceCard.astro";
 import FilterBar from "@components/FilterBar.astro";
+import CollectionExplorer from "@components/CollectionExplorer.astro";
 import { getCollection } from "astro:content";
 import { useTranslations } from "@i18n/index";
 
 const locale = "es" as const;
 const t = useTranslations(locale);
-const allResources = await getCollection("resources");
+const allResources = (await getCollection("resources")).sort(
+  (a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime()
+);
 const categories = [...new Set(allResources.map((r) => r.data.category))].sort();
-const techs      = [...new Set(allResources.flatMap((r) => r.data.tech))].sort();
-const authors    = [...new Set(allResources.flatMap((r) => r.data.author ? [r.data.author.name] : []))].sort();
-const libraryDescription = "Explora todos los recursos web de código abierto.";
+const techs = [...new Set(allResources.flatMap((r) => r.data.tech))].sort();
+const authors = [
+  ...new Set(allResources.flatMap((r) => (r.data.author ? [r.data.author.name] : []))),
+].sort();
+const libraryDescription =
+  "Busca más de 200 recursos web open source por categoría, tech, dificultad, autor y colecciones. Copia snippets o abre demos en Lab.";
 const alternateLinks = [
   { hreflang: "en", href: "https://stealthis.dev/library/" },
   { hreflang: "es", href: "https://stealthis.dev/es/library/" },
@@ -31,6 +37,7 @@ const structuredData = {
 <Base
   title="Librería"
   description={libraryDescription}
+  image="/og/library.webp"
   canonicalPath="/es/library/"
   alternateLinks={alternateLinks}
   structuredData={structuredData}
@@ -40,6 +47,8 @@ const structuredData = {
       <h1 class="text-4xl font-extrabold tracking-tight text-white mb-2">{t("library.title")}</h1>
       <p class="text-slate-400">{t("library.subtitle")} — {allResources.length} recursos</p>
     </div>
+
+    <CollectionExplorer locale={locale} resources={allResources} />
 
     <div class="flex flex-col lg:flex-row gap-8">
       <aside class="w-full lg:w-64 shrink-0">

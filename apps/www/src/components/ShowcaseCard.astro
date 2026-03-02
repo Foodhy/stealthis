@@ -1,0 +1,284 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { useTranslations, type Locale } from "@i18n/index";
+import { SITE_URLS } from "@lib/urls";
+
+interface Props {
+  resource: CollectionEntry<"resources">;
+  srcdoc: string;
+  locale?: Locale;
+}
+
+const { resource, srcdoc, locale = "en" } = Astro.props;
+const t = useTranslations(locale);
+const { slug, title, description, category, difficulty, labRoute } = resource.data;
+
+const prefix = locale === "es" ? "/es" : "";
+const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
+const difficultyKey = `resource.difficulty.${difficulty}` as
+  | "resource.difficulty.easy"
+  | "resource.difficulty.med"
+  | "resource.difficulty.hard";
+const difficultyLabel = t(difficultyKey);
+const categoryKey = `category.${category}` as
+  | "category.web-animations"
+  | "category.web-pages"
+  | "category.ui-components"
+  | "category.patterns"
+  | "category.components"
+  | "category.pages"
+  | "category.prompts"
+  | "category.skills"
+  | "category.mcp-servers"
+  | "category.architectures"
+  | "category.boilerplates"
+  | "category.remotion";
+const categoryLabel = t(categoryKey);
+const isTall = ["web-pages", "patterns", "pages"].includes(category);
+---
+
+<article
+  class={`showcase-card masonry-item${isTall ? " showcase-card--tall" : ""}`}
+  data-slug={slug}
+  data-category={category}
+  data-srcdoc={srcdoc}
+>
+  <div class="showcase-preview">
+    <iframe
+      title={`${title} live preview`}
+      sandbox="allow-scripts allow-same-origin"
+      class="showcase-iframe"
+    ></iframe>
+  </div>
+
+  <div class="showcase-footer">
+    <div class="showcase-meta">
+      <p class="text-xs text-slate-500 leading-none">{categoryLabel}</p>
+      <h2 class="text-sm font-semibold text-slate-100 leading-snug mt-1 line-clamp-1">
+        {title}
+      </h2>
+      <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{description}</p>
+    </div>
+
+    <div class="showcase-actions">
+      <span class={`badge ${difficultyClass} showcase-badge shrink-0`}>{difficultyLabel}</span>
+      <div class="flex items-center gap-1 ml-auto">
+        <button
+          class="showcase-fav-btn"
+          data-slug={slug}
+          title={t("resource.favorite")}
+          aria-label={t("resource.favorite")}
+          type="button"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
+        {labRoute && (
+          <a
+            href={`${SITE_URLS.lab}${labRoute}`}
+            target="_blank"
+            rel="noopener"
+            class="showcase-lab-btn"
+            title={t("resource.openLab")}
+            aria-label={t("resource.openLab")}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Lab
+          </a>
+        )}
+        <a
+          href={`${prefix}/r/${slug}`}
+          class="showcase-code-btn"
+        >
+          View Code
+        </a>
+      </div>
+    </div>
+  </div>
+</article>
+
+<style>
+  .showcase-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(15, 23, 42, 0.5);
+    overflow: hidden;
+    transition: border-color 200ms ease, transform 200ms ease;
+  }
+
+  .showcase-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    transform: translateY(-2px);
+  }
+
+  .showcase-preview {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    background: #0b1221;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+  }
+
+  .showcase-card--tall .showcase-preview {
+    height: 500px;
+  }
+
+  .showcase-preview iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .showcase-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .showcase-meta {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .showcase-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .showcase-code-btn {
+    position: relative;
+    z-index: 20;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.5rem;
+    background: rgba(99, 183, 255, 0.12);
+    border: 1px solid rgba(99, 183, 255, 0.28);
+    color: rgb(147, 210, 255);
+    text-decoration: none;
+    transition: background 150ms ease, color 150ms ease;
+    white-space: nowrap;
+  }
+
+  .showcase-code-btn:hover {
+    background: rgba(99, 183, 255, 0.22);
+    color: rgb(200, 235, 255);
+  }
+
+  .showcase-lab-btn {
+    position: relative;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgb(148, 163, 184);
+    text-decoration: none;
+    transition: background 150ms ease, color 150ms ease;
+    white-space: nowrap;
+  }
+
+  .showcase-lab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgb(203, 213, 225);
+  }
+
+  /* Pill-shaped difficulty badge */
+  :global(.showcase-badge) {
+    border-radius: 9999px !important;
+    font-size: 0.62rem;
+    padding: 0.2em 0.65em;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  .showcase-fav-btn {
+    position: relative;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 0.5rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgb(100, 116, 139);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .showcase-fav-btn:hover {
+    background: rgba(244, 63, 94, 0.1);
+    border-color: rgba(244, 63, 94, 0.25);
+    color: rgb(244, 63, 94);
+  }
+
+  .showcase-fav-btn.is-favorite {
+    background: rgba(244, 63, 94, 0.12);
+    border-color: rgba(244, 63, 94, 0.3);
+    color: rgb(251, 113, 133);
+  }
+
+  .showcase-fav-btn.is-favorite svg {
+    fill: currentColor;
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = "stealthis:favorites";
+
+  function getFavs(): string[] {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as string[];
+    } catch {
+      return [];
+    }
+  }
+
+  function syncFavBtns() {
+    const favs = getFavs();
+    document.querySelectorAll<HTMLButtonElement>(".showcase-fav-btn").forEach((btn) => {
+      btn.classList.toggle("is-favorite", favs.includes(btn.dataset.slug ?? ""));
+    });
+  }
+
+  document.querySelectorAll<HTMLButtonElement>(".showcase-fav-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const slug = btn.dataset.slug ?? "";
+      const favs = getFavs();
+      const idx = favs.indexOf(slug);
+      const isNow = idx === -1;
+      if (isNow) favs.push(slug);
+      else favs.splice(idx, 1);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+      window.dispatchEvent(
+        new CustomEvent("stealthis:favorites-changed", { detail: { slug, isFavorite: isNow } })
+      );
+      syncFavBtns();
+    });
+  });
+
+  syncFavBtns();
+  window.addEventListener("stealthis:favorites-changed", syncFavBtns);
+</script>

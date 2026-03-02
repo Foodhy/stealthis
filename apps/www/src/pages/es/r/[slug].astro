@@ -8,6 +8,7 @@ import path from "node:path";
 import { getCollection, render } from "astro:content";
 import { useTranslations } from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
+import { findResourcePreview, normalizePreviewPath } from "@lib/resource-preview";
 
 export async function getStaticPaths() {
   const resources = await getCollection("resources");
@@ -20,7 +21,7 @@ export async function getStaticPaths() {
 const { resource } = Astro.props;
 const locale = "es" as const;
 const t = useTranslations(locale);
-const { slug, title, description, category, difficulty, tags, tech, targets, labRoute, license, createdAt, updatedAt } = resource.data;
+const { slug, title, description, category, difficulty, tags, tech, targets, preview, labRoute, license, createdAt, updatedAt } = resource.data;
 const { Content } = await render(resource);
 
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
@@ -62,46 +63,79 @@ const TARGET_LABELS: Record<string, string> = {
 const targetLabels = targets.map((target) => TARGET_LABELS[target] ?? target);
 const allBadges = [...languageBadges, ...targetLabels];
 const canonicalPath = `/es/r/${slug}`;
+const frontmatterPreview = normalizePreviewPath(preview);
+const detectedPreview = findResourcePreview(slug)?.publicPath;
+const imagePath = frontmatterPreview ?? detectedPreview ?? `/og/${slug}.svg`;
+const ogImageUrl = new URL(imagePath, "https://stealthis.dev").toString();
 const resourceUrl = `https://stealthis.dev${canonicalPath}`;
 const alternateLinks = [
   { hreflang: "en", href: `https://stealthis.dev/r/${slug}` },
   { hreflang: "es", href: resourceUrl },
   { hreflang: "x-default", href: `https://stealthis.dev/r/${slug}` },
 ];
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  headline: title,
-  name: title,
-  description,
-  inLanguage: "es",
-  url: resourceUrl,
-  datePublished: new Date(createdAt).toISOString(),
-  dateModified: new Date(updatedAt).toISOString(),
-  license,
-  keywords: [...new Set([...tags, ...tech])],
-  about: { "@type": "Thing", name: category },
-  author: {
-    "@type": "Organization",
-    name: "StealThis.dev",
-    url: "https://stealthis.dev/",
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: title,
+    name: title,
+    description,
+    inLanguage: "es",
+    url: resourceUrl,
+    image: ogImageUrl,
+    datePublished: new Date(createdAt).toISOString(),
+    dateModified: new Date(updatedAt).toISOString(),
+    license,
+    keywords: [...new Set([...tags, ...tech])],
+    about: { "@type": "Thing", name: category },
+    author: {
+      "@type": "Organization",
+      name: "StealThis.dev",
+      url: "https://stealthis.dev/",
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      name: "StealThis.dev",
+      url: "https://stealthis.dev/",
+    },
   },
-  isPartOf: {
-    "@type": "WebSite",
-    name: "StealThis.dev",
-    url: "https://stealthis.dev/",
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: "https://stealthis.dev/es/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Librería",
+        item: "https://stealthis.dev/es/library/",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: title,
+        item: resourceUrl,
+      },
+    ],
   },
-};
+];
 ---
 
 <Base
   title={title}
   description={description}
+  image={imagePath}
+  imageAlt={`${title} preview card`}
   canonicalPath={canonicalPath}
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >
-  <article class="container-md py-12">
+  <article class="container-md py-12" data-pagefind-body>
     <nav class="text-sm text-slate-500 mb-8 flex items-center gap-2">
       <a href="/es" class="hover:text-slate-300 transition-colors">Inicio</a>
       <span>/</span>

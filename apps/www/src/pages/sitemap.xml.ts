@@ -1,8 +1,19 @@
-import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
-const STATIC_PATHS = ["/", "/library/", "/es/", "/es/library/", "/llms.txt"];
+const STATIC_PATHS = [
+  "/",
+  "/library/",
+  "/showcase/",
+  "/changelog",
+  "/es/",
+  "/es/library/",
+  "/es/changelog",
+  "/llms.txt",
+  "/llms-full.txt",
+  "/ai-index.json",
+];
 
 const formatDate = (value: string) => {
   const date = new Date(value);

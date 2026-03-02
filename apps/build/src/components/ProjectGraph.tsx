@@ -21,26 +21,73 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-// --- Node types ---
-type NodeKind = "stack" | "tool" | "mcp" | "skill" | "infra" | "auth" | "db" | "deploy";
-
-interface NodeData {
-  label: string;
-  kind: NodeKind;
-  [key: string]: unknown;
-}
+import {
+  downloadZipFallback,
+  pickProjectDirectory,
+  supportsFileSystemAccess,
+  writeFilesToDirectory,
+} from "../lib/builder/client-storage";
+import type {
+  BuilderBaas,
+  BuilderExecutionPlanV1,
+  BuilderGeneratedFile,
+  BuilderNodeKind,
+  BuilderOverwriteStrategy,
+  BuilderProjectV1,
+  BuilderProvider,
+  BuilderStack,
+} from "../lib/builder/contracts";
+import { createImplementationMarkdown, createMcpMarkdown } from "../lib/builder/exporters";
+import { createId } from "../lib/builder/ids";
+import { createDeterministicPlan } from "../lib/builder/planner";
+import {
+  createBuilderProjectFromFlow,
+  parseImportedProject,
+  toFlowGraph,
+} from "../lib/builder/project";
 
 interface ProjectUpdateDetail {
   title?: string;
   description?: string;
 }
 
+interface NodeData {
+  label: string;
+  kind: BuilderNodeKind;
+  [key: string]: unknown;
+}
+
+interface PlanResponse {
+  ok: boolean;
+  mode: "deterministic" | "ai";
+  plan: BuilderExecutionPlanV1;
+}
+
+interface ScaffoldResponse {
+  ok: boolean;
+  plan: BuilderExecutionPlanV1;
+  scaffold: {
+    files: BuilderGeneratedFile[];
+    warnings: string[];
+  };
+}
+
+interface RegenerateResponse {
+  ok: boolean;
+  targetNodeId: string;
+  changedPaths: string[];
+  scaffold: {
+    files: BuilderGeneratedFile[];
+    warnings: string[];
+  };
+}
+
 const DRAG_NODE_MIME = "application/x-stealthis-node";
 const MIN_GRAPH_HEIGHT_PX = 360;
 const LOW_GRAPH_HEIGHT_WARNING_PX = 420;
+const PROJECT_SESSION_KEY = "stealthis:builder:v1:session";
 
-const KIND_COLORS: Record<NodeKind, { bg: string; border: string; text: string }> = {
+const KIND_COLORS: Record<BuilderNodeKind, { bg: string; border: string; text: string }> = {
   stack: { bg: "#1e3a5f", border: "#38bdf8", text: "#bae6fd" },
   tool: { bg: "#1a2f1a", border: "#4ade80", text: "#bbf7d0" },
   mcp: { bg: "#2d1f4a", border: "#a78bfa", text: "#ede9fe" },
@@ -51,8 +98,56 @@ const KIND_COLORS: Record<NodeKind, { bg: string; border: string; text: string }
   deploy: { bg: "#1c2a1a", border: "#34d399", text: "#a7f3d0" },
 };
 
+const PALETTE_ITEMS: { kind: BuilderNodeKind; label: string; example: string }[] = [
+  { kind: "stack", label: "Stack", example: "Astro / Next.js" },
+  { kind: "tool", label: "Tool", example: "Tailwind CSS" },
+  { kind: "mcp", label: "MCP", example: "StealThis MCP" },
+  { kind: "skill", label: "Skill", example: "Authentication" },
+  { kind: "infra", label: "Infra", example: "Cloudflare" },
+  { kind: "auth", label: "Auth", example: "GitHub OAuth" },
+  { kind: "db", label: "DB", example: "Supabase" },
+  { kind: "deploy", label: "Deploy", example: "Pages / Workers" },
+];
+
+const INITIAL_NODES: Node<NodeData>[] = [
+  {
+    id: "1",
+    type: "styled",
+    position: { x: 200, y: 150 },
+    data: { label: "Astro 5", kind: "stack" },
+  },
+  {
+    id: "2",
+    type: "styled",
+    position: { x: 450, y: 80 },
+    data: { label: "Tailwind CSS", kind: "tool" },
+  },
+  {
+    id: "3",
+    type: "styled",
+    position: { x: 450, y: 220 },
+    data: { label: "Supabase", kind: "db" },
+  },
+];
+
+const INITIAL_EDGES: Edge[] = [
+  { id: "e1-2", source: "1", target: "2", animated: true },
+  { id: "e1-3", source: "1", target: "3", animated: true },
+];
+
+function hasExactConnection(connection: Connection, edges: Edge[]) {
+  return edges.some(
+    (edge) =>
+      edge.source === connection.source &&
+      edge.target === connection.target &&
+      (edge.sourceHandle ?? null) === (connection.sourceHandle ?? null) &&
+      (edge.targetHandle ?? null) === (connection.targetHandle ?? null)
+  );
+}
+
 function StyledNode({ data }: { data: NodeData }) {
   const colors = KIND_COLORS[data.kind] ?? KIND_COLORS.stack;
+
   return (
     <div
       style={{
@@ -63,7 +158,7 @@ function StyledNode({ data }: { data: NodeData }) {
         color: colors.text,
         fontSize: "0.8125rem",
         fontWeight: 500,
-        minWidth: "80px",
+        minWidth: "90px",
         textAlign: "center",
       }}
     >
@@ -102,7 +197,7 @@ function StyledNode({ data }: { data: NodeData }) {
       <div
         style={{
           fontSize: "0.65rem",
-          opacity: 0.6,
+          opacity: 0.65,
           marginBottom: "0.125rem",
           textTransform: "uppercase",
           letterSpacing: "0.05em",
@@ -117,173 +212,48 @@ function StyledNode({ data }: { data: NodeData }) {
 
 const nodeTypes = { styled: StyledNode };
 
-// --- Palette ---
-const PALETTE_ITEMS: { kind: NodeKind; label: string; example: string }[] = [
-  { kind: "stack", label: "Stack", example: "Astro / Next.js" },
-  { kind: "tool", label: "Tool", example: "TypeScript / Bun" },
-  { kind: "mcp", label: "MCP", example: "StealThis MCP" },
-  { kind: "skill", label: "Skill", example: "Authentication" },
-  { kind: "infra", label: "Infra", example: "Cloudflare Pages" },
-  { kind: "auth", label: "Auth", example: "GitHub OAuth" },
-  { kind: "db", label: "DB", example: "PlanetScale" },
-  { kind: "deploy", label: "Deploy", example: "Cloudflare Workers" },
-];
+function downloadTextFile(content: string, fileName: string, type: string): void {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 
-// --- Initial nodes ---
-const INITIAL_NODES: Node<NodeData>[] = [
-  {
-    id: "1",
-    type: "styled",
-    position: { x: 200, y: 150 },
-    data: { label: "Astro 5", kind: "stack" },
-  },
-  {
-    id: "2",
-    type: "styled",
-    position: { x: 450, y: 80 },
-    data: { label: "Cloudflare Pages", kind: "deploy" },
-  },
-  {
-    id: "3",
-    type: "styled",
-    position: { x: 450, y: 220 },
-    data: { label: "Tailwind CSS", kind: "tool" },
-  },
-];
-
-const INITIAL_EDGES: Edge[] = [
-  { id: "e1-2", source: "1", target: "2", animated: true },
-  { id: "e1-3", source: "1", target: "3" },
-];
-
-function hasExactConnection(connection: Connection, edges: Edge[]) {
-  return edges.some(
-    (edge) =>
-      edge.source === connection.source &&
-      edge.target === connection.target &&
-      (edge.sourceHandle ?? null) === (connection.sourceHandle ?? null) &&
-      (edge.targetHandle ?? null) === (connection.targetHandle ?? null)
+function buildSlug(input: string): string {
+  return (
+    input
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "project"
   );
 }
 
-function createNodeId() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
+function defaultModelForProvider(provider: BuilderProvider): string {
+  if (provider === "openai") return "gpt-4o-mini";
+  if (provider === "anthropic") return "claude-3-5-sonnet-latest";
+  if (provider === "google") return "gemini-1.5-flash";
+  return "gpt-4o-mini";
+}
+
+async function postJson<TResponse>(url: string, payload: unknown): Promise<TResponse> {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const body = (await response.json()) as { error?: string };
+  if (!response.ok) {
+    throw new Error(body.error ?? `Request failed with status ${response.status}`);
   }
 
-  return `node-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+  return body as TResponse;
 }
 
-// --- Export helpers ---
-function exportProjectJSON(
-  title: string,
-  description: string,
-  nodes: Node<NodeData>[],
-  edges: Edge[]
-) {
-  const data = {
-    title,
-    description,
-    exportedAt: new Date().toISOString(),
-    graph: {
-      nodes: nodes.map((n) => ({ id: n.id, kind: n.data.kind, label: n.data.label })),
-      edges: edges.map((edge) => ({
-        ...edge,
-        sourceHandle: edge.sourceHandle ?? null,
-        targetHandle: edge.targetHandle ?? null,
-      })),
-    },
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "project.json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportMarkdown(title: string, description: string, nodes: Node<NodeData>[]) {
-  const sections: Record<NodeKind, string[]> = {
-    stack: [],
-    tool: [],
-    mcp: [],
-    skill: [],
-    infra: [],
-    auth: [],
-    db: [],
-    deploy: [],
-  };
-
-  for (const node of nodes) {
-    sections[node.data.kind]?.push(node.data.label);
-  }
-
-  const lines = [
-    `# ${title}`,
-    "",
-    description ? `> ${description}` : "",
-    "",
-    "## Implementation Plan",
-    "",
-  ];
-
-  const SECTION_LABELS: Partial<Record<NodeKind, string>> = {
-    stack: "### Tech Stack",
-    tool: "### Tools",
-    mcp: "### MCP Servers",
-    auth: "### Authentication",
-    db: "### Database",
-    infra: "### Infrastructure",
-    deploy: "### Deployment",
-    skill: "### Skills & Features",
-  };
-
-  for (const [kind, items] of Object.entries(sections) as [NodeKind, string[]][]) {
-    if (!items.length) continue;
-    lines.push(SECTION_LABELS[kind] ?? `### ${kind}`);
-    for (const item of items) {
-      lines.push(`- [ ] ${item}`);
-    }
-    lines.push("");
-  }
-
-  const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "IMPLEMENTATION.md";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportMCP(nodes: Node<NodeData>[]) {
-  const mcpNodes = nodes.filter((n) => n.data.kind === "mcp");
-  const skillNodes = nodes.filter((n) => n.data.kind === "skill");
-
-  const lines = [
-    "# MCP Manifest",
-    "",
-    "## MCP Servers",
-    "",
-    ...(mcpNodes.length ? mcpNodes.map((n) => `- ${n.data.label}`) : ["_No MCP servers defined_"]),
-    "",
-    "## Skills",
-    "",
-    ...(skillNodes.length ? skillNodes.map((n) => `- ${n.data.label}`) : ["_No skills defined_"]),
-    "",
-  ];
-
-  const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "MCP.md";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// --- Main component ---
 export default function ProjectGraph({
   title = "My Project",
   description = "",
@@ -293,16 +263,34 @@ export default function ProjectGraph({
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<NodeData>>(INITIAL_NODES);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(INITIAL_EDGES);
+  const [projectId, setProjectId] = useState(() => createId("project"));
   const [projectMeta, setProjectMeta] = useState({ title, description });
+  const [stack, setStack] = useState<BuilderStack>("astro-tailwind");
+  const [baas, setBaas] = useState<BuilderBaas>("supabase");
+  const [provider, setProvider] = useState<BuilderProvider>("none");
+  const [model, setModel] = useState(defaultModelForProvider("openai"));
+  const [apiKey, setApiKey] = useState("");
+  const [overwrite, setOverwrite] = useState<BuilderOverwriteStrategy>("ask");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [isCompactLayout, setIsCompactLayout] = useState(false);
   const [showGraphHelp, setShowGraphHelp] = useState(false);
-  const graphContainerRef = useRef<HTMLDivElement | null>(null);
   const [graphViewportHeight, setGraphViewportHeight] = useState(0);
   const [flowInstance, setFlowInstance] = useState<ReactFlowInstance<Node<NodeData>, Edge> | null>(
     null
   );
+  const [executionPlan, setExecutionPlan] = useState<BuilderExecutionPlanV1 | null>(null);
+  const [generatedFiles, setGeneratedFiles] = useState<BuilderGeneratedFile[]>([]);
+  const [statusMessage, setStatusMessage] = useState("Ready.");
+  const [busyAction, setBusyAction] = useState<null | "plan" | "build" | "regen" | "write">(null);
+  const [planningMode, setPlanningMode] = useState<"deterministic" | "ai">("deterministic");
+  const [selectedDirectory, setSelectedDirectory] = useState<FileSystemDirectoryHandle | null>(
+    null
+  );
+
+  const graphContainerRef = useRef<HTMLDivElement | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
+
   const selectedNodes = nodes.filter((node) => node.selected);
   const selectedEdges = edges.filter((edge) => edge.selected);
   const selectedNode =
@@ -315,6 +303,7 @@ export default function ProjectGraph({
     (selectedEdgeId ? (edges.find((edge) => edge.id === selectedEdgeId) ?? null) : null) ??
     selectedEdges[0] ??
     null;
+
   const hasSelection = selectedNodes.length > 0 || selectedEdges.length > 0;
   const isGraphHeightTight =
     graphViewportHeight > 0 && graphViewportHeight < LOW_GRAPH_HEIGHT_WARNING_PX;
@@ -334,14 +323,14 @@ export default function ProjectGraph({
       if (params.source === params.target) return;
       if (hasExactConnection(params, edges)) return;
 
-      setEdges((eds) =>
+      setEdges((currentEdges) =>
         addEdge(
           {
             ...params,
             animated: true,
             markerEnd: { type: MarkerType.ArrowClosed, color: "rgba(255,255,255,0.35)" },
           },
-          eds
+          currentEdges
         )
       );
     },
@@ -349,10 +338,11 @@ export default function ProjectGraph({
   );
 
   const addNode = useCallback(
-    (kind: NodeKind, label: string, position?: { x: number; y: number }) => {
-      const id = createNodeId();
-      setNodes((nds) => [
-        ...nds.map((node) => (node.selected ? { ...node, selected: false } : node)),
+    (kind: BuilderNodeKind, label: string, position?: { x: number; y: number }) => {
+      const id = createId("node");
+
+      setNodes((currentNodes) => [
+        ...currentNodes.map((node) => (node.selected ? { ...node, selected: false } : node)),
         {
           id,
           type: "styled",
@@ -361,9 +351,55 @@ export default function ProjectGraph({
           selected: true,
         },
       ]);
-      setEdges((eds) => eds.map((edge) => (edge.selected ? { ...edge, selected: false } : edge)));
+      setEdges((currentEdges) =>
+        currentEdges.map((edge) => (edge.selected ? { ...edge, selected: false } : edge))
+      );
       setSelectedNodeId(id);
       setSelectedEdgeId(null);
+    },
+    [setEdges, setNodes]
+  );
+
+  const applyProjectToCanvas = useCallback(
+    (project: BuilderProjectV1) => {
+      const flow = toFlowGraph(project);
+
+      setProjectId(project.id);
+      setProjectMeta({
+        title: project.title,
+        description: project.description,
+      });
+      setStack(project.stack);
+      setBaas(project.baas);
+      setProvider(project.settings.provider);
+      setModel(project.settings.model || defaultModelForProvider(project.settings.provider));
+      setOverwrite(project.settings.overwrite);
+
+      setNodes(
+        flow.nodes.map((node) => ({
+          id: node.id,
+          type: "styled",
+          position: node.position,
+          data: {
+            label: node.label,
+            kind: node.kind,
+          },
+        }))
+      );
+
+      setEdges(
+        flow.edges.map((edge) => ({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          sourceHandle: edge.sourceHandle ?? null,
+          targetHandle: edge.targetHandle ?? null,
+          animated: edge.animated,
+        }))
+      );
+
+      setExecutionPlan(null);
+      setGeneratedFiles([]);
     },
     [setEdges, setNodes]
   );
@@ -388,13 +424,29 @@ export default function ProjectGraph({
   }, []);
 
   useEffect(() => {
+    const rawSession = window.localStorage.getItem(PROJECT_SESSION_KEY);
+    if (!rawSession) return;
+
+    try {
+      const parsed = JSON.parse(rawSession) as unknown;
+      const imported = parseImportedProject(parsed, {
+        stack: "astro-tailwind",
+        baas: "none",
+      });
+      applyProjectToCanvas(imported.project);
+      setStatusMessage("Recovered previous builder session.");
+    } catch {
+      window.localStorage.removeItem(PROJECT_SESSION_KEY);
+    }
+  }, [applyProjectToCanvas]);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 1180px)");
-    const syncLayout = () => {
-      setIsCompactLayout(mediaQuery.matches);
-    };
+    const syncLayout = () => setIsCompactLayout(mediaQuery.matches);
 
     syncLayout();
     mediaQuery.addEventListener("change", syncLayout);
+
     return () => {
       mediaQuery.removeEventListener("change", syncLayout);
     };
@@ -405,17 +457,14 @@ export default function ProjectGraph({
     if (!container) return;
 
     const updateHeight = () => {
-      const nextHeight = Math.round(container.getBoundingClientRect().height);
-      setGraphViewportHeight(nextHeight);
+      setGraphViewportHeight(Math.round(container.getBoundingClientRect().height));
     };
 
     updateHeight();
 
     let resizeObserver: ResizeObserver | null = null;
     if (typeof ResizeObserver !== "undefined") {
-      resizeObserver = new ResizeObserver(() => {
-        updateHeight();
-      });
+      resizeObserver = new ResizeObserver(() => updateHeight());
       resizeObserver.observe(container);
     }
 
@@ -472,7 +521,7 @@ export default function ProjectGraph({
   );
 
   const onDragStart = useCallback(
-    (event: React.DragEvent<HTMLButtonElement>, kind: NodeKind, label: string) => {
+    (event: React.DragEvent<HTMLButtonElement>, kind: BuilderNodeKind, label: string) => {
       event.dataTransfer.setData(DRAG_NODE_MIME, JSON.stringify({ kind, label }));
       event.dataTransfer.effectAllowed = "copy";
     },
@@ -492,21 +541,16 @@ export default function ProjectGraph({
       const rawPayload = event.dataTransfer.getData(DRAG_NODE_MIME);
       if (!rawPayload) return;
 
-      let payload: { kind: NodeKind; label: string } | null = null;
-
+      let payload: { kind: BuilderNodeKind; label: string } | null = null;
       try {
-        payload = JSON.parse(rawPayload) as { kind: NodeKind; label: string };
+        payload = JSON.parse(rawPayload) as { kind: BuilderNodeKind; label: string };
       } catch {
         payload = null;
       }
 
       if (!payload?.kind || !payload.label) return;
 
-      const position = flowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
+      const position = flowInstance.screenToFlowPosition({ x: event.clientX, y: event.clientY });
       addNode(payload.kind, payload.label, position);
     },
     [addNode, flowInstance]
@@ -514,16 +558,21 @@ export default function ProjectGraph({
 
   function updateSelectedNodeLabel(nextLabel: string) {
     if (!selectedNode) return;
-    setNodes((nds) =>
-      nds.map((node) =>
+
+    setNodes((currentNodes) =>
+      currentNodes.map((node) =>
         node.id === selectedNode.id ? { ...node, data: { ...node.data, label: nextLabel } } : node
       )
     );
   }
 
   const clearSelection = useCallback(() => {
-    setNodes((nds) => nds.map((node) => (node.selected ? { ...node, selected: false } : node)));
-    setEdges((eds) => eds.map((edge) => (edge.selected ? { ...edge, selected: false } : edge)));
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => (node.selected ? { ...node, selected: false } : node))
+    );
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) => (edge.selected ? { ...edge, selected: false } : edge))
+    );
     setSelectedNodeId(null);
     setSelectedEdgeId(null);
   }, [setEdges, setNodes]);
@@ -531,7 +580,7 @@ export default function ProjectGraph({
   const duplicateSelectedNode = useCallback(() => {
     if (!selectedNode) return;
 
-    const duplicatedNodeId = createNodeId();
+    const duplicatedNodeId = createId("node");
     const duplicatedNode: Node<NodeData> = {
       id: duplicatedNodeId,
       type: selectedNode.type ?? "styled",
@@ -543,11 +592,13 @@ export default function ProjectGraph({
       selected: true,
     };
 
-    setNodes((nds) => [
-      ...nds.map((node) => (node.selected ? { ...node, selected: false } : node)),
+    setNodes((currentNodes) => [
+      ...currentNodes.map((node) => (node.selected ? { ...node, selected: false } : node)),
       duplicatedNode,
     ]);
-    setEdges((eds) => eds.map((edge) => (edge.selected ? { ...edge, selected: false } : edge)));
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) => (edge.selected ? { ...edge, selected: false } : edge))
+    );
     setSelectedNodeId(duplicatedNodeId);
     setSelectedEdgeId(null);
   }, [selectedNode, setEdges, setNodes]);
@@ -559,7 +610,7 @@ export default function ProjectGraph({
     }
     if (!edgeIdsToDelete.size) return;
 
-    setEdges((eds) => eds.filter((edge) => !edgeIdsToDelete.has(edge.id)));
+    setEdges((currentEdges) => currentEdges.filter((edge) => !edgeIdsToDelete.has(edge.id)));
     setSelectedEdgeId(null);
   }, [selectedEdge, selectedEdges, setEdges]);
 
@@ -576,16 +627,18 @@ export default function ProjectGraph({
     if (!nodeIdsToDelete.size && !edgeIdsToDelete.size) return;
 
     if (nodeIdsToDelete.size) {
-      setNodes((nds) => nds.filter((node) => !nodeIdsToDelete.has(node.id)));
+      setNodes((currentNodes) => currentNodes.filter((node) => !nodeIdsToDelete.has(node.id)));
     }
-    setEdges((eds) =>
-      eds.filter(
+
+    setEdges((currentEdges) =>
+      currentEdges.filter(
         (edge) =>
           !edgeIdsToDelete.has(edge.id) &&
           !nodeIdsToDelete.has(edge.source) &&
           !nodeIdsToDelete.has(edge.target)
       )
     );
+
     setSelectedNodeId(null);
     setSelectedEdgeId(null);
   }, [selectedEdge, selectedEdges, selectedNode, selectedNodes, setEdges, setNodes]);
@@ -608,6 +661,7 @@ export default function ProjectGraph({
       }
 
       const lowerKey = event.key.toLowerCase();
+
       if ((event.metaKey || event.ctrlKey) && lowerKey === "d") {
         event.preventDefault();
         duplicateSelectedNode();
@@ -631,6 +685,295 @@ export default function ProjectGraph({
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [clearSelection, deleteSelection, duplicateSelectedNode]);
+
+  function buildProjectPayload(): BuilderProjectV1 {
+    return createBuilderProjectFromFlow({
+      id: projectId,
+      title: projectMeta.title || "My Project",
+      description: projectMeta.description,
+      stack,
+      baas,
+      settings: {
+        provider,
+        model,
+        useAI: provider !== "none",
+        overwrite,
+      },
+      nodes: nodes.map((node) => ({
+        id: node.id,
+        kind: node.data.kind,
+        label: node.data.label,
+        position: node.position,
+      })),
+      edges: edges.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: edge.sourceHandle ?? null,
+        targetHandle: edge.targetHandle ?? null,
+        animated: edge.animated,
+      })),
+    });
+  }
+
+  useEffect(() => {
+    const snapshot = createBuilderProjectFromFlow({
+      id: projectId,
+      title: projectMeta.title || "My Project",
+      description: projectMeta.description,
+      stack,
+      baas,
+      settings: {
+        provider,
+        model,
+        useAI: provider !== "none",
+        overwrite,
+      },
+      nodes: nodes.map((node) => ({
+        id: node.id,
+        kind: node.data.kind,
+        label: node.data.label,
+        position: node.position,
+      })),
+      edges: edges.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: edge.sourceHandle ?? null,
+        targetHandle: edge.targetHandle ?? null,
+        animated: edge.animated,
+      })),
+    });
+
+    window.localStorage.setItem(PROJECT_SESSION_KEY, JSON.stringify(snapshot));
+  }, [nodes, edges, projectId, projectMeta, stack, baas, provider, model, overwrite]);
+
+  function exportLegacyProjectJson(): void {
+    const data = {
+      title: projectMeta.title,
+      description: projectMeta.description,
+      exportedAt: new Date().toISOString(),
+      graph: {
+        nodes: nodes.map((node) => ({
+          id: node.id,
+          kind: node.data.kind,
+          label: node.data.label,
+        })),
+        edges: edges.map((edge) => ({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          sourceHandle: edge.sourceHandle ?? null,
+          targetHandle: edge.targetHandle ?? null,
+        })),
+      },
+    };
+
+    downloadTextFile(JSON.stringify(data, null, 2), "project.json", "application/json");
+    setStatusMessage("Legacy project.json exported.");
+  }
+
+  function exportBuilderProject(): void {
+    const project = buildProjectPayload();
+    downloadTextFile(
+      JSON.stringify(project, null, 2),
+      `${buildSlug(project.title)}.builder.v1.json`,
+      "application/json"
+    );
+    setStatusMessage("BuilderProjectV1 exported.");
+  }
+
+  async function importProjectFile(file: File): Promise<void> {
+    const text = await file.text();
+    const parsed = JSON.parse(text) as unknown;
+    const imported = parseImportedProject(parsed, { stack, baas });
+    applyProjectToCanvas(imported.project);
+    setStatusMessage(
+      imported.source === "legacy"
+        ? "Legacy project imported and migrated to V1."
+        : "Builder project imported."
+    );
+  }
+
+  async function handleImportChange(event: React.ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await importProjectFile(file);
+    } catch (error) {
+      setStatusMessage(`Import failed: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  async function runPlan(): Promise<void> {
+    setBusyAction("plan");
+
+    try {
+      const project = buildProjectPayload();
+      const response = await postJson<PlanResponse>("/api/builder/plan", {
+        project,
+        llm: {
+          provider,
+          model,
+          apiKey: apiKey || undefined,
+        },
+      });
+
+      setExecutionPlan(response.plan);
+      setPlanningMode(response.mode);
+      setStatusMessage(
+        response.mode === "ai"
+          ? "Execution plan generated via AI provider."
+          : "Execution plan generated with deterministic fallback."
+      );
+    } catch (error) {
+      setStatusMessage(
+        `Planning failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function runScaffold(): Promise<void> {
+    setBusyAction("build");
+
+    try {
+      const project = buildProjectPayload();
+      const response = await postJson<ScaffoldResponse>("/api/builder/scaffold", {
+        project,
+        plan: executionPlan,
+        llm: {
+          provider,
+          model,
+          apiKey: apiKey || undefined,
+        },
+      });
+
+      setExecutionPlan(response.plan);
+      setGeneratedFiles(response.scaffold.files);
+      setStatusMessage(`Scaffold generated: ${response.scaffold.files.length} files ready.`);
+    } catch (error) {
+      setStatusMessage(
+        `Scaffold generation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function runRegenerateNode(): Promise<void> {
+    if (!selectedNode) {
+      setStatusMessage("Select a node to regenerate partial scaffold.");
+      return;
+    }
+
+    setBusyAction("regen");
+
+    try {
+      const project = buildProjectPayload();
+      const response = await postJson<RegenerateResponse>("/api/builder/regenerate-node", {
+        project,
+        plan: executionPlan,
+        targetNodeId: selectedNode.id,
+        llm: {
+          provider,
+          model,
+          apiKey: apiKey || undefined,
+        },
+      });
+
+      const mergedByPath = new Map(generatedFiles.map((file) => [file.path, file]));
+      for (const file of response.scaffold.files) {
+        mergedByPath.set(file.path, file);
+      }
+
+      setGeneratedFiles(Array.from(mergedByPath.values()));
+      setStatusMessage(
+        `Node ${selectedNode.data.label} regenerated. Changed: ${response.changedPaths.join(", ") || "none"}.`
+      );
+    } catch (error) {
+      setStatusMessage(
+        `Node regeneration failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function selectDirectory(): Promise<void> {
+    try {
+      const handle = await pickProjectDirectory();
+      setSelectedDirectory(handle);
+      setStatusMessage(`Directory selected: ${handle.name}`);
+    } catch (error) {
+      setStatusMessage(
+        `Directory selection failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  async function writeGeneratedFiles(): Promise<void> {
+    if (!generatedFiles.length) {
+      setStatusMessage("Generate scaffold files before writing to local directory.");
+      return;
+    }
+
+    if (!supportsFileSystemAccess()) {
+      downloadZipFallback(generatedFiles, `${buildSlug(projectMeta.title)}.zip`);
+      setStatusMessage("Browser does not support File System Access API. Downloaded ZIP fallback.");
+      return;
+    }
+
+    setBusyAction("write");
+
+    try {
+      const directory = selectedDirectory ?? (await pickProjectDirectory());
+      setSelectedDirectory(directory);
+
+      const summary = await writeFilesToDirectory({
+        directory,
+        files: generatedFiles,
+        overwrite,
+      });
+
+      setStatusMessage(
+        `Write complete: ${summary.written.length} written, ${summary.replaced.length} replaced, ${summary.skipped.length} skipped.`
+      );
+    } catch (error) {
+      setStatusMessage(`Write failed: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  function downloadZip(): void {
+    if (!generatedFiles.length) {
+      setStatusMessage("Generate scaffold files before downloading ZIP.");
+      return;
+    }
+
+    downloadZipFallback(generatedFiles, `${buildSlug(projectMeta.title)}.zip`);
+    setStatusMessage("ZIP fallback exported.");
+  }
+
+  function exportImplementationMarkdown(): void {
+    const project = buildProjectPayload();
+    const plan = executionPlan ?? createDeterministicPlan(project);
+    const markdown = createImplementationMarkdown(project, plan);
+    downloadTextFile(markdown, "IMPLEMENTATION.md", "text/markdown");
+    setStatusMessage("IMPLEMENTATION.md exported.");
+  }
+
+  function exportMcpMarkdown(): void {
+    const project = buildProjectPayload();
+    const markdown = createMcpMarkdown(project);
+    downloadTextFile(markdown, "MCP.md", "text/markdown");
+    setStatusMessage("MCP.md exported.");
+  }
 
   const layoutContainerStyle: React.CSSProperties = {
     display: "flex",
@@ -675,27 +1018,16 @@ export default function ProjectGraph({
     border: "1px solid rgba(255,255,255,0.08)",
   };
 
-  const exportSidebarStyle: React.CSSProperties = {
+  const actionSidebarStyle: React.CSSProperties = {
     ...sidebarBaseStyle,
-    width: isCompactLayout ? "100%" : "260px",
+    width: isCompactLayout ? "100%" : "360px",
+    overflowY: "auto",
   };
 
   return (
     <div style={layoutContainerStyle}>
-      {/* Palette sidebar */}
       <aside style={paletteSidebarStyle}>
-        <p
-          style={{
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            color: "#475569",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            marginBottom: "0.25rem",
-          }}
-        >
-          Add Node
-        </p>
+        <p style={sectionTitleStyle}>Add Node</p>
         <div style={paletteGridStyle}>
           {PALETTE_ITEMS.map((item) => {
             const colors = KIND_COLORS[item.kind];
@@ -718,21 +1050,16 @@ export default function ProjectGraph({
                   textAlign: "left",
                   transition: "opacity 0.15s ease",
                 }}
-                title={`Add ${item.example} (click or drag to canvas)`}
+                title={`Add ${item.example}`}
               >
                 {item.label}
               </button>
             );
           })}
         </div>
-        <div
-          style={{ marginTop: "0.5rem", fontSize: "0.7rem", color: "#475569", lineHeight: 1.45 }}
-        >
-          Click to add quickly, or drag into the canvas for exact position.
-        </div>
+        <div style={hintStyle}>Click to add quickly or drag into the canvas.</div>
       </aside>
 
-      {/* Graph canvas */}
       <div
         ref={graphContainerRef}
         onDrop={onDrop}
@@ -741,10 +1068,11 @@ export default function ProjectGraph({
       >
         {isGraphHeightTight ? (
           <div style={graphSizeWarningStyle}>
-            Alto limitado detectado ({graphViewportHeight}px). En vertical puede ser dificil
-            conectar nodos. Aumenta el alto de la ventana o rota el dispositivo.
+            Low graph height detected ({graphViewportHeight}px). Increase viewport to improve node
+            linking.
           </div>
         ) : null}
+
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -774,12 +1102,13 @@ export default function ProjectGraph({
           />
           <Controls />
           <MiniMap
-            nodeColor={(n) => {
-              const data = n.data as NodeData;
+            nodeColor={(node) => {
+              const data = node.data as NodeData;
               return KIND_COLORS[data.kind]?.border ?? "#94a3b8";
             }}
             maskColor="rgba(3,7,18,0.8)"
           />
+
           <Panel position="top-right">
             <div style={graphHelpWrapperStyle}>
               <button
@@ -787,16 +1116,16 @@ export default function ProjectGraph({
                 onClick={() => setShowGraphHelp((current) => !current)}
                 aria-expanded={showGraphHelp}
                 style={graphHelpToggleBtnStyle}
-                title={showGraphHelp ? "Hide in-canvas help" : "Show in-canvas help"}
+                title={showGraphHelp ? "Hide graph help" : "Show graph help"}
               >
                 ?
               </button>
               {showGraphHelp ? (
                 <div style={graphHelpPanelStyle}>
-                  <p style={graphHelpTitleStyle}>Help (Beta)</p>
-                  <p style={graphHelpTextStyle}>1. Add nodes from the left palette.</p>
-                  <p style={graphHelpTextStyle}>2. Connect handles to map dependencies.</p>
-                  <p style={graphHelpTextStyle}>3. Edit selection in the right panel.</p>
+                  <p style={graphHelpTitleStyle}>Help</p>
+                  <p style={graphHelpTextStyle}>1. Add nodes from the left panel.</p>
+                  <p style={graphHelpTextStyle}>2. Connect handles to define dependencies.</p>
+                  <p style={graphHelpTextStyle}>3. Use the right panel to plan and generate.</p>
                 </div>
               ) : null}
             </div>
@@ -804,171 +1133,262 @@ export default function ProjectGraph({
         </ReactFlow>
       </div>
 
-      {/* Export panel */}
-      <aside style={exportSidebarStyle}>
-        <p
-          style={{
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            color: "#475569",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            marginBottom: "0.25rem",
+      <aside style={actionSidebarStyle}>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept="application/json"
+          onChange={(event) => {
+            void handleImportChange(event);
           }}
-        >
-          Export
-        </p>
+          style={{ display: "none" }}
+        />
 
-        <button
-          type="button"
-          onClick={() =>
-            exportProjectJSON(projectMeta.title, projectMeta.description, nodes, edges)
-          }
-          style={exportBtnStyle("#1e3a5f", "#38bdf8")}
-        >
-          project.json
-        </button>
+        <p style={sectionTitleStyle}>Builder</p>
 
-        <button
-          type="button"
-          onClick={() => exportMarkdown(projectMeta.title, projectMeta.description, nodes)}
-          style={exportBtnStyle("#1a2f1a", "#4ade80")}
+        <label style={fieldLabelStyle} htmlFor="builder-stack">
+          Stack
+        </label>
+        <select
+          id="builder-stack"
+          value={stack}
+          onChange={(event) => setStack(event.target.value as BuilderStack)}
+          style={selectStyle}
         >
-          IMPLEMENTATION.md
-        </button>
+          <option value="astro-tailwind">Astro + Tailwind</option>
+          <option value="next-tailwind">Next + Tailwind</option>
+        </select>
 
-        <button
-          type="button"
-          onClick={() => exportMCP(nodes)}
-          style={exportBtnStyle("#2d1f4a", "#a78bfa")}
+        <label style={fieldLabelStyle} htmlFor="builder-baas">
+          Backend preset
+        </label>
+        <select
+          id="builder-baas"
+          value={baas}
+          onChange={(event) => setBaas(event.target.value as BuilderBaas)}
+          style={selectStyle}
         >
-          MCP.md
-        </button>
+          <option value="none">No backend</option>
+          <option value="supabase">Supabase</option>
+          <option value="firebase">Firebase</option>
+        </select>
 
-        <div
-          style={{
-            marginTop: "0.5rem",
-            paddingTop: "0.6rem",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+        <label style={fieldLabelStyle} htmlFor="builder-provider">
+          AI provider
+        </label>
+        <select
+          id="builder-provider"
+          value={provider}
+          onChange={(event) => {
+            const nextProvider = event.target.value as BuilderProvider;
+            setProvider(nextProvider);
+            if (!model.trim()) {
+              setModel(defaultModelForProvider(nextProvider));
+            }
           }}
+          style={selectStyle}
         >
-          <p
-            style={{
-              fontSize: "0.7rem",
-              fontWeight: 600,
-              color: "#64748b",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: "0.35rem",
-            }}
-          >
-            Quick Actions
-          </p>
+          <option value="none">Deterministic only</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="google">Gemini</option>
+        </select>
+
+        <label style={fieldLabelStyle} htmlFor="builder-model">
+          Model
+        </label>
+        <input
+          id="builder-model"
+          type="text"
+          value={model}
+          onChange={(event) => setModel(event.target.value)}
+          style={inputStyle}
+        />
+
+        <label style={fieldLabelStyle} htmlFor="builder-api-key">
+          API key (BYOK)
+        </label>
+        <input
+          id="builder-api-key"
+          type="password"
+          value={apiKey}
+          onChange={(event) => setApiKey(event.target.value)}
+          placeholder="Optional when deterministic"
+          style={inputStyle}
+        />
+
+        <label style={fieldLabelStyle} htmlFor="builder-overwrite">
+          Overwrite policy
+        </label>
+        <select
+          id="builder-overwrite"
+          value={overwrite}
+          onChange={(event) => setOverwrite(event.target.value as BuilderOverwriteStrategy)}
+          style={selectStyle}
+        >
+          <option value="ask">Ask</option>
+          <option value="skip">Skip existing</option>
+          <option value="replace">Replace existing</option>
+        </select>
+
+        <div style={actionsWrapperStyle}>
           <button
             type="button"
-            onClick={duplicateSelectedNode}
-            disabled={!selectedNode}
-            style={quickActionBtnStyle(!selectedNode)}
+            onClick={() => void runPlan()}
+            disabled={busyAction !== null}
+            style={actionBtnStyle(busyAction === "plan")}
           >
-            Duplicate node
+            {busyAction === "plan" ? "Planning..." : "Generate Plan"}
           </button>
           <button
             type="button"
-            onClick={deleteSelection}
-            disabled={!hasSelection && !selectedNode && !selectedEdge}
-            style={dangerActionBtnStyle(!hasSelection && !selectedNode && !selectedEdge)}
+            onClick={() => void runScaffold()}
+            disabled={busyAction !== null}
+            style={actionBtnStyle(busyAction === "build")}
           >
-            Delete selection
+            {busyAction === "build" ? "Building..." : "Build Scaffold"}
           </button>
-          <button type="button" onClick={resetView} style={quickActionBtnStyle(false)}>
-            Reset view
+          <button
+            type="button"
+            onClick={() => void runRegenerateNode()}
+            disabled={busyAction !== null || !selectedNode}
+            style={actionBtnStyle(busyAction === "regen" || !selectedNode)}
+          >
+            {busyAction === "regen" ? "Regenerating..." : "Regenerate Selected Node"}
           </button>
         </div>
 
-        <div
-          style={{
-            marginTop: "0.25rem",
-            paddingTop: "0.6rem",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-          }}
+        <div style={dividerStyle} />
+
+        <p style={sectionTitleStyle}>Local output</p>
+        <button type="button" onClick={() => void selectDirectory()} style={neutralBtnStyle}>
+          {selectedDirectory ? `Folder: ${selectedDirectory.name}` : "Select Folder"}
+        </button>
+        <button
+          type="button"
+          onClick={() => void writeGeneratedFiles()}
+          disabled={busyAction !== null || generatedFiles.length === 0}
+          style={actionBtnStyle(busyAction === "write" || generatedFiles.length === 0)}
         >
-          <p
-            style={{
-              fontSize: "0.7rem",
-              fontWeight: 600,
-              color: "#64748b",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: "0.35rem",
-            }}
-          >
-            Selection
-          </p>
+          {busyAction === "write" ? "Writing..." : "Write to Local Folder"}
+        </button>
+        <button
+          type="button"
+          onClick={downloadZip}
+          disabled={generatedFiles.length === 0}
+          style={neutralBtnStyle}
+        >
+          Download ZIP Fallback
+        </button>
 
-          {selectedNode && selectedNodes.length <= 1 ? (
-            <>
-              <p
-                style={{
-                  fontSize: "0.7rem",
-                  color: KIND_COLORS[selectedNode.data.kind].text,
-                  marginBottom: "0.35rem",
-                }}
-              >
-                {selectedNode.data.kind.toUpperCase()}
-              </p>
-              <input
-                type="text"
-                value={selectedNode.data.label}
-                onChange={(event) => updateSelectedNodeLabel(event.target.value)}
-                style={inspectorInputStyle}
-              />
-              <button type="button" onClick={deleteSelection} style={dangerBtnStyle}>
-                Delete node
-              </button>
-            </>
-          ) : null}
+        <div style={dividerStyle} />
 
-          {selectedNodes.length > 1 ? (
-            <p style={{ fontSize: "0.72rem", color: "#94a3b8", lineHeight: 1.45 }}>
-              {selectedNodes.length} nodes selected.
+        <p style={sectionTitleStyle}>Project files</p>
+        <button type="button" onClick={exportBuilderProject} style={neutralBtnStyle}>
+          Export BuilderProjectV1
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            importInputRef.current?.click();
+          }}
+          style={neutralBtnStyle}
+        >
+          Import V1 or legacy project.json
+        </button>
+        <button type="button" onClick={exportLegacyProjectJson} style={neutralBtnStyle}>
+          Export legacy project.json
+        </button>
+        <button type="button" onClick={exportImplementationMarkdown} style={neutralBtnStyle}>
+          Export IMPLEMENTATION.md
+        </button>
+        <button type="button" onClick={exportMcpMarkdown} style={neutralBtnStyle}>
+          Export MCP.md
+        </button>
+
+        <div style={dividerStyle} />
+
+        <p style={sectionTitleStyle}>Selection</p>
+        {selectedNode && selectedNodes.length <= 1 ? (
+          <>
+            <p style={{ ...hintStyle, color: KIND_COLORS[selectedNode.data.kind].text }}>
+              {selectedNode.data.kind.toUpperCase()}
             </p>
-          ) : null}
+            <input
+              type="text"
+              value={selectedNode.data.label}
+              onChange={(event) => updateSelectedNodeLabel(event.target.value)}
+              style={inputStyle}
+            />
+            <button type="button" onClick={deleteSelection} style={dangerBtnStyle(false)}>
+              Delete node
+            </button>
+          </>
+        ) : null}
 
-          {selectedEdges.length > 0 && selectedNodes.length === 0 ? (
-            <>
-              <p style={{ fontSize: "0.72rem", color: "#94a3b8", lineHeight: 1.45 }}>
-                {selectedEdges.length} edge{selectedEdges.length > 1 ? "s" : ""} selected.
-              </p>
-              <button type="button" onClick={removeSelectedEdges} style={dangerBtnStyle}>
-                Delete selected edge{selectedEdges.length > 1 ? "s" : ""}
-              </button>
-            </>
-          ) : null}
+        {selectedNodes.length > 1 ? (
+          <p style={hintStyle}>{selectedNodes.length} nodes selected.</p>
+        ) : null}
 
-          {!hasSelection && !selectedNode && !selectedEdge ? (
-            <p style={{ fontSize: "0.72rem", color: "#475569", lineHeight: 1.45 }}>
-              No selection yet. Click a node or edge to edit it.
+        {selectedEdges.length > 0 && selectedNodes.length === 0 ? (
+          <>
+            <p style={hintStyle}>
+              {selectedEdges.length} edge{selectedEdges.length > 1 ? "s" : ""} selected.
             </p>
-          ) : null}
+            <button type="button" onClick={removeSelectedEdges} style={dangerBtnStyle(false)}>
+              Delete selected edge{selectedEdges.length > 1 ? "s" : ""}
+            </button>
+          </>
+        ) : null}
 
-          {!hasSelection && (selectedNode || selectedEdge) ? (
-            <p style={{ fontSize: "0.72rem", color: "#475569", lineHeight: 1.45 }}>
-              Shift + drag to multi-select nodes.
-            </p>
-          ) : (
-            <p style={{ fontSize: "0.72rem", color: "#475569", lineHeight: 1.45 }}>
-              Tip: use Delete to remove selection quickly.
-            </p>
-          )}
-        </div>
+        {!hasSelection && !selectedNode && !selectedEdge ? (
+          <p style={hintStyle}>No selection yet. Click a node or edge to edit.</p>
+        ) : null}
 
-        <div style={{ marginTop: "auto", fontSize: "0.7rem", color: "#334155", lineHeight: 1.4 }}>
-          Project: <strong style={{ color: "#94a3b8" }}>{projectMeta.title}</strong>
-          <br />
-          Connect nodes by dragging from any handle to another node.
-          <br />
-          Shortcuts: Cmd/Ctrl + D, Delete, Escape.
-        </div>
+        <div style={dividerStyle} />
+
+        <p style={sectionTitleStyle}>Status</p>
+        <p style={statusStyle}>{statusMessage}</p>
+        <p style={metaStyle}>Plan mode: {planningMode}</p>
+        <p style={metaStyle}>Files staged: {generatedFiles.length}</p>
+        <p style={metaStyle}>Project id: {projectId}</p>
+
+        {executionPlan ? (
+          <>
+            <p style={metaStyle}>Plan files: {executionPlan.filePlan.length}</p>
+            {executionPlan.warnings.length > 0 ? (
+              <div style={warningBoxStyle}>
+                {executionPlan.warnings.map((warning) => (
+                  <p key={warning} style={warningTextStyle}>
+                    - {warning}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+
+        <div style={dividerStyle} />
+        <p style={hintStyle}>Shortcuts: Cmd/Ctrl + D, Delete, Escape</p>
+        <button
+          type="button"
+          onClick={duplicateSelectedNode}
+          disabled={!selectedNode}
+          style={neutralBtnStyle}
+        >
+          Duplicate node
+        </button>
+        <button
+          type="button"
+          onClick={deleteSelection}
+          disabled={!hasSelection && !selectedNode && !selectedEdge}
+          style={dangerBtnStyle(!hasSelection && !selectedNode && !selectedEdge)}
+        >
+          Delete selection
+        </button>
+        <button type="button" onClick={resetView} style={neutralBtnStyle}>
+          Reset view
+        </button>
       </aside>
     </div>
   );
@@ -983,69 +1403,134 @@ function handleStyle(color: string): React.CSSProperties {
   };
 }
 
-function exportBtnStyle(bg: string, border: string): React.CSSProperties {
-  return {
-    background: bg,
-    border: `1px solid ${border}`,
-    borderRadius: "0.5rem",
-    padding: "0.5rem 0.625rem",
-    color: "#f1f5f9",
-    fontSize: "0.75rem",
-    fontWeight: 500,
-    cursor: "pointer",
-    textAlign: "left",
-  };
-}
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: "0.7rem",
+  fontWeight: 600,
+  color: "#64748b",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  marginBottom: "0.15rem",
+};
 
-const inspectorInputStyle: React.CSSProperties = {
+const hintStyle: React.CSSProperties = {
+  fontSize: "0.72rem",
+  color: "#94a3b8",
+  lineHeight: 1.4,
+};
+
+const fieldLabelStyle: React.CSSProperties = {
+  fontSize: "0.7rem",
+  color: "#94a3b8",
+  marginTop: "0.2rem",
+};
+
+const selectStyle: React.CSSProperties = {
   width: "100%",
   borderRadius: "0.5rem",
   border: "1px solid rgba(255,255,255,0.14)",
   background: "#0b1220",
   color: "#e2e8f0",
   fontSize: "0.78rem",
-  padding: "0.42rem 0.55rem",
-  marginBottom: "0.45rem",
+  padding: "0.44rem 0.55rem",
 };
 
-const dangerBtnStyle: React.CSSProperties = {
+const inputStyle: React.CSSProperties = {
   width: "100%",
   borderRadius: "0.5rem",
-  border: "1px solid rgba(248,113,113,0.45)",
-  background: "rgba(127,29,29,0.3)",
-  color: "#fecaca",
-  fontSize: "0.74rem",
-  fontWeight: 500,
-  padding: "0.42rem 0.55rem",
-  cursor: "pointer",
-  textAlign: "left",
+  border: "1px solid rgba(255,255,255,0.14)",
+  background: "#0b1220",
+  color: "#e2e8f0",
+  fontSize: "0.78rem",
+  padding: "0.44rem 0.55rem",
 };
 
-function quickActionBtnStyle(disabled: boolean): React.CSSProperties {
+const actionsWrapperStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.35rem",
+  marginTop: "0.35rem",
+};
+
+function actionBtnStyle(disabled: boolean): React.CSSProperties {
   return {
     width: "100%",
     borderRadius: "0.5rem",
-    border: "1px solid rgba(148,163,184,0.35)",
-    background: "rgba(30,41,59,0.65)",
-    color: "#cbd5e1",
+    border: "1px solid rgba(56,189,248,0.5)",
+    background: "rgba(30,58,95,0.75)",
+    color: "#e0f2fe",
     fontSize: "0.74rem",
     fontWeight: 500,
     padding: "0.42rem 0.55rem",
     cursor: disabled ? "not-allowed" : "pointer",
     textAlign: "left",
-    opacity: disabled ? 0.5 : 1,
-    marginBottom: "0.4rem",
+    opacity: disabled ? 0.55 : 1,
   };
 }
 
-function dangerActionBtnStyle(disabled: boolean): React.CSSProperties {
+const neutralBtnStyle: React.CSSProperties = {
+  width: "100%",
+  borderRadius: "0.5rem",
+  border: "1px solid rgba(148,163,184,0.35)",
+  background: "rgba(30,41,59,0.65)",
+  color: "#cbd5e1",
+  fontSize: "0.74rem",
+  fontWeight: 500,
+  padding: "0.42rem 0.55rem",
+  cursor: "pointer",
+  textAlign: "left",
+  marginBottom: "0.32rem",
+};
+
+function dangerBtnStyle(disabled: boolean): React.CSSProperties {
   return {
-    ...dangerBtnStyle,
+    width: "100%",
+    borderRadius: "0.5rem",
+    border: "1px solid rgba(248,113,113,0.45)",
+    background: "rgba(127,29,29,0.3)",
+    color: "#fecaca",
+    fontSize: "0.74rem",
+    fontWeight: 500,
+    padding: "0.42rem 0.55rem",
     cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled ? 0.5 : 1,
-    marginBottom: "0.4rem",
+    textAlign: "left",
+    opacity: disabled ? 0.55 : 1,
+    marginBottom: "0.32rem",
   };
 }
+
+const dividerStyle: React.CSSProperties = {
+  margin: "0.5rem 0 0.4rem",
+  borderTop: "1px solid rgba(255,255,255,0.08)",
+};
+
+const statusStyle: React.CSSProperties = {
+  fontSize: "0.74rem",
+  color: "#e2e8f0",
+  lineHeight: 1.45,
+  margin: 0,
+};
+
+const metaStyle: React.CSSProperties = {
+  fontSize: "0.7rem",
+  color: "#64748b",
+  lineHeight: 1.3,
+  margin: "0.2rem 0 0",
+};
+
+const warningBoxStyle: React.CSSProperties = {
+  marginTop: "0.35rem",
+  borderRadius: "0.5rem",
+  border: "1px solid rgba(251,191,36,0.4)",
+  background: "rgba(120,53,15,0.5)",
+  padding: "0.4rem 0.5rem",
+};
+
+const warningTextStyle: React.CSSProperties = {
+  margin: 0,
+  fontSize: "0.7rem",
+  color: "#fde68a",
+  lineHeight: 1.4,
+};
 
 const graphHelpPanelStyle: React.CSSProperties = {
   borderRadius: "0.75rem",
@@ -1053,7 +1538,7 @@ const graphHelpPanelStyle: React.CSSProperties = {
   background: "rgba(15,23,42,0.9)",
   backdropFilter: "blur(4px)",
   padding: "0.55rem 0.65rem",
-  width: "200px",
+  width: "220px",
 };
 
 const graphHelpTitleStyle: React.CSSProperties = {

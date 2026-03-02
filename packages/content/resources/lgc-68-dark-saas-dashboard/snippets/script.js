@@ -2,10 +2,10 @@
 
 /* ── Metric Counter Animation ──────────────────────────────────────────────── */
 (function initMetricCounters() {
-  var dashboard = document.querySelector('.dashboard-wrapper');
+  var dashboard = document.querySelector('.dashboard-preview-section');
   if (!dashboard) return;
 
-  var cards = dashboard.querySelectorAll('.metric-value[data-target]');
+  var cards = dashboard.querySelectorAll('.metric-value');
   var started = false;
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
@@ -30,15 +30,13 @@
     requestAnimationFrame(tick);
   }
 
-  // Snapshot targets before animating
+  // Snapshot text as targets before animating
   cards.forEach(function(el) {
-    if (!el.dataset.target) {
-      var raw = el.textContent.replace(/[^0-9.]/g, '');
-      el.dataset.target = raw || '0';
-      el.dataset.prefix = el.textContent.match(/^[^0-9]*/)[0] || '';
-      el.dataset.suffix = el.textContent.match(/[^0-9]*$/)[0] || '';
-      el.textContent = el.dataset.prefix + '0' + el.dataset.suffix;
-    }
+    var raw = el.textContent.replace(/[^0-9.]/g, '');
+    el.dataset.target = raw || '0';
+    el.dataset.prefix = el.textContent.match(/^[^0-9]*/)[0] || '';
+    el.dataset.suffix = el.textContent.match(/[^0-9]*$/)[0] || '';
+    el.textContent = el.dataset.prefix + '0' + el.dataset.suffix;
   });
 
   var observer = new IntersectionObserver(function(entries) {
@@ -54,15 +52,16 @@
   observer.observe(dashboard);
 })();
 
-/* ── SVG Revenue Chart Animation ───────────────────────────────────────────── */
+/* ── SVG Revenue Chart Draw Animation ──────────────────────────────────────── */
 (function initChartAnimation() {
-  var line = document.querySelector('.revenue-line');
+  // Target the stroke line path (has stroke-linecap="round" in HTML)
+  var line = document.querySelector('.revenue-chart path[stroke-linecap]');
   if (!line) return;
 
   var animated = false;
 
   function getTotalLength() {
-    try { return line.getTotalLength(); } catch (e) { return 600; }
+    try { return line.getTotalLength(); } catch (e) { return 800; }
   }
 
   function draw() {
@@ -71,7 +70,7 @@
     var len = getTotalLength();
     line.style.strokeDasharray = len;
     line.style.strokeDashoffset = len;
-    // Force reflow then animate
+    // Force reflow then trigger CSS transition
     line.getBoundingClientRect();
     line.classList.add('drawn');
   }
@@ -85,70 +84,32 @@
     });
   }, { threshold: 0.3 });
 
-  observer.observe(line.closest('.chart-section') || line);
+  observer.observe(line.closest('.chart-card') || line);
 })();
 
-/* ── Sidebar Collapse Toggle ───────────────────────────────────────────────── */
-(function initSidebarCollapse() {
-  var sidebar = document.querySelector('.sidebar');
-  var toggleBtn = document.querySelector('.sidebar-collapse');
-  if (!sidebar || !toggleBtn) return;
+/* ── Chart Tab Switcher ─────────────────────────────────────────────────────── */
+(function initChartTabs() {
+  var tabs = document.querySelectorAll('.chart-tab');
+  if (!tabs.length) return;
 
-  var labels = sidebar.querySelectorAll('.sidebar-section-label, .sidebar-logo span');
-  var itemLabels = sidebar.querySelectorAll('.sidebar-item .item-label');
-  var collapseLabel = toggleBtn.querySelector('.item-label');
-
-  toggleBtn.addEventListener('click', function() {
-    var isCollapsed = sidebar.classList.toggle('collapsed');
-    if (collapseLabel) {
-      collapseLabel.textContent = isCollapsed ? '→' : '← Collapse';
-    }
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+    });
   });
 })();
 
-/* ── Billing Toggle (Monthly / Annual) ─────────────────────────────────────── */
-(function initBillingToggle() {
-  var options = document.querySelectorAll('.billing-option');
-  var pricingCards = document.querySelectorAll('.pricing-card');
-  if (!options.length) return;
+/* ── Sidebar item active state ─────────────────────────────────────────────── */
+(function initSidebarNav() {
+  var items = document.querySelectorAll('.sidebar-item');
+  if (!items.length) return;
 
-  // Store monthly prices
-  var monthlyPrices = {};
-  pricingCards.forEach(function(card, i) {
-    var priceEl = card.querySelector('.pricing-price');
-    if (priceEl) {
-      var numEl = priceEl.querySelector('.price-num') || priceEl;
-      monthlyPrices[i] = parseFloat(numEl.textContent.replace(/[^0-9.]/g, '')) || 0;
-    }
-  });
-
-  options.forEach(function(opt) {
-    opt.addEventListener('click', function() {
-      options.forEach(function(o) { o.classList.remove('active'); });
-      opt.classList.add('active');
-
-      var isAnnual = opt.dataset.billing === 'annual';
-
-      pricingCards.forEach(function(card, i) {
-        var priceEl = card.querySelector('.pricing-price');
-        var periodEl = card.querySelector('.pricing-period');
-        if (!priceEl) return;
-
-        var monthly = monthlyPrices[i] || 0;
-        var val = isAnnual ? Math.round(monthly * 0.75) : monthly;
-        var numEl = priceEl.querySelector('.price-num');
-
-        if (numEl) {
-          numEl.textContent = val;
-        } else {
-          // Replace just the numeric portion
-          priceEl.textContent = priceEl.textContent.replace(/\d+/, val);
-        }
-
-        if (periodEl) {
-          periodEl.textContent = isAnnual ? 'per month, billed annually' : 'per month';
-        }
-      });
+  items.forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      items.forEach(function(i) { i.classList.remove('active'); });
+      item.classList.add('active');
     });
   });
 })();

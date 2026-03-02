@@ -1,5 +1,5 @@
 ---
-import { useTranslations, type Locale } from "@i18n/index";
+import { type Locale, useTranslations } from "@i18n/index";
 
 interface Props {
   locale?: Locale;
@@ -121,6 +121,7 @@ const difficulties = ["easy", "med", "hard"] as const;
   }
 
   const state = {
+    collection: "all",
     category: "all",
     difficulty: "all",
     tech: "all",
@@ -190,6 +191,7 @@ const difficulties = ["easy", "med", "hard"] as const;
   }
 
   function matches(card: HTMLElement): boolean {
+    const cardCollections = (card.dataset.collections ?? "").split(",").filter(Boolean);
     const cardCategory = card.dataset.category ?? "";
     const cardDifficulty = card.dataset.difficulty ?? "";
     const cardTech = (card.dataset.tech ?? "").split(",");
@@ -199,6 +201,7 @@ const difficulties = ["easy", "med", "hard"] as const;
 
     const cardAuthor = card.dataset.author ?? "";
 
+    if (state.collection !== "all" && !cardCollections.includes(state.collection)) return false;
     if (state.category !== "all" && cardCategory !== state.category) return false;
     if (state.difficulty !== "all" && cardDifficulty !== state.difficulty) return false;
     if (state.tech !== "all" && !cardTech.includes(state.tech)) return false;
@@ -253,11 +256,17 @@ const difficulties = ["easy", "med", "hard"] as const;
     }
   }
 
-  function setFilter(filter: "category" | "difficulty" | "tech" | "author", value: string, apply = true) {
+  function setFilter(filter: "collection" | "category" | "difficulty" | "tech" | "author", value: string, apply = true) {
+    const filterElements = document.querySelectorAll<HTMLElement>(`[data-filter="${filter}"]`);
+    const allowedValues = new Set(
+      [...filterElements].map((element) => element.dataset.value ?? "all")
+    );
+    if (!allowedValues.has(value)) return;
+
     state[filter] = value;
 
-    document.querySelectorAll<HTMLButtonElement>(`[data-filter="${filter}"]`).forEach((b) => {
-      b.classList.toggle("chip--active", b.dataset.value === value);
+    filterElements.forEach((element) => {
+      element.classList.toggle("chip--active", element.dataset.value === value);
     });
 
     if (apply) applyFilters();
@@ -266,7 +275,7 @@ const difficulties = ["easy", "med", "hard"] as const;
   // Filter buttons
   document.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const filter = btn.dataset.filter as "category" | "difficulty" | "tech" | "author";
+      const filter = btn.dataset.filter as "collection" | "category" | "difficulty" | "tech" | "author";
       const value = btn.dataset.value ?? "all";
 
       setFilter(filter, value);
@@ -318,6 +327,9 @@ const difficulties = ["easy", "med", "hard"] as const;
 
   // Init count
   const params = new URLSearchParams(window.location.search);
+  const collectionParam = params.get("collection");
+  if (collectionParam) setFilter("collection", collectionParam, false);
+
   const categoryParam = params.get("category");
   if (categoryParam) setFilter("category", categoryParam, false);
 

@@ -1,38 +1,72 @@
-export interface CuratedCollection {
-  id: string;
-  titleKey: string;
-  descriptionKey: string;
-  filters: {
-    category?: string;
-    tech?: string;
-    difficulty?: string;
-    search?: string;
-  };
+export const RESOURCE_COLLECTION_IDS = [
+  "saas",
+  "motion",
+  "hero",
+  "cards",
+  "dashboard",
+  "remotion",
+] as const;
+
+export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
+export type CollectionFilterValue = ResourceCollection | "all";
+
+export const ALL_COLLECTION_FILTER_VALUE: CollectionFilterValue = "all";
+
+export interface LibraryCollection {
+  id: ResourceCollection;
+  titleKey: `collection.${ResourceCollection}.title`;
+  descriptionKey: `collection.${ResourceCollection}.desc`;
+  accentToken: string;
+  order: number;
 }
 
-export const curatedCollections: CuratedCollection[] = [
+export const libraryCollections: LibraryCollection[] = [
+  {
+    id: "saas",
+    titleKey: "collection.saas.title",
+    descriptionKey: "collection.saas.desc",
+    accentToken: "collection-saas",
+    order: 1,
+  },
   {
     id: "motion",
     titleKey: "collection.motion.title",
     descriptionKey: "collection.motion.desc",
-    filters: { category: "web-animations" },
+    accentToken: "collection-motion",
+    order: 2,
   },
   {
     id: "hero",
     titleKey: "collection.hero.title",
     descriptionKey: "collection.hero.desc",
-    filters: { search: "hero" },
+    accentToken: "collection-hero",
+    order: 3,
   },
   {
     id: "cards",
     titleKey: "collection.cards.title",
     descriptionKey: "collection.cards.desc",
-    filters: { search: "card" },
+    accentToken: "collection-cards",
+    order: 4,
+  },
+  {
+    id: "dashboard",
+    titleKey: "collection.dashboard.title",
+    descriptionKey: "collection.dashboard.desc",
+    accentToken: "collection-dashboard",
+    order: 5,
   },
   {
     id: "remotion",
     titleKey: "collection.remotion.title",
     descriptionKey: "collection.remotion.desc",
-    filters: { category: "remotion" },
+    accentToken: "collection-remotion",
+    order: 6,
   },
 ];
+
+export const libraryCollectionIdsSet = new Set<ResourceCollection>(RESOURCE_COLLECTION_IDS);
+
+export function isResourceCollection(value: string): value is ResourceCollection {
+  return libraryCollectionIdsSet.has(value as ResourceCollection);
+}

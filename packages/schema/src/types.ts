@@ -13,14 +13,33 @@ export type ResourceCategoryPhase2 =
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 
-export type ResourceType = "animation" | "page" | "component" | "pattern" | "prompt" | "skill" | "mcp-server" | "architecture" | "boilerplate";
+export type ResourceType =
+  | "animation"
+  | "page"
+  | "component"
+  | "pattern"
+  | "prompt"
+  | "skill"
+  | "mcp-server"
+  | "architecture"
+  | "boilerplate";
 
 export type ResourceDifficulty = "easy" | "med" | "hard";
 
 export type ResourceTarget =
-  | "html" | "react" | "next" | "vue" | "svelte" | "astro"
-  | "typescript" | "python"
-  | "markdown" | "yaml" | "json";
+  | "html"
+  | "react"
+  | "next"
+  | "vue"
+  | "svelte"
+  | "astro"
+  | "typescript"
+  | "python"
+  | "markdown"
+  | "yaml"
+  | "json";
+
+export type ResourceCollection = "saas" | "motion" | "hero" | "cards" | "dashboard" | "remotion";
 
 export interface ResourceAuthor {
   name: string;
@@ -34,6 +53,7 @@ export interface ResourceMeta {
   category: ResourceCategory;
   type: ResourceType;
   tags: string[];
+  collections: ResourceCollection[];
   tech: string[];
   difficulty: ResourceDifficulty;
   targets: ResourceTarget[];

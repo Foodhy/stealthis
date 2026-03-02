@@ -8,6 +8,7 @@ import path from "node:path";
 import { getCollection, render } from "astro:content";
 import { useTranslations, getLocaleFromUrl } from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
+import { findResourcePreview, normalizePreviewPath } from "@lib/resource-preview";
 
 export async function getStaticPaths() {
   const resources = await getCollection("resources");
@@ -22,7 +23,7 @@ const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
 const prefix = locale === "es" ? "/es" : "";
-const { slug, title, description, category, type, tags, tech, difficulty, targets, labRoute, license, author, createdAt, updatedAt } = resource.data;
+const { slug, title, description, category, type, tags, tech, difficulty, targets, preview, labRoute, license, author, createdAt, updatedAt } = resource.data;
 const authorName = author?.name;
 
 const { Content } = await render(resource);
@@ -66,41 +67,74 @@ const TARGET_LABELS: Record<string, string> = {
 const targetLabels = targets.map((target) => TARGET_LABELS[target] ?? target);
 const allBadges = [...languageBadges, ...targetLabels];
 const canonicalPath = `/r/${slug}`;
+const frontmatterPreview = normalizePreviewPath(preview);
+const detectedPreview = findResourcePreview(slug)?.publicPath;
+const imagePath = frontmatterPreview ?? detectedPreview ?? `/og/${slug}.svg`;
+const ogImageUrl = new URL(imagePath, "https://stealthis.dev").toString();
 const resourceUrl = `https://stealthis.dev${canonicalPath}`;
 const alternateLinks = [
   { hreflang: "en", href: resourceUrl },
   { hreflang: "es", href: `https://stealthis.dev/es/r/${slug}` },
   { hreflang: "x-default", href: resourceUrl },
 ];
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  headline: title,
-  name: title,
-  description,
-  inLanguage: locale,
-  url: resourceUrl,
-  datePublished: new Date(createdAt).toISOString(),
-  dateModified: new Date(updatedAt).toISOString(),
-  license,
-  keywords: [...new Set([...tags, ...tech])],
-  about: { "@type": "Thing", name: category },
-  author: {
-    "@type": "Organization",
-    name: "StealThis.dev",
-    url: "https://stealthis.dev/",
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: title,
+    name: title,
+    description,
+    inLanguage: locale,
+    url: resourceUrl,
+    image: ogImageUrl,
+    datePublished: new Date(createdAt).toISOString(),
+    dateModified: new Date(updatedAt).toISOString(),
+    license,
+    keywords: [...new Set([...tags, ...tech])],
+    about: { "@type": "Thing", name: category },
+    author: {
+      "@type": "Organization",
+      name: "StealThis.dev",
+      url: "https://stealthis.dev/",
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      name: "StealThis.dev",
+      url: "https://stealthis.dev/",
+    },
   },
-  isPartOf: {
-    "@type": "WebSite",
-    name: "StealThis.dev",
-    url: "https://stealthis.dev/",
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://stealthis.dev/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Library",
+        item: "https://stealthis.dev/library/",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: title,
+        item: resourceUrl,
+      },
+    ],
   },
-};
+];
 ---
 
 <Base
   title={title}
   description={description}
+  image={imagePath}
+  imageAlt={`${title} preview card`}
   canonicalPath={canonicalPath}
   alternateLinks={alternateLinks}
   structuredData={structuredData}

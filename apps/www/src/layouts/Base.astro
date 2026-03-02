@@ -8,6 +8,7 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  imageAlt?: string;
   canonicalPath?: string;
   noindex?: boolean;
   alternateLinks?: Array<{ hreflang: string; href: string }>;
@@ -18,6 +19,7 @@ const {
   title,
   description = "Reusable web resources — animations, pages, components, and patterns. All open source.",
   image,
+  imageAlt,
   canonicalPath = Astro.url.pathname,
   noindex = false,
   alternateLinks = [],
@@ -27,6 +29,7 @@ const locale = getLocaleFromUrl(Astro.url);
 const site = Astro.site ?? new URL("https://stealthis.dev");
 const canonicalURL = new URL(canonicalPath, site).toString();
 const imageURL = new URL(image ?? "/social-card.webp", site).toString();
+const socialImageAlt = imageAlt ?? `${title} preview card`;
 const robots = noindex ? "noindex, nofollow" : "index, follow";
 const ogLocale: Record<Locale, string> = { en: "en_US", es: "es_ES" };
 const structuredDataJson = structuredData ? JSON.stringify(structuredData) : null;
@@ -56,14 +59,14 @@ const structuredDataJson = structuredData ? JSON.stringify(structuredData) : nul
     <meta property="og:image" content={imageURL} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="StealThis.dev resource preview card" />
+    <meta property="og:image:alt" content={socialImageAlt} />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={`${title} — StealThis.dev`} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
-    <meta name="twitter:image:alt" content="StealThis.dev resource preview card" />
+    <meta name="twitter:image:alt" content={socialImageAlt} />
     {structuredDataJson && (
       <script type="application/ld+json" set:html={structuredDataJson} />
     )}

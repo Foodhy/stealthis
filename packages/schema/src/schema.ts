@@ -49,6 +49,15 @@ export const ResourceTargetSchema = z.enum([
   "json",
 ]);
 
+export const ResourceCollectionSchema = z.enum([
+  "saas",
+  "motion",
+  "hero",
+  "cards",
+  "dashboard",
+  "remotion",
+]);
+
 export const ResourceMetaSchema = z.object({
   slug: z.string().min(1),
   title: z.string().min(1),
@@ -56,22 +65,25 @@ export const ResourceMetaSchema = z.object({
   category: ResourceCategorySchema,
   type: ResourceTypeSchema,
   tags: z.array(z.string()).default([]),
+  collections: z.array(ResourceCollectionSchema).default([]),
   tech: z.array(z.string()).default([]),
   difficulty: ResourceDifficultySchema,
   targets: z.array(ResourceTargetSchema).default([]),
   preview: z.string().optional(),
   labRoute: z.string().optional(),
   license: z.string().default("MIT"),
-  author: z.object({
-    name: z.string(),
-    src: z.string(),
-  }).optional(),
-  createdAt: z.union([z.string(), z.date()]).transform((v) =>
-    v instanceof Date ? v.toISOString().slice(0, 10) : v
-  ),
-  updatedAt: z.union([z.string(), z.date()]).transform((v) =>
-    v instanceof Date ? v.toISOString().slice(0, 10) : v
-  ),
+  author: z
+    .object({
+      name: z.string(),
+      src: z.string(),
+    })
+    .optional(),
+  createdAt: z
+    .union([z.string(), z.date()])
+    .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
+  updatedAt: z
+    .union([z.string(), z.date()])
+    .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
 });
 
 export type ResourceMetaInput = z.input<typeof ResourceMetaSchema>;

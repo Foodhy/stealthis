@@ -2,39 +2,36 @@
 
 /* ── Counter Animation ─────────────────────────────────────────────────────── */
 (function initCounters() {
-  var stats = document.querySelector('.stats');
-  if (!stats) return;
+  var statsEl = document.querySelector('.stats-section');
+  if (!statsEl) return;
 
-  var counters = stats.querySelectorAll('.stat-number');
+  var counters = statsEl.querySelectorAll('.stat-number[data-target]');
   var started = false;
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 
   function animateCounter(el) {
-    var raw = el.dataset.target || el.textContent.replace(/[^\d.]/g, '');
-    var target = parseFloat(raw) || 0;
-    var suffix = el.dataset.suffix || el.textContent.replace(/[\d.]/g, '').trim();
+    var target = parseFloat(el.dataset.target) || 0;
+    var suffix = el.dataset.suffix || '';
     var duration = 1600;
     var start = null;
 
     function tick(ts) {
       if (!start) start = ts;
-      var elapsed = ts - start;
-      var progress = Math.min(elapsed / duration, 1);
+      var progress = Math.min((ts - start) / duration, 1);
       var value = easeOut(progress) * target;
-      var display = target % 1 === 0 ? Math.round(value) : value.toFixed(1);
-      el.textContent = display + suffix;
+      el.textContent = (target % 1 === 0 ? Math.round(value) : value.toFixed(1)) + suffix;
       if (progress < 1) requestAnimationFrame(tick);
     }
 
     requestAnimationFrame(tick);
   }
 
-  // Read targets before animating
+  // Snapshot text content as targets before animating
   counters.forEach(function(el) {
-    var text = el.textContent.trim();
-    var num = parseFloat(text.replace(/[^\d.]/g, ''));
-    var suffix = text.replace(/[\d.]/g, '').trim();
+    var text = el.firstChild ? el.firstChild.textContent.trim() : el.textContent.trim();
+    var num = parseFloat(text.replace(/[^\d.]/g, '')) || 0;
+    var suffix = text.replace(/[\d.,]/g, '').trim();
     el.dataset.target = num;
     el.dataset.suffix = suffix;
     el.textContent = '0' + suffix;
@@ -50,17 +47,15 @@
     });
   }, { threshold: 0.3 });
 
-  observer.observe(stats);
+  observer.observe(statsEl);
 })();
 
 /* ── Horizontal Drag Scroll ────────────────────────────────────────────────── */
 (function initDragScroll() {
-  var container = document.querySelector('.projects-scroll');
+  var container = document.querySelector('.projects-track-wrap');
   if (!container) return;
 
-  var isDown = false;
-  var startX = 0;
-  var scrollLeft = 0;
+  var isDown = false, startX = 0, scrollLeft = 0;
 
   container.addEventListener('mousedown', function(e) {
     isDown = true;
@@ -78,46 +73,31 @@
 
   document.addEventListener('mousemove', function(e) {
     if (!isDown) return;
-    var x = e.pageX - container.offsetLeft;
-    var walk = (x - startX) * 1.4;
-    container.scrollLeft = scrollLeft - walk;
+    container.scrollLeft = scrollLeft - (e.pageX - container.offsetLeft - startX) * 1.4;
   });
 
-  // Touch support
-  var touchStartX = 0;
-  var touchScrollLeft = 0;
-
   container.addEventListener('touchstart', function(e) {
-    touchStartX = e.touches[0].pageX;
-    touchScrollLeft = container.scrollLeft;
+    startX = e.touches[0].pageX;
+    scrollLeft = container.scrollLeft;
   }, { passive: true });
 
   container.addEventListener('touchmove', function(e) {
-    var x = e.touches[0].pageX;
-    var walk = touchStartX - x;
-    container.scrollLeft = touchScrollLeft + walk;
+    container.scrollLeft = scrollLeft + (startX - e.touches[0].pageX);
   }, { passive: true });
 })();
 
 /* ── Contact Form ──────────────────────────────────────────────────────────── */
 (function initForm() {
   var form = document.querySelector('.contact-form');
-  var success = document.querySelector('.form-success');
   if (!form) return;
 
   form.addEventListener('submit', function(e) {
     e.preventDefault();
+    var btn = form.querySelector('.btn-submit');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
 
-    var submit = form.querySelector('.form-submit');
-    if (submit) {
-      submit.disabled = true;
-      submit.textContent = 'Sending…';
-    }
-
-    // Simulate async submit
     setTimeout(function() {
-      form.style.display = 'none';
-      if (success) success.classList.add('visible');
+      form.innerHTML = '<p style="color:#c9a96e;font-size:0.9rem;padding:16px 0;">Thank you — we\'ll be in touch soon.</p>';
     }, 800);
   });
 })();

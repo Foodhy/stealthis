@@ -104,7 +104,7 @@ Continue the `lgc-XX` series from `lgc-58`.
 
 ---
 
-## Phase 6 — UI Components Extended (shadcn gap fill)
+## Phase 6 — UI Components Extended (shadcn gap fill) ✅ DONE
 
 Components present in shadcn/ui that don't yet exist in the library.
 Grouped by complexity. All are vanilla HTML/CSS/JS unless noted.
@@ -116,45 +116,45 @@ Grouped by complexity. All are vanilla HTML/CSS/JS unless noted.
 
 | Slug | shadcn equiv | Tech | Status |
 |---|---|---|---|
-| `alert-banner` | Alert | css | [ ] |
-| `badge` | Badge | css | [ ] |
-| `avatar-group` | Avatar | css | [ ] |
-| `breadcrumb` | Breadcrumb | css, vanilla-js | [ ] |
-| `progress-bar` | Progress | css, vanilla-js | [ ] |
-| `checkbox-group` | Checkbox | css | [ ] |
-| `radio-group` | Radio Group | css | [ ] |
-| `hover-card` | Hover Card | css | [ ] |
-| `input-variants` | Input / Input Group | css | [ ] |
-| `separator` | Separator | css | [ ] |
+| `alert-banner` | Alert | css | ✅ |
+| `badge` | Badge | css | ✅ |
+| `avatar-group` | Avatar | css | ✅ |
+| `breadcrumb` | Breadcrumb | css, vanilla-js | ✅ |
+| `progress-bar` | Progress | css, vanilla-js | ✅ |
+| `checkbox-group` | Checkbox | css | ✅ |
+| `radio-group` | Radio Group | css | ✅ |
+| `hover-card` | Hover Card | css | ✅ |
+| `input-variants` | Input / Input Group | css | ✅ |
+| `separator` | Separator | css | ✅ |
 
 ### Medium — JS required
 
 | Slug | shadcn equiv | Tech | Status |
 |---|---|---|---|
-| `modal-dialog` | Dialog / Alert Dialog | vanilla-js, css | [ ] |
-| `dropdown-menu` | Dropdown Menu | vanilla-js, css | [ ] |
-| `popover` | Popover | vanilla-js, css | [ ] |
-| `custom-select` | Select / Combobox | vanilla-js, css | [ ] |
-| `range-slider` | Slider | vanilla-js, css | [ ] |
-| `pagination` | Pagination | vanilla-js, css | [ ] |
-| `sheet-drawer` | Sheet / Drawer | vanilla-js, css | [ ] |
-| `carousel` | Carousel | vanilla-js, css | [ ] |
-| `context-menu` | Context Menu | vanilla-js, css | [ ] |
-| `navigation-menu` | Navigation Menu | vanilla-js, css | [ ] |
-| `otp-input` | Input OTP | vanilla-js, css | [ ] |
-| `scroll-area` | Scroll Area | css | [ ] |
+| `modal-dialog` | Dialog / Alert Dialog | vanilla-js, css | ✅ |
+| `dropdown-menu` | Dropdown Menu | vanilla-js, css | ✅ |
+| `popover` | Popover | vanilla-js, css | ✅ |
+| `custom-select` | Select / Combobox | vanilla-js, css | ✅ |
+| `range-slider` | Slider | vanilla-js, css | ✅ |
+| `pagination` | Pagination | vanilla-js, css | ✅ |
+| `sheet-drawer` | Sheet / Drawer | vanilla-js, css | ✅ |
+| `carousel` | Carousel | vanilla-js, css | ✅ |
+| `context-menu` | Context Menu | vanilla-js, css | ✅ |
+| `navigation-menu` | Navigation Menu | vanilla-js, css | ✅ |
+| `otp-input` | Input OTP | vanilla-js, css | ✅ |
+| `scroll-area` | Scroll Area | css | ✅ |
 
 ### Hard — complex state / layout
 
 | Slug | shadcn equiv | Tech | Status |
 |---|---|---|---|
-| `resizable-panels` | Resizable | vanilla-js, css | [ ] |
-| `date-picker` | Date Picker / Calendar | vanilla-js, css | [ ] |
-| `data-table` | Data Table | vanilla-js, css | [ ] |
+| `resizable-panels` | Resizable | vanilla-js, css | ✅ |
+| `date-picker` | Date Picker / Calendar | vanilla-js, css | ✅ |
+| `data-table` | Data Table | vanilla-js, css | ✅ |
 
 ---
 
-## Phase 7 — UI Components Deep Cut
+## Phase 7 — UI Components Deep Cut ✅ DONE
 
 Components found across DaisyUI · Flowbite · Ant Design · Radix UI · Headless UI
 that don't appear in Phase 2 or Phase 6. Organized by category.
@@ -165,69 +165,69 @@ that don't appear in Phase 2 or Phase 6. Organized by category.
 
 | Slug | Found in | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `number-input` | DaisyUI, Ant Design | css, vanilla-js | easy | [ ] |
-| `password-field` | Radix UI, Headless UI | css, vanilla-js | easy | [ ] |
-| `tag-input` | Ant Design | vanilla-js, css | med | [ ] |
-| `autocomplete` | Ant Design, Headless UI | vanilla-js, css | med | [ ] |
-| `file-upload-dropzone` | DaisyUI, Flowbite, Ant Design | vanilla-js, css | med | [ ] |
-| `rating-stars` | DaisyUI, Flowbite, Ant Design | css, vanilla-js | easy | [ ] |
-| `color-picker` | Ant Design | canvas, vanilla-js | hard | [ ] |
+| `number-input` | DaisyUI, Ant Design | css, vanilla-js | easy | ✅ |
+| `password-field` | Radix UI, Headless UI | css, vanilla-js | easy | ✅ |
+| `tag-input` | Ant Design | vanilla-js, css | med | ✅ |
+| `autocomplete` | Ant Design, Headless UI | vanilla-js, css | med | ✅ |
+| `file-upload-dropzone` | DaisyUI, Flowbite, Ant Design | vanilla-js, css | med | ✅ |
+| `rating-stars` | DaisyUI, Flowbite, Ant Design | css, vanilla-js | easy | ✅ |
+| `color-picker` | Ant Design | canvas, vanilla-js | hard | ✅ |
 
 ### Feedback & Status
 
 | Slug | Found in | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `alert-dialog` | Radix UI, shadcn | vanilla-js, css | med | [ ] |
-| `empty-state` | Ant Design, DaisyUI | css | easy | [ ] |
-| `result-page` | Ant Design | css | easy | [ ] |
-| `stat-card` | DaisyUI, Ant Design | css | easy | [ ] |
-| `status-indicator` | DaisyUI | css | easy | [ ] |
-| `loading-variants` | DaisyUI, Flowbite | css | easy | [ ] |
+| `alert-dialog` | Radix UI, shadcn | vanilla-js, css | med | ✅ |
+| `empty-state` | Ant Design, DaisyUI | css | easy | ✅ |
+| `result-page` | Ant Design | css | easy | ✅ |
+| `stat-card` | DaisyUI, Ant Design | css | easy | ✅ |
+| `status-indicator` | DaisyUI | css | easy | ✅ |
+| `loading-variants` | DaisyUI, Flowbite | css | easy | ✅ |
 
 ### Navigation & Wayfinding
 
 | Slug | Found in | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `bottom-nav` | DaisyUI, Flowbite | css, vanilla-js | easy | [ ] |
-| `steps-progress` | DaisyUI, Flowbite, Ant Design | css, vanilla-js | easy | [ ] |
-| `mega-menu` | Flowbite | vanilla-js, css | med | [ ] |
-| `anchor-nav` | Ant Design, Flowbite | vanilla-js, css | med | [ ] |
-| `back-to-top` | Ant Design | vanilla-js, css | easy | [ ] |
+| `bottom-nav` | DaisyUI, Flowbite | css, vanilla-js | easy | ✅ |
+| `steps-progress` | DaisyUI, Flowbite, Ant Design | css, vanilla-js | easy | ✅ |
+| `mega-menu` | Flowbite | vanilla-js, css | med | ✅ |
+| `anchor-nav` | Ant Design, Flowbite | vanilla-js, css | med | ✅ |
+| `back-to-top` | Ant Design | vanilla-js, css | easy | ✅ |
 
 ### Layout & Display
 
 | Slug | Found in | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `timeline` | DaisyUI, Flowbite, Ant Design | css | easy | [ ] |
-| `chat-bubble` | DaisyUI, Flowbite | css | easy | [ ] |
-| `diff-slider` | DaisyUI | vanilla-js, css | med | [ ] |
-| `masonry-grid` | Ant Design | css (columns) | easy | [ ] |
-| `mockup-browser` | DaisyUI, Flowbite | css | easy | [ ] |
-| `mockup-phone` | DaisyUI, Flowbite | css | easy | [ ] |
-| `segmented-control` | Ant Design, DaisyUI | css, vanilla-js | easy | [ ] |
-| `image-lightbox` | Flowbite, Ant Design | vanilla-js, css | med | [ ] |
-| `watermark` | Ant Design | canvas | med | [ ] |
+| `timeline` | DaisyUI, Flowbite, Ant Design | css | easy | ✅ |
+| `chat-bubble` | DaisyUI, Flowbite | css | easy | ✅ |
+| `diff-slider` | DaisyUI | vanilla-js, css | med | ✅ |
+| `masonry-grid` | Ant Design | css (columns) | easy | ✅ |
+| `mockup-browser` | DaisyUI, Flowbite | css | easy | ✅ |
+| `mockup-phone` | DaisyUI, Flowbite | css | easy | ✅ |
+| `segmented-control` | Ant Design, DaisyUI | css, vanilla-js | easy | ✅ |
+| `image-lightbox` | Flowbite, Ant Design | vanilla-js, css | med | ✅ |
+| `watermark` | Ant Design | canvas | med | ✅ |
 
 ### Actions & Interactions
 
 | Slug | Found in | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `fab-speed-dial` | DaisyUI, Flowbite | css, vanilla-js | med | [ ] |
-| `clipboard-copy` | Flowbite | vanilla-js, css | easy | [ ] |
-| `swap` | DaisyUI | css | easy | [ ] |
-| `tour-spotlight` | Ant Design | vanilla-js, css | hard | [ ] |
-| `toggle-group` | Radix UI, DaisyUI | css, vanilla-js | easy | [ ] |
+| `fab-speed-dial` | DaisyUI, Flowbite | css, vanilla-js | med | ✅ |
+| `clipboard-copy` | Flowbite | vanilla-js, css | easy | ✅ |
+| `swap` | DaisyUI | css | easy | ✅ |
+| `tour-spotlight` | Ant Design | vanilla-js, css | hard | ✅ |
+| `toggle-group` | Radix UI, DaisyUI | css, vanilla-js | easy | ✅ |
 
 ### Typography & Visual
 
 | Slug | Found in | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `kbd-display` | DaisyUI, Flowbite | css | easy | [ ] |
-| `divider-label` | DaisyUI, Ant Design | css | easy | [ ] |
-| `indicator` | DaisyUI | css | easy | [ ] |
-| `text-rotate` | DaisyUI | css, vanilla-js | easy | [ ] |
-| `stack-cards` | DaisyUI | css | easy | [ ] |
-| `qr-code` | Flowbite, Ant Design | canvas/svg | med | [ ] |
+| `kbd-display` | DaisyUI, Flowbite | css | easy | ✅ |
+| `divider-label` | DaisyUI, Ant Design | css | easy | ✅ |
+| `indicator` | DaisyUI | css | easy | ✅ |
+| `text-rotate` | DaisyUI | css, vanilla-js | easy | ✅ |
+| `stack-cards` | DaisyUI | css | easy | ✅ |
+| `qr-code` | Flowbite, Ant Design | canvas/svg | med | ✅ |
 
 ---
 

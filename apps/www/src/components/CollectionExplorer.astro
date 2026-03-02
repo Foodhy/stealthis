@@ -1,0 +1,553 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { type Locale, useTranslations } from "@i18n/index";
+import {
+  ALL_COLLECTION_FILTER_VALUE,
+  type CollectionFilterValue,
+  RESOURCE_COLLECTION_IDS,
+  libraryCollections,
+} from "@lib/collections";
+import { resolveResourceCollections } from "@lib/resource-collections";
+import { SITE_URLS } from "@lib/urls";
+
+interface Props {
+  locale?: Locale;
+  resources: CollectionEntry<"resources">[];
+}
+
+const { locale = "en", resources } = Astro.props;
+const t = useTranslations(locale);
+const prefix = locale === "es" ? "/es" : "";
+
+const sortedResources = [...resources].sort(
+  (a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime()
+);
+const MAX_PER_PANEL = 18;
+
+const resolvedBySlug = new Map<string, string[]>();
+for (const resource of sortedResources) {
+  resolvedBySlug.set(resource.data.slug, resolveResourceCollections(resource.data));
+}
+
+const resourcesByCollection = new Map<CollectionFilterValue, CollectionEntry<"resources">[]>();
+resourcesByCollection.set(ALL_COLLECTION_FILTER_VALUE, sortedResources.slice(0, MAX_PER_PANEL));
+for (const collection of libraryCollections) {
+  const scoped = sortedResources
+    .filter((resource) => (resolvedBySlug.get(resource.data.slug) ?? []).includes(collection.id))
+    .slice(0, MAX_PER_PANEL);
+  resourcesByCollection.set(collection.id, scoped);
+}
+---
+
+<section class="mb-10 collection-explorer" data-collection-explorer>
+  <div class="flex items-center gap-3 mb-4">
+    <h2 class="text-base font-bold text-white whitespace-nowrap">{t("collections.title")}</h2>
+    <span class="text-xs text-slate-600 whitespace-nowrap hidden sm:block">{t("collections.explorerSubtitle")}</span>
+    <div class="flex-1 border-t border-white/6"></div>
+  </div>
+
+  <div class="collection-chip-row" role="tablist" aria-label={t("collections.title")}>
+    <button
+      type="button"
+      class="chip chip--active"
+      role="tab"
+      aria-selected="true"
+      data-filter="collection"
+      data-value="all"
+      data-collection-chip="all"
+    >
+      {t("collections.all")}
+    </button>
+
+    {libraryCollections.map((collection) => (
+      <button
+        type="button"
+        class="chip"
+        role="tab"
+        aria-selected="false"
+        data-filter="collection"
+        data-value={collection.id}
+        data-collection-chip={collection.id}
+      >
+        {t(collection.titleKey as any)}
+      </button>
+    ))}
+  </div>
+
+  <div class="collection-panels mt-4">
+    {[ALL_COLLECTION_FILTER_VALUE, ...RESOURCE_COLLECTION_IDS].map((id) => {
+      const panelResources = resourcesByCollection.get(id) ?? [];
+      const activeCollection = id === ALL_COLLECTION_FILTER_VALUE ? null : libraryCollections.find((item) => item.id === id);
+      const title = activeCollection ? t(activeCollection.titleKey as any) : t("collections.all");
+      const description = activeCollection ? t(activeCollection.descriptionKey as any) : t("collections.explorerSubtitle");
+
+      return (
+        <section
+          class={`collection-panel ${id === ALL_COLLECTION_FILTER_VALUE ? "is-active" : ""}`}
+          data-collection-panel={id}
+          hidden={id !== ALL_COLLECTION_FILTER_VALUE}
+          aria-label={title}
+        >
+          <div class="collection-panel-head">
+            <div>
+              <p class="collection-panel-title">{title}</p>
+              <p class="collection-panel-subtitle">{description}</p>
+            </div>
+            <div class="collection-panel-controls">
+              <span class="collection-count" aria-live="polite">{panelResources.length}</span>
+              <button
+                type="button"
+                class="collection-nav-btn"
+                data-carousel-prev={id}
+                aria-label={t("collections.prev")}
+                title={t("collections.prev")}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                class="collection-nav-btn"
+                data-carousel-next={id}
+                aria-label={t("collections.next")}
+                title={t("collections.next")}
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          {panelResources.length > 0 ? (
+            <div class="collection-viewport" data-collection-viewport={id} tabindex="0">
+              <div class="collection-track" data-collection-track={id}>
+                {panelResources.map((resource) => {
+                  const categoryKey = `category.${resource.data.category}` as any;
+                  const difficultyKey = `resource.difficulty.${resource.data.difficulty}` as any;
+                  const hasLabRoute = typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0;
+                  const destination = hasLabRoute
+                    ? `${SITE_URLS.lab}${resource.data.labRoute}`
+                    : `${prefix}/r/${resource.data.slug}`;
+
+                  return (
+                    <a
+                      href={destination}
+                      class="collection-card"
+                      data-collection-card
+                      target={hasLabRoute ? "_blank" : undefined}
+                      rel={hasLabRoute ? "noopener" : undefined}
+                    >
+                      <div class="collection-card-meta">
+                        <span class="collection-card-category">{t(categoryKey)}</span>
+                        <span class="collection-card-difficulty">{t(difficultyKey)}</span>
+                      </div>
+                      <p class="collection-card-title">{resource.data.title}</p>
+                      <p class="collection-card-description">{resource.data.description}</p>
+                      <div class="collection-card-footer">
+                        <div class="collection-card-techs">
+                          {resource.data.tech.slice(0, 3).map((tech) => (
+                            <span class="collection-card-tech">{tech}</span>
+                          ))}
+                        </div>
+                        <span class="collection-card-cta">
+                          {hasLabRoute ? t("collections.viewLab") : t("collections.viewResource")}
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p class="collection-empty">{t("collections.empty")}</p>
+          )}
+        </section>
+      );
+    })}
+  </div>
+</section>
+
+<style>
+  .collection-explorer {
+    --collection-border: rgb(148 163 184 / 16%);
+    --collection-bg: rgb(2 10 24 / 45%);
+    --collection-card-bg: linear-gradient(165deg, rgb(5 13 28 / 94%), rgb(6 16 34 / 82%));
+  }
+
+  .collection-chip-row {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+  }
+
+  .collection-chip-row::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  .collection-chip-row::-webkit-scrollbar-thumb {
+    background: rgb(71 85 105 / 60%);
+    border-radius: 999px;
+  }
+
+  .collection-panel {
+    border: 1px solid var(--collection-border);
+    border-radius: 1rem;
+    padding: 0.85rem;
+    background: radial-gradient(circle at 0% 0%, rgb(56 189 248 / 8%), transparent 36%), var(--collection-bg);
+  }
+
+  .collection-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .collection-panel-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgb(241 245 249 / 98%);
+    margin: 0;
+  }
+
+  .collection-panel-subtitle {
+    margin: 0.2rem 0 0;
+    font-size: 0.76rem;
+    color: rgb(148 163 184 / 80%);
+  }
+
+  .collection-panel-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .collection-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.55rem;
+    height: 1.55rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    color: rgb(148 163 184 / 88%);
+    border: 1px solid rgb(148 163 184 / 28%);
+    background: rgb(15 23 42 / 70%);
+  }
+
+  .collection-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 999px;
+    border: 1px solid rgb(148 163 184 / 28%);
+    background: rgb(15 23 42 / 68%);
+    color: rgb(148 163 184 / 92%);
+    font-size: 0.8rem;
+    line-height: 1;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+
+  .collection-nav-btn:hover {
+    border-color: rgb(56 189 248 / 45%);
+    color: rgb(186 230 253);
+    background: rgb(2 10 24 / 82%);
+  }
+
+  .collection-viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(71 85 105 / 70%) transparent;
+    outline: none;
+  }
+
+  .collection-viewport:focus-visible {
+    box-shadow: 0 0 0 2px rgb(56 189 248 / 32%);
+    border-radius: 0.85rem;
+  }
+
+  .collection-viewport::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .collection-viewport::-webkit-scrollbar-thumb {
+    background: rgb(71 85 105 / 70%);
+    border-radius: 999px;
+  }
+
+  .collection-track {
+    display: flex;
+    gap: 0.75rem;
+    min-width: min-content;
+    padding-bottom: 0.35rem;
+  }
+
+  .collection-card {
+    width: clamp(240px, 28vw, 320px);
+    min-height: 176px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgb(148 163 184 / 18%);
+    background: var(--collection-card-bg);
+    text-decoration: none;
+    transition: transform 0.22s ease, border-color 0.22s ease;
+    scroll-snap-align: start;
+  }
+
+  .collection-card:hover {
+    transform: translateY(-2px);
+    border-color: rgb(56 189 248 / 45%);
+  }
+
+  .collection-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+  }
+
+  .collection-card-category {
+    font-size: 0.7rem;
+    color: rgb(148 163 184 / 88%);
+  }
+
+  .collection-card-difficulty {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(125 211 252 / 95%);
+    border: 1px solid rgb(56 189 248 / 34%);
+    border-radius: 999px;
+    padding: 0.2rem 0.42rem;
+  }
+
+  .collection-card-title {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    color: rgb(241 245 249 / 98%);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .collection-card-description {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: rgb(148 163 184 / 86%);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .collection-card-footer {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid rgb(148 163 184 / 14%);
+  }
+
+  .collection-card-techs {
+    display: flex;
+    align-items: center;
+    gap: 0.34rem;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .collection-card-tech {
+    font-size: 0.66rem;
+    line-height: 1;
+    color: rgb(148 163 184 / 95%);
+    background: rgb(15 23 42 / 78%);
+    border: 1px solid rgb(148 163 184 / 22%);
+    border-radius: 999px;
+    padding: 0.26rem 0.46rem;
+  }
+
+  .collection-card-cta {
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(56 189 248 / 95%);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .collection-empty {
+    margin: 0;
+    color: rgb(148 163 184 / 85%);
+    font-size: 0.84rem;
+    padding: 0.4rem 0.2rem;
+  }
+</style>
+
+<script>
+  import { RESOURCE_COLLECTION_IDS } from "@lib/collections";
+
+  const explorer = document.querySelector<HTMLElement>("[data-collection-explorer]");
+
+  if (explorer) {
+    const chips = Array.from(
+      explorer.querySelectorAll<HTMLButtonElement>("[data-collection-chip]")
+    );
+
+    const panels = new Map<string, HTMLElement>();
+    explorer.querySelectorAll<HTMLElement>("[data-collection-panel]").forEach((panel) => {
+      const id = panel.dataset.collectionPanel;
+      if (id) panels.set(id, panel);
+    });
+
+    const validIds = new Set(["all", ...RESOURCE_COLLECTION_IDS]);
+    const prefersReducedMotion =
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+
+    let autoTimer: number | null = null;
+    let activeCollection = "all";
+
+    function getActivePanel(): HTMLElement | null {
+      return panels.get(activeCollection) ?? null;
+    }
+
+    function syncUrl(collection: string) {
+      const url = new URL(window.location.href);
+      if (collection === "all") {
+        url.searchParams.delete("collection");
+      } else {
+        url.searchParams.set("collection", collection);
+      }
+      const next = `${url.pathname}${url.search}${url.hash}`;
+      window.history.replaceState({}, "", next);
+    }
+
+    function syncVisualState() {
+      chips.forEach((chip) => {
+        const isActive = chip.dataset.collectionChip === activeCollection;
+        chip.classList.toggle("chip--active", isActive);
+        chip.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      panels.forEach((panel, id) => {
+        const isActive = id === activeCollection;
+        panel.classList.toggle("is-active", isActive);
+        panel.toggleAttribute("hidden", !isActive);
+      });
+    }
+
+    function scrollPanel(panel: HTMLElement, direction: -1 | 1) {
+      const viewport = panel.querySelector<HTMLElement>("[data-collection-viewport]");
+      if (!viewport) return;
+
+      const firstCard = viewport.querySelector<HTMLElement>("[data-collection-card]");
+      const gap = 12;
+      const stride = firstCard
+        ? firstCard.getBoundingClientRect().width + gap
+        : Math.max(viewport.clientWidth * 0.85, 220);
+
+      const nearEnd = viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 8;
+      const nearStart = viewport.scrollLeft <= 8;
+
+      if (direction > 0 && nearEnd) {
+        viewport.scrollTo({ left: 0, behavior: "smooth" });
+        return;
+      }
+
+      if (direction < 0 && nearStart) {
+        viewport.scrollTo({ left: Math.max(0, viewport.scrollWidth - viewport.clientWidth), behavior: "smooth" });
+        return;
+      }
+
+      viewport.scrollBy({ left: stride * direction, behavior: "smooth" });
+    }
+
+    function clearAutoplay() {
+      if (autoTimer !== null) {
+        window.clearInterval(autoTimer);
+        autoTimer = null;
+      }
+    }
+
+    function startAutoplay() {
+      clearAutoplay();
+      if (prefersReducedMotion) return;
+
+      const panel = getActivePanel();
+      if (!panel) return;
+
+      autoTimer = window.setInterval(() => {
+        const currentPanel = getActivePanel();
+        if (!currentPanel) return;
+        scrollPanel(currentPanel, 1);
+      }, 3500);
+    }
+
+    function setActiveCollection(collection: string, updateUrl = false) {
+      activeCollection = validIds.has(collection) ? collection : "all";
+      syncVisualState();
+      if (updateUrl) syncUrl(activeCollection);
+      startAutoplay();
+    }
+
+    const initialFromUrl = new URLSearchParams(window.location.search).get("collection") ?? "all";
+    setActiveCollection(validIds.has(initialFromUrl) ? initialFromUrl : "all", false);
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const next = chip.dataset.collectionChip ?? "all";
+        setActiveCollection(next, true);
+      });
+    });
+
+    explorer.querySelectorAll<HTMLButtonElement>("[data-carousel-prev]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.dataset.carouselPrev;
+        if (!target) return;
+        const panel = panels.get(target);
+        if (!panel) return;
+        scrollPanel(panel, -1);
+      });
+    });
+
+    explorer.querySelectorAll<HTMLButtonElement>("[data-carousel-next]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.dataset.carouselNext;
+        if (!target) return;
+        const panel = panels.get(target);
+        if (!panel) return;
+        scrollPanel(panel, 1);
+      });
+    });
+
+    explorer.addEventListener("mouseenter", clearAutoplay);
+    explorer.addEventListener("mouseleave", startAutoplay);
+    explorer.addEventListener("focusin", clearAutoplay);
+    explorer.addEventListener("focusout", (event) => {
+      const nextFocus = event.relatedTarget as Node | null;
+      if (!nextFocus || !explorer.contains(nextFocus)) {
+        startAutoplay();
+      }
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        clearAutoplay();
+      } else {
+        startAutoplay();
+      }
+    });
+  }
+</script>

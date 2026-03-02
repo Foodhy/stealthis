@@ -1,0 +1,493 @@
+---
+import Base from "@layouts/Base.astro";
+import ShowcaseCard from "@components/ShowcaseCard.astro";
+import { getCollection } from "astro:content";
+import { readFileSync, existsSync } from "node:fs";
+import path from "node:path";
+import { getLocaleFromUrl } from "@i18n/index";
+import { SITE_URLS } from "@lib/urls";
+
+const locale = getLocaleFromUrl(Astro.url);
+const labUrl = SITE_URLS.lab;
+
+const allResources = await getCollection("resources");
+const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
+
+const showcaseItems = allResources
+  .filter((r) => typeof r.data.labRoute === "string" && r.data.labRoute.length > 0)
+  .map((resource) => {
+    const { slug } = resource.data;
+    const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
+    const htmlPath = path.join(snippetsDir, "html.html");
+    const cssPath = path.join(snippetsDir, "style.css");
+    const jsPath = path.join(snippetsDir, "script.js");
+
+    let srcdoc = existsSync(htmlPath) ? readFileSync(htmlPath, "utf-8") : "";
+    const css = existsSync(cssPath) ? readFileSync(cssPath, "utf-8") : null;
+    const js = existsSync(jsPath) ? readFileSync(jsPath, "utf-8") : null;
+
+    if (css && srcdoc) {
+      srcdoc = srcdoc.replace(
+        /<link[^>]*href=["'](?:\.\/)?style\.css["'][^>]*>/i,
+        `<style>${css}</style>`
+      );
+    }
+
+    if (js && srcdoc) {
+      srcdoc = srcdoc.replace(
+        /<script([^>]*)src=["'](?:\.\/)?script\.js["']([^>]*)><\/script>/i,
+        (_match, before, after) => {
+          const attrs = `${before ?? ""} ${after ?? ""}`;
+          const isModule = /\btype\s*=\s*["']module["']/i.test(attrs);
+          return isModule
+            ? `<script type="module">${js}</script>`
+            : `<script>${js}</script>`;
+        }
+      );
+    }
+
+    // Hide scrollbars inside the iframe while keeping scroll functional
+    srcdoc = srcdoc.replace(
+      /<\/head>/i,
+      `<style>::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}</style></head>`
+    );
+
+    // Rewrite absolute /vendor/ paths to the lab origin so gsap/three load correctly
+    srcdoc = srcdoc.replaceAll('"/vendor/', `"${labUrl}/vendor/`);
+    // lenis.mjs is not present in the lab vendor dir — swap to CDN
+    srcdoc = srcdoc.replaceAll(
+      `"${labUrl}/vendor/lenis/dist/lenis.mjs"`,
+      '"https://cdn.jsdelivr.net/npm/lenis@1.3.17/dist/lenis.mjs"'
+    );
+
+    return { resource, srcdoc };
+  })
+  .filter((item) => item.srcdoc.length > 0);
+
+const categories = [
+  ...new Set(showcaseItems.map((item) => item.resource.data.category)),
+].sort();
+
+const showcaseDescription = `Interactive wall with ${showcaseItems.length} live previews from the StealThis library. Scroll, explore, and jump to code in one click.`;
+const alternateLinks = [
+  { hreflang: "en", href: "https://stealthis.dev/showcase/" },
+  { hreflang: "x-default", href: "https://stealthis.dev/showcase/" },
+];
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "StealThis.dev Showcase",
+  url: "https://stealthis.dev/showcase/",
+  inLanguage: locale,
+  description: showcaseDescription,
+  isPartOf: {
+    "@type": "WebSite",
+    name: "StealThis.dev",
+    url: "https://stealthis.dev/",
+  },
+  mainEntity: {
+    "@type": "ItemList",
+    name: "Live resource previews",
+    numberOfItems: showcaseItems.length,
+  },
+};
+
+const categoryLabels: Record<string, string> = {
+  "web-animations": "Web Animations",
+  "web-pages": "Web Pages",
+  "ui-components": "UI Components",
+  patterns: "Patterns",
+  components: "Components",
+  pages: "Pages",
+  prompts: "Prompts",
+  skills: "Skills",
+  "mcp-servers": "MCP Servers",
+  architectures: "Architectures",
+  boilerplates: "Boilerplates",
+  remotion: "Remotion",
+};
+---
+
+<Base
+  title="Showcase"
+  description={showcaseDescription}
+  image="/og/showcase.webp"
+  canonicalPath="/showcase/"
+  alternateLinks={alternateLinks}
+  structuredData={structuredData}
+>
+  <div class="showcase-wrap py-12 pb-24">
+    <div class="mb-6 flex items-end justify-between gap-4 flex-wrap">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-1">
+          Showcase
+        </h1>
+        <p class="text-slate-400 text-sm" id="showcase-count-text">
+          {showcaseItems.length} live previews
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 mb-8">
+      <div
+        class="flex flex-wrap gap-2"
+        id="showcase-filters"
+        role="group"
+        aria-label="Filter by category"
+      >
+        <button class="chip chip--active" data-filter="all" type="button">
+          All <span class="chip-count">{showcaseItems.length}</span>
+        </button>
+        <button class="chip chip--fav" data-filter="favorites" type="button">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="flex-shrink:0">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          Saved <span class="chip-count" id="fav-chip-count">0</span>
+        </button>
+        {
+          categories.map((cat) => {
+            const count = showcaseItems.filter(i => i.resource.data.category === cat).length;
+            return (
+              <button class="chip" data-filter={cat} type="button">
+                {categoryLabels[cat] ?? cat} <span class="chip-count">{count}</span>
+              </button>
+            );
+          })
+        }
+      </div>
+    </div>
+
+    <p class="hidden text-center text-slate-500 py-16" id="showcase-empty">
+      No components match this filter.
+    </p>
+
+    <div class="masonry" id="showcase-grid">
+      {showcaseItems.map(({ resource, srcdoc }) => (
+        <ShowcaseCard resource={resource} srcdoc={srcdoc} locale={locale} />
+      ))}
+    </div>
+  </div>
+
+  <!-- Back to top button -->
+  <button class="btt-btn" id="btt-btn" aria-label="Back to top" title="Back to top">
+    <svg class="btt-ring" aria-hidden="true" viewBox="0 0 52 52">
+      <circle class="btt-ring__track" cx="26" cy="26" r="23" />
+      <circle class="btt-ring__fill" id="btt-ring-fill" cx="26" cy="26" r="23" />
+    </svg>
+    <svg class="btt-arrow" aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M9 14V4M4 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</Base>
+
+<style>
+  /* Full-width container — breaks out of max-w-7xl */
+  .showcase-wrap {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .showcase-wrap { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .showcase-wrap { padding-left: 2.5rem; padding-right: 2.5rem; }
+  }
+
+  @media (min-width: 1280px) {
+    .showcase-wrap { padding-left: 3.5rem; padding-right: 3.5rem; }
+  }
+
+  @media (min-width: 1536px) {
+    .showcase-wrap { padding-left: 5rem; padding-right: 5rem; }
+  }
+
+  /* Chip count badge */
+  .chip-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.3em;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgb(148, 163, 184);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-left: 2px;
+    transition: background 150ms ease, color 150ms ease;
+  }
+
+  .chip--active .chip-count {
+    background: rgba(99, 183, 255, 0.25);
+    color: rgb(147, 210, 255);
+  }
+
+  /* Favorites chip — rose tint when active */
+  .chip--fav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .chip--fav.chip--active {
+    background: rgba(244, 63, 94, 0.12);
+    border-color: rgba(244, 63, 94, 0.3);
+    color: rgb(251, 113, 133);
+  }
+
+  .chip--fav.chip--active svg {
+    fill: currentColor;
+  }
+
+  .chip--fav.chip--active .chip-count {
+    background: rgba(244, 63, 94, 0.25);
+    color: rgb(251, 113, 133);
+  }
+
+  /* Masonry grid */
+  .masonry {
+    columns: 1;
+    column-gap: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .masonry { columns: 2; }
+  }
+
+  @media (min-width: 1024px) {
+    .masonry { columns: 3; }
+  }
+
+  @media (min-width: 1280px) {
+    .masonry { columns: 4; }
+  }
+
+  @media (min-width: 1536px) {
+    .masonry { columns: 5; }
+  }
+
+  :global(.masonry-item) {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Back-to-top button ── */
+  .btt-btn {
+    --accent: #38bdf8;
+    --btn-size: 52px;
+    --btn-offset: 1.75rem;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+    position: fixed;
+    bottom: var(--btn-offset);
+    right: var(--btn-offset);
+    width: var(--btn-size);
+    height: var(--btn-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13, 17, 23, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    cursor: pointer;
+    color: #f2f6ff;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px) scale(0.9);
+    transition:
+      opacity 0.3s var(--ease),
+      transform 0.3s var(--ease),
+      box-shadow 0.2s;
+    z-index: 999;
+  }
+
+  .btt-btn.visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0) scale(1);
+  }
+
+  .btt-btn:hover {
+    box-shadow: 0 6px 32px rgba(56, 189, 248, 0.25);
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .btt-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .btt-btn:active {
+    transform: scale(0.96);
+  }
+
+  .btt-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    border-radius: 50%;
+    overflow: visible;
+  }
+
+  .btt-ring__track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.06);
+    stroke-width: 2.5;
+  }
+
+  .btt-ring__fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s linear;
+  }
+
+  .btt-arrow {
+    position: relative;
+    z-index: 1;
+    color: #f2f6ff;
+    transition: transform 0.2s var(--ease);
+  }
+
+  .btt-btn:hover .btt-arrow {
+    transform: translateY(-1px);
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = "stealthis:favorites";
+
+  function getFavs(): string[] {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as string[];
+    } catch {
+      return [];
+    }
+  }
+
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>(
+    "#showcase-filters [data-filter]"
+  );
+  const cards = document.querySelectorAll<HTMLElement>("[data-slug][data-category]");
+  const emptyState = document.getElementById("showcase-empty");
+  const countText = document.getElementById("showcase-count-text");
+  const favChipCount = document.getElementById("fav-chip-count");
+  const totalCount = cards.length;
+  let currentFilter = "all";
+
+  function updateFavCount() {
+    if (favChipCount) favChipCount.textContent = String(getFavs().length);
+  }
+
+  function applyFilter(value: string) {
+    currentFilter = value;
+    filterBtns.forEach((btn) => {
+      btn.classList.toggle("chip--active", btn.dataset.filter === value);
+    });
+
+    const favs = value === "favorites" ? getFavs() : [];
+    let visibleCount = 0;
+    cards.forEach((card) => {
+      const match =
+        value === "all"
+          ? true
+          : value === "favorites"
+            ? favs.includes(card.dataset.slug ?? "")
+            : card.dataset.category === value;
+      (card as HTMLElement).style.display = match ? "" : "none";
+      if (match) visibleCount++;
+    });
+
+    if (emptyState) {
+      emptyState.classList.toggle("hidden", visibleCount > 0);
+    }
+
+    if (countText) {
+      countText.textContent = value === "all"
+        ? `${totalCount} live previews`
+        : `${visibleCount} of ${totalCount} previews`;
+    }
+  }
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applyFilter(btn.dataset.filter ?? "all");
+    });
+  });
+
+  // Keep favorites count badge and filter in sync
+  window.addEventListener("stealthis:favorites-changed", () => {
+    updateFavCount();
+    if (currentFilter === "favorites") applyFilter("favorites");
+  });
+
+  updateFavCount();
+
+  // Lazy-load iframes as cards scroll into view — prevents spawning
+  // all WebGL contexts at once (browser limit ~8-16 simultaneous)
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const article = entry.target as HTMLElement;
+        const iframe = article.querySelector<HTMLIFrameElement>(".showcase-iframe");
+        if (iframe && !iframe.srcdoc && article.dataset.srcdoc) {
+          iframe.srcdoc = article.dataset.srcdoc;
+        }
+        observer.unobserve(article); // load once, keep loaded
+      });
+    },
+    { rootMargin: "300px" } // preload 300px before entering viewport
+  );
+
+  cards.forEach((card) => observer.observe(card));
+</script>
+
+<script>
+  // Back-to-top button
+  (function () {
+    const THRESHOLD = 300;
+    const btn = document.getElementById("btt-btn");
+    const ringFill = document.getElementById("btt-ring-fill");
+
+    if (!btn) return;
+
+    const radius = 23;
+    const circumference = 2 * Math.PI * radius;
+
+    if (ringFill instanceof SVGGeometryElement || ringFill instanceof Element) {
+      (ringFill as HTMLElement).style.strokeDasharray = String(circumference);
+      (ringFill as HTMLElement).style.strokeDashoffset = String(circumference);
+    }
+
+    function onScroll() {
+      const scrollY = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = maxScroll > 0 ? scrollY / maxScroll : 0;
+
+      btn!.classList.toggle("visible", scrollY > THRESHOLD);
+
+      if (ringFill) {
+        (ringFill as HTMLElement).style.strokeDashoffset = String(circumference * (1 - pct));
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    btn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  })();
+</script>
