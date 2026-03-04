@@ -3,6 +3,7 @@ import Base from "@layouts/Base.astro";
 import CodeTabs from "@components/CodeTabs.astro";
 import ActionMenu from "@components/ActionMenu.astro";
 import RemotionPreview from "@components/RemotionPreview";
+import TechIcon from "@components/TechIcon.astro";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { getCollection, render } from "astro:content";
@@ -151,8 +152,8 @@ const structuredData = [
 
     <!-- Header -->
     <header class="mb-10">
-      <div class="flex items-start justify-between gap-4 flex-wrap">
-        <div class="flex-1 min-w-0">
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div class="w-full min-w-0 md:flex-1">
           <div class="flex flex-wrap items-center gap-2 mb-3">
             <a href={`/library?category=${category}`} class="chip hover:text-slate-200">
               {categoryLabel}
@@ -167,7 +168,20 @@ const structuredData = [
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-2">
+        <div class="flex w-full flex-wrap items-center gap-2 md:w-auto md:flex-nowrap md:justify-end md:self-start">
+          <button
+            type="button"
+            class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/6 transition-colors resource-favorite-btn"
+            data-slug={slug}
+            data-label-save={t("resource.favorite")}
+            data-label-saved={t("resource.unfavorite")}
+            title={t("resource.favorite")}
+            aria-label={t("resource.favorite")}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
           {category === "remotion" && (
             <a
               href={SITE_URLS.remotion}
@@ -202,7 +216,10 @@ const structuredData = [
       {tech.length > 0 && (
         <div class="flex flex-wrap gap-2 mt-5">
           {tech.map((item) => (
-            <span class="chip">{item}</span>
+            <span class="chip inline-flex items-center gap-1.5">
+              <TechIcon name={item} />
+              {item}
+            </span>
           ))}
         </div>
       )}
@@ -290,7 +307,57 @@ const structuredData = [
   </article>
 </Base>
 
+<script>
+  import { isFavorite, toggleFavorite } from "@lib/favorites";
+
+  function updateFavoriteButton(button: HTMLButtonElement, favorite: boolean) {
+    const saveLabel = button.dataset.labelSave ?? "Save";
+    const savedLabel = button.dataset.labelSaved ?? "Saved";
+    const label = favorite ? savedLabel : saveLabel;
+
+    button.classList.toggle("is-favorite", favorite);
+    button.setAttribute("title", label);
+    button.setAttribute("aria-label", label);
+  }
+
+  function initResourceFavoriteButtons() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>(".resource-favorite-btn");
+
+    for (const button of buttons) {
+      const slug = button.dataset.slug;
+      if (!slug) continue;
+
+      updateFavoriteButton(button, isFavorite(slug));
+
+      if (button.dataset.favoriteInit === "true") continue;
+      button.dataset.favoriteInit = "true";
+
+      button.addEventListener("click", () => {
+        const nextFavorite = toggleFavorite(slug);
+        updateFavoriteButton(button, nextFavorite);
+      });
+
+      window.addEventListener("stealthis:favorites-changed", (event) => {
+        if (!(event instanceof CustomEvent)) return;
+        const detail = event.detail as { slug?: string } | undefined;
+        if (detail?.slug && detail.slug !== slug) return;
+        updateFavoriteButton(button, isFavorite(slug));
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initResourceFavoriteButtons);
+</script>
+
 <style is:global>
+  .resource-favorite-btn.is-favorite {
+    @apply text-rose-400 border-rose-400/40 bg-rose-500/10;
+  }
+
+  .resource-favorite-btn.is-favorite svg {
+    fill: currentColor;
+  }
+
   /* Tailwind Typography plugin not included, manual prose styles */
   .prose h2 { @apply text-2xl font-bold text-white mt-10 mb-4; }
   .prose h3 { @apply text-lg font-semibold text-slate-200 mt-8 mb-3; }
