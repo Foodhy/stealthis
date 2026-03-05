@@ -2,13 +2,14 @@
 import {
   DEFAULT_LOCALE,
   LOCALES,
+  LOCALE_LABELS,
   LOCALE_STORAGE_KEY,
   getLocalePrefix,
   type Locale,
   useTranslations,
 } from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
-import { SHOW_STYLEFORGE_STUDIO } from "@lib/constant";
+import { SHOW_BUILD_BUTTON, SHOW_STYLEFORGE_STUDIO } from "@lib/constant";
 
 const { locale } = Astro.props as { locale: Locale };
 const t = useTranslations(locale);
@@ -18,6 +19,12 @@ const localeFlags: Record<Locale, string> = {
   es: "🇪🇸",
   fr: "🇫🇷",
   ja: "🇯🇵",
+  ms: "🇲🇾",
+  hi: "🇮🇳",
+  ko: "🇰🇷",
+  nl: "🇳🇱",
+  de: "🇩🇪",
+  "pt-br": "🇧🇷",
 };
 const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 const normalizePath = (path: string) => path.replace(/\/$/, "") || "/";
@@ -43,7 +50,9 @@ const navLinks = [
 ];
 
 const visibleNavLinks = navLinks.filter(
-  (link) => link.key !== "styleforge" || SHOW_STYLEFORGE_STUDIO,
+  (link) =>
+    (link.key !== "styleforge" || SHOW_STYLEFORGE_STUDIO) &&
+    (link.key !== "build" || SHOW_BUILD_BUTTON),
 );
 
 const menuLabels: Record<Locale, { open: string; close: string; title: string }> = {
@@ -51,17 +60,17 @@ const menuLabels: Record<Locale, { open: string; close: string; title: string }>
   es: { open: "Abrir menu", close: "Cerrar menu", title: "Navegacion" },
   fr: { open: "Ouvrir le menu", close: "Fermer le menu", title: "Navigation" },
   ja: { open: "メニューを開く", close: "メニューを閉じる", title: "ナビゲーション" },
+  ms: { open: "Buka menu", close: "Tutup menu", title: "Navigasi" },
+  hi: { open: "मेनू खोलें", close: "मेनू बंद करें", title: "नेविगेशन" },
+  ko: { open: "메뉴 열기", close: "메뉴 닫기", title: "내비게이션" },
+  nl: { open: "Menu openen", close: "Menu sluiten", title: "Navigatie" },
+  de: { open: "Menü öffnen", close: "Menü schließen", title: "Navigation" },
+  "pt-br": { open: "Abrir menu", close: "Fechar menu", title: "Navegação" },
 };
 
 const menuOpenLabel = menuLabels[locale].open;
 const menuCloseLabel = menuLabels[locale].close;
 const menuTitle = menuLabels[locale].title;
-const languageOptionKeys = {
-  en: "lang.option.en",
-  es: "lang.option.es",
-  fr: "lang.option.fr",
-  ja: "lang.option.ja",
-} as const;
 ---
 
 <header class="sticky top-0 z-50 border-b border-white/6 bg-surface-950/80 backdrop-blur-xl">
@@ -96,7 +105,7 @@ const languageOptionKeys = {
         data-current-locale={locale}
       >
         {LOCALES.map((optionLocale) => (
-          <option value={optionLocale}>{`${localeFlags[optionLocale]} ${t(languageOptionKeys[optionLocale])}`}</option>
+          <option value={optionLocale}>{`${localeFlags[optionLocale]} ${LOCALE_LABELS[optionLocale]}`}</option>
         ))}
       </select>
 
@@ -236,7 +245,7 @@ const languageOptionKeys = {
       data-mobile-close
     >
       {LOCALES.map((optionLocale) => (
-        <option value={optionLocale}>{`${localeFlags[optionLocale]} ${t(languageOptionKeys[optionLocale])}`}</option>
+        <option value={optionLocale}>{`${localeFlags[optionLocale]} ${LOCALE_LABELS[optionLocale]}`}</option>
       ))}
     </select>
   </aside>

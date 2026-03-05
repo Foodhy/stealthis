@@ -14,6 +14,7 @@ import {
   getLocalizedPath,
   useTranslations,
 } from "@i18n/index";
+import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 import { SITE_URLS } from "@lib/urls";
 import { findResourcePreview, normalizePreviewPath } from "@lib/resource-preview";
 
@@ -30,18 +31,47 @@ const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
 const prefix = getLocalePrefix(locale);
-const { slug, title, description, category, type, tags, tech, difficulty, targets, preview, labRoute, license, author, createdAt, updatedAt } = resource.data;
+const {
+  slug,
+  title,
+  description,
+  category,
+  type,
+  tags,
+  tech,
+  difficulty,
+  targets,
+  preview,
+  labRoute,
+  license,
+  author,
+  createdAt,
+  updatedAt,
+} = resource.data;
 const authorName = author?.name;
 
 const { Content } = await render(resource);
 
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
-const difficultyKey = `resource.difficulty.${difficulty}` as "resource.difficulty.easy" | "resource.difficulty.med" | "resource.difficulty.hard";
+const difficultyKey = `resource.difficulty.${difficulty}` as
+  | "resource.difficulty.easy"
+  | "resource.difficulty.med"
+  | "resource.difficulty.hard";
 const difficultyLabel = t(difficultyKey);
 const categoryKey = `category.${category}` as
-  | "category.web-animations" | "category.web-pages" | "category.ui-components" | "category.patterns"
-  | "category.components" | "category.pages" | "category.prompts" | "category.skills"
-  | "category.mcp-servers" | "category.architectures" | "category.boilerplates" | "category.remotion";
+  | "category.web-animations"
+  | "category.web-pages"
+  | "category.ui-components"
+  | "category.patterns"
+  | "category.components"
+  | "category.pages"
+  | "category.prompts"
+  | "category.skills"
+  | "category.mcp-servers"
+  | "category.architectures"
+  | "category.boilerplates"
+  | "category.remotion"
+  | "category.database-schemas";
 const categoryLabel = t(categoryKey);
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -53,10 +83,7 @@ const hasTS =
   existsSync(path.join(snippetsDir, "typescript.ts")) ||
   existsSync(path.join(snippetsDir, "typescript.tsx"));
 
-const languageBadges = [
-  ...(hasTS ? ["TS"] : []),
-  ...(hasJS ? ["JS"] : []),
-];
+const languageBadges = [...(hasTS ? ["TS"] : []), ...(hasJS ? ["JS"] : [])];
 
 const TARGET_LABELS: Record<string, string> = {
   html: "HTML",
@@ -69,6 +96,9 @@ const TARGET_LABELS: Record<string, string> = {
   yaml: "YAML",
   json: "JSON",
   python: "Python",
+  sql: "SQL",
+  mermaid: "Mermaid",
+  dbml: "DBML",
 };
 
 const targetLabels = targets.map((target) => TARGET_LABELS[target] ?? target);
@@ -81,6 +111,17 @@ const baseResourcePath = `/r/${slug}`;
 const canonicalPath = getLocalizedPath(baseResourcePath, locale);
 const resourceUrl = `https://stealthis.dev${canonicalPath}`;
 const alternateLinks = getAlternateLinks(baseResourcePath);
+const resourceKeywords = mergeKeywords(BRAND_ALIASES, [
+  BRAND_NAME,
+  title,
+  slug,
+  slug.replaceAll("-", " "),
+  `${title} example`,
+  `${title} code snippet`,
+  category,
+  type,
+  difficulty,
+], tags, tech, targets);
 const structuredData = [
   {
     "@context": "https://schema.org",
@@ -94,16 +135,24 @@ const structuredData = [
     datePublished: new Date(createdAt).toISOString(),
     dateModified: new Date(updatedAt).toISOString(),
     license,
-    keywords: [...new Set([...tags, ...tech])],
+    keywords: resourceKeywords,
     about: { "@type": "Thing", name: category },
     author: {
       "@type": "Organization",
-      name: "StealThis.dev",
+      name: BRAND_NAME,
+      alternateName: BRAND_ALIASES,
+      url: "https://stealthis.dev/",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: BRAND_NAME,
+      alternateName: BRAND_ALIASES,
       url: "https://stealthis.dev/",
     },
     isPartOf: {
       "@type": "WebSite",
-      name: "StealThis.dev",
+      name: BRAND_NAME,
+      alternateName: BRAND_ALIASES,
       url: "https://stealthis.dev/",
     },
   },
@@ -140,6 +189,7 @@ const structuredData = [
   image={imagePath}
   imageAlt={`${title} preview card`}
   canonicalPath={canonicalPath}
+  keywords={resourceKeywords}
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >

@@ -9,7 +9,8 @@ export type ResourceCategoryPhase2 =
   | "mcp-servers"
   | "architectures"
   | "boilerplates"
-  | "remotion";
+  | "remotion"
+  | "database-schemas";
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 
@@ -22,7 +23,8 @@ export type ResourceType =
   | "skill"
   | "mcp-server"
   | "architecture"
-  | "boilerplate";
+  | "boilerplate"
+  | "schema";
 
 export type ResourceDifficulty = "easy" | "med" | "hard";
 
@@ -37,7 +39,10 @@ export type ResourceTarget =
   | "python"
   | "markdown"
   | "yaml"
-  | "json";
+  | "json"
+  | "sql"
+  | "mermaid"
+  | "dbml";
 
 export type ResourceCollection = "saas" | "motion" | "hero" | "cards" | "dashboard" | "remotion";
 

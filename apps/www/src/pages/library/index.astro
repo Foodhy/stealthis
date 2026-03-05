@@ -4,13 +4,9 @@ import ResourceCard from "@components/ResourceCard.astro";
 import FilterBar from "@components/FilterBar.astro";
 import CollectionExplorer from "@components/CollectionExplorer.astro";
 import { getCollection } from "astro:content";
-import {
-  getAlternateLinks,
-  getLocaleFromUrl,
-  getLocalePrefix,
-  useTranslations,
-} from "@i18n/index";
+import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
 import { SHOW_SORT_BAR } from "@lib/constant";
+import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -55,6 +51,12 @@ const CATEGORY_GROUPS = [
     description: "Prompts, skills, architectures, and server configs",
     categories: ["prompts", "skills", "mcp-servers", "architectures", "boilerplates"],
   },
+  {
+    id: "data",
+    label: "Data & SQL",
+    description: "Relational schemas with SQL, ERD diagrams, seed data, and query examples",
+    categories: ["database-schemas"],
+  },
 ] as const;
 
 type CategoryKey =
@@ -69,12 +71,24 @@ type CategoryKey =
   | "category.mcp-servers"
   | "category.architectures"
   | "category.boilerplates"
-  | "category.remotion";
+  | "category.remotion"
+  | "category.database-schemas";
 
 const libraryDescription =
-  "Search 200+ open-source web resources by category, tech, difficulty, author, and collections. Copy snippets or open demos in Lab.";
+  "Search open-source resources by category, tech, difficulty, author, and collections. Copy snippets, inspect SQL schemas, or open demos in Lab.";
 const canonicalPath = `${prefix}/library/`;
 const alternateLinks = getAlternateLinks("/library/");
+const libraryKeywords = mergeKeywords(BRAND_ALIASES, [
+  BRAND_NAME,
+  "stealthis library",
+  "steal this library",
+  "resource library",
+  "component library",
+  "animation library",
+  "frontend snippets",
+  "open source components",
+  "SQL schema examples",
+]);
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
@@ -82,7 +96,14 @@ const structuredData = {
   url: `https://stealthis.dev${canonicalPath}`,
   inLanguage: locale,
   description: libraryDescription,
+  keywords: libraryKeywords,
   numberOfItems: allResources.length,
+  isPartOf: {
+    "@type": "WebSite",
+    name: BRAND_NAME,
+    alternateName: BRAND_ALIASES,
+    url: "https://stealthis.dev/",
+  },
 };
 ---
 
@@ -91,6 +112,7 @@ const structuredData = {
   description={libraryDescription}
   image="/og/library.webp"
   canonicalPath={canonicalPath}
+  keywords={libraryKeywords}
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >

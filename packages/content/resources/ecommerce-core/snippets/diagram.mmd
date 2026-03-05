@@ -1,0 +1,50 @@
+erDiagram
+  users ||--o{ orders : places
+  orders ||--|{ order_items : contains
+  products ||--o{ order_items : included_in
+  products ||--|| inventories : tracks_stock
+  orders ||--|| payments : paid_by
+
+  users {
+    bigint id PK
+    text email
+    text full_name
+    timestamptz created_at
+  }
+
+  products {
+    bigint id PK
+    text sku
+    text name
+    int price_cents
+    bool is_active
+  }
+
+  inventories {
+    bigint product_id PK,FK
+    int quantity
+  }
+
+  orders {
+    bigint id PK
+    bigint user_id FK
+    text status
+    int total_cents
+  }
+
+  order_items {
+    bigint id PK
+    bigint order_id FK
+    bigint product_id FK
+    int quantity
+    int unit_price_cents
+  }
+
+  payments {
+    bigint id PK
+    bigint order_id FK
+    text provider
+    text provider_ref
+    int amount_cents
+    text status
+  }

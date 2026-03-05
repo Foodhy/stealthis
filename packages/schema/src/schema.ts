@@ -15,6 +15,7 @@ export const ResourceCategorySchema = z.enum([
   "architectures",
   "boilerplates",
   "remotion",
+  "database-schemas",
 ]);
 
 export const ResourceTypeSchema = z.enum([
@@ -29,6 +30,7 @@ export const ResourceTypeSchema = z.enum([
   "mcp-server",
   "architecture",
   "boilerplate",
+  "schema",
 ]);
 
 export const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
@@ -47,6 +49,9 @@ export const ResourceTargetSchema = z.enum([
   "markdown",
   "yaml",
   "json",
+  "sql",
+  "mermaid",
+  "dbml",
 ]);
 
 export const ResourceCollectionSchema = z.enum([

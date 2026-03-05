@@ -15,6 +15,7 @@ const ResourceCategorySchema = z.enum([
   "architectures",
   "boilerplates",
   "remotion",
+  "database-schemas",
 ]);
 
 const ResourceTypeSchema = z.enum([
@@ -27,6 +28,7 @@ const ResourceTypeSchema = z.enum([
   "mcp-server",
   "architecture",
   "boilerplate",
+  "schema",
 ]);
 
 const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
@@ -43,6 +45,9 @@ const ResourceTargetSchema = z.enum([
   "markdown",
   "yaml",
   "json",
+  "sql",
+  "mermaid",
+  "dbml",
 ]);
 
 const ResourceCollectionSchema = z.enum([

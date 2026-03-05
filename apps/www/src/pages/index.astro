@@ -2,30 +2,40 @@
 import Base from "@layouts/Base.astro";
 import HeroCodeSpaceBackground from "@components/HeroCodeSpaceBackground.astro";
 import { getCollection } from "astro:content";
-import {
-  getAlternateLinks,
-  getLocaleFromUrl,
-  getLocalePrefix,
-  useTranslations,
-} from "@i18n/index";
+import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
+import { BRAND_ALIASES, BRAND_NAME, BRAND_SHORT_NAME, mergeKeywords } from "@lib/seo";
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 const prefix = getLocalePrefix(locale);
 
 const allResources = await getCollection("resources");
-const labExamples = allResources.filter((resource: any) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0);
-const easyMarquee = labExamples.filter((resource: any) => resource.data.difficulty === "easy").slice(0, 12);
-const medMarquee = labExamples.filter((resource: any) => resource.data.difficulty === "med").slice(0, 12);
+const labExamples = allResources.filter(
+  (resource: any) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0
+);
+const easyMarquee = labExamples
+  .filter((resource: any) => resource.data.difficulty === "easy")
+  .slice(0, 12);
+const medMarquee = labExamples
+  .filter((resource: any) => resource.data.difficulty === "med")
+  .slice(0, 12);
 const hardPriorityCategories = new Set(["web-pages", "pages"]);
 const hardOnlyExamples = labExamples.filter((resource: any) => resource.data.difficulty === "hard");
-const hardPriorityExamples = hardOnlyExamples.filter((resource: any) => hardPriorityCategories.has(resource.data.category));
-const hardOtherExamples = hardOnlyExamples.filter((resource: any) => !hardPriorityCategories.has(resource.data.category));
-const hardFallbackPages = labExamples.filter(
-  (resource: any) => resource.data.difficulty === "med" && hardPriorityCategories.has(resource.data.category)
+const hardPriorityExamples = hardOnlyExamples.filter((resource: any) =>
+  hardPriorityCategories.has(resource.data.category)
 );
-const hardMarquee = [...hardPriorityExamples, ...hardOtherExamples, ...hardFallbackPages].slice(0, 20);
+const hardOtherExamples = hardOnlyExamples.filter(
+  (resource: any) => !hardPriorityCategories.has(resource.data.category)
+);
+const hardFallbackPages = labExamples.filter(
+  (resource: any) =>
+    resource.data.difficulty === "med" && hardPriorityCategories.has(resource.data.category)
+);
+const hardMarquee = [...hardPriorityExamples, ...hardOtherExamples, ...hardFallbackPages].slice(
+  0,
+  20
+);
 const categoryCount = new Set(allResources.map((resource: any) => resource.data.category)).size;
 
 const rotatingWords = (t("hero.rotatingWords") as string).split(",").map((w) => w.trim());
@@ -80,6 +90,13 @@ const categoryCards = [
     comingSoon: false,
   },
   {
+    slug: "database-schemas",
+    icon: "⌬",
+    label: t("category.database-schemas"),
+    desc: t("home.categories.desc.databaseSchemas"),
+    comingSoon: false,
+  },
+  {
     slug: "prompts",
     icon: "✺",
     label: t("category.prompts"),
@@ -115,7 +132,9 @@ const categoryCards = [
     comingSoon: true,
   },
 ] as const;
-const scramblePhrases = (t("home.scramble.phrases") as string).split("||").map((phrase) => phrase.trim());
+const scramblePhrases = (t("home.scramble.phrases") as string)
+  .split("||")
+  .map((phrase) => phrase.trim());
 const scrambleStaticLines = [
   t("home.scramble.static1"),
   t("home.scramble.static2"),
@@ -125,28 +144,58 @@ const scrambleStaticLines = [
 // Hue base por palabra para gradiente (grados) — estilo lgc-37-gradient-text-scroll
 const wordHues = [0, 45, 120, 200, 280, 320];
 const homeDescriptionByLocale = {
-  en: "Steal production-ready web animations, pages, components, prompts, and MCP setups. Copy the code, launch demos in Lab, and ship faster.",
-  es: "Copia animaciones, páginas, componentes, prompts y configuraciones MCP listas para producción. Abre demos en Lab y publica más rápido.",
-  fr: "Copiez des animations, pages, composants, prompts et configurations MCP prêts pour la production. Lancez les démos dans Lab et livrez plus vite.",
-  ja: "本番で使えるアニメーション、ページ、コンポーネント、プロンプト、MCP設定をそのままコピー。Labでデモを試して素早く実装できます。",
-} as const;
-const homeDescription = homeDescriptionByLocale[locale];
+  en: "Steal production-ready web animations, pages, components, and database schemas. Copy the code, open Lab demos, and ship faster.",
+  es: "Copia animaciones, páginas, componentes y esquemas de base de datos listos para producción. Abre demos en Lab y publica más rápido.",
+  fr: "Copiez des animations, pages, composants et schémas de base de données prêts pour la production. Lancez des démos dans Lab et livrez plus vite.",
+  ja: "本番で使えるアニメーション、ページ、コンポーネント、データベーススキーマをそのままコピー。Labでデモを試して素早く実装できます。",
+  ms: "Salin animasi web, halaman, komponen, dan skema pangkalan data sedia produksi. Salin kod, buka demo di Lab, dan lancarkan lebih cepat.",
+  hi: "प्रोडक्शन-रेडी वेब एनीमेशन, पेज, कंपोनेंट और डेटाबेस स्कीमा कॉपी करें। कोड कॉपी करें, Lab डेमो खोलें और तेज़ी से शिप करें।",
+  ko: "프로덕션 준비가 된 웹 애니메이션, 페이지, 컴포넌트, 데이터베이스 스키마를 가져가세요. 코드를 복사하고 Lab 데모를 열어 더 빠르게 출시하세요.",
+  nl: "Kopieer production-ready webanimaties, pagina's, componenten en databaseschema's. Kopieer de code, open demo's in Lab en lever sneller op.",
+  de: "Kopiere produktionsreife Web-Animationen, Seiten, Komponenten und Datenbankschemata. Code kopieren, Lab-Demos öffnen und schneller liefern.",
+  "pt-br":
+    "Copie animações web, páginas, componentes e esquemas de banco de dados prontos para produção. Copie o código, abra demos no Lab e entregue mais rápido.",
+} as const satisfies Partial<Record<typeof locale, string>>;
+const homeDescription = homeDescriptionByLocale[locale] ?? homeDescriptionByLocale.en;
 const alternateLinks = getAlternateLinks("/");
 const canonicalPath = prefix ? `${prefix}/` : "/";
+const homeKeywords = mergeKeywords(BRAND_ALIASES, [
+  BRAND_NAME,
+  BRAND_SHORT_NAME,
+  "steal this code",
+  "steal this components",
+  "copy web components",
+  "copy web animations",
+  "open source code snippets",
+  "production-ready frontend references",
+  "website sections",
+  "Lab demos",
+  "MCP resources",
+]);
 const structuredData = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "StealThis.dev",
+    name: BRAND_NAME,
+    alternateName: BRAND_ALIASES,
     url: `https://stealthis.dev${canonicalPath}`,
     inLanguage: locale,
     description: homeDescription,
+    keywords: homeKeywords,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://stealthis.dev/library/?search={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
   },
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "StealThis.dev",
+    name: BRAND_NAME,
+    alternateName: BRAND_ALIASES,
     url: "https://stealthis.dev/",
+    description: homeDescription,
+    keywords: homeKeywords,
     sameAs: ["https://github.com/Foodhy/stealthis"],
   },
 ];
@@ -157,6 +206,7 @@ const structuredData = [
   description={homeDescription}
   image="/og/home.webp"
   canonicalPath={canonicalPath}
+  keywords={homeKeywords}
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >

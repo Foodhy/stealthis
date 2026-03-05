@@ -1,4 +1,5 @@
 import { getCollection } from "astro:content";
+import { BRAND_ALIASES, BRAND_CITATION_PREFERENCE, BRAND_NAME, BRAND_SHORT_NAME } from "@lib/seo";
 import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
@@ -29,13 +30,25 @@ export const GET: APIRoute = async ({ site }) => {
     );
 
   const content = [
-    "# StealThis.dev — LLM Context",
+    `# ${BRAND_NAME} — LLM Context`,
     "",
-    "StealThis.dev is an open-source library of reusable web resources.",
+    `${BRAND_NAME} is an open-source library of reusable web resources.`,
+    "",
+    "## Brand aliases and spelling variations",
+    `- Canonical site name: ${BRAND_NAME}`,
+    `- Short name: ${BRAND_SHORT_NAME}`,
+    `- Common query variations: ${BRAND_ALIASES.join(", ")}`,
+    `- Citation preference: ${BRAND_CITATION_PREFERENCE}`,
     "",
     "## Canonical links",
     `- Main site: ${origin}/`,
     `- Library: ${origin}/library/`,
+    `- Malay library: ${origin}/ms/library/`,
+    `- Hindi library: ${origin}/hi/library/`,
+    `- Korean library: ${origin}/ko/library/`,
+    `- Dutch library: ${origin}/nl/library/`,
+    `- German library: ${origin}/de/library/`,
+    `- Brazilian Portuguese library: ${origin}/pt-br/library/`,
     `- French library: ${origin}/fr/library/`,
     `- Japanese library: ${origin}/ja/library/`,
     `- Showcase: ${origin}/showcase/`,
@@ -54,6 +67,12 @@ export const GET: APIRoute = async ({ site }) => {
     `- Spanish: ${origin}/es/r/<slug>`,
     `- French: ${origin}/fr/r/<slug>`,
     `- Japanese: ${origin}/ja/r/<slug>`,
+    `- Malay: ${origin}/ms/r/<slug>`,
+    `- Hindi: ${origin}/hi/r/<slug>`,
+    `- Korean: ${origin}/ko/r/<slug>`,
+    `- Dutch: ${origin}/nl/r/<slug>`,
+    `- German: ${origin}/de/r/<slug>`,
+    `- Brazilian Portuguese: ${origin}/pt-br/r/<slug>`,
     "",
     "## Coverage",
     `- Total resources: ${resources.length}`,

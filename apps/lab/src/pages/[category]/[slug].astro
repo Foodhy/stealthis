@@ -1,5 +1,5 @@
 ---
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
@@ -24,39 +24,49 @@ export async function getStaticPaths() {
 
     const [category, slug] = parts;
 
-    // Read snippets
     const snippetsDir = path.join(CONTENT_DIR, `resources/${data.slug}/snippets`);
     const htmlPath = path.join(snippetsDir, "html.html");
     const cssPath = path.join(snippetsDir, "style.css");
     const jsPath = path.join(snippetsDir, "script.js");
+    const schemaSqlPath = path.join(snippetsDir, "schema.sql");
+    const seedSqlPath = path.join(snippetsDir, "seed.sql");
+    const queriesSqlPath = path.join(snippetsDir, "queries.sql");
+    const diagramMmdPath = path.join(snippetsDir, "diagram.mmd");
+    const schemaDbmlPath = path.join(snippetsDir, "schema.dbml");
 
     const html = existsSync(htmlPath) ? readFileSync(htmlPath, "utf-8") : null;
     const css = existsSync(cssPath) ? readFileSync(cssPath, "utf-8") : null;
     const js = existsSync(jsPath) ? readFileSync(jsPath, "utf-8") : null;
+    const schemaSql = existsSync(schemaSqlPath) ? readFileSync(schemaSqlPath, "utf-8") : null;
+    const seedSql = existsSync(seedSqlPath) ? readFileSync(seedSqlPath, "utf-8") : null;
+    const queriesSql = existsSync(queriesSqlPath) ? readFileSync(queriesSqlPath, "utf-8") : null;
+    const diagramMmd = existsSync(diagramMmdPath) ? readFileSync(diagramMmdPath, "utf-8") : null;
+    const schemaDbml = existsSync(schemaDbmlPath) ? readFileSync(schemaDbmlPath, "utf-8") : null;
 
     paths.push({
       params: { category, slug },
-      props: { meta: data, html, css, js },
+      props: { meta: data, html, css, js, schemaSql, seedSql, queriesSql, diagramMmd, schemaDbml },
     });
   }
 
   return paths;
 }
 
-const { meta, html, css, js } = Astro.props;
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro template markup.
+const { meta, html, css, js, schemaSql, seedSql, queriesSql, diagramMmd, schemaDbml } = Astro.props;
 
-// Build the srcdoc — inline CSS and JS into the HTML
+const isDatabaseSchema = meta.category === "database-schemas";
+
 let srcdoc = html ?? "";
 
-if (css && srcdoc) {
+if (!isDatabaseSchema && css && srcdoc) {
   srcdoc = srcdoc.replace(
     /<link[^>]*href=["'](?:\.\/)?style\.css["'][^>]*>/i,
     `<style>${css}</style>`
   );
 }
 
-if (js && srcdoc) {
-  // Preserve module semantics for demos that rely on ESM imports.
+if (!isDatabaseSchema && js && srcdoc) {
   srcdoc = srcdoc.replace(
     /<script([^>]*)src=["'](?:\.\/)?script\.js["']([^>]*)><\/script>/i,
     (_match, before, after) => {
@@ -68,12 +78,17 @@ if (js && srcdoc) {
 }
 
 const wwwUrl = `${SITE_URLS.www}/r/${meta.slug}`;
-const description = meta.description ?? "Runnable lab demo from StealThis.dev resources.";
-const socialImageURL = new URL("/og/lab.webp", Astro.site ?? "https://lab.stealthis.dev").toString();
+const description = isDatabaseSchema
+  ? (meta.description ?? "Relational schema viewer with SQL and ERD preview.")
+  : (meta.description ?? "Runnable lab demo from StealThis.dev resources.");
+const socialImageURL = new URL(
+  "/og/lab.webp",
+  Astro.site ?? "https://lab.stealthis.dev"
+).toString();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class:list={[isDatabaseSchema && "db-mode"]}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -95,55 +110,383 @@ const socialImageURL = new URL("/og/lab.webp", Astro.site ?? "https://lab.stealt
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #0f172a; }
-    .lab-overlay {
-      position: fixed; bottom: 1rem; left: 1rem; z-index: 100;
-      display: flex; align-items: center; gap: 0.5rem;
-      opacity: 0.3; transition: opacity 0.2s ease;
+
+    html.db-mode,
+    html.db-mode body {
+      overflow: auto;
+      height: auto;
+      min-height: 100%;
+      color: #e2e8f0;
+      font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(34, 211, 238, 0.18), transparent 50%),
+        radial-gradient(circle at 86% 12%, rgba(56, 189, 248, 0.15), transparent 45%),
+        #020617;
     }
+
+    .lab-overlay {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.3;
+      transition: opacity 0.2s ease;
+    }
+
     .lab-overlay:hover { opacity: 1; }
+
     .lab-btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-size: 0.75rem; font-weight: 600; font-family: system-ui, sans-serif;
-      padding: 0.5rem 0.875rem; border-radius: 0.625rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: system-ui, sans-serif;
+      padding: 0.5rem 0.875rem;
+      border-radius: 0.625rem;
       border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(15,23,42,0.85); backdrop-filter: blur(12px);
-      color: #94a3b8; cursor: pointer; text-decoration: none;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(12px);
+      color: #94a3b8;
+      cursor: pointer;
+      text-decoration: none;
       transition: color 0.2s ease, background 0.2s ease;
     }
-    .lab-btn:hover { color: #f1f5f9; background: rgba(30,41,59,0.95); }
-    iframe { width: 100vw; height: 100vh; border: none; display: block; }
+
+    .lab-btn:hover {
+      color: #f1f5f9;
+      background: rgba(30,41,59,0.95);
+    }
+
+    .demo-frame {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      display: block;
+    }
+
+    .db-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.25rem;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 1rem;
+    }
+
+    .db-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 0.9rem;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+    }
+
+    .db-toolbar p {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .db-toolbar small {
+      display: block;
+      margin-top: 0.125rem;
+      color: #94a3b8;
+      font-size: 0.72rem;
+    }
+
+    .db-toolbar-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .db-toolbar-actions a {
+      text-decoration: none;
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid rgba(148, 163, 184, 0.26);
+      border-radius: 0.65rem;
+      padding: 0.45rem 0.75rem;
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .db-main {
+      display: grid;
+      grid-template-columns: minmax(360px, 1fr) minmax(380px, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .db-panel {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 0.95rem;
+      background: rgba(15, 23, 42, 0.66);
+      overflow: hidden;
+      min-height: 32rem;
+    }
+
+    .db-panel h2 {
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      padding: 0.8rem 0.95rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(2, 6, 23, 0.5);
+    }
+
+    .db-diagram-wrap {
+      padding: 1rem;
+      overflow: auto;
+      min-height: 30rem;
+    }
+
+    .db-diagram-wrap .mermaid {
+      min-width: 28rem;
+    }
+
+    .db-diagram-wrap pre,
+    .db-sql-group pre {
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.77rem;
+      line-height: 1.45;
+      color: #dbeafe;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 0.7rem;
+      background: rgba(2, 6, 23, 0.75);
+      padding: 0.8rem;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    .db-sql-wrap {
+      display: grid;
+      gap: 0.7rem;
+      padding: 0.75rem;
+    }
+
+    .db-sql-group {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 0.75rem;
+      background: rgba(2, 6, 23, 0.55);
+      overflow: hidden;
+    }
+
+    .db-sql-group summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(15, 23, 42, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .db-empty {
+      padding: 1rem;
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    .db-copy-btn {
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 0.5rem;
+      background: rgba(15, 23, 42, 0.75);
+      color: #cbd5e1;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .db-copy-btn:hover {
+      background: rgba(8, 47, 73, 0.9);
+      border-color: rgba(34, 211, 238, 0.5);
+      color: #ecfeff;
+    }
+
+    @media (max-width: 1040px) {
+      .db-main {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Overlay controls -->
-  <div class="lab-overlay">
-    <span style="color:#475569;font-size:0.7rem;font-family:system-ui">
-      {meta.title}
-    </span>
-    <a href={wwwUrl} target="_blank" rel="noopener" class="lab-btn">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      View Code
-    </a>
-    <a href="/" class="lab-btn">
-      ← Lab
-    </a>
-  </div>
+  {isDatabaseSchema ? (
+    <div class="db-shell">
+      <header class="db-toolbar">
+        <div>
+          <p>{meta.title}</p>
+          <small>{meta.category} · SQL + ERD viewer</small>
+        </div>
+        <div class="db-toolbar-actions">
+          <a href={wwwUrl} target="_blank" rel="noopener">View Resource</a>
+          <a href="/">Back to Lab</a>
+        </div>
+      </header>
 
-  <!-- Demo in sandboxed iframe -->
-  {srcdoc ? (
-    <iframe
-      srcdoc={srcdoc}
-      title={`${meta.title} demo`}
-      sandbox="allow-scripts allow-same-origin allow-forms"
-      loading="lazy"
-    />
-  ) : (
-    <div style="display:grid;place-items:center;height:100vh;color:#475569;font-family:system-ui">
-      No HTML demo available for this resource.
+      <main class="db-main">
+        <section class="db-panel">
+          <h2>ERD Diagram</h2>
+          <div class="db-diagram-wrap">
+            {diagramMmd ? (
+              <div class="mermaid" id="lab-dbviz-mermaid">{diagramMmd}</div>
+            ) : schemaDbml ? (
+              <>
+                <p class="db-empty">No Mermaid diagram found. Showing DBML source.</p>
+                <pre>{schemaDbml}</pre>
+              </>
+            ) : (
+              <p class="db-empty">No diagram snippet found. Add <code>diagram.mmd</code> or <code>schema.dbml</code>.</p>
+            )}
+          </div>
+        </section>
+
+        <section class="db-panel">
+          <h2>SQL Snippets</h2>
+          <div class="db-sql-wrap">
+            <details class="db-sql-group" open>
+              <summary>
+                <span>schema.sql</span>
+                {schemaSql ? (
+                  <button type="button" class="db-copy-btn" data-copy-target="db-schema-sql">Copy</button>
+                ) : null}
+              </summary>
+              {schemaSql ? <pre id="db-schema-sql">{schemaSql}</pre> : <p class="db-empty">Missing schema.sql</p>}
+            </details>
+
+            <details class="db-sql-group" open>
+              <summary>
+                <span>seed.sql</span>
+                {seedSql ? (
+                  <button type="button" class="db-copy-btn" data-copy-target="db-seed-sql">Copy</button>
+                ) : null}
+              </summary>
+              {seedSql ? <pre id="db-seed-sql">{seedSql}</pre> : <p class="db-empty">Missing seed.sql</p>}
+            </details>
+
+            <details class="db-sql-group" open>
+              <summary>
+                <span>queries.sql</span>
+                {queriesSql ? (
+                  <button type="button" class="db-copy-btn" data-copy-target="db-queries-sql">Copy</button>
+                ) : null}
+              </summary>
+              {queriesSql ? <pre id="db-queries-sql">{queriesSql}</pre> : <p class="db-empty">Missing queries.sql</p>}
+            </details>
+          </div>
+        </section>
+      </main>
     </div>
+  ) : (
+    <>
+      <div class="lab-overlay">
+        <span style="color:#475569;font-size:0.7rem;font-family:system-ui">
+          {meta.title}
+        </span>
+        <a href={wwwUrl} target="_blank" rel="noopener" class="lab-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          View Code
+        </a>
+        <a href="/" class="lab-btn">
+          ← Lab
+        </a>
+      </div>
+
+      {srcdoc ? (
+        <iframe
+          class="demo-frame"
+          srcdoc={srcdoc}
+          title={`${meta.title} demo`}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          loading="lazy"
+        />
+      ) : (
+        <div style="display:grid;place-items:center;height:100vh;color:#475569;font-family:system-ui">
+          No HTML demo available for this resource.
+        </div>
+      )}
+    </>
+  )}
+
+  {isDatabaseSchema && diagramMmd && (
+    <script type="module" is:inline>
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+      mermaid.initialize({
+        startOnLoad: true,
+        securityLevel: "loose",
+        theme: "dark",
+      });
+
+      mermaid.run({ querySelector: "#lab-dbviz-mermaid" });
+    </script>
+  )}
+
+  {isDatabaseSchema && (
+    <script is:inline>
+      const copyButtons = document.querySelectorAll(".db-copy-btn");
+
+      const copyFromTarget = async (button) => {
+        const targetId = button.getAttribute("data-copy-target");
+        if (!targetId) return;
+
+        const source = document.getElementById(targetId);
+        if (!source) return;
+
+        const content = source.textContent ?? "";
+        if (!content.trim()) return;
+
+        try {
+          await navigator.clipboard.writeText(content);
+        } catch {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(source);
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+          document.execCommand("copy");
+          selection?.removeAllRanges();
+        }
+
+        const original = button.textContent;
+        button.textContent = "Copied";
+        window.setTimeout(() => {
+          button.textContent = original;
+        }, 1600);
+      };
+
+      for (const button of copyButtons) {
+        button.addEventListener("click", async (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          await copyFromTarget(button);
+        });
+      }
+    </script>
   )}
 </body>
 </html>

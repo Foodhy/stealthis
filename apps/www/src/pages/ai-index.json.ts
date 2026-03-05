@@ -1,6 +1,13 @@
 import { getCollection } from "astro:content";
-import type { APIRoute } from "astro";
 import { LOCALES, getLocalizedPath } from "@i18n/index";
+import {
+  BRAND_ALIASES,
+  BRAND_CITATION_PREFERENCE,
+  BRAND_DISCOVERY_TERMS,
+  BRAND_NAME,
+  BRAND_SHORT_NAME,
+} from "@lib/seo";
+import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
 const LAB_SITE = "https://lab.stealthis.dev";
@@ -45,6 +52,13 @@ export const GET: APIRoute = async ({ site }) => {
 
   const payload = {
     generatedAt: new Date().toISOString(),
+    brand: {
+      name: BRAND_NAME,
+      shortName: BRAND_SHORT_NAME,
+      aliases: BRAND_ALIASES,
+      discoveryTerms: BRAND_DISCOVERY_TERMS,
+      citationPreference: BRAND_CITATION_PREFERENCE,
+    },
     count: entries.length,
     urls: {
       home: `${origin}/`,
@@ -53,6 +67,12 @@ export const GET: APIRoute = async ({ site }) => {
       libraryEs: `${origin}/es/library/`,
       libraryFr: `${origin}/fr/library/`,
       libraryJa: `${origin}/ja/library/`,
+      libraryMs: `${origin}/ms/library/`,
+      libraryHi: `${origin}/hi/library/`,
+      libraryKo: `${origin}/ko/library/`,
+      libraryNl: `${origin}/nl/library/`,
+      libraryDe: `${origin}/de/library/`,
+      libraryPtBr: `${origin}/pt-br/library/`,
       llms: `${origin}/llms.txt`,
       llmsFull: `${origin}/llms-full.txt`,
       libraryIndex: `${origin}/library-index.json`,

@@ -1,0 +1,97 @@
+---
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { loadResources } from "@stealthis/schema";
+// biome-ignore lint/correctness/noUnusedImports: Used in Astro component markup.
+import DbVizStudio, { type DbVizExample, type DbVizRuntimeConfig } from "../components/DbVizStudio";
+import "../styles/global.css";
+
+const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
+
+function readDbSnippet(slug: string, fileName: string): string {
+  const snippetPath = path.join(CONTENT_DIR, "resources", slug, "snippets", fileName);
+  return existsSync(snippetPath) ? readFileSync(snippetPath, "utf-8") : "";
+}
+
+const resources = await loadResources(CONTENT_DIR);
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro component props.
+const dbExamples: DbVizExample[] = resources
+  .filter((resource) => resource.category === "database-schemas")
+  .map((resource) => ({
+    slug: resource.slug,
+    title: resource.title,
+    description: resource.description,
+    schemaSql: readDbSnippet(resource.slug, "schema.sql"),
+    seedSql: readDbSnippet(resource.slug, "seed.sql"),
+    queriesSql: readDbSnippet(resource.slug, "queries.sql"),
+    diagramMmd: readDbSnippet(resource.slug, "diagram.mmd"),
+    migrationsSql: readDbSnippet(resource.slug, "migrations.sql"),
+  }))
+  .sort((a, b) => a.title.localeCompare(b.title, "en"));
+
+const runtimeProvider =
+  process.env.DBVIZ_SCHEMA_PROVIDER?.trim().toLowerCase() === "supabase" ? "supabase" : "local";
+const runtimeLocalEngine =
+  process.env.DBVIZ_LOCAL_ENGINE?.trim().toLowerCase() === "pglite" ? "pglite" : "docker";
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro component props.
+const runtimeConfig: DbVizRuntimeConfig = {
+  provider: runtimeProvider,
+  localEngine: runtimeLocalEngine,
+  supabaseConfigured: Boolean(process.env.DBVIZ_SUPABASE_DB_URL?.trim()),
+  supabaseProjectUrl: process.env.DBVIZ_SUPABASE_PROJECT_URL?.trim() ?? "",
+};
+
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro template href.
+const homeUrl = import.meta.env.DEV ? "http://localhost:4321" : "https://stealthis.dev";
+const description =
+  "DBViz para diseñar esquemas relacionales, ejecutar SQL y visualizar conexiones.";
+const canonicalURL = new URL("/", Astro.site ?? "https://dbviz.stealthis.dev").toString();
+
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro JSON-LD script.
+const structuredData = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "StealThis DBViz",
+  description,
+  url: canonicalURL,
+  applicationCategory: "DeveloperApplication",
+});
+---
+
+<!doctype html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <meta name="theme-color" content="#020617" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href={canonicalURL} />
+  <meta property="og:title" content="DBViz — StealThis.dev" />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:image" content="https://stealthis.dev/social-card.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="DBViz — StealThis.dev" />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content="https://stealthis.dev/social-card.webp" />
+  <script type="application/ld+json" set:html={structuredData} />
+  <title>DBViz — StealThis.dev</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="min-h-screen bg-slate-950 px-4 py-6 text-slate-100 md:px-6">
+  <header class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <a href={homeUrl} class="text-xs text-slate-400 transition-colors hover:text-slate-200">StealThis.dev</a>
+      <span class="text-slate-700">/</span>
+      <p class="text-sm font-semibold text-slate-100">DBViz</p>
+    </div>
+    <span class="rounded-full border border-cyan-400/40 bg-cyan-500/10 px-2 py-1 text-[11px] text-cyan-200">
+      Commands first, chat later
+    </span>
+  </header>
+
+  <DbVizStudio client:only="react" examples={dbExamples} runtimeConfig={runtimeConfig} />
+</body>
+</html>
