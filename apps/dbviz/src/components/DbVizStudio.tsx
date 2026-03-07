@@ -1,5 +1,6 @@
 import { PGlite, type Results } from "@electric-sql/pglite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import SchemaDiagramCanvas from "./SchemaDiagramCanvas";
 
 export type DbVizExample = {
   slug: string;
@@ -150,7 +151,6 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
 
   const dbRef = useRef<PGlite | null>(null);
   const bootstrapTokenRef = useRef(0);
-  const diagramRef = useRef<HTMLDivElement>(null);
 
   const [selectedSlug, setSelectedSlug] = useState(availableExamples[0].slug);
   const selectedExample = useMemo(
@@ -179,7 +179,6 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
   ]);
   const [lastResults, setLastResults] = useState<QueryResultEntry[]>([]);
 
-  const [diagramError, setDiagramError] = useState<string | null>(null);
   const [engineStatus, setEngineStatus] = useState<EngineStatus>("idle");
   const [engineMessage, setEngineMessage] = useState("Motor SQL no inicializado.");
   const [isRunningCommand, setIsRunningCommand] = useState(false);
@@ -482,46 +481,7 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
     };
   }, [closeDatabase]);
 
-  useEffect(() => {
-    if (previewTab !== "diagram") return;
-    const host = diagramRef.current;
-    if (!host) return;
 
-    const source = diagramMmd.trim();
-    if (!source) {
-      host.innerHTML = "";
-      setDiagramError("No hay `diagram.mmd` para renderizar.");
-      return;
-    }
-
-    let cancelled = false;
-    void (async () => {
-      try {
-        const mermaidModule = await import("mermaid");
-        const mermaid = mermaidModule.default;
-        mermaid.initialize({
-          startOnLoad: false,
-          securityLevel: "loose",
-          theme: "dark",
-          suppressErrorRendering: true,
-        });
-
-        const graphId = `dbviz-mermaid-${Date.now()}`;
-        const { svg } = await mermaid.render(graphId, source);
-        if (cancelled) return;
-        host.innerHTML = svg;
-        setDiagramError(null);
-      } catch (error) {
-        if (cancelled) return;
-        host.innerHTML = "";
-        setDiagramError(toErrorMessage(error));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [diagramMmd, previewTab]);
 
   return (
     <main className="grid min-h-[calc(100vh-8rem)] gap-4 lg:grid-cols-[380px_1fr]">
@@ -785,17 +745,9 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
           <div className="space-y-3">
             <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Mermaid Render
+                Schema Diagram
               </p>
-              <div
-                ref={diagramRef}
-                className="min-h-[340px] overflow-auto rounded-lg border border-white/10 bg-slate-950 p-3"
-              />
-              {diagramError ? (
-                <div className="mt-2 rounded-lg border border-amber-400/30 bg-amber-500/10 p-2 text-xs text-amber-100">
-                  {diagramError}
-                </div>
-              ) : null}
+              <SchemaDiagramCanvas diagramMmd={diagramMmd} />
             </div>
             <details className="rounded-xl border border-white/10 bg-slate-900/60 p-3">
               <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-slate-500">

@@ -58,7 +58,7 @@ function addLog(level, msg) {
   applyVisibility(line);
   body.appendChild(line);
   updateCount();
-  if (autoScrollChk.checked) body.scrollTop = body.scrollHeight;
+  if (autoScrollChk.checked) requestAnimationFrame(() => { body.scrollTop = body.scrollHeight; });
 }
 
 function applyVisibility(line) {

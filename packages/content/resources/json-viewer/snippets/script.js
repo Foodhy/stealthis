@@ -54,12 +54,10 @@ function buildNode(key, value, depth, isLast) {
   const node = document.createElement('div');
   node.className = 'jv-node';
 
-  const indent = '  '.repeat(depth);
   const isObj = value !== null && typeof value === 'object';
   const isArr = Array.isArray(value);
   const entries = isObj ? (isArr ? value.map((v, i) => [i, v]) : Object.entries(value)) : null;
   const isEmpty = isObj && entries.length === 0;
-  const keyStr = key !== null ? `<span class="jv-key">"${highlight(key)}"</span><span class="jv-colon">:</span>` : '';
   const comma = isLast ? '' : '<span class="jv-comma">,</span>';
   const matched = matchesSearch(key, value);
 
@@ -67,15 +65,44 @@ function buildNode(key, value, depth, isLast) {
   row.className = 'jv-row' + (matched && searchTerm ? ' jv-highlight' : '');
 
   if (isObj && !isEmpty) {
-    const toggle = document.createElement('span');
-    toggle.className = 'jv-toggle open';
-    toggle.textContent = '▶';
     const openBracket = isArr ? '[' : '{';
     const closeBracket = isArr ? ']' : '}';
 
-    row.innerHTML = `<span class="jv-indent" style="width:${depth * 20}px"></span>`;
+    // Build with DOM methods to preserve event listeners
+    const indentEl = document.createElement('span');
+    indentEl.className = 'jv-indent';
+    indentEl.style.width = (depth * 20) + 'px';
+
+    const toggle = document.createElement('span');
+    toggle.className = 'jv-toggle open';
+    toggle.textContent = '▶';
+
+    row.appendChild(indentEl);
     row.appendChild(toggle);
-    row.innerHTML += `&nbsp;${keyStr}<span class="jv-bracket">${openBracket}</span><span class="jv-collapsed" hidden>&nbsp;…&nbsp;${entries.length} ${isArr ? 'items' : 'keys'}&nbsp;</span>`;
+    row.appendChild(document.createTextNode('\u00a0'));
+
+    if (key !== null) {
+      const keyEl = document.createElement('span');
+      keyEl.className = 'jv-key';
+      keyEl.innerHTML = `"${highlight(key)}"`;
+      const colonEl = document.createElement('span');
+      colonEl.className = 'jv-colon';
+      colonEl.textContent = ':';
+      row.appendChild(keyEl);
+      row.appendChild(colonEl);
+      row.appendChild(document.createTextNode('\u00a0'));
+    }
+
+    const bracketEl = document.createElement('span');
+    bracketEl.className = 'jv-bracket';
+    bracketEl.textContent = openBracket;
+    row.appendChild(bracketEl);
+
+    const collapsedEl = document.createElement('span');
+    collapsedEl.className = 'jv-collapsed';
+    collapsedEl.hidden = true;
+    collapsedEl.innerHTML = `&nbsp;…&nbsp;${entries.length} ${isArr ? 'items' : 'keys'}&nbsp;`;
+    row.appendChild(collapsedEl);
 
     const children = document.createElement('div');
     children.className = 'jv-children';
@@ -87,10 +114,12 @@ function buildNode(key, value, depth, isLast) {
     closeRow.className = 'jv-row';
     closeRow.innerHTML = `<span class="jv-indent" style="width:${depth * 20}px"></span><span class="jv-toggle-space"></span>&nbsp;<span class="jv-bracket">${closeBracket}</span>${comma}`;
 
-    toggle.addEventListener('click', () => {
+    // Entire row is clickable
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => {
       const open = children.classList.toggle('hidden');
       toggle.classList.toggle('open', !open);
-      row.querySelector('.jv-collapsed').hidden = !open;
+      collapsedEl.hidden = !open;
       closeRow.hidden = open;
     });
 
@@ -113,6 +142,7 @@ function buildNode(key, value, depth, isLast) {
       valHtml = escHtml(String(value));
     }
 
+    const keyStr = key !== null ? `<span class="jv-key">"${highlight(key)}"</span><span class="jv-colon">:</span>` : '';
     row.innerHTML = `<span class="jv-indent" style="width:${depth * 20}px"></span><span class="jv-toggle-space"></span>&nbsp;${keyStr}${valHtml}${comma}`;
     node.appendChild(row);
   }
@@ -123,31 +153,33 @@ function buildNode(key, value, depth, isLast) {
 function render() {
   const tree = document.getElementById('jvTree');
   tree.innerHTML = '';
-  const wrapper = document.createElement('div');
-  wrapper.className = 'jv-node';
-  wrapper.innerHTML = `<span class="jv-bracket">{</span>`;
-  const entries = Object.entries(DATA);
-  entries.forEach(([k, v], i) => {
-    wrapper.appendChild(buildNode(k, v, 1, i === entries.length - 1));
-  });
-  wrapper.innerHTML += `<span class="jv-bracket">}</span>`;
-  tree.innerHTML = '';
   tree.appendChild(buildNode(null, DATA, 0, true));
 }
 
 document.getElementById('expandAll').addEventListener('click', () => {
   document.querySelectorAll('.jv-children').forEach(c => {
     c.classList.remove('hidden');
-    c.closest('.jv-node')?.querySelector('.jv-toggle')?.classList.add('open');
-    c.closest('.jv-node')?.querySelector('.jv-collapsed')?.setAttribute('hidden', '');
+    const nodeRow = c.previousElementSibling;
+    if (nodeRow) {
+      nodeRow.querySelector('.jv-toggle')?.classList.add('open');
+      nodeRow.querySelector('.jv-collapsed')?.setAttribute('hidden', '');
+    }
   });
-  document.querySelectorAll('.jv-row').forEach(r => r.removeAttribute('hidden'));
+  document.querySelectorAll('.jv-row[hidden]').forEach(r => r.removeAttribute('hidden'));
 });
 
 document.getElementById('collapseAll').addEventListener('click', () => {
   document.querySelectorAll('.jv-children').forEach(c => {
     if (c.closest('.jv-node')?.parentElement?.id !== 'jvTree') {
       c.classList.add('hidden');
+      const nodeRow = c.previousElementSibling;
+      if (nodeRow) {
+        nodeRow.querySelector('.jv-toggle')?.classList.remove('open');
+        const collapsed = nodeRow.querySelector('.jv-collapsed');
+        if (collapsed) collapsed.hidden = false;
+        const nextSibling = c.nextElementSibling;
+        if (nextSibling) nextSibling.hidden = true;
+      }
     }
   });
 });

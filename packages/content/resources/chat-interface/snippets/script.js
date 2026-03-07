@@ -21,6 +21,7 @@ function addMessage(role, text) {
   avatar.textContent = role === 'user' ? 'You' : 'AI';
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble';
+  if (text) bubble.innerHTML = `<p>${text.replace(/\n/g, '</p><p>')}</p>`;
   msg.appendChild(avatar);
   msg.appendChild(bubble);
   messages.appendChild(msg);

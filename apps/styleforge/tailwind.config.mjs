@@ -5,8 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: { 400: "#38bdf8", 500: "#0ea5e9" },
-        surface: { 900: "#0f172a", 950: "#030712" },
+        brand: { 400: "#0db9f2", 500: "#0da5d9" },
+        surface: { 900: "#101e22", 950: "#0a1215" },
+      },
+      fontFamily: {
+        display: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
       },
     },
   },

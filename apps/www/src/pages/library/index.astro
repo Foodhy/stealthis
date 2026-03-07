@@ -6,6 +6,7 @@ import CollectionExplorer from "@components/CollectionExplorer.astro";
 import { getCollection } from "astro:content";
 import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
 import { SHOW_SORT_BAR } from "@lib/constant";
+import { getResourceFilterTechTokens } from "@lib/resource-tech";
 import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 
 const locale = getLocaleFromUrl(Astro.url);
@@ -17,7 +18,18 @@ const allResources = (await getCollection("resources")).sort(
 );
 
 const categories = [...new Set(allResources.map((r) => r.data.category))].sort();
-const techs = [...new Set(allResources.flatMap((r) => r.data.tech))].sort();
+const techSet = new Set<string>();
+for (const resource of allResources) {
+  for (const tech of getResourceFilterTechTokens(resource)) {
+    techSet.add(tech);
+  }
+}
+
+const PRIORITY_TECHS = ["js", "css", "html", "react"];
+const techs = [
+  ...PRIORITY_TECHS.filter((tech) => techSet.has(tech)),
+  ...[...techSet].filter((tech) => !PRIORITY_TECHS.includes(tech)).sort(),
+];
 const authors = [
   ...new Set(allResources.flatMap((r) => (r.data.author ? [r.data.author.name] : []))),
 ].sort();

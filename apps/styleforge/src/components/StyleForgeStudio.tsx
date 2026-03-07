@@ -18,6 +18,11 @@ import {
   modelOptionsForProvider,
 } from "../lib/styleforge/presets";
 
+import { CollectionOverview } from "./views/CollectionOverview";
+import { CollectionDetail } from "./views/CollectionDetail";
+import { SearchDiscovery } from "./views/SearchDiscovery";
+import { ComparisonScreen } from "./views/ComparisonScreen";
+
 interface ReferencesResponse {
   generatedAt: string;
   pages: StyleForgeReference[];
@@ -518,6 +523,7 @@ export default function StyleForgeStudio() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [revealedComponentCount, setRevealedComponentCount] = useState(0);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [currentView, setCurrentView] = useState<"generator" | "collections" | "collection_detail" | "templates" | "assets" | "settings">("generator");
 
   useEffect(() => {
     try {
@@ -804,11 +810,11 @@ export default function StyleForgeStudio() {
         current.map((job) =>
           job.id === jobId
             ? {
-                ...job,
-                status: "ready",
-                kitId: typed.kit.id,
-                updatedAt: new Date().toISOString(),
-              }
+              ...job,
+              status: "ready",
+              kitId: typed.kit.id,
+              updatedAt: new Date().toISOString(),
+            }
             : job
         )
       );
@@ -834,11 +840,11 @@ export default function StyleForgeStudio() {
         current.map((job) =>
           job.id === jobId
             ? {
-                ...job,
-                status: "error",
-                error: error instanceof Error ? error.message : String(error),
-                updatedAt: new Date().toISOString(),
-              }
+              ...job,
+              status: "error",
+              error: error instanceof Error ? error.message : String(error),
+              updatedAt: new Date().toISOString(),
+            }
             : job
         )
       );
@@ -891,20 +897,11 @@ export default function StyleForgeStudio() {
       <aside className={`sf-admin-sidebar ${isSidebarCollapsed ? "is-collapsed" : ""}`}>
         <div className="sf-admin-logo">
           <div className="sf-admin-logo-icon">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
+            <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "#0a1215", fontVariationSettings: "'FILL' 1" }}>token</span>
           </div>
           <div>
             <p className="sf-admin-logo-title">StyleForge</p>
-            <p className="sf-admin-logo-sub">Studio</p>
+            <p className="sf-admin-logo-sub">PREMIUM SAAS</p>
           </div>
           <button
             type="button"
@@ -913,39 +910,71 @@ export default function StyleForgeStudio() {
             aria-expanded={!isSidebarCollapsed}
             onClick={() => setIsSidebarCollapsed((current) => !current)}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d={isSidebarCollapsed ? "m9 18 6-6-6-6" : "m15 18-6-6 6-6"} />
-            </svg>
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+              {isSidebarCollapsed ? "chevron_right" : "chevron_left"}
+            </span>
           </button>
         </div>
 
-        <nav className="sf-admin-nav" aria-label="StyleForge steps">
+        <nav className="sf-admin-nav" aria-label="StyleForge navigation">
+          {/* Top-level nav items matching Collection Detail style */}
+          <button type="button" className={`sf-nav-icon-item ${currentView === "settings" ? "is-active" : ""}`} title="Dashboard" onClick={() => setCurrentView("generator")}>
+            <span className="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+          </button>
+          <button
+            type="button"
+            className={`sf-nav-icon-item ${currentView === "collections" || currentView === "collection_detail" ? "is-active" : ""}`}
+            title="Collections"
+            onClick={() => setCurrentView("collections")}
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>folder_open</span>
+            <span>Collections</span>
+          </button>
+          <button type="button" className={`sf-nav-icon-item ${currentView === "templates" ? "is-active" : ""}`} title="Templates" onClick={() => setCurrentView("templates")}>
+            <span className="material-symbols-outlined">layers</span>
+            <span>Templates</span>
+          </button>
+          <button type="button" className={`sf-nav-icon-item ${currentView === "assets" ? "is-active" : ""}`} title="Assets" onClick={() => setCurrentView("assets")}>
+            <span className="material-symbols-outlined">package_2</span>
+            <span>Assets</span>
+          </button>
+
+          <div style={{ margin: "0.35rem 0", borderTop: "1px solid rgba(13,185,242,0.08)" }} />
+
+          {/* Workflow steps */}
           {stepDefinitions.map((step, index) => {
             const isActive = index === activeStepIndex;
             const isComplete = stepCompletion[index] && !isActive;
-
             return (
               <button
                 key={step.id}
                 type="button"
-                className={`sf-admin-nav-item ${isActive ? "is-active" : ""} ${isComplete ? "is-complete" : ""}`}
+                className={`sf-nav-icon-item ${isActive && currentView === "generator" ? "is-active" : ""} ${isComplete && currentView === "generator" ? "is-complete" : ""}`}
                 title={step.label}
+                onClick={() => setCurrentView("generator")}
               >
-                <span className="sf-admin-nav-icon">
-                  <SidebarIcon id={step.id} />
+                <span className="material-symbols-outlined">
+                  {step.id === "pages" && "web"}
+                  {step.id === "components" && "smart_button"}
+                  {step.id === "constraints" && "tune"}
+                  {step.id === "draft" && "article"}
+                  {step.id === "finalize" && "download"}
                 </span>
-                <span className="sf-admin-nav-label">{step.label}</span>
-                <span className="sf-admin-nav-meta">{selectedCounts[index]}</span>
+                <span>{step.label}</span>
+                {selectedCounts[index] > 0 && (
+                  <span className="sf-admin-nav-meta">{selectedCounts[index]}</span>
+                )}
               </button>
             );
           })}
+
+          <div style={{ margin: "0.35rem 0", borderTop: "1px solid rgba(13,185,242,0.08)" }} />
+
+          <button type="button" className="sf-nav-icon-item" title="Settings">
+            <span className="material-symbols-outlined">settings</span>
+            <span>Settings</span>
+          </button>
         </nav>
 
         <div className="sf-admin-section">
@@ -1022,308 +1051,352 @@ export default function StyleForgeStudio() {
           <span>{activeStep.description}</span>
         </div>
 
-        <div className="sf-admin-user" title="StyleForge Studio">
-          <div className="sf-admin-user-avatar">SF</div>
-          <div>
-            <p className="sf-admin-user-name">StyleForge</p>
-            <p className="sf-admin-user-role">Visual Generator</p>
+        {/* Storage widget + avatar (Collection Overview style) */}
+        <div style={{ marginTop: "auto" }}>
+          <div className="sf-sidebar-storage">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "rgba(203,213,225,0.8)" }}>Storage</span>
+              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--sf-primary)" }}>74%</span>
+            </div>
+            <div className="sf-sidebar-storage-bar">
+              <div className="sf-sidebar-storage-fill" style={{ width: "74%" }} />
+            </div>
+          </div>
+
+          <div className="sf-admin-user" title="StyleForge Studio" style={{ marginTop: "0.65rem" }}>
+            <div className="sf-admin-user-avatar">SF</div>
+            <div>
+              <p className="sf-admin-user-name">StyleForge</p>
+              <p className="sf-admin-user-role">Visual Generator</p>
+            </div>
+          </div>
+
+          <div style={{ paddingTop: "0.65rem" }}>
+            <button
+              type="button"
+              className="sf-cta-btn"
+              style={{ width: "100%", justifyContent: "center" }}
+              onClick={() => void handleGenerateDraft()}
+              disabled={isDrafting || isLoadingReferences}
+            >
+              <span className="material-symbols-outlined">add</span>
+              {isDrafting ? "Generating..." : "New Project"}
+            </button>
           </div>
         </div>
       </aside>
 
-      <div className="sf-shell">
-        <section className="sf-card sf-stepper-card">
-          <div className="sf-stepper-head">
-            <h2>Workflow Progress</h2>
-            <p>Move through each step to build your visual system.</p>
-          </div>
+      {currentView === "collections" && <div onClick={() => setCurrentView("collection_detail")} className="flex-1 overflow-hidden" style={{ cursor: "pointer" }}><CollectionOverview /></div>}
+      {currentView === "collection_detail" && <CollectionDetail />}
+      {currentView === "templates" && <ComparisonScreen />}
+      {currentView === "assets" && <SearchDiscovery />}
 
-          <div className="sf-stepper">
-            <div className="sf-steps-track">
-              {stepDefinitions.map((step, index) => {
-                const isActive = index === activeStepIndex;
-                const isComplete = stepCompletion[index] && !isActive;
-                const shouldFillConnector = index < activeStepIndex;
+      {currentView === "generator" && (
+        <div className="sf-shell">
+          <section className="sf-card sf-stepper-card">
+            <div className="sf-stepper-head">
+              <h2>Workflow Progress</h2>
+              <p>Move through each step to build your visual system.</p>
+            </div>
 
-                return (
-                  <div
-                    key={step.id}
-                    className={`sf-step ${isActive ? "is-active" : ""} ${isComplete ? "is-complete" : ""}`}
-                  >
+            <div className="sf-stepper">
+              <div className="sf-steps-track">
+                {stepDefinitions.map((step, index) => {
+                  const isActive = index === activeStepIndex;
+                  const isComplete = stepCompletion[index] && !isActive;
+                  const shouldFillConnector = index < activeStepIndex;
+
+                  return (
                     <div
-                      className="sf-step__node"
-                      aria-current={isActive ? "step" : undefined}
-                      aria-label={`Step ${index + 1}: ${step.label}`}
+                      key={step.id}
+                      className={`sf-step ${isActive ? "is-active" : ""} ${isComplete ? "is-complete" : ""}`}
                     >
-                      <span className="sf-step__num" aria-hidden="true">
-                        {index + 1}
-                      </span>
-                      <svg
-                        className="sf-step__check"
-                        aria-hidden="true"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
-                        fill="none"
+                      <div
+                        className="sf-step__node"
+                        aria-current={isActive ? "step" : undefined}
+                        aria-label={`Step ${index + 1}: ${step.label}`}
                       >
-                        <polyline
-                          points="2.5 7 5.5 10 11.5 4"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-
-                    {index < stepDefinitions.length - 1 ? (
-                      <div className="sf-step__connector" aria-hidden="true">
-                        <span
-                          className={`sf-step__fill ${shouldFillConnector ? "is-filled" : ""}`}
-                        />
+                        <span className="sf-step__num" aria-hidden="true">
+                          {index + 1}
+                        </span>
+                        <svg
+                          className="sf-step__check"
+                          aria-hidden="true"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          fill="none"
+                        >
+                          <polyline
+                            points="2.5 7 5.5 10 11.5 4"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
                       </div>
-                    ) : null}
-                  </div>
-                );
-              })}
+
+                      {index < stepDefinitions.length - 1 ? (
+                        <div className="sf-step__connector" aria-hidden="true">
+                          <span
+                            className={`sf-step__fill ${shouldFillConnector ? "is-filled" : ""}`}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="sf-steps-labels" aria-hidden="true">
+                {stepDefinitions.map((step, index) => {
+                  const isActive = index === activeStepIndex;
+                  const isComplete = stepCompletion[index] && !isActive;
+                  return (
+                    <span
+                      key={step.id}
+                      className={`sf-step-label ${isActive ? "is-active" : ""} ${isComplete ? "is-complete" : ""}`}
+                    >
+                      {step.label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section className="sf-reference-stage">
+            <ReferencePicker
+              title="1) Page references"
+              subtitle="Choose one or more from web-pages and pages"
+              references={pageReferences}
+              selected={selectedPages}
+              maxSelect={PAGE_SELECTION_LIMIT}
+              isLoading={isLoadingReferences}
+              onToggle={(id) => toggleSelection(id, PAGE_SELECTION_LIMIT, setSelectedPages)}
+            />
+
+            <ReferencePicker
+              title="2) Component references"
+              subtitle="Choose one or more from ui-components and patterns"
+              references={componentReferences}
+              selected={selectedComponents}
+              maxSelect={COMPONENT_SELECTION_LIMIT}
+              isLoading={isLoadingReferences}
+              onToggle={(id) => toggleSelection(id, COMPONENT_SELECTION_LIMIT, setSelectedComponents)}
+            />
+          </section>
+
+          <section className="sf-stage-grid">
+            <OrbitSelector
+              title="3) Constraint wheel"
+              subtitle="Pick one preset (density, radius, contrast, motion, tone)"
+              options={presetOptions}
+              selected={[presetId]}
+              maxSelect={1}
+              onToggle={selectPreset}
+            />
+          </section>
+
+          <section className="sf-card sf-actions">
+            <div>
+              <h2>4) Generate and review</h2>
+              <p>
+                {statusMessage}
+              </p>
             </div>
 
-            <div className="sf-steps-labels" aria-hidden="true">
-              {stepDefinitions.map((step, index) => {
-                const isActive = index === activeStepIndex;
-                const isComplete = stepCompletion[index] && !isActive;
-                return (
-                  <span
-                    key={step.id}
-                    className={`sf-step-label ${isActive ? "is-active" : ""} ${isComplete ? "is-complete" : ""}`}
-                  >
-                    {step.label}
-                  </span>
-                );
-              })}
+            <div className="sf-action-buttons">
+              <button
+                type="button"
+                onClick={() => void handleGenerateDraft()}
+                disabled={isDrafting || isLoadingReferences}
+              >
+                {isDrafting ? "Generating draft..." : "Generate Draft"}
+              </button>
+              <button
+                type="button"
+                className="sf-btn-secondary"
+                onClick={handleGenerateFinalKit}
+                disabled={!draft}
+                style={draft ? {} : { opacity: 0.4 }}
+              >
+                Generate Final Kit
+              </button>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="sf-reference-stage">
-          <ReferencePicker
-            title="1) Page references"
-            subtitle="Choose one or more from web-pages and pages"
-            references={pageReferences}
-            selected={selectedPages}
-            maxSelect={PAGE_SELECTION_LIMIT}
-            isLoading={isLoadingReferences}
-            onToggle={(id) => toggleSelection(id, PAGE_SELECTION_LIMIT, setSelectedPages)}
-          />
-
-          <ReferencePicker
-            title="2) Component references"
-            subtitle="Choose one or more from ui-components and patterns"
-            references={componentReferences}
-            selected={selectedComponents}
-            maxSelect={COMPONENT_SELECTION_LIMIT}
-            isLoading={isLoadingReferences}
-            onToggle={(id) => toggleSelection(id, COMPONENT_SELECTION_LIMIT, setSelectedComponents)}
-          />
-        </section>
-
-        <section className="sf-stage-grid">
-          <OrbitSelector
-            title="3) Constraint wheel"
-            subtitle="Pick one preset (density, radius, contrast, motion, tone)"
-            options={presetOptions}
-            selected={[presetId]}
-            maxSelect={1}
-            onToggle={selectPreset}
-          />
-        </section>
-
-        <section className="sf-card sf-actions">
-          <div>
-            <h2>4) Generate and review</h2>
-            <p>
-              Current state: <strong>{statusMessage}</strong>
-            </p>
-          </div>
-
-          <div className="sf-action-buttons">
-            <button
-              type="button"
-              onClick={() => void handleGenerateDraft()}
-              disabled={isDrafting || isLoadingReferences}
-            >
-              {isDrafting ? "Generating draft..." : "Generate Draft"}
-            </button>
-            <button type="button" onClick={handleGenerateFinalKit} disabled={!draft}>
-              Generate Final Kit
-            </button>
-          </div>
-        </section>
-
-        {draft ? (
-          <section className="sf-card sf-preview">
-            <div className="sf-preview-head">
-              <h2>5) Visual direction preview</h2>
-              <p>Editable draft before final kit generation.</p>
-            </div>
-
-            <label className="sf-inline-field">
-              Draft title
-              <input
-                value={draft.title}
-                onChange={(event) =>
-                  setDraft((current) =>
-                    current ? { ...current, title: event.target.value } : current
-                  )
-                }
-              />
-            </label>
-
-            <label className="sf-inline-field">
-              Summary
-              <textarea
-                value={draft.summary}
-                onChange={(event) =>
-                  setDraft((current) =>
-                    current ? { ...current, summary: event.target.value } : current
-                  )
-                }
-                rows={3}
-              />
-            </label>
-
-            <div className="sf-token-grid">
-              {Object.entries(draft.tokens).map(([key, value]) => (
-                <div key={key} className="sf-token-item">
-                  <span>{key}</span>
-                  {key.includes("font") || key.includes("radius") || key.includes("shadow") ? (
-                    <strong>{value}</strong>
-                  ) : (
-                    <>
-                      <i style={{ background: value }} />
-                      <strong>{value}</strong>
-                    </>
-                  )}
+          {draft ? (
+            <section className="sf-card sf-preview">
+              <div className="sf-preview-head">
+                <div>
+                  <h2>5) Visual direction preview</h2>
+                  <p>Editable draft before final kit generation.</p>
                 </div>
-              ))}
+                <span className={`sf-draft-mode-badge ${draftMode === "ai" ? "is-ai" : "is-deterministic"}`}>
+                  {draftMode === "ai" ? "✦ AI Draft" : "⚡ Deterministic"}
+                </span>
+              </div>
+
+              <label className="sf-inline-field">
+                Draft title
+                <input
+                  value={draft.title}
+                  onChange={(event) =>
+                    setDraft((current) =>
+                      current ? { ...current, title: event.target.value } : current
+                    )
+                  }
+                />
+              </label>
+
+              <label className="sf-inline-field">
+                Summary
+                <textarea
+                  value={draft.summary}
+                  onChange={(event) =>
+                    setDraft((current) =>
+                      current ? { ...current, summary: event.target.value } : current
+                    )
+                  }
+                  rows={3}
+                />
+              </label>
+
+              <div className="sf-token-grid">
+                {Object.entries(draft.tokens).map(([key, value]) => (
+                  <div key={key} className="sf-token-item">
+                    <span>{key}</span>
+                    {key.includes("font") || key.includes("radius") || key.includes("shadow") ? (
+                      <strong>{value}</strong>
+                    ) : (
+                      <>
+                        <i style={{ background: value }} />
+                        <strong>{value}</strong>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="sf-columns">
+                <article>
+                  <h3>Visual direction</h3>
+                  <ul>
+                    {draft.visualDirection.map((line, index) => (
+                      <li key={`${line}-${index}`}>
+                        <input
+                          value={line}
+                          onChange={(event) =>
+                            setDraft((current) => {
+                              if (!current) return current;
+                              const nextDirection = [...current.visualDirection];
+                              nextDirection[index] = event.target.value;
+                              return {
+                                ...current,
+                                visualDirection: nextDirection,
+                              };
+                            })
+                          }
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+
+                <article>
+                  <h3>Suggested components</h3>
+                  <p className="sf-suggested-progress">
+                    Generated {Math.min(revealedComponentCount, draft.suggestedComponents.length)}/
+                    {draft.suggestedComponents.length}
+                  </p>
+                  <ul>
+                    {draft.suggestedComponents.map((component, index) => (
+                      <li
+                        key={component.id}
+                        className={index < revealedComponentCount ? "" : "is-pending"}
+                      >
+                        {index < revealedComponentCount ? (
+                          <>
+                            <strong>{component.name}</strong>
+                            <p>{component.rationale}</p>
+                          </>
+                        ) : (
+                          <>
+                            <strong>Generating component...</strong>
+                            <p>Preparing structure, style, and interactions.</p>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </div>
+
+              {draft.warnings.length > 0 ? (
+                <div className="sf-warnings">
+                  {draft.warnings.map((warning) => (
+                    <p key={warning}>{warning}</p>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          <section className="sf-card sf-jobs">
+            <div className="sf-jobs-head">
+              <h2>Jobs and kits</h2>
+              <p>{statusMessage}</p>
+            </div>
+
+            <div className="sf-cli-box">
+              <p className="sf-cli-label">CLI (coming soon)</p>
+              <code>bunx stealthis-kit pull {commandKitId}</code>
+              <button type="button" onClick={copyCommand}>
+                Copy command
+              </button>
             </div>
 
             <div className="sf-columns">
               <article>
-                <h3>Visual direction</h3>
-                <ul>
-                  {draft.visualDirection.map((line, index) => (
-                    <li key={`${line}-${index}`}>
-                      <input
-                        value={line}
-                        onChange={(event) =>
-                          setDraft((current) => {
-                            if (!current) return current;
-                            const nextDirection = [...current.visualDirection];
-                            nextDirection[index] = event.target.value;
-                            return {
-                              ...current,
-                              visualDirection: nextDirection,
-                            };
-                          })
-                        }
-                      />
+                <h3>Job queue</h3>
+                {jobs.length === 0 ? <p className="sf-muted">No jobs yet.</p> : null}
+                <ul className="sf-job-list">
+                  {jobs.map((job) => (
+                    <li key={job.id} className={`sf-job-item is-${job.status}`}>
+                      <strong>{job.id}</strong>
+                      <p>Status: {job.status}</p>
+                      {job.kitId ? <p>Kit: {job.kitId}</p> : null}
+                      {job.error ? <p>Error: {job.error}</p> : null}
                     </li>
                   ))}
                 </ul>
               </article>
 
               <article>
-                <h3>Suggested components</h3>
-                <p className="sf-suggested-progress">
-                  Generated {Math.min(revealedComponentCount, draft.suggestedComponents.length)}/
-                  {draft.suggestedComponents.length}
-                </p>
-                <ul>
-                  {draft.suggestedComponents.map((component, index) => (
-                    <li
-                      key={component.id}
-                      className={index < revealedComponentCount ? "" : "is-pending"}
-                    >
-                      {index < revealedComponentCount ? (
-                        <>
-                          <strong>{component.name}</strong>
-                          <p>{component.rationale}</p>
-                        </>
-                      ) : (
-                        <>
-                          <strong>Generating component...</strong>
-                          <p>Preparing structure, style, and interactions.</p>
-                        </>
-                      )}
+                <h3>Generated kits</h3>
+                {kits.length === 0 ? <p className="sf-muted">No kits available yet.</p> : null}
+                <ul className="sf-kit-list">
+                  {kits.map((kit) => (
+                    <li key={kit.id}>
+                      <div>
+                        <strong>{kit.id}</strong>
+                        <p>
+                          {kit.files.length} files • draft {kit.manifest.draftId}
+                        </p>
+                      </div>
+                      <button type="button" onClick={() => downloadKit(kit)}>
+                        Download ZIP
+                      </button>
                     </li>
                   ))}
                 </ul>
               </article>
             </div>
-
-            {draft.warnings.length > 0 ? (
-              <div className="sf-warnings">
-                {draft.warnings.map((warning) => (
-                  <p key={warning}>{warning}</p>
-                ))}
-              </div>
-            ) : null}
           </section>
-        ) : null}
-
-        <section className="sf-card sf-jobs">
-          <div className="sf-jobs-head">
-            <h2>Jobs and kits</h2>
-            <p>{statusMessage}</p>
-          </div>
-
-          <div className="sf-cli-box">
-            <p className="sf-cli-label">CLI (coming soon)</p>
-            <code>bunx stealthis-kit pull {commandKitId}</code>
-            <button type="button" onClick={copyCommand}>
-              Copy command
-            </button>
-          </div>
-
-          <div className="sf-columns">
-            <article>
-              <h3>Job queue</h3>
-              {jobs.length === 0 ? <p className="sf-muted">No jobs yet.</p> : null}
-              <ul className="sf-job-list">
-                {jobs.map((job) => (
-                  <li key={job.id} className={`sf-job-item is-${job.status}`}>
-                    <strong>{job.id}</strong>
-                    <p>Status: {job.status}</p>
-                    {job.kitId ? <p>Kit: {job.kitId}</p> : null}
-                    {job.error ? <p>Error: {job.error}</p> : null}
-                  </li>
-                ))}
-              </ul>
-            </article>
-
-            <article>
-              <h3>Generated kits</h3>
-              {kits.length === 0 ? <p className="sf-muted">No kits available yet.</p> : null}
-              <ul className="sf-kit-list">
-                {kits.map((kit) => (
-                  <li key={kit.id}>
-                    <div>
-                      <strong>{kit.id}</strong>
-                      <p>
-                        {kit.files.length} files • draft {kit.manifest.draftId}
-                      </p>
-                    </div>
-                    <button type="button" onClick={() => downloadKit(kit)}>
-                      Download ZIP
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </div>
-        </section>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

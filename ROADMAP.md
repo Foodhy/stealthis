@@ -552,8 +552,10 @@ Categorías nuevas enfocadas en herramientas para devs, UI de IA y patrones avan
 | Slug | Description | Tech | Difficulty | Status |
 |---|---|---|---|---|
 | `code-block` | Syntax-highlighted code block with copy | vanilla-js, css | easy | ✅ |
+| `code-block-rc` | Syntax-highlighted code block with copy | tailwind, react | easy |  |
 | `terminal-ui` | Terminal / CLI output display | css | easy | ✅ |
 | `diff-viewer` | Side-by-side code diff viewer | vanilla-js, css | med | ✅ |
+| `diff-viewer-rc` | Side-by-side code diff viewer | tailwind, react | med |  |
 | `json-viewer` | Collapsible JSON tree viewer | vanilla-js, css | med | ✅ |
 | `log-viewer` | Scrollable log output with filters | vanilla-js, css | med | ✅ |
 | `keyboard-shortcut` | Keyboard shortcut cheat sheet | css | easy | ✅ |
