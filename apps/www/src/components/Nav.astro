@@ -25,7 +25,36 @@ const localeFlags: Record<Locale, string> = {
   nl: "🇳🇱",
   de: "🇩🇪",
   "pt-br": "🇧🇷",
+  "zh-hk": "🇭🇰",
+  "zh-cn": "🇨🇳",
+  it: "🇮🇹",
+  pl: "🇵🇱",
 };
+const localeOptionLabels: Record<Locale, string> = {
+  en: t("lang.option.en"),
+  es: t("lang.option.es"),
+  fr: t("lang.option.fr"),
+  ja: t("lang.option.ja"),
+  ms: t("lang.option.ms"),
+  hi: t("lang.option.hi"),
+  ko: t("lang.option.ko"),
+  nl: t("lang.option.nl"),
+  de: t("lang.option.de"),
+  "pt-br": t("lang.option.pt-br"),
+  "zh-hk": t("lang.option.zh-hk"),
+  "zh-cn": t("lang.option.zh-cn"),
+  it: t("lang.option.it"),
+  pl: t("lang.option.pl"),
+};
+const localeOptionDisplay: Record<Locale, string> = Object.fromEntries(
+  LOCALES.map((optionLocale) => {
+    const nativeLabel = LOCALE_LABELS[optionLocale];
+    const localizedLabel = localeOptionLabels[optionLocale];
+    const combinedLabel =
+      nativeLabel === localizedLabel ? nativeLabel : `${nativeLabel} · ${localizedLabel}`;
+    return [optionLocale, combinedLabel];
+  }),
+) as Record<Locale, string>;
 const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 const normalizePath = (path: string) => path.replace(/\/$/, "") || "/";
 const isNavLinkActive = (href: string, external: boolean) => {
@@ -66,6 +95,10 @@ const menuLabels: Record<Locale, { open: string; close: string; title: string }>
   nl: { open: "Menu openen", close: "Menu sluiten", title: "Navigatie" },
   de: { open: "Menü öffnen", close: "Menü schließen", title: "Navigation" },
   "pt-br": { open: "Abrir menu", close: "Fechar menu", title: "Navegação" },
+  "zh-hk": { open: "開啟選單", close: "關閉選單", title: "導覽" },
+  "zh-cn": { open: "打开菜单", close: "关闭菜单", title: "导航" },
+  it: { open: "Apri menu", close: "Chiudi menu", title: "Navigazione" },
+  pl: { open: "Otwórz menu", close: "Zamknij menu", title: "Nawigacja" },
 };
 
 const menuOpenLabel = menuLabels[locale].open;
@@ -105,7 +138,7 @@ const menuTitle = menuLabels[locale].title;
         data-current-locale={locale}
       >
         {LOCALES.map((optionLocale) => (
-          <option value={optionLocale}>{`${localeFlags[optionLocale]} ${LOCALE_LABELS[optionLocale]}`}</option>
+          <option value={optionLocale}>{`${localeFlags[optionLocale]} ${localeOptionDisplay[optionLocale]}`}</option>
         ))}
       </select>
 
@@ -242,10 +275,9 @@ const menuTitle = menuLabels[locale].title;
       aria-label={t("lang.label")}
       data-language-select
       data-current-locale={locale}
-      data-mobile-close
     >
       {LOCALES.map((optionLocale) => (
-        <option value={optionLocale}>{`${localeFlags[optionLocale]} ${LOCALE_LABELS[optionLocale]}`}</option>
+        <option value={optionLocale}>{`${localeFlags[optionLocale]} ${localeOptionDisplay[optionLocale]}`}</option>
       ))}
     </select>
   </aside>
@@ -267,7 +299,9 @@ const menuTitle = menuLabels[locale].title;
   }
 
   .lang-select {
-    min-width: 9.25rem;
+    width: 10rem;
+    max-width: 10rem;
+    min-width: 0;
     border-radius: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.04);
@@ -276,6 +310,8 @@ const menuTitle = menuLabels[locale].title;
     font-weight: 600;
     padding: 0.38rem 0.6rem;
     transition: border-color 160ms ease, background 160ms ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .lang-select:hover {

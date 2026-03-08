@@ -5,6 +5,7 @@ import { Button } from '@/components/native/button';
 import { X } from '@/components/icons';
 import Editor from '@monaco-editor/react';
 import './FullscreenEditor.css';
+import { useI18n } from '@/i18n';
 
 import { PromptVariable } from '@/services/valuesService';
 
@@ -25,6 +26,7 @@ export const FullscreenEditor: React.FC<FullscreenEditorProps> = ({
   onContentChange,
   variables
 }) => {
+  const { t } = useI18n();
   const editorRef = useRef<any>(null);
 
   const editorOptions = {
@@ -158,7 +160,7 @@ export const FullscreenEditor: React.FC<FullscreenEditorProps> = ({
               onMount={handleEditorDidMount}
               onChange={handleEditorChange}
               theme="vs-dark"
-              loading={<div className="flex items-center justify-center h-full">Cargando editor...</div>}
+              loading={<div className="flex items-center justify-center h-full">{t('fullscreen.loadingEditor')}</div>}
             />
           </div>
         </div>
@@ -166,9 +168,9 @@ export const FullscreenEditor: React.FC<FullscreenEditorProps> = ({
         {/* Variables Panel */}
         <div className="variables-panel border-l border-border bg-card flex flex-col">
           <div className="p-4 border-b border-border">
-            <h3 className="font-medium text-sm">Variables</h3>
+            <h3 className="font-medium text-sm">{t('fullscreen.variables')}</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              Haz clic en las variables para insertarlas
+              {t('fullscreen.variablesHelp')}
             </p>
           </div>
 

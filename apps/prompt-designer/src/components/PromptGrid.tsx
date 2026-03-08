@@ -6,6 +6,7 @@ import { Button } from '@/components/native/button';
 import { getActiveDataProviderKind } from '@/data/providerFactory';
 import { explainSupabaseError } from '@/integrations/supabase/errorDiagnostics';
 import { listPromptSummaries, type PromptSummary } from '@/services/promptService';
+import { useI18n } from '@/i18n';
 import { Search, Plus, Filter, User, Calendar, Tag } from 'lucide-react';
 
 interface PromptGridProps {
@@ -14,6 +15,7 @@ interface PromptGridProps {
 }
 
 export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreateNew }) => {
+  const { locale, t } = useI18n();
   const [prompts, setPrompts] = useState<PromptSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,7 +33,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
       try {
         if (provider === 'local') {
           setServiceWarning(
-            'Provider activo: local. Si quieres usar la nube, define VITE_DATA_PROVIDER=supabase.',
+            t('promptGrid.localProviderWarning'),
           );
         } else {
           setServiceWarning(null);
@@ -43,7 +45,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
         setServiceWarning(
           provider === 'supabase'
             ? explainSupabaseError(err, {
-                action: 'cargar prompts',
+                action: locale === 'es' ? 'cargar prompts' : 'load prompts',
                 expectedObjects: [
                   'latest_prompts_consolidated',
                   'prompts',
@@ -53,7 +55,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
                   'prompt_variables',
                 ],
               })
-            : 'Fallo al cargar prompts desde el provider local.',
+            : t('promptGrid.localProviderError'),
         );
         console.error('Error fetching prompts:', err);
       } finally {
@@ -62,7 +64,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
     };
 
     fetchPrompts();
-  }, []);
+  }, [locale, t]);
 
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
@@ -122,13 +124,18 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
   const hasActiveFilters = searchQuery || selectedTags.length > 0 || authorFilter || teamFilter;
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Sin fecha';
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    if (!dateString) return t('promptGrid.noDate');
+    return new Date(dateString).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
     });
   };
+
+  const resultsLabel =
+    filteredPrompts.length === 1
+      ? t('promptGrid.projectsFound_one', { count: filteredPrompts.length })
+      : t('promptGrid.projectsFound_other', { count: filteredPrompts.length });
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -136,14 +143,14 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">Prompts Manager</h1>
+            <h1 className="text-2xl font-semibold text-foreground">{t('promptGrid.title')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Selecciona un prompt para editar o crea uno nuevo
+              {t('promptGrid.subtitle')}
             </p>
           </div>
           <Button onClick={onCreateNew} className="gap-2">
             <Plus className="h-4 w-4" />
-            Nuevo Prompt Maestro
+            {t('promptGrid.newMaster')}
           </Button>
         </div>
 
@@ -160,7 +167,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por título o descripción..."
+                placeholder={t('promptGrid.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -172,11 +179,11 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
               className="gap-2"
             >
               <Filter className="h-4 w-4" />
-              Filtros
+              {t('promptGrid.filters')}
             </Button>
             {hasActiveFilters && (
               <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground">
-                Limpiar
+                {t('promptGrid.clear')}
               </Button>
             )}
           </div>
@@ -204,22 +211,22 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Autor
+                  {t('promptGrid.author')}
                 </label>
                 <Input
-                  placeholder="Filtrar por nombre de autor..."
+                  placeholder={t('promptGrid.authorPlaceholder')}
                   value={authorFilter}
                   onChange={(e) => setAuthorFilter(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Equipo</label>
+                <label className="text-sm font-medium text-foreground">{t('promptGrid.team')}</label>
                 <select
                   value={teamFilter}
                   onChange={(e) => setTeamFilter(e.target.value)}
                   className="w-full h-10 rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  <option value="">Todos los equipos</option>
+                  <option value="">{t('promptGrid.allTeams')}</option>
                   {allTeams.map(team => (
                     <option key={team} value={team}>{team}</option>
                   ))}
@@ -232,9 +239,9 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
         {/* Results count */}
         <div className="text-sm text-muted-foreground">
           {isLoading ? (
-            'Cargando proyectos...'
+            t('promptGrid.loadingProjects')
           ) : (
-            `${filteredPrompts.length} proyecto${filteredPrompts.length !== 1 ? 's' : ''} encontrado${filteredPrompts.length !== 1 ? 's' : ''}`
+            resultsLabel
           )}
         </div>
 
@@ -254,13 +261,13 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
             <div className="text-muted-foreground">
               {prompts.length === 0 ? (
                 <>
-                  <p className="text-lg mb-2">No hay proyectos creados</p>
-                  <p className="text-sm">Crea tu primer proyecto de prompts para comenzar</p>
+                  <p className="text-lg mb-2">{t('promptGrid.noProjectsTitle')}</p>
+                  <p className="text-sm">{t('promptGrid.noProjectsDescription')}</p>
                 </>
               ) : (
                 <>
-                  <p className="text-lg mb-2">No se encontraron resultados</p>
-                  <p className="text-sm">Intenta con otros filtros de búsqueda</p>
+                  <p className="text-lg mb-2">{t('promptGrid.noResultsTitle')}</p>
+                  <p className="text-sm">{t('promptGrid.noResultsDescription')}</p>
                 </>
               )}
             </div>
@@ -311,7 +318,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
                     <div className="flex items-center gap-1">
                       <User className="h-3 w-3" />
-                      <span>{prompt.author_name || 'Sin autor'}</span>
+                      <span>{prompt.author_name || t('promptGrid.noAuthor')}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
@@ -322,7 +329,9 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
                   {/* Variables count */}
                   {prompt.variable_count !== null && prompt.variable_count > 0 && (
                     <div className="text-xs text-muted-foreground">
-                      {prompt.variable_count} variable{prompt.variable_count !== 1 ? 's' : ''}
+                      {prompt.variable_count === 1
+                        ? t('promptGrid.variables_one', { count: prompt.variable_count })
+                        : t('promptGrid.variables_other', { count: prompt.variable_count })}
                     </div>
                   )}
                 </div>

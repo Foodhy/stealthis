@@ -32,27 +32,48 @@ const links = [
     { source: 8, target: 10, value: 27.4 },
     { source: 8, target: 11, value: 21.8 },
     { source: 10, target: 12, value: 23.6 },
-    { source: 10, target: 13, value: 3.7 }, // Adjusted slightly to balance
+    { source: 10, target: 13, value: 3.7 },
     { source: 10, target: 14, value: 0.1 },
     { source: 11, target: 15, value: 11.9 },
     { source: 11, target: 16, value: 6.8 },
     { source: 11, target: 17, value: 3.1 }
 ];
 
+function getBreakpoint() {
+    const w = window.innerWidth;
+    if (w < 480) return 'xs';       // small phone
+    if (w < 768) return 'sm';       // phone landscape / large phone
+    if (w < 1024) return 'md';      // tablet / iPad
+    return 'lg';                    // desktop
+}
+
+function getConfig(bp) {
+    switch (bp) {
+        case 'xs': return { marginH: 100, marginV: 40, totalH: 520, labelGap: 8,  iconOffsetLeft: -70,  iconOffsetRight: 70,  labelFontSize: 9,  valueFontSize: 11, changeFontSize: 9,  logoFontSize: 16, nodeWidth: 10, nodePadding: 20 };
+        case 'sm': return { marginH: 130, marginV: 50, totalH: 580, labelGap: 10, iconOffsetLeft: -90,  iconOffsetRight: 90,  labelFontSize: 10, valueFontSize: 12, changeFontSize: 10, logoFontSize: 18, nodeWidth: 12, nodePadding: 28 };
+        case 'md': return { marginH: 150, marginV: 55, totalH: 640, labelGap: 12, iconOffsetLeft: -110, iconOffsetRight: 110, labelFontSize: 12, valueFontSize: 14, changeFontSize: 11, logoFontSize: 20, nodeWidth: 14, nodePadding: 34 };
+        default:   return { marginH: 180, marginV: 60, totalH: 700, labelGap: 10, iconOffsetLeft: -130, iconOffsetRight: 130, labelFontSize: 14, valueFontSize: 16, changeFontSize: 12, logoFontSize: 24, nodeWidth: 16, nodePadding: 40 };
+    }
+}
+
 function initSankey() {
-    const margin = { top: 60, right: 180, bottom: 60, left: 180 };
+    const bp = getBreakpoint();
+    const cfg = getConfig(bp);
+
+    const margin = { top: cfg.marginV, right: cfg.marginH, bottom: cfg.marginV, left: cfg.marginH };
     const chartArea = document.querySelector('.sankey-wrapper');
-    const width = chartArea.clientWidth - margin.left - margin.right;
-    const height = 700 - margin.top - margin.bottom;
+    const totalWidth = chartArea.clientWidth;
+    const width = totalWidth - margin.left - margin.right;
+    const height = cfg.totalH - margin.top - margin.bottom;
 
     const svg = d3.select("#sankey-svg")
-        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .attr("viewBox", `0 0 ${totalWidth} ${cfg.totalH}`)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
     const sankey = d3.sankey()
-        .nodeWidth(16)
-        .nodePadding(40)
+        .nodeWidth(cfg.nodeWidth)
+        .nodePadding(cfg.nodePadding)
         .size([width, height]);
 
     const graph = sankey({
@@ -60,8 +81,8 @@ function initSankey() {
         links: links.map(d => Object.assign({}, d))
     });
 
-    // Color gradient for links (from source node color)
-    const link = svg.append("g")
+    // Links
+    svg.append("g")
         .selectAll(".link")
         .data(graph.links)
         .enter()
@@ -72,14 +93,10 @@ function initSankey() {
         .attr("fill", "none")
         .attr("stroke", d => d.source.color)
         .attr("opacity", 0.2)
-        .on("mouseenter", (e, d) => {
-            d3.select(e.target).attr("opacity", 0.5);
-        })
-        .on("mouseleave", (e, d) => {
-            d3.select(e.target).attr("opacity", 0.2);
-        });
+        .on("mouseenter", (e) => { d3.select(e.target).attr("opacity", 0.5); })
+        .on("mouseleave", (e) => { d3.select(e.target).attr("opacity", 0.2); });
 
-    // Nodes
+    // Node groups
     const node = svg.append("g")
         .selectAll(".node")
         .data(graph.nodes)
@@ -94,37 +111,40 @@ function initSankey() {
         .attr("fill", d => d.color || "#666")
         .attr("rx", 3);
 
-    // Labels and logos
+    // Labels
     node.each(function(d) {
         const group = d3.select(this);
         const isLeft = d.x0 < width / 2;
-        const xPos = isLeft ? -10 : sankey.nodeWidth() + 10;
+        const xPos = isLeft ? -cfg.labelGap : sankey.nodeWidth() + cfg.labelGap;
         const align = isLeft ? "end" : "start";
+        const midY = (d.y1 - d.y0) / 2;
 
-        // Logo / Icon
+        // Emoji icon
         if (d.logo) {
             group.append("text")
-                .attr("x", isLeft ? -130 : xPos + 100)
-                .attr("y", (d.y1 - d.y0) / 2)
+                .attr("x", isLeft ? cfg.iconOffsetLeft : (sankey.nodeWidth() + cfg.iconOffsetRight))
+                .attr("y", midY)
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "middle")
-                .attr("font-size", "24px")
+                .attr("font-size", `${cfg.logoFontSize}px`)
                 .text(d.logo);
         }
 
         const labelGroup = group.append("g")
-            .attr("transform", `translate(${xPos}, ${(d.y1 - d.y0) / 2})`);
+            .attr("transform", `translate(${xPos}, ${midY})`);
 
         labelGroup.append("text")
             .attr("text-anchor", align)
             .attr("dy", "-1em")
             .attr("class", "node-label")
+            .attr("font-size", `${cfg.labelFontSize}px`)
             .text(d.name);
 
         labelGroup.append("text")
             .attr("text-anchor", align)
             .attr("dy", "0.4em")
             .attr("class", "node-value")
+            .attr("font-size", `${cfg.valueFontSize}px`)
             .attr("fill", d.color)
             .text(d.val);
 
@@ -133,15 +153,19 @@ function initSankey() {
                 .attr("text-anchor", align)
                 .attr("dy", "1.6em")
                 .attr("class", "node-change")
+                .attr("font-size", `${cfg.changeFontSize}px`)
                 .text(d.change);
         }
     });
-
 }
 
+let resizeTimer;
 window.addEventListener("resize", () => {
-    d3.select("#sankey-svg").selectAll("*").remove();
-    initSankey();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        d3.select("#sankey-svg").selectAll("*").remove();
+        initSankey();
+    }, 100);
 });
 
 document.addEventListener("DOMContentLoaded", initSankey);

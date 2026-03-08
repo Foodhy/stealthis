@@ -86,9 +86,9 @@ const syncComponents = async (
   }
 
   const TITLES: Record<string, string> = {
-    identity_role: 'Identidad y Rol',
-    steps_objectives: 'Pasos y Objetivos del flujo',
-    available_tools: 'Herramientas Disponibles',
+    identity_role: 'Identity and Role',
+    steps_objectives: 'Steps and Goals',
+    available_tools: 'Available Tools',
   };
   const DEFAULTS = ['identity_role', 'steps_objectives', 'available_tools'];
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiConfigService, ApiConfiguration } from '@/services/apiConfigService';
+import { useI18n } from '@/i18n';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -43,6 +44,7 @@ interface UseApiTesterReturn {
 }
 
 export const useApiTester = (): UseApiTesterReturn => {
+    const { t } = useI18n();
     const [url, setUrl] = useState('');
     const [method, setMethod] = useState<HttpMethod>('GET');
     const [body, setBody] = useState('');
@@ -90,7 +92,7 @@ export const useApiTester = (): UseApiTesterReturn => {
 
         try {
             if (!url.trim()) {
-                throw new Error('La URL es obligatoria');
+                throw new Error(t('apiTester.error.urlRequired'));
             }
 
             let normalizedUrl = url.trim();
@@ -102,11 +104,11 @@ export const useApiTester = (): UseApiTesterReturn => {
             try {
                 parsedUrl = new URL(normalizedUrl);
             } catch {
-                throw new Error('URL invalida. Usa un endpoint HTTP/HTTPS valido.');
+                throw new Error(t('apiTester.error.urlInvalid'));
             }
 
             if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-                throw new Error('Solo se permiten protocolos http y https.');
+                throw new Error(t('apiTester.error.protocol'));
             }
 
             // Build headers object from headers array, filtering out empty keys
@@ -128,7 +130,7 @@ export const useApiTester = (): UseApiTesterReturn => {
                     JSON.parse(body);
                     options.body = body;
                 } catch {
-                    throw new Error('Body JSON invalido');
+                    throw new Error(t('apiTester.error.invalidJson'));
                 }
             }
 
@@ -174,7 +176,7 @@ export const useApiTester = (): UseApiTesterReturn => {
             });
             setSavedConfigurations(apiConfigService.getAll());
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Error inesperado al ejecutar la solicitud');
+            setError(err instanceof Error ? err.message : t('apiTester.error.unexpected'));
         } finally {
             setIsLoading(false);
         }
@@ -198,14 +200,14 @@ export const useApiTester = (): UseApiTesterReturn => {
     };
 
     const deleteConfiguration = (id: string) => {
-        if (window.confirm('¿Estás seguro de eliminar esta configuración?')) {
+        if (window.confirm(t('apiTester.confirm.deleteConfiguration'))) {
             apiConfigService.deleteById(id);
             setSavedConfigurations(apiConfigService.getAll());
         }
     };
 
     const clearAllConfigurations = () => {
-        if (window.confirm('¿Estás seguro de eliminar todas las configuraciones guardadas?')) {
+        if (window.confirm(t('apiTester.confirm.clearConfigurations'))) {
             apiConfigService.clearAll();
             setSavedConfigurations([]);
         }

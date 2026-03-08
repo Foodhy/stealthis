@@ -15,6 +15,7 @@ import {
   SelectValue
 } from '@/components/native/select';
 import { PromptVariable } from '@/services/valuesService';
+import { useI18n } from '@/i18n';
 
 interface VariablePanelProps {
   variables: PromptVariable[];
@@ -39,6 +40,7 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
   setIsVisible,
   onInsertVariable
 }) => {
+  const { t } = useI18n();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [panelMode, setPanelMode] = React.useState<'tools' | 'variables'>('tools');
   // State for open accordion items
@@ -99,11 +101,11 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
           <div className="flex items-center justify-between mb-4">
             <Select value={panelMode} onValueChange={(value) => setPanelMode(value as 'tools' | 'variables')}>
               <SelectTrigger className="h-9 w-full min-w-[180px] text-sm font-medium">
-                <SelectValue placeholder="Selecciona vista" />
+                <SelectValue placeholder={t('variablePanel.selectView')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="tools">Herramientas</SelectItem>
-                <SelectItem value="variables">Variables</SelectItem>
+                <SelectItem value="tools">{t('variablePanel.tools')}</SelectItem>
+                <SelectItem value="variables">{t('variablePanel.variables')}</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -124,7 +126,7 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
                   <Input
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Buscar variable..."
+                    placeholder={t('variablePanel.searchVariable')}
                     className="pl-9"
                   />
                 </div>
@@ -184,14 +186,14 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
               </ScrollArea>
 
               <div className="mt-4 text-xs text-muted-foreground">
-                <p>Haz clic para insertar.</p>
+                <p>{t('variablePanel.clickToInsert')}</p>
               </div>
             </>
           ) : (
             <>
               {/* Tool rendering section remains same */}
               <div className="mb-4 space-y-1 text-xs text-muted-foreground">
-                <p>Herramientas disponibles.</p>
+                <p>{t('variablePanel.toolsAvailable')}</p>
               </div>
 
               <ScrollArea className="flex-1 pr-1">
@@ -216,7 +218,7 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
                 </div>
               </ScrollArea>
               <div className="mt-4 text-xs text-muted-foreground">
-                <p>Las herramientas habilitadas aparecerán en el resumen.</p>
+                <p>{t('variablePanel.toolsInSummary')}</p>
               </div>
             </>
           )}
@@ -228,13 +230,13 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
             size="sm"
             onClick={() => setIsVisible(true)}
             className="h-8 w-8 p-0"
-            title="Mostrar panel"
+            title={t('variablePanel.showPanel')}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
           <div className="writing-mode-vertical-rl text-center">
             <span className="text-xs font-medium text-foreground">
-              {panelMode === 'tools' ? 'Herramientas' : 'Variables'}
+              {panelMode === 'tools' ? t('variablePanel.tools') : t('variablePanel.variables')}
             </span>
           </div>
         </div>

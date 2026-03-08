@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { MarkdownToolbar } from '@/components/MarkdownToolbar';
 import ReactMarkdown from 'react-markdown';
+import { useI18n } from '@/i18n';
 
 interface MarkdownEditorProps {
     value: string;
@@ -12,11 +13,13 @@ interface MarkdownEditorProps {
 export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     value,
     onChange,
-    placeholder = 'Escribe tu contenido en Markdown...',
+    placeholder,
     className = ''
 }) => {
+    const { t } = useI18n();
     const [showPreview, setShowPreview] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const resolvedPlaceholder = placeholder ?? t('newSource.markdownPlaceholder');
 
     const handleAction = (action: string) => {
         const textarea = textareaRef.current;
@@ -30,47 +33,47 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
         switch (action) {
             case 'bold':
-                newText = value.substring(0, start) + `**${selectedText || 'texto en negrita'}**` + value.substring(end);
+                newText = value.substring(0, start) + `**${selectedText || t('markdownEditor.sample.bold')}**` + value.substring(end);
                 newCursorPos = start + 2;
                 break;
             case 'italic':
-                newText = value.substring(0, start) + `*${selectedText || 'texto en cursiva'}*` + value.substring(end);
+                newText = value.substring(0, start) + `*${selectedText || t('markdownEditor.sample.italic')}*` + value.substring(end);
                 newCursorPos = start + 1;
                 break;
             case 'strikethrough':
-                newText = value.substring(0, start) + `~~${selectedText || 'texto tachado'}~~` + value.substring(end);
+                newText = value.substring(0, start) + `~~${selectedText || t('markdownEditor.sample.strikethrough')}~~` + value.substring(end);
                 newCursorPos = start + 2;
                 break;
             case 'heading1':
-                newText = value.substring(0, start) + `# ${selectedText || 'Encabezado 1'}` + value.substring(end);
+                newText = value.substring(0, start) + `# ${selectedText || t('markdownEditor.sample.heading1')}` + value.substring(end);
                 newCursorPos = start + 2;
                 break;
             case 'heading2':
-                newText = value.substring(0, start) + `## ${selectedText || 'Encabezado 2'}` + value.substring(end);
+                newText = value.substring(0, start) + `## ${selectedText || t('markdownEditor.sample.heading2')}` + value.substring(end);
                 newCursorPos = start + 3;
                 break;
             case 'heading3':
-                newText = value.substring(0, start) + `### ${selectedText || 'Encabezado 3'}` + value.substring(end);
+                newText = value.substring(0, start) + `### ${selectedText || t('markdownEditor.sample.heading3')}` + value.substring(end);
                 newCursorPos = start + 4;
                 break;
             case 'bulletList':
-                newText = value.substring(0, start) + `- ${selectedText || 'Elemento de lista'}` + value.substring(end);
+                newText = value.substring(0, start) + `- ${selectedText || t('markdownEditor.sample.bullet')}` + value.substring(end);
                 newCursorPos = start + 2;
                 break;
             case 'orderedList':
-                newText = value.substring(0, start) + `1. ${selectedText || 'Elemento numerado'}` + value.substring(end);
+                newText = value.substring(0, start) + `1. ${selectedText || t('markdownEditor.sample.ordered')}` + value.substring(end);
                 newCursorPos = start + 3;
                 break;
             case 'codeBlock':
-                newText = value.substring(0, start) + `\`\`\`\n${selectedText || 'código'}\n\`\`\`` + value.substring(end);
+                newText = value.substring(0, start) + `\`\`\`\n${selectedText || t('markdownEditor.sample.code')}\n\`\`\`` + value.substring(end);
                 newCursorPos = start + 4;
                 break;
             case 'blockquote':
-                newText = value.substring(0, start) + `> ${selectedText || 'cita'}` + value.substring(end);
+                newText = value.substring(0, start) + `> ${selectedText || t('markdownEditor.sample.quote')}` + value.substring(end);
                 newCursorPos = start + 2;
                 break;
             case 'link':
-                newText = value.substring(0, start) + `[${selectedText || 'texto del enlace'}](url)` + value.substring(end);
+                newText = value.substring(0, start) + `[${selectedText || t('markdownEditor.sample.link')}](url)` + value.substring(end);
                 newCursorPos = start + 1;
                 break;
             case 'image':
@@ -107,7 +110,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                             : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                 >
-                    Editor
+                    {t('markdownEditor.tab.editor')}
                 </button>
                 <button
                     onClick={() => setShowPreview(true)}
@@ -116,7 +119,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                             : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                 >
-                    Vista Previa
+                    {t('markdownEditor.tab.preview')}
                 </button>
             </div>
 
@@ -125,12 +128,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                     ref={textareaRef}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder}
+                    placeholder={resolvedPlaceholder}
                     className="w-full p-4 min-h-[300px] bg-background font-mono text-sm resize-none focus:outline-none"
                 />
             ) : (
                 <div className="p-4 min-h-[300px] prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown>{value || '*No hay contenido para previsualizar*'}</ReactMarkdown>
+                    <ReactMarkdown>{value || t('markdownEditor.previewEmpty')}</ReactMarkdown>
                 </div>
             )}
         </div>

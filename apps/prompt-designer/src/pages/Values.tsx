@@ -10,11 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 import { valuesService, Author, Tag, Tool, PromptVariable } from '@/services/valuesService';
 import { Plus, Pencil, Trash2, Tag as TagIcon, Users, Wrench, Variable } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useI18n } from '@/i18n';
 
 type Tab = 'authors' | 'tags' | 'tools' | 'variables';
 
 export default function Values() {
     const { toast } = useToast();
+    const { t } = useI18n();
     const [activeTab, setActiveTab] = useState<Tab>('authors');
     const [loading, setLoading] = useState(false);
 
@@ -30,6 +32,10 @@ export default function Values() {
 
     // Form State
     const [formData, setFormData] = useState<any>({});
+
+    const tabLabel = (tab: Tab) => t(`values.tab.${tab}`);
+    const itemLabel = (tab: Tab) => t(`values.item.${tab}`);
+    const newItemLabel = (tab: Tab) => t(`values.new.${tab}`);
 
     const fetchData = async () => {
         setLoading(true);
@@ -49,7 +55,11 @@ export default function Values() {
             }
         } catch (error) {
             console.error(error);
-            toast({ title: 'Error loading data', description: 'Failed to fetch ' + activeTab, variant: 'destructive' });
+            toast({
+                title: t('values.toast.loadErrorTitle'),
+                description: t('values.toast.loadErrorDescription', { tab: tabLabel(activeTab) }),
+                variant: 'destructive'
+            });
         } finally {
             setLoading(false);
         }
@@ -118,24 +128,24 @@ export default function Values() {
 
             setIsDialogOpen(false);
             fetchData();
-            toast({ title: 'Success', description: 'Item saved successfully' });
+            toast({ title: t('values.toast.successTitle'), description: t('values.toast.itemSaved') });
         } catch (error: any) {
             console.error(error);
-            toast({ title: 'Error', description: error.message || 'Failed to save', variant: 'destructive' });
+            toast({ title: t('values.toast.errorTitle'), description: error.message || t('values.toast.saveError'), variant: 'destructive' });
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this item?')) return;
+        if (!confirm(t('values.confirmDelete'))) return;
         try {
             if (activeTab === 'authors') await valuesService.deleteAuthor(id);
             if (activeTab === 'tags') await valuesService.deleteTag(id);
             if (activeTab === 'tools') await valuesService.deleteTool(id);
             if (activeTab === 'variables') await valuesService.deleteGlobalVariable(id);
             fetchData();
-            toast({ title: 'Success', description: 'Item deleted' });
+            toast({ title: t('values.toast.successTitle'), description: t('values.toast.itemDeleted') });
         } catch (error: any) {
-            toast({ title: 'Error', description: 'Failed to delete. It might be in use.', variant: 'destructive' });
+            toast({ title: t('values.toast.errorTitle'), description: t('values.toast.deleteError'), variant: 'destructive' });
         }
     };
 
@@ -143,10 +153,10 @@ export default function Values() {
         <PasswordGate>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold tracking-tight">Valores</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">{t('values.title')}</h1>
                     <Button onClick={() => handleOpenDialog()} className="gap-2">
                         <Plus className="w-4 h-4" />
-                        Nuevo {activeTab === 'authors' ? 'Autor' : activeTab === 'tags' ? 'Tag' : activeTab === 'tools' ? 'Herramienta' : 'Variable'}
+                        {newItemLabel(activeTab)}
                     </Button>
                 </div>
 
@@ -159,7 +169,7 @@ export default function Values() {
                             activeTab === 'authors' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
                         )}
                     >
-                        <Users className="w-4 h-4" /> Autores
+                        <Users className="w-4 h-4" /> {t('values.tab.authors')}
                     </button>
                     <button
                         onClick={() => setActiveTab('tags')}
@@ -168,7 +178,7 @@ export default function Values() {
                             activeTab === 'tags' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
                         )}
                     >
-                        <TagIcon className="w-4 h-4" /> Tags
+                        <TagIcon className="w-4 h-4" /> {t('values.tab.tags')}
                     </button>
                     <button
                         onClick={() => setActiveTab('tools')}
@@ -177,7 +187,7 @@ export default function Values() {
                             activeTab === 'tools' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
                         )}
                     >
-                        <Wrench className="w-4 h-4" /> Herramientas
+                        <Wrench className="w-4 h-4" /> {t('values.tab.tools')}
                     </button>
                     <button
                         onClick={() => setActiveTab('variables')}
@@ -186,7 +196,7 @@ export default function Values() {
                             activeTab === 'variables' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
                         )}
                     >
-                        <Variable className="w-4 h-4" /> Variables
+                        <Variable className="w-4 h-4" /> {t('values.tab.variables')}
                     </button>
                 </div>
 
@@ -196,26 +206,26 @@ export default function Values() {
                             <TableRow>
                                 {activeTab === 'authors' && (
                                     <>
-                                        <TableHead>Nombre</TableHead>
-                                        <TableHead>Email</TableHead>
-                                        <TableHead>Equipo</TableHead>
+                                        <TableHead>{t('values.header.name')}</TableHead>
+                                        <TableHead>{t('values.header.email')}</TableHead>
+                                        <TableHead>{t('values.header.team')}</TableHead>
                                     </>
                                 )}
-                                {activeTab === 'tags' && <TableHead>Nombre</TableHead>}
+                                {activeTab === 'tags' && <TableHead>{t('values.header.name')}</TableHead>}
                                 {activeTab === 'tools' && (
                                     <>
-                                        <TableHead>Nombre</TableHead>
-                                        <TableHead>Descripción</TableHead>
+                                        <TableHead>{t('values.header.name')}</TableHead>
+                                        <TableHead>{t('values.header.description')}</TableHead>
                                     </>
                                 )}
                                 {activeTab === 'variables' && (
                                     <>
-                                        <TableHead>Variable</TableHead>
-                                        <TableHead>Descripción</TableHead>
-                                        <TableHead>Tipo</TableHead>
+                                        <TableHead>{t('values.header.variable')}</TableHead>
+                                        <TableHead>{t('values.header.description')}</TableHead>
+                                        <TableHead>{t('values.header.type')}</TableHead>
                                     </>
                                 )}
-                                <TableHead className="w-[100px] text-right">Acciones</TableHead>
+                                <TableHead className="w-[100px] text-right">{t('values.header.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -269,7 +279,7 @@ export default function Values() {
                                 <TableRow key={variable.id}>
                                     <TableCell className="font-mono text-xs">{`{{${variable.variable_name}}}`}</TableCell>
                                     <TableCell>{variable.description || '-'}</TableCell>
-                                    <TableCell>{variable.variable_type || 'text'}</TableCell>
+                                    <TableCell>{variable.variable_type || t('newSource.type.text')}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(variable.id)}>
@@ -282,7 +292,7 @@ export default function Values() {
                             {(!loading && ((activeTab === 'authors' && authors.length === 0) || (activeTab === 'tags' && tags.length === 0) || (activeTab === 'tools' && tools.length === 0) || (activeTab === 'variables' && variables.length === 0))) && (
                                 <TableRow>
                                     <TableCell colSpan={4} className="h-24 text-center">
-                                        No hay resultados.
+                                        {t('values.empty')}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -293,13 +303,13 @@ export default function Values() {
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogContent className="sm:max-w-lg h-auto max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>{editingItem ? 'Editar' : 'Crear'} {activeTab === 'authors' ? 'Autor' : activeTab === 'tags' ? 'Tag' : activeTab === 'tools' ? 'Herramienta' : 'Variable'}</DialogTitle>
+                            <DialogTitle>{editingItem ? t('values.dialog.edit') : t('values.dialog.create')} {itemLabel(activeTab)}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleSave} className="space-y-4 mt-4">
                             {activeTab === 'authors' && (
                                 <>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Nombre</label>
+                                        <label className="text-sm font-medium">{t('values.form.name')}</label>
                                         <Input
                                             value={formData.name || ''}
                                             onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -307,7 +317,7 @@ export default function Values() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Email</label>
+                                        <label className="text-sm font-medium">{t('values.form.email')}</label>
                                         <Input
                                             type="email"
                                             value={formData.email || ''}
@@ -315,7 +325,7 @@ export default function Values() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Equipo</label>
+                                        <label className="text-sm font-medium">{t('values.form.team')}</label>
                                         <Input
                                             value={formData.team || ''}
                                             onChange={e => setFormData({ ...formData, team: e.target.value })}
@@ -326,7 +336,7 @@ export default function Values() {
 
                             {activeTab === 'tags' && (
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Nombre del Tag</label>
+                                    <label className="text-sm font-medium">{t('values.form.tagName')}</label>
                                     <Input
                                         value={formData.name || ''}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -338,7 +348,7 @@ export default function Values() {
                             {activeTab === 'tools' && (
                                 <>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Nombre (ID interno)</label>
+                                        <label className="text-sm font-medium">{t('values.form.toolInternalName')}</label>
                                         <Input
                                             value={formData.name || ''}
                                             onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -346,14 +356,14 @@ export default function Values() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Descripción</label>
+                                        <label className="text-sm font-medium">{t('values.form.toolDescription')}</label>
                                         <Input
                                             value={formData.description || ''}
                                             onChange={e => setFormData({ ...formData, description: e.target.value })}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Configuración (JSON)</label>
+                                        <label className="text-sm font-medium">{t('values.form.toolConfig')}</label>
                                         <textarea
                                             className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px]"
                                             value={formData.configuration || ''}
@@ -366,26 +376,26 @@ export default function Values() {
                             {activeTab === 'variables' && (
                                 <>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Categoría (Tipo)</label>
+                                        <label className="text-sm font-medium">{t('values.form.variableCategory')}</label>
                                         <Input
-                                            placeholder="ej. Usuario, Sistema, Personalizada"
+                                            placeholder={t('values.placeholder.variableCategory')}
                                             value={formData.variable_type || ''}
                                             onChange={e => setFormData({ ...formData, variable_type: e.target.value })}
                                             required
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Nombre de la Variable</label>
+                                        <label className="text-sm font-medium">{t('values.form.variableName')}</label>
                                         <Input
-                                            placeholder="ej. nombre_cliente"
+                                            placeholder={t('values.placeholder.variableName')}
                                             value={formData.variable_name || ''}
                                             onChange={e => setFormData({ ...formData, variable_name: e.target.value })}
                                             required
                                         />
-                                        <p className="text-xs text-muted-foreground">Sin llaves {'{{ }}'}</p>
+                                        <p className="text-xs text-muted-foreground">{t('values.form.variableNoBraces')}</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Descripción</label>
+                                        <label className="text-sm font-medium">{t('values.form.variableDescription')}</label>
                                         <Input
                                             value={formData.description || ''}
                                             onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -395,8 +405,8 @@ export default function Values() {
                             )}
 
                             <div className="flex justify-end gap-2 pt-4">
-                                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                                <Button type="submit">Guardar</Button>
+                                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>{t('common.cancel')}</Button>
+                                <Button type="submit">{t('common.save')}</Button>
                             </div>
                         </form>
                     </DialogContent>

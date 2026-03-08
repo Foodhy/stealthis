@@ -5,6 +5,7 @@ import { Button } from '@/components/native/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChevronUp, ChevronDown, Copy, Download, Edit2, Save, FileText, Eye, Plus, Upload, Play } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
+import { useI18n } from '@/i18n';
 
 interface ConsolidatedViewProps {
   content: string;
@@ -29,6 +30,7 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
   onTestAgent,
   isLoading = false
 }) => {
+  const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMarkdownView, setIsMarkdownView] = useState(false);
   const { toast } = useToast();
@@ -42,13 +44,13 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
     try {
       await navigator.clipboard.writeText(content);
       toast({
-        title: 'Copiado',
-        description: 'El contenido consolidado se copió al portapapeles'
+        title: t('consolidated.copyTitle'),
+        description: t('consolidated.copyDescription')
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'No se pudo copiar al portapapeles',
+        title: t('promptEditor.error'),
+        description: t('consolidated.copyErrorDescription'),
         variant: 'destructive'
       });
     }
@@ -59,13 +61,13 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
     const url = URL.createObjectURL(promptBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `prompt-consolidado.md`;
+    link.download = t('consolidated.filename');
     link.click();
     URL.revokeObjectURL(url);
     
     toast({
-      title: 'Exportado',
-      description: 'El prompt se descargó como archivo Markdown'
+      title: t('consolidated.exportTitle'),
+      description: t('consolidated.exportDescription')
     });
   };
 
@@ -76,7 +78,7 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
         className="p-4 cursor-pointer flex items-center justify-between hover:bg-accent/50 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h2 className="font-semibold">Prompt Consolidado</h2>
+        <h2 className="font-semibold">{t('consolidated.title')}</h2>
         <div className="flex items-center gap-2">
           {isExpanded && (
             <Button
@@ -91,12 +93,12 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
               {isMarkdownView ? (
                 <>
                   <FileText className="h-4 w-4" />
-                  Raw
+                  {t('consolidated.raw')}
                 </>
               ) : (
                 <>
                   <Eye className="h-4 w-4" />
-                  Vista
+                  {t('consolidated.preview')}
                 </>
               )}
             </Button>
@@ -112,7 +114,7 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
-              Nueva Sección
+              {t('consolidated.newSection')}
             </Button>
           )}
           {onImport && (
@@ -125,7 +127,7 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
               >
                 <span>
                   <Upload className="h-4 w-4" />
-                  Importar
+                  {t('consolidated.import')}
                 </span>
               </Button>
               <input
@@ -159,12 +161,12 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
                   >
                     <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                   </svg>
-                  Guardando...
+                  {t('consolidated.saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Guardar prompt
+                  {t('consolidated.savePrompt')}
                 </>
               )}
             </Button>
@@ -180,7 +182,7 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
               className="gap-2"
             >
               <Play className="h-4 w-4" />
-              Probar Agente
+              {t('consolidated.testAgent')}
             </Button>
           )}
           <Button
@@ -193,7 +195,7 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
             className="gap-2"
           >
             <Copy className="h-4 w-4" />
-            Copiar
+            {t('consolidated.copy')}
           </Button>
           <Button
             variant="ghost"
@@ -205,7 +207,7 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            Exportar
+            {t('consolidated.export')}
           </Button>
           {isExpanded ? (
             <ChevronUp className="h-5 w-5" />
@@ -219,14 +221,14 @@ export const ConsolidatedView: React.FC<ConsolidatedViewProps> = ({
         <div className="px-4 pb-4">
           {isMarkdownView ? (
             <div className="min-h-[400px] p-4 border rounded-md bg-background prose prose-sm max-w-none dark:prose-invert">
-              <ReactMarkdown>{content || "El contenido consolidado aparecerá aquí cuando agregues contenido a las secciones..."}</ReactMarkdown>
+              <ReactMarkdown>{content || t('consolidated.placeholder')}</ReactMarkdown>
             </div>
           ) : (
             <Textarea
               value={content}
               readOnly
               className="min-h-[400px] font-mono text-sm bg-editor-background"
-              placeholder="El contenido consolidado aparecerá aquí cuando agregues contenido a las secciones..."
+              placeholder={t('consolidated.placeholder')}
             />
           )}
         </div>

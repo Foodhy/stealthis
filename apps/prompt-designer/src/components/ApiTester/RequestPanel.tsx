@@ -9,6 +9,7 @@ import { Plus, Trash2, RotateCcw } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { CodeSnippet } from './CodeSnippet';
 import Editor from '@monaco-editor/react';
+import { useI18n } from '@/i18n';
 interface RequestPanelProps {
     url: string;
     onUrlChange: (url: string) => void;
@@ -50,9 +51,11 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
     savedConfigurations,
     hasSavedConfigurations
 }) => {
+    const { t, locale } = useI18n();
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleString('es-ES', {
+        return date.toLocaleString(locale === 'es' ? 'es-ES' : 'en-US', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -69,12 +72,12 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
         <>
             <Card className="p-4 space-y-4">
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Select Endpoint</label>
+                    <label className="text-sm font-medium">{t('apiTester.request.selectEndpoint')}</label>
                     <div className="flex gap-2">
                         <div className="w-32 flex-shrink-0">
                             <Select value={method} onValueChange={(val) => onMethodChange(val as HttpMethod)}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Method" />
+                                    <SelectValue placeholder={t('apiTester.request.method')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {METHODS.map((m) => (
@@ -88,7 +91,7 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
                         <Input
                             value={url}
                             onChange={(e) => onUrlChange(e.target.value)}
-                            placeholder="Enter request URL..."
+                            placeholder={t('apiTester.request.enterUrl')}
                             className="flex-1"
                         />
                     </div>
@@ -98,7 +101,7 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
 
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">Headers</label>
+                        <label className="text-sm font-medium">{t('apiTester.request.headers')}</label>
                         <Button
                             type="button"
                             onClick={onAddHeader}
@@ -107,7 +110,7 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
                             className="h-7 text-xs"
                         >
                             <Plus className="w-3 h-3 mr-1" />
-                            Add Header
+                            {t('apiTester.request.addHeader')}
                         </Button>
                     </div>
                     <div className="space-y-2 max-h-[200px] overflow-y-auto">
@@ -116,13 +119,13 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
                                 <Input
                                     value={header.key}
                                     onChange={(e) => onUpdateHeader(header.id, e.target.value, header.value)}
-                                    placeholder="Header name"
+                                    placeholder={t('apiTester.request.headerName')}
                                     className="flex-1 text-sm"
                                 />
                                 <Input
                                     value={header.value}
                                     onChange={(e) => onUpdateHeader(header.id, header.key, e.target.value)}
-                                    placeholder="Header value"
+                                    placeholder={t('apiTester.request.headerValue')}
                                     className="flex-1 text-sm"
                                 />
                                 <Button
@@ -141,7 +144,7 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
 
                 {(method !== 'GET') && (
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Request Body (JSON)</label>
+                        <label className="text-sm font-medium">{t('apiTester.request.body')}</label>
                         <div className="h-[200px] border rounded-md overflow-hidden">
                             <Editor
                                 height="100%"
@@ -167,14 +170,14 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
                         disabled={isLoading || !url}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                        {isLoading ? 'Executing...' : 'Execute Request'}
+                        {isLoading ? t('apiTester.request.executing') : t('apiTester.request.execute')}
                     </Button>
                 </div>
 
                 <Accordion type="single" className="w-full">
                     <AccordionItem value="code" className="border-none">
                         <AccordionTrigger className="py-2 text-xs text-muted-foreground hover:no-underline justify-start gap-2">
-                            <span>View Code Snippets</span>
+                            <span>{t('apiTester.request.viewCodeSnippets')}</span>
                         </AccordionTrigger>
                         <AccordionContent>
                             <CodeSnippet
@@ -192,7 +195,7 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
             {hasSavedConfigurations && (
                 <div className="mt-4 space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">Saved Configurations</label>
+                        <label className="text-sm font-medium">{t('apiTester.request.savedConfigurations')}</label>
                         <Button
                             type="button"
                             onClick={onClearHistory}
@@ -200,10 +203,10 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
                             variant="outline"
                             size="sm"
                             className="h-7 text-xs text-destructive hover:text-destructive"
-                            title="Eliminar todas las configuraciones guardadas"
+                            title={t('apiTester.request.clearHistoryTitle')}
                         >
                             <Trash2 className="w-3 h-3 mr-1" />
-                            Clear History
+                            {t('apiTester.request.clearHistory')}
                         </Button>
                     </div>
                     <div className="space-y-2 max-h-[300px] overflow-y-auto border rounded-md p-2 bg-muted/20">
@@ -233,7 +236,7 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
                                         variant="ghost"
                                         size="sm"
                                         className="h-8 w-8 p-0"
-                                        title="Restaurar esta configuración"
+                                        title={t('apiTester.request.restoreConfigTitle')}
                                     >
                                         <RotateCcw className="w-4 h-4" />
                                     </Button>
@@ -244,7 +247,7 @@ export const RequestPanel: React.FC<RequestPanelProps> = ({
                                         variant="ghost"
                                         size="sm"
                                         className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                        title="Eliminar esta configuración"
+                                        title={t('apiTester.request.deleteConfigTitle')}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </Button>

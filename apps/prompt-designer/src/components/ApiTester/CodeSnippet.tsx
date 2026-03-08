@@ -3,6 +3,7 @@ import { Header } from '@/hooks/useApiTester';
 import { Button } from '@/components/native/button';
 import { Copy, Check } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import { useI18n } from '@/i18n';
 
 interface CodeSnippetProps {
     url: string;
@@ -12,6 +13,7 @@ interface CodeSnippetProps {
 }
 
 export const CodeSnippet: React.FC<CodeSnippetProps> = ({ url, method, headers, body }) => {
+    const { t } = useI18n();
     const [language, setLanguage] = useState<'javascript' | 'python'>('javascript');
     const [copied, setCopied] = useState(false);
 
@@ -98,7 +100,7 @@ print(response.text)`;
     return (
         <div className="space-y-2 pt-4 border-t">
             <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Request Code</label>
+                <label className="text-sm font-medium">{t('apiTester.code.requestCode')}</label>
                 <div className="flex items-center gap-2">
                     <div className="flex bg-muted rounded-lg p-1">
                         <button
@@ -108,7 +110,7 @@ print(response.text)`;
                                 : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
-                            JavaScript
+                            {t('apiTester.code.javascript')}
                         </button>
                         <button
                             onClick={() => setLanguage('python')}
@@ -117,7 +119,7 @@ print(response.text)`;
                                 : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
-                            Python
+                            {t('apiTester.code.python')}
                         </button>
                     </div>
                 </div>

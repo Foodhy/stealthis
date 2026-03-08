@@ -487,7 +487,7 @@ Patrones comunes que combinan múltiples componentes para casos de uso frecuente
 
 ---
 
-## Phase 15 — Widgets, Media & Interactive ✅ DONE
+## Phase 15 — Widgets, Media & Interactive ✅ DONE (+ React variants ✅)
 
 Componentes para funcionalidades específicas: widgets utilitarios, media players, social y elementos interactivos.
 

@@ -5,6 +5,7 @@ import { Edit2, Check } from '@/components/icons';
 import { Button } from '@/components/native/button';
 import Editor from '@monaco-editor/react';
 import { MarkdownToolbar, MarkdownAction } from './MarkdownToolbar';
+import { useI18n } from '@/i18n';
 
 interface PromptSectionProps {
   title: string;
@@ -21,6 +22,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   onTitleChange,
   customMarkdownActions
 }) => {
+  const { t } = useI18n();
   const editorRef = useRef<any>(null);
 
   const editorOptions = {
@@ -105,43 +107,43 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     
     switch (action) {
       case 'bold':
-        insertText = selectedText ? `**${selectedText}**` : '**texto en negrita**';
+        insertText = selectedText ? `**${selectedText}**` : `**${t('markdownEditor.sample.bold')}**`;
         break;
       case 'italic':
-        insertText = selectedText ? `*${selectedText}*` : '*texto en cursiva*';
+        insertText = selectedText ? `*${selectedText}*` : `*${t('markdownEditor.sample.italic')}*`;
         break;
       case 'strikethrough':
-        insertText = selectedText ? `~~${selectedText}~~` : '~~texto tachado~~';
+        insertText = selectedText ? `~~${selectedText}~~` : `~~${t('markdownEditor.sample.strikethrough')}~~`;
         break;
       case 'heading1':
-        insertText = selectedText ? `# ${selectedText}` : '# Encabezado 1';
+        insertText = selectedText ? `# ${selectedText}` : `# ${t('markdownEditor.sample.heading1')}`;
         break;
       case 'heading2':
-        insertText = selectedText ? `## ${selectedText}` : '## Encabezado 2';
+        insertText = selectedText ? `## ${selectedText}` : `## ${t('markdownEditor.sample.heading2')}`;
         break;
       case 'heading3':
-        insertText = selectedText ? `### ${selectedText}` : '### Encabezado 3';
+        insertText = selectedText ? `### ${selectedText}` : `### ${t('markdownEditor.sample.heading3')}`;
         break;
       case 'bulletList':
-        insertText = selectedText ? `- ${selectedText}` : '- Elemento de lista';
+        insertText = selectedText ? `- ${selectedText}` : `- ${t('markdownEditor.sample.bullet')}`;
         break;
       case 'orderedList':
-        insertText = selectedText ? `1. ${selectedText}` : '1. Elemento numerado';
+        insertText = selectedText ? `1. ${selectedText}` : `1. ${t('markdownEditor.sample.ordered')}`;
         break;
       case 'codeBlock':
-        insertText = selectedText ? `\`\`\`\n${selectedText}\n\`\`\`` : '```\ntu código aquí\n```';
+        insertText = selectedText ? `\`\`\`\n${selectedText}\n\`\`\`` : `\`\`\`\n${t('markdownEditor.sample.code')}\n\`\`\``;
         break;
       case 'blockquote':
-        insertText = selectedText ? `> ${selectedText}` : '> Cita';
+        insertText = selectedText ? `> ${selectedText}` : `> ${t('markdownEditor.sample.quote')}`;
         break;
       case 'link':
-        insertText = selectedText ? `[${selectedText}](url)` : '[texto del enlace](url)';
+        insertText = selectedText ? `[${selectedText}](url)` : `[${t('markdownEditor.sample.link')}](url)`;
         break;
       case 'image':
-        insertText = selectedText ? `![${selectedText}](url)` : '![texto alternativo](url)';
+        insertText = selectedText ? `![${selectedText}](url)` : '![alt text](url)';
         break;
       case 'table':
-        insertText = '| Encabezado 1 | Encabezado 2 | Encabezado 3 |\n|--------------|--------------|-------------|\n| Celda 1      | Celda 2      | Celda 3     |';
+        insertText = '| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |';
         break;
       case 'undo':
         editor.trigger('keyboard', 'undo', null);

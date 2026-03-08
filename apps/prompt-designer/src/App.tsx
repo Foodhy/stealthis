@@ -1,5 +1,7 @@
 import { ToastProvider, Toaster } from "@/components/native/toast";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { I18nProvider } from "@/i18n";
+import { legacyRouteAliases, routes } from "@/lib/routes";
 import { Route, Router, Routes } from "@/lib/router";
 import Changelog from "@/pages/Changelog";
 import Index from "@/pages/Index";
@@ -8,31 +10,39 @@ import NotFound from "@/pages/NotFound";
 import Settings from "@/pages/Settings";
 import TestEndpoints from "@/pages/TestEndpoints";
 import Values from "@/pages/Values";
+import { PromptWorkspacePage } from "@/pages/prompts/PromptWorkspacePage";
 
 const App = () => (
-  <ThemeProvider>
-    <ToastProvider>
-      <Router>
-        <Toaster />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/prompts" element={<Index />} />
-          <Route path="/nueva-fuente" element={<NewDataSource />} />
-          <Route path="/probar-endpoints" element={<TestEndpoints />} />
-          <Route path="/valores" element={<Values />} />
-          <Route path="/configuracion" element={<Settings />} />
-          <Route path="/changelog" element={<Changelog />} />
+  <I18nProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <Router>
+          <Toaster />
+          <Routes>
+            <Route path={routes.home} element={<Index />} />
+            <Route path={routes.prompts} element={<Index />} />
+            <Route path={routes.promptsNew} element={<PromptWorkspacePage mode="new" />} />
+            <Route path={routes.promptsEdit} element={<PromptWorkspacePage mode="edit" />} />
+            <Route path={routes.newSource} element={<NewDataSource />} />
+            <Route path={routes.testEndpoints} element={<TestEndpoints />} />
+            <Route path={routes.values} element={<Values />} />
+            <Route path={routes.settings} element={<Settings />} />
+            <Route path={routes.changelog} element={<Changelog />} />
 
-          <Route path="/new-source" element={<NewDataSource />} />
-          <Route path="/test-endpoints" element={<TestEndpoints />} />
-          <Route path="/values" element={<Values />} />
-          <Route path="/settings" element={<Settings />} />
+            {/* Spanish/legacy aliases kept for backward compatibility */}
+            <Route path={legacyRouteAliases.promptsNew[0]} element={<PromptWorkspacePage mode="new" />} />
+            <Route path={legacyRouteAliases.promptsEdit[0]} element={<PromptWorkspacePage mode="edit" />} />
+            <Route path={legacyRouteAliases.newSource[0]} element={<NewDataSource />} />
+            <Route path={legacyRouteAliases.testEndpoints[0]} element={<TestEndpoints />} />
+            <Route path={legacyRouteAliases.values[0]} element={<Values />} />
+            <Route path={legacyRouteAliases.settings[0]} element={<Settings />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </ToastProvider>
-  </ThemeProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+      </ToastProvider>
+    </ThemeProvider>
+  </I18nProvider>
 );
 
 export default App;

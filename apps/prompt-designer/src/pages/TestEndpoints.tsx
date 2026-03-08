@@ -2,8 +2,10 @@ import { PasswordGate } from '@/components/PasswordGate';
 import { useApiTester } from '@/hooks/useApiTester';
 import { RequestPanel } from '@/components/ApiTester/RequestPanel';
 import { ResponsePanel } from '@/components/ApiTester/ResponsePanel';
+import { useI18n } from '@/i18n';
 
 const TestEndpoints = () => {
+    const { t } = useI18n();
     const {
         url,
         setUrl,
@@ -30,7 +32,7 @@ const TestEndpoints = () => {
         <PasswordGate>
             <div className="min-h-screen bg-background p-6">
                 <div className="max-w-6xl mx-auto space-y-6">
-                    <h1 className="text-2xl font-semibold text-foreground">API Tester</h1>
+                    <h1 className="text-2xl font-semibold text-foreground">{t('testEndpoints.title')}</h1>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="space-y-6">

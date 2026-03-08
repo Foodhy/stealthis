@@ -19,6 +19,7 @@ import { AgentTester } from './AgentTester';
 import { useToast } from '@/components/native/toast';
 import { loadPrompt, savePrompt, deletePrompt } from '@/services/promptService';
 import { valuesService, Tool, PromptVariable, Author, Tag } from '@/services/valuesService';
+import { useI18n } from '@/i18n';
 
 export interface PromptData {
   metadata: {
@@ -68,10 +69,10 @@ const STORAGE_KEY = 'prompt-editor-history';
 
 // Default sections matching schema: identity_role, steps_objectives, available_tools (replaced by pitch for UI default)
 const DEFAULT_SECTION_KEYS = ['identity_role', 'steps_objectives', 'available_tools'];
-const DEFAULT_SECTION_TITLES: Record<string, string> = {
-  'identity_role': 'Identidad y Rol',
-  'steps_objectives': 'Pasos y Objetivos del flujo',
-  'available_tools': 'Herramientas Disponibles'
+const DEFAULT_SECTION_TITLE_MESSAGE_KEYS: Record<string, string> = {
+  'identity_role': 'promptEditor.defaultSection.identity_role',
+  'steps_objectives': 'promptEditor.defaultSection.steps_objectives',
+  'available_tools': 'promptEditor.defaultSection.available_tools',
 };
 
 const createEmptySections = (): SectionsRecord => {
@@ -80,6 +81,20 @@ const createEmptySections = (): SectionsRecord => {
     sections[key] = '';
   });
   return sections;
+};
+
+const resolveSectionTitle = (
+  sectionKey: string,
+  t: (key: string, params?: Record<string, string | number>, fallback?: string) => string,
+): string => {
+  const messageKey = DEFAULT_SECTION_TITLE_MESSAGE_KEYS[sectionKey];
+  if (messageKey) {
+    return t(messageKey);
+  }
+
+  return sectionKey
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const mergeWithDefaultSections = (sections: SectionsRecord): SectionsRecord => ({
@@ -147,7 +162,7 @@ const toPromptVariable = (name: string, type: string = 'text'): PromptVariable =
   is_required: false
 });
 
-const defaultVariablesObjs: PromptVariable[] = defaultVariables.map(v => toPromptVariable(v, 'Sistema'));
+const defaultVariablesObjs: PromptVariable[] = defaultVariables.map(v => toPromptVariable(v, 'System'));
 
 interface PromptEditorProps {
   promptId?: number | null;
@@ -156,6 +171,7 @@ interface PromptEditorProps {
 
 export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [variables, setVariables] = useState<PromptVariable[]>(defaultVariablesObjs);
   const [fullscreenSection, setFullscreenSection] = useState<string | null>(null);
   const [sectionTitles, setSectionTitles] = useState<{ [key: string]: string }>({});
@@ -304,7 +320,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
             // Add loaded vars (if they are new/adhoc, we default them)
             loadedVars.forEach((vName: string) => {
               if (!existingMap.has(vName)) {
-                existingMap.set(vName, toPromptVariable(vName, 'Local'));
+                existingMap.set(vName, toPromptVariable(vName, t('promptEditor.localVariableType')));
               }
             });
 
@@ -326,13 +342,8 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
 
             // Set section titles
             const titles: { [key: string]: string } = {};
-            const getTitleHelper = (key: string): string => {
-              return DEFAULT_SECTION_TITLES[key] || key.split(/[-_]/).map(word =>
-                word.charAt(0).toUpperCase() + word.slice(1)
-              ).join(' ');
-            };
             Object.keys(loadedData.sections).forEach(key => {
-              titles[key] = getTitleHelper(key);
+              titles[key] = resolveSectionTitle(key, t);
             });
             setSectionTitles(titles);
             setHistory([]);
@@ -341,8 +352,8 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
           } catch (error) {
             console.error('Error loading prompt from Supabase:', error);
             toast({
-              title: 'Error al cargar',
-              description: 'No se pudo cargar el prompt desde la base de datos. Usando datos locales.',
+              title: t('promptEditor.loadPromptErrorTitle'),
+              description: t('promptEditor.loadPromptErrorDescription'),
               variant: 'destructive'
             });
           }
@@ -374,7 +385,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
               version: rawMetadata.version || '1.0.0',
               author: rawMetadata.author || '',
               lastModified: rawMetadata.lastModified || new Date().toISOString(),
-              title: rawMetadata.title || (rawMetadata as any).description || 'Prompt Restored',
+              title: rawMetadata.title || (rawMetadata as any).description || t('promptEditor.restoredTitle'),
               description: rawMetadata.description || '',
               tags: rawMetadata.tags || ((rawMetadata as any).promptType ? [(rawMetadata as any).promptType] : [])
             };
@@ -401,7 +412,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
             // Update titles
             const titles: { [key: string]: string } = {};
             Object.keys(mergedSections).forEach(key => {
-              titles[key] = DEFAULT_SECTION_TITLES[key] || key.replace(/[-_]/g, ' ');
+              titles[key] = resolveSectionTitle(key, t);
             });
             setSectionTitles(titles);
           } else {
@@ -419,7 +430,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
     };
 
     loadData();
-  }, [promptId, toast]);
+  }, [promptId, t, toast]);
 
   const versionsMap = useMemo(() => {
     const map = new Map<string, PromptData>();
@@ -430,7 +441,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
         version: entry.metadata.version || '1.0.0',
         author: entry.metadata.author || '',
         lastModified: entry.metadata.lastModified || entry.savedAt,
-        title: entry.metadata.title || 'Version',
+        title: entry.metadata.title || t('promptEditor.versionFallback'),
         description: entry.metadata.description || '',
         tags: entry.metadata.tags || []
       };
@@ -443,7 +454,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
       } as PromptData);
     });
     return map;
-  }, [history]);
+  }, [history, availableTools, t]);
 
   const savedVersions = useMemo(() => {
     return history.map(h => h.version).filter((v, i, a) => a.indexOf(v) === i);
@@ -506,7 +517,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
 
   const handleVersionSelection = useCallback((value: string) => {
     if (value === '__new__') {
-      const proposedVersion = prompt('Ingresa la nueva versión:');
+      const proposedVersion = prompt(t('promptEditor.newVersionPrompt'));
       if (proposedVersion) {
         updateMetadata('version', proposedVersion.trim());
       }
@@ -516,17 +527,17 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
     if (selected) {
       setPromptData(selected);
       setBaselineData(selected);
-      toast({ title: 'Versión cargada', description: value });
+      toast({ title: t('promptEditor.versionLoaded'), description: value });
     }
-  }, [versionsMap, updateMetadata, toast]);
+  }, [t, versionsMap, updateMetadata, toast]);
 
   const updateSectionTitle = useCallback((sectionKey: string, title: string) => {
     setSectionTitles(prev => ({ ...prev, [sectionKey]: title }));
   }, []);
 
   const getSectionTitle = useCallback((sectionKey: string) => {
-    return sectionTitles[sectionKey] || DEFAULT_SECTION_TITLES[sectionKey] || sectionKey.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  }, [sectionTitles]);
+    return sectionTitles[sectionKey] || resolveSectionTitle(sectionKey, t);
+  }, [sectionTitles, t]);
 
   const sectionMarkdownBlocks = Object.entries(promptData.sections)
     .filter(([_, content]) => content.trim())
@@ -536,7 +547,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
     });
 
   const toolsMarkdown = enabledTools.length
-    ? `## Herramientas habilitadas\n\n${enabledTools.map(tool => `- **${tool.display_name}** (\`${tool.name}\`): ${tool.info}`).join('\n')}`
+    ? `## ${t('promptEditor.enabledToolsHeading')}\n\n${enabledTools.map(tool => `- **${tool.display_name}** (\`${tool.name}\`): ${tool.info}`).join('\n')}`
     : '';
 
   const consolidatedContent = [...sectionMarkdownBlocks, ...(toolsMarkdown ? [toolsMarkdown] : [])]
@@ -544,23 +555,26 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
 
   const handleConsolidatedChange = useCallback((content: string) => {
     // Basic parser for consolidated view
-    toast({ title: 'Aviso', description: 'Edición consolidada simplificada en esta versión refactorizada.' });
-  }, []);
+    toast({ title: t('promptEditor.saved'), description: t('promptEditor.editConsolidatedNotice') });
+  }, [t, toast]);
 
   const addVariable = useCallback((variable: string) => {
     // Check if variable name exists in our list
     if (variable && !variables.some(v => v.variable_name === variable)) {
-      setVariables(prev => [...prev, toPromptVariable(variable, 'Personalizada')]);
-      toast({ title: 'Variable agregada', description: `Se agregó {{${variable}}}` });
+      setVariables(prev => [...prev, toPromptVariable(variable, t('promptEditor.customVariableType'))]);
+      toast({
+        title: t('promptEditor.addVariable'),
+        description: t('promptEditor.addVariableDescription', { variable: variable }),
+      });
     }
-  }, [variables, toast]);
+  }, [t, variables, toast]);
 
   const removeVariable = useCallback((variable: string) => {
     setVariables(prev => prev.filter(v => v.variable_name !== variable));
   }, []);
 
   const addNewSection = useCallback(() => {
-    const sectionName = prompt('Ingresa el nombre de la nueva sección:');
+    const sectionName = prompt(t('promptEditor.newSectionPrompt'));
     if (sectionName?.trim()) {
       const cleanName = sectionName.trim();
       const sectionKey = cleanName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, ''); // Schema keys use underscores mostly
@@ -573,13 +587,13 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
         }));
         setSectionTitles(prev => ({ ...prev, [sectionKey]: cleanName }));
       } else {
-        toast({ title: 'Error', description: 'Ya existe una sección con ese nombre', variant: 'destructive' });
+        toast({ title: t('promptEditor.error'), description: t('promptEditor.sectionExists'), variant: 'destructive' });
       }
     }
-  }, [promptData.sections, toast]);
+  }, [promptData.sections, t, toast]);
 
   const deleteSection = useCallback((sectionKey: string) => {
-    if (confirm(`¿Estás seguro de eliminar la sección "${getSectionTitle(sectionKey)}"?`)) {
+    if (confirm(t('promptEditor.sectionDeleteConfirm', { title: getSectionTitle(sectionKey) }))) {
       setPromptData(prev => {
         const newSections = { ...prev.sections };
         delete newSections[sectionKey];
@@ -597,9 +611,12 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
         return newTitles;
       });
 
-      toast({ title: 'Sección eliminada', description: `Se eliminó "${getSectionTitle(sectionKey)}"` });
+      toast({
+        title: t('promptEditor.sectionDeleted'),
+        description: t('promptEditor.sectionDeletedDescription', { title: getSectionTitle(sectionKey) }),
+      });
     }
-  }, [toast, getSectionTitle]);
+  }, [t, toast, getSectionTitle]);
 
   const handleSaveVersion = useCallback(async () => {
     if (!promptData.metadata.version) return;
@@ -615,7 +632,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
     }
 
     if (!authorIdToSave) {
-      toast({ title: 'Error', description: 'Debes seleccionar un autor', variant: 'destructive' });
+      toast({ title: t('promptEditor.error'), description: t('promptEditor.authorRequired'), variant: 'destructive' });
       return;
     }
 
@@ -643,7 +660,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
         tagIdsToSave
       );
       setCurrentPromptId(id);
-      toast({ title: 'Guardado', description: 'El prompt ha sido guardado exitosamente.' });
+      toast({ title: t('promptEditor.saved'), description: t('promptEditor.savedDescription') });
 
       // Local Backup
       const now = new Date().toISOString();
@@ -660,26 +677,26 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ current: promptData, history: [...history, entry] }));
 
     } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+      toast({ title: t('promptEditor.error'), description: e.message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
-  }, [promptData, currentPromptId, variables, history, toast, selectedAuthorId, selectedTagIds, availableAuthors, availableTags]);
+  }, [promptData, currentPromptId, variables, history, t, toast, selectedAuthorId, selectedTagIds, availableAuthors, availableTags]);
 
   const handleDelete = useCallback(async () => {
     if (!currentPromptId) return;
-    if (!confirm('Eliminar prompt?')) return;
+    if (!confirm(t('promptEditor.deletePromptConfirm'))) return;
     try {
       await deletePrompt(currentPromptId);
       setCurrentPromptId(null);
       setPromptData(buildDefaultPromptData());
       setHistory([]);
       onBack?.();
-      toast({ title: 'Eliminado' });
+      toast({ title: t('promptEditor.deleted') });
     } catch (e) { console.error(e); }
-  }, [currentPromptId, onBack, toast]);
+  }, [currentPromptId, onBack, t, toast]);
 
-  const handleCopy = () => { navigator.clipboard.writeText(consolidatedContent); toast({ title: 'Copiado' }); };
+  const handleCopy = () => { navigator.clipboard.writeText(consolidatedContent); toast({ title: t('promptEditor.copy') }); };
   const handleImportPrompt = (e: any) => { }; // Placeholder
 
   return (
@@ -697,7 +714,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
             {onBack && (
               <button onClick={onBack} disabled={isLoading} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                 <ArrowLeft size={20} />
-                <span className="text-sm">Proyectos</span>
+                <span className="text-sm">{t('promptEditor.projects')}</span>
               </button>
             )}
             <Badge variant="secondary">v{promptData.metadata.version}</Badge>
@@ -705,7 +722,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
           </div>
           {currentPromptId && (
             <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isLoading} className="gap-2">
-              <Trash size={16} /> Eliminar
+              <Trash size={16} /> {t('promptEditor.delete')}
             </Button>
           )}
         </div>
@@ -740,7 +757,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
               // editor.setPosition(newPosition); // executeEdits helps with cursor? usually yes if distinct range.
               editor.focus();
             } else {
-              toast({ title: 'Error', description: 'Selecciona una sección del prompt primero', variant: 'destructive' });
+              toast({ title: t('promptEditor.error'), description: t('promptEditor.selectSectionError'), variant: 'destructive' });
             }
           }}
         />
@@ -751,7 +768,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               {/* Tags Multi-Select */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Tags (Tipo de prompt)</label>
+                <label className="text-sm font-medium">{t('promptEditor.tagsLabel')}</label>
                 <Select
                   value=""
                   onValueChange={(value) => {
@@ -764,7 +781,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
                   <SelectTrigger>
                     <div className="flex flex-wrap gap-1">
                       {selectedTagIds.length === 0 ? (
-                        <span className="text-muted-foreground">Seleccionar tags...</span>
+                        <span className="text-muted-foreground">{t('promptEditor.tagsPlaceholder')}</span>
                       ) : (
                         selectedTagIds.map(tagId => {
                           const tag = availableTags.find(t => t.id === tagId);
@@ -796,7 +813,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
                       ))}
                     {availableTags.filter(tag => !selectedTagIds.includes(tag.id)).length === 0 && (
                       <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                        Todos los tags seleccionados
+                        {t('promptEditor.allTagsSelected')}
                       </div>
                     )}
                   </SelectContent>
@@ -805,9 +822,9 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
 
               {/* Version - Free Text Input */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Versión</label>
+                <label className="text-sm font-medium">{t('promptEditor.versionLabel')}</label>
                 <Input
-                  placeholder="ej: 1.0.0"
+                  placeholder={t('promptEditor.versionPlaceholder')}
                   value={promptData.metadata.version}
                   onChange={(e) => updateMetadata('version', e.target.value)}
                 />
@@ -815,7 +832,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
 
               {/* Author - Searchable Dropdown */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Autor</label>
+                <label className="text-sm font-medium">{t('promptEditor.authorLabel')}</label>
                 <Select
                   value={promptData.metadata.author || ""}
                   onValueChange={(authorName) => {
@@ -827,7 +844,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar autor..." />
+                    <SelectValue placeholder={t('promptEditor.authorPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableAuthors.map(author => (
@@ -838,7 +855,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
                     ))}
                     {availableAuthors.length === 0 && (
                       <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                        No hay autores disponibles
+                        {t('promptEditor.noAuthors')}
                       </div>
                     )}
                   </SelectContent>
@@ -847,9 +864,9 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
 
               {/* Title */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Título</label>
+                <label className="text-sm font-medium">{t('promptEditor.titleLabel')}</label>
                 <Input
-                  placeholder="Título del prompt"
+                  placeholder={t('promptEditor.titlePlaceholder')}
                   value={promptData.metadata.title}
                   onChange={(e) => updateMetadata('title', e.target.value)}
                 />
@@ -858,10 +875,10 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
 
             {/* Description Row */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Descripción</label>
+              <label className="text-sm font-medium">{t('promptEditor.descriptionLabel')}</label>
               <textarea
                 className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Descripción detallada del prompt..."
+                placeholder={t('promptEditor.descriptionPlaceholder')}
                 value={promptData.metadata.description}
                 onChange={(e) => updateMetadata('description', e.target.value)}
               />
@@ -936,7 +953,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ promptId, onBack }) 
             <div className="w-full h-[500px] flex items-center justify-center border-2 border-dashed border-muted rounded-lg hover:bg-accent/50 transition-colors cursor-pointer" onClick={addNewSection}>
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <Plus size={32} />
-                <span>Agregar Sección</span>
+                <span>{t('promptEditor.addSection')}</span>
               </div>
             </div>
           </div>

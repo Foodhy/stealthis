@@ -39,13 +39,13 @@ export const explainSupabaseError = (
   const candidate = asErrorLike(error);
   const haystack = buildHaystack(candidate);
   const objectsHint = expectedObjects.length
-    ? ` Objetos esperados: ${expectedObjects.join(', ')}.`
+    ? ` Expected objects: ${expectedObjects.join(', ')}.`
     : '';
 
-  if (haystack.includes('supabase no esta configurado')) {
+  if (haystack.includes('supabase no esta configurado') || haystack.includes('supabase is not configured')) {
     return (
       candidate.message ||
-      'Supabase no esta configurado. Define VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY.'
+      'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.'
     );
   }
 
@@ -59,7 +59,7 @@ export const explainSupabaseError = (
       'typeerror: failed to fetch',
     ])
   ) {
-    return `No se pudo conectar con Supabase para ${action}. Revisa red, URL del proyecto y CORS.`;
+    return `Could not connect to Supabase while trying to ${action}. Check network, project URL, and CORS.`;
   }
 
   if (
@@ -74,7 +74,7 @@ export const explainSupabaseError = (
       'pgrst205',
     ])
   ) {
-    return `Supabase responde, pero falta el esquema esperado para ${action}.${objectsHint} Ejecuta apps/prompt-designer/supabase/schema.sql o cambia VITE_DATA_PROVIDER=local mientras migras.`;
+    return `Supabase responded, but the expected schema is missing for ${action}.${objectsHint} Run apps/prompt-designer/supabase/schema.sql or switch to VITE_DATA_PROVIDER=local while migrating.`;
   }
 
   if (
@@ -89,11 +89,11 @@ export const explainSupabaseError = (
       '403',
     ])
   ) {
-    return `Supabase respondio, pero la clave publica o las politicas no permiten ${action}. Revisa la anon key y RLS.`;
+    return `Supabase responded, but public key or policies do not allow ${action}. Check anon key and RLS settings.`;
   }
 
   const reason =
-    candidate.message || candidate.details || candidate.hint || 'causa no identificada';
+    candidate.message || candidate.details || candidate.hint || 'unknown cause';
 
-  return `Error al ${action} en Supabase: ${reason}`;
+  return `Supabase error while trying to ${action}: ${reason}`;
 };
