@@ -11,7 +11,8 @@ interface Props {
 
 const { resource, srcdoc, locale = "en" } = Astro.props;
 const t = useTranslations(locale);
-const { slug, title, description, category, difficulty, labRoute } = resource.data;
+const { slug, title, description, category, difficulty, labRoute, createdAt, updatedAt } = resource.data;
+const sortDate = typeof createdAt === "string" ? createdAt : (typeof updatedAt === "string" ? updatedAt : "");
 
 const prefix = getLocalePrefix(locale);
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
@@ -33,7 +34,8 @@ const categoryKey = `category.${category}` as
   | "category.architectures"
   | "category.boilerplates"
   | "category.remotion"
-  | "category.database-schemas";
+  | "category.database-schemas"
+  | "category.ultra-high-definition-pages";
 const categoryLabel = t(categoryKey);
 ---
 
@@ -42,6 +44,8 @@ const categoryLabel = t(categoryKey);
   data-slug={slug}
   data-category={category}
   data-difficulty={difficulty}
+  data-title={(title ?? "").toLowerCase()}
+  data-created-at={sortDate}
   data-srcdoc={srcdoc}
 >
   <div class="showcase-preview">

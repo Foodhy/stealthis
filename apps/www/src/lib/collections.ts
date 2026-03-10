@@ -5,6 +5,7 @@ export const RESOURCE_COLLECTION_IDS = [
   "cards",
   "dashboard",
   "remotion",
+  "effects",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -62,6 +63,13 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.remotion.desc",
     accentToken: "collection-remotion",
     order: 6,
+  },
+  {
+    id: "effects",
+    titleKey: "collection.effects.title",
+    descriptionKey: "collection.effects.desc",
+    accentToken: "collection-effects",
+    order: 7,
   },
 ];
 

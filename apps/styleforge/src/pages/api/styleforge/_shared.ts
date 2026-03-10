@@ -28,6 +28,20 @@ export interface StyleForgeLLMPayload {
   apiKey?: string;
 }
 
+export async function parseJsonRequestBody(request: Request): Promise<unknown> {
+  const raw = await request.text();
+  if (!raw.trim()) {
+    throw new Error("Request body is empty.");
+  }
+
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid JSON body: ${reason}`);
+  }
+}
+
 export function parseDraftBody(body: unknown): {
   selection: z.infer<typeof StyleForgeSelectionSchema>;
   llm: StyleForgeLLMPayload;

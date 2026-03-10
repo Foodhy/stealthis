@@ -6,11 +6,11 @@ import {
   curateStyleForgeReferences,
   indexReferencesBySlug,
 } from "../../../lib/styleforge/references";
-import { jsonError, jsonResponse, parseDraftBody } from "./_shared";
+import { jsonError, jsonResponse, parseDraftBody, parseJsonRequestBody } from "./_shared";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const body = (await request.json()) as unknown;
+    const body = await parseJsonRequestBody(request);
     const { selection, llm } = parseDraftBody(body);
 
     const resources = await getCollection("resources");

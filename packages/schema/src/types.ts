@@ -10,7 +10,8 @@ export type ResourceCategoryPhase2 =
   | "architectures"
   | "boilerplates"
   | "remotion"
-  | "database-schemas";
+  | "database-schemas"
+  | "ultra-high-definition-pages";
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 
@@ -44,7 +45,14 @@ export type ResourceTarget =
   | "mermaid"
   | "dbml";
 
-export type ResourceCollection = "saas" | "motion" | "hero" | "cards" | "dashboard" | "remotion";
+export type ResourceCollection =
+  | "saas"
+  | "motion"
+  | "hero"
+  | "cards"
+  | "dashboard"
+  | "remotion"
+  | "effects";
 
 export interface ResourceAuthor {
   name: string;

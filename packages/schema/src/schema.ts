@@ -16,6 +16,7 @@ export const ResourceCategorySchema = z.enum([
   "boilerplates",
   "remotion",
   "database-schemas",
+  "ultra-high-definition-pages",
 ]);
 
 export const ResourceTypeSchema = z.enum([
@@ -61,6 +62,7 @@ export const ResourceCollectionSchema = z.enum([
   "cards",
   "dashboard",
   "remotion",
+  "effects",
 ]);
 
 export const ResourceMetaSchema = z.object({

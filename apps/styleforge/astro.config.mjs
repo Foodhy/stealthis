@@ -5,7 +5,7 @@ import tailwind from "@astrojs/tailwind";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  output: "static",
+  output: "server",
   site: "https://styleforge.stealthis.dev",
   adapter: cloudflare(),
   server: { port: 4326 },
