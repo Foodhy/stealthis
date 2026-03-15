@@ -781,6 +781,57 @@ Plantillas starter para distintos stacks y casos de uso.
 
 ---
 
+## Phase 22 — Design Style Collections ✅ DONE
+
+Una colección de componentes (cards, buttons, forms, etc.) implementados en distintos estilos de diseño — cada entrada muestra el mismo patrón visual reinterpretado en una estética diferente.
+
+> **Concept:** Each slug is a self-contained style showcase — a UI "card" or mini-component set fully dressed in that aesthetic. Good for inspiration, learning, and copy-paste.
+
+### Classic & Established Styles
+
+| Slug | Title | Style | Difficulty | Status |
+|---|---|---|---|---|
+| `style-minimalist` | Minimalist UI | Whitespace, neutral palette, thin type | easy | ✅ |
+| `style-flat-design` | Flat Design | No shadows, solid colors, icon-driven | easy | ✅ |
+| `style-material` | Material Design | Elevation, ripple, MD color system | med | ✅ |
+| `style-skeuomorphism` | Skeuomorphism | Textures, real-world metaphors, depth | med | ✅ |
+| `style-neumorphism` | Neumorphism | Soft extruded shadows, monochromatic | med | ✅ |
+| `style-glassmorphism` | Glassmorphism | Frosted glass, blur backdrop, transparency | easy | ✅ |
+| `style-bauhaus` | Bauhaus | Primary colors, geometry, grid, typography | med | ✅ |
+| `style-brutalism` | Brutalism | Raw borders, high contrast, broken grids | med | ✅ |
+
+### Dark & Atmospheric
+
+| Slug | Title | Style | Difficulty | Status |
+|---|---|---|---|---|
+| `style-dark-mode` | Dark Mode | Pure dark bg, subtle borders, muted accents | easy | ✅ |
+| `style-dark-blue` | Dark Blue | Navy/midnight palette, cool tones | easy | ✅ |
+| `style-netflix` | Netflix Cinematic | Dark, large imagery, bold red CTAs | med | ✅ |
+| `style-purple-space` | Purple Space | Deep space BG, neon purple/violet accents | med | ✅ |
+
+### Retro & Nostalgic
+
+| Slug | Title | Style | Difficulty | Status |
+|---|---|---|---|---|
+| `style-nes-retro` | NES Retro / Pixel | Pixel fonts, 8-bit palette, scanlines | hard | ✅ |
+| `style-vaporwave` | Vaporwave | Pink/cyan gradients, 80s grid, glitch | med | ✅ |
+| `style-terminal` | Terminal / CLI | Monospace, green-on-black, ASCII art | easy | ✅ |
+| `style-newspaper` | Newspaper / Editorial | Serif fonts, columns, ink texture | med | ✅ |
+
+### Modern & Trendy
+
+| Slug | Title | Style | Difficulty | Status |
+|---|---|---|---|---|
+| `style-isomorphic` | Isometric 3D | Isometric grid, flat 3D perspective | hard | ✅ |
+| `style-motion` | Motion / Kinetic | Animation-first, transition-heavy | hard | ✅ |
+| `style-illustration` | Illustration-First | Custom SVG illus, hand-drawn feel | hard | ✅ |
+| `style-miro` | Miro / Whiteboard | Infinite canvas feel, sticky notes, markers | med | ✅ |
+| `style-glassdark` | Glass Dark | Dark glassmorphism — frosted on dark BG | easy | ✅ |
+| `style-clay` | Claymorphism | 3D puffy shapes, inflated feel, pastel | med | ✅ |
+| `style-aurora` | Aurora / Gradient Mesh | Smooth color mesh, aurora borealis BG | med | ✅ |
+
+---
+
 ## Phase 21 — Remotion Animations ✅ DONE
 
 Composiciones de animación con Remotion para videos generativos.

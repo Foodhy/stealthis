@@ -17,6 +17,7 @@ const ResourceCategorySchema = z.enum([
   "remotion",
   "database-schemas",
   "ultra-high-definition-pages",
+  "design-styles",
 ]);
 
 const ResourceTypeSchema = z.enum([

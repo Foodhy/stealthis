@@ -1,5 +1,41 @@
 import { PGlite, type Results } from "@electric-sql/pglite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { renderMarkdown } from "../lib/markdown";
+import SqlEditor from "./SqlEditor";
+import HelpChat from "./HelpChat";
+import CrowsFootDiagram from "./CrowsFootDiagram";
+import { LocaleProvider, useLocale } from "../i18n/LocaleContext";
+import type { Locale } from "../i18n";
+import {
+  type AiProvider,
+  type AiProviderConfig,
+  type AiModel,
+  type ChatMessage,
+  PROVIDER_DEFAULTS,
+  listModels as listProviderModels,
+  chat as providerChat,
+} from "../lib/ai-providers";
+import {
+  SYSTEM_PROMPT,
+  QUERY_SYSTEM_PROMPT,
+  buildClarificationMessage,
+  buildGenerateMessage,
+  buildRefinementMessage,
+  buildNameMessage,
+  buildAskMessage,
+  buildPlanMessage,
+  buildExecuteMessage,
+  buildQueryAskMessage,
+  buildQueryPlanMessage,
+  buildQueryExecuteMessage,
+  buildAutoGenerateQueriesMessage,
+  isReadyResponse,
+  extractQuestions,
+  parseSchemaOutput,
+  parseQueryOutput,
+  hasSchemaMarkers,
+  hasQueryMarkers,
+} from "../lib/schema-prompts";
 import SchemaDiagramCanvas from "./SchemaDiagramCanvas";
 
 export type DbVizExample = {
@@ -37,8 +73,16 @@ type QueryResultEntry = {
   rows: QueryResultRow[];
 };
 
-type ArtifactTab = "schema" | "seed" | "queries" | "diagram" | "migrations";
-type PreviewTab = "diagram" | "migrations";
+type AiChatEntry = {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+};
+
+type WorkspaceTab = "diagram" | "erd" | "schema" | "seed" | "queries" | "migrations" | "results";
+type AiMode = "ask" | "plan" | "execute";
+type AiContext = "schema" | "queries";
 type EngineStatus = "idle" | "booting" | "ready" | "error";
 export type DbVizRuntimeProvider = "local" | "supabase";
 export type DbVizLocalEngine = "pglite" | "docker";
@@ -78,18 +122,48 @@ const FALLBACK_EXAMPLE: DbVizExample = {
   migrationsSql: "",
 };
 
-const ARTIFACT_TABS: Array<{ key: ArtifactTab; label: string; fileName: string }> = [
-  { key: "schema", label: "Schema", fileName: "schema.sql" },
-  { key: "seed", label: "Seed", fileName: "seed.sql" },
-  { key: "queries", label: "Queries", fileName: "queries.sql" },
+const WORKSPACE_TABS: Array<{ key: WorkspaceTab; label: string; fileName?: string; editable?: boolean }> = [
   { key: "diagram", label: "Diagram", fileName: "diagram.mmd" },
+  { key: "erd", label: "ERD" },
+  { key: "schema", label: "Schema", fileName: "schema.sql", editable: true },
+  { key: "seed", label: "Seed", fileName: "seed.sql", editable: true },
+  { key: "queries", label: "Queries", fileName: "queries.sql", editable: true },
   { key: "migrations", label: "Migrations", fileName: "migrations.sql" },
+  { key: "results", label: "Results" },
 ];
 
-const PREVIEW_TABS: Array<{ key: PreviewTab; label: string }> = [
-  { key: "diagram", label: "Diagram" },
-  { key: "migrations", label: "Migrations" },
-];
+const TAB_COLORS: Record<WorkspaceTab, { dot: string; active: string }> = {
+  diagram: { dot: "bg-violet-400", active: "ring-1 ring-violet-500/30 bg-violet-500/10" },
+  erd: { dot: "bg-cyan-400", active: "ring-1 ring-cyan-500/30 bg-cyan-500/10" },
+  schema: { dot: "bg-sky-400", active: "ring-1 ring-sky-500/30 bg-sky-500/10" },
+  seed: { dot: "bg-amber-400", active: "ring-1 ring-amber-500/30 bg-amber-500/10" },
+  queries: { dot: "bg-emerald-400", active: "ring-1 ring-emerald-500/30 bg-emerald-500/10" },
+  migrations: { dot: "bg-rose-400", active: "ring-1 ring-rose-500/30 bg-rose-500/10" },
+  results: { dot: "bg-slate-400", active: "bg-white/[0.08]" },
+};
+
+const STORAGE_KEY = "dbviz-ai-provider";
+
+type StoredProviderConfig = {
+  provider: AiProvider;
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+};
+
+function loadProviderConfig(): StoredProviderConfig {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as StoredProviderConfig;
+  } catch { /* ignore */ }
+  return { provider: "ollama", baseUrl: PROVIDER_DEFAULTS.ollama.baseUrl, apiKey: "", model: "" };
+}
+
+function saveProviderConfig(config: StoredProviderConfig) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  } catch { /* ignore */ }
+}
 
 let runtimeEntityId = 0;
 
@@ -105,7 +179,7 @@ function nextRuntimeId(prefix: string) {
 
 function toErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
-  return "Error desconocido";
+  return "Unknown error";
 }
 
 function formatCell(value: unknown): string {
@@ -143,7 +217,17 @@ function toMigrationSnapshot(sql: string) {
   return sql.trim() ? sql : "-- no migration SQL yet";
 }
 
-export default function DbVizStudio({ examples, runtimeConfig }: Props) {
+export default function DbVizStudio(props: Props) {
+  return (
+    <LocaleProvider>
+      <DbVizStudioInner {...props} />
+    </LocaleProvider>
+  );
+}
+
+function DbVizStudioInner({ examples, runtimeConfig }: Props) {
+  const { locale, setLocale, t } = useLocale();
+
   const availableExamples = useMemo(
     () => (examples.length > 0 ? examples : [FALLBACK_EXAMPLE]),
     [examples]
@@ -159,8 +243,7 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
     [availableExamples, selectedSlug]
   );
 
-  const [artifactTab, setArtifactTab] = useState<ArtifactTab>("schema");
-  const [previewTab, setPreviewTab] = useState<PreviewTab>("diagram");
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>("diagram");
 
   const [schemaSql, setSchemaSql] = useState(selectedExample.schemaSql);
   const [seedSql, setSeedSql] = useState(selectedExample.seedSql);
@@ -174,51 +257,57 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
   const [migrationLog, setMigrationLog] = useState<MigrationEntry[]>(
     buildInitialMigrationLog(selectedExample)
   );
-  const [entries, setEntries] = useState<ConsoleEntry[]>([
-    { id: 1, kind: "info", message: "DBViz listo. Carga un ejemplo y ejecuta comandos SQL." },
-  ]);
+  const [entries, setEntries] = useState<ConsoleEntry[]>([]);
   const [lastResults, setLastResults] = useState<QueryResultEntry[]>([]);
 
   const [engineStatus, setEngineStatus] = useState<EngineStatus>("idle");
-  const [engineMessage, setEngineMessage] = useState("Motor SQL no inicializado.");
+  const [engineMessage, setEngineMessage] = useState("");
   const [isRunningCommand, setIsRunningCommand] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<DbVizRuntimeProvider>(
-    runtimeConfig.provider
+  const [selectedProvider] = useState<DbVizRuntimeProvider>("local");
+  const [selectedLocalEngine] = useState<DbVizLocalEngine>("pglite");
+
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiInput, setAiInput] = useState("");
+  const [aiModels, setAiModels] = useState<AiModel[]>([]);
+  const [aiSelectedModel, setAiSelectedModel] = useState("");
+  const [aiStatus, setAiStatus] = useState<"idle" | "loading-models" | "thinking" | "generating" | "done" | "error">("idle");
+  const [aiChat, setAiChat] = useState<AiChatEntry[]>([]);
+  const [aiSessionName, setAiSessionName] = useState("");
+  const [aiPreview, setAiPreview] = useState("");
+  const [aiMode, setAiMode] = useState<AiMode>("ask");
+  const [aiContext, setAiContext] = useState<AiContext>("schema");
+  const [aiDirty, setAiDirty] = useState(false);
+  const aiAbortRef = useRef<AbortController | null>(null);
+  const aiChatEndRef = useRef<HTMLDivElement | null>(null);
+  const aiNextId = useRef(0);
+
+  // Multi-provider state
+  const [providerCfg, setProviderCfg] = useState<StoredProviderConfig>(loadProviderConfig);
+
+  const aiProviderConfig = useMemo<AiProviderConfig>(
+    () => ({
+      provider: providerCfg.provider,
+      baseUrl: providerCfg.baseUrl,
+      apiKey: providerCfg.apiKey,
+      model: aiSelectedModel || providerCfg.model,
+    }),
+    [providerCfg, aiSelectedModel]
   );
-  const [selectedLocalEngine, setSelectedLocalEngine] = useState<DbVizLocalEngine>(
-    runtimeConfig.localEngine
-  );
+
+  function updateProviderCfg(patch: Partial<StoredProviderConfig>) {
+    setProviderCfg((prev) => {
+      const next = { ...prev, ...patch };
+      saveProviderConfig(next);
+      return next;
+    });
+  }
 
   const isInteractiveEngine = useMemo(
     () => selectedProvider === "local" && selectedLocalEngine === "pglite",
     [selectedLocalEngine, selectedProvider]
   );
-
-  const runtimeCommandHint = useMemo(() => {
-    if (selectedProvider === "supabase") {
-      return "DBVIZ_SCHEMA_PROVIDER=supabase bun run dbviz:supabase:check";
-    }
-    if (selectedLocalEngine === "docker") {
-      return "DBVIZ_SCHEMA_PROVIDER=local DBVIZ_LOCAL_ENGINE=docker bun run dbviz:validate";
-    }
-    return "DBVIZ_SCHEMA_PROVIDER=local DBVIZ_LOCAL_ENGINE=pglite bun run dbviz:validate";
-  }, [selectedLocalEngine, selectedProvider]);
-
-  const runtimeHint = useMemo(() => {
-    if (selectedProvider === "supabase") {
-      if (runtimeConfig.supabaseConfigured) {
-        return "Supabase está configurado. Usa scripts CLI para check/import (Fase 6 scaffold).";
-      }
-      return "Supabase no está configurado. Define DBVIZ_SUPABASE_DB_URL para habilitar check/import.";
-    }
-
-    if (selectedLocalEngine === "docker") {
-      return "Docker local ejecuta validaciones por CLI. El editor web queda en modo solo visual.";
-    }
-
-    return "PGlite habilita ejecución SQL interactiva dentro del navegador.";
-  }, [runtimeConfig.supabaseConfigured, selectedLocalEngine, selectedProvider]);
 
   const executedCount = useMemo(
     () => entries.filter((entry) => entry.kind === "ok").length,
@@ -242,6 +331,16 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
     ]);
   }, []);
 
+  // Set initial console entry and engine message on mount / locale change
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      setEntries([{ id: 1, kind: "info", message: t("engine.ready") }]);
+      setEngineMessage(t("engine.notInitialized"));
+    }
+  }, [t]);
+
   const closeDatabase = useCallback(async () => {
     const activeDb = dbRef.current;
     dbRef.current = null;
@@ -259,7 +358,7 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
       bootstrapTokenRef.current = token;
       setIsBootstrapping(true);
       setEngineStatus("booting");
-      setEngineMessage(`Inicializando motor (${payload.reason})...`);
+      setEngineMessage(t("engine.initializing").replace("{reason}", payload.reason));
       setLastResults([]);
 
       await closeDatabase();
@@ -287,23 +386,23 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
 
         dbRef.current = db;
         setEngineStatus("ready");
-        setEngineMessage(`Motor listo (${payload.reason}).`);
+        setEngineMessage(t("engine.initialized").replace("{reason}", payload.reason));
         appendConsole(
           "ok",
-          `Motor inicializado: schema ${payload.schema.trim() ? "aplicado" : "vacío"}${payload.seed.trim() ? " + seed aplicado" : ""}.`
+          t("engine.schemaApplied").replace("{status}", payload.schema.trim() ? t("engine.applied") : t("engine.empty")) + (payload.seed.trim() ? t("engine.seedApplied") : "")
         );
       } catch (error) {
         const message = toErrorMessage(error);
         setEngineStatus("error");
-        setEngineMessage(`Error de motor: ${message}`);
-        appendConsole("warn", `Fallo al inicializar motor SQL: ${message}`);
+        setEngineMessage(t("engine.error").replace("{message}", message));
+        appendConsole("warn", t("engine.initFailed").replace("{message}", message));
       } finally {
         if (token === bootstrapTokenRef.current) {
           setIsBootstrapping(false);
         }
       }
     },
-    [appendConsole, closeDatabase]
+    [appendConsole, closeDatabase, t]
   );
 
   const hydrateFromExample = useCallback(
@@ -320,52 +419,50 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
     [appendConsole]
   );
 
-  function getCurrentArtifactValue(tab: ArtifactTab) {
+  function getTabValue(tab: WorkspaceTab) {
     if (tab === "schema") return schemaSql;
     if (tab === "seed") return seedSql;
     if (tab === "queries") return queriesSql;
     if (tab === "diagram") return diagramMmd;
-    return migrationsSql;
+    if (tab === "migrations") return migrationsSql;
+    return "";
   }
 
-  function setCurrentArtifactValue(tab: ArtifactTab, value: string) {
+  function setTabValue(tab: WorkspaceTab, value: string) {
     if (tab === "schema") setSchemaSql(value);
     else if (tab === "seed") setSeedSql(value);
     else if (tab === "queries") setQueriesSql(value);
     else if (tab === "diagram") setDiagramMmd(value);
-    else setMigrationsSql(value);
+    else if (tab === "migrations") setMigrationsSql(value);
   }
 
   async function applyEditorSqlToEngine() {
     if (!isInteractiveEngine) {
-      appendConsole(
-        "warn",
-        "El runtime activo es externo (docker/supabase). Usa el comando sugerido para validar/importar."
-      );
+      appendConsole("warn", t("engine.externalRuntime"));
       return;
     }
     await bootstrapDatabase({
       schema: schemaSql,
       seed: seedSql,
-      reason: "desde editor",
+      reason: "editor",
     });
   }
 
   async function runCommand() {
     if (!isInteractiveEngine) {
-      appendConsole("warn", "Comandos SQL en UI solo están disponibles con runtime local+pglite.");
+      appendConsole("warn", t("engine.sqlLocalOnly"));
       return;
     }
 
     const normalized = commandSql.trim();
     if (!normalized) {
-      appendConsole("warn", "No hay SQL para ejecutar. Escribe un comando primero.");
+      appendConsole("warn", t("engine.noSql"));
       return;
     }
 
     const db = dbRef.current;
     if (!db || engineStatus !== "ready") {
-      appendConsole("warn", "El motor SQL no está listo. Aplica schema + seed primero.");
+      appendConsole("warn", t("engine.notReady"));
       return;
     }
 
@@ -400,45 +497,47 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
       const totalRows = results.reduce((acc, result) => acc + result.rows.length, 0);
       appendConsole(
         "ok",
-        `Comando ejecutado (${results.length} sentencia(s), ${totalRows} fila(s) devueltas).`
+        t("engine.commandExecuted").replace("{count}", String(results.length)).replace("{rows}", String(totalRows))
       );
       setCommandSql("");
-      setPreviewTab("migrations");
+      setActiveTab("results");
     } catch (error) {
-      appendConsole("warn", `Error ejecutando SQL: ${toErrorMessage(error)}`);
+      appendConsole("warn", t("engine.sqlError").replace("{message}", toErrorMessage(error)));
       setLastResults([]);
     } finally {
       setIsRunningCommand(false);
     }
   }
 
-  function exportArtifact(tab: ArtifactTab) {
-    const target = ARTIFACT_TABS.find((item) => item.key === tab);
-    if (!target) return;
+  function exportArtifact(tab: WorkspaceTab) {
+    const target = WORKSPACE_TABS.find((item) => item.key === tab);
+    if (!target?.fileName) return;
 
-    const content = getCurrentArtifactValue(tab);
+    const content = getTabValue(tab);
     if (!content.trim()) {
-      appendConsole("warn", `No hay contenido en ${target.fileName} para exportar.`);
+      appendConsole("warn", t("export.noContent").replace("{file}", target.fileName));
       return;
     }
 
-    downloadTextFile(`${selectedExample.slug}-${target.fileName}`, content);
-    appendConsole("ok", `Archivo exportado: ${target.fileName}`);
+    const slug = aiSessionName || selectedExample.slug;
+    downloadTextFile(`${slug}-${target.fileName}`, content);
+    appendConsole("ok", t("export.exported").replace("{file}", target.fileName));
   }
 
   function exportAllArtifacts() {
-    for (const tab of ARTIFACT_TABS) {
-      const content = getCurrentArtifactValue(tab.key);
+    const slug = aiSessionName || selectedExample.slug;
+    for (const tab of WORKSPACE_TABS) {
+      if (!tab.fileName) continue;
+      const content = getTabValue(tab.key);
       if (!content.trim()) continue;
-      downloadTextFile(`${selectedExample.slug}-${tab.fileName}`, content);
+      downloadTextFile(`${slug}-${tab.fileName}`, content);
     }
-    appendConsole("ok", "Exportación completa de artifacts.");
+    appendConsole("ok", t("export.allExported"));
   }
 
   useEffect(() => {
-    hydrateFromExample(selectedExample, `Ejemplo cargado: ${selectedExample.title}`);
-    setArtifactTab("schema");
-    setPreviewTab("diagram");
+    hydrateFromExample(selectedExample, t("example.loaded").replace("{title}", selectedExample.title));
+    setActiveTab("diagram");
     if (isInteractiveEngine) {
       void bootstrapDatabase({
         schema: selectedExample.schemaSql,
@@ -455,13 +554,13 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
     if (selectedProvider === "supabase") {
       setEngineMessage(
         runtimeConfig.supabaseConfigured
-          ? "Supabase activo en modo scaffold CLI. Ejecuta check/import desde terminal."
-          : "Supabase no configurado. Define DBVIZ_SUPABASE_DB_URL."
+          ? t("engine.supabaseScaffold")
+          : t("engine.supabaseNotConfigured")
       );
     } else if (selectedLocalEngine === "docker") {
-      setEngineMessage("Docker activo en modo CLI. Ejecuta `bun run dbviz:validate`.");
+      setEngineMessage(t("engine.dockerCli"));
     } else {
-      setEngineMessage("Motor SQL no inicializado.");
+      setEngineMessage(t("engine.notInitialized"));
     }
   }, [
     bootstrapDatabase,
@@ -481,399 +580,1096 @@ export default function DbVizStudio({ examples, runtimeConfig }: Props) {
     };
   }, [closeDatabase]);
 
+  const fetchAiModels = useCallback(async () => {
+    setAiStatus("loading-models");
+    try {
+      const models = await listProviderModels({
+        provider: providerCfg.provider,
+        baseUrl: providerCfg.baseUrl,
+        apiKey: providerCfg.apiKey,
+      });
+      setAiModels(models);
+      if (models.length > 0 && !aiSelectedModel) {
+        setAiSelectedModel(models[0].id);
+      }
+      setAiStatus("idle");
+      appendConsole("ok", t("ai.modelsLoaded").replace("{provider}", PROVIDER_DEFAULTS[providerCfg.provider].label).replace("{count}", String(models.length)));
+    } catch (error) {
+      setAiStatus("error");
+      appendConsole("warn", t("ai.providerError").replace("{provider}", PROVIDER_DEFAULTS[providerCfg.provider].label).replace("{error}", toErrorMessage(error)));
+    }
+  }, [aiSelectedModel, appendConsole, providerCfg.provider, providerCfg.baseUrl, providerCfg.apiKey, t]);
 
+  function pushChatEntry(role: "user" | "assistant", content: string): AiChatEntry {
+    aiNextId.current += 1;
+    const entry: AiChatEntry = {
+      id: aiNextId.current,
+      role,
+      content,
+      timestamp: new Date().toISOString(),
+    };
+    setAiChat((prev) => [...prev, entry]);
+    return entry;
+  }
+
+  function buildChatMessages(extraMessages: ChatMessage[]): ChatMessage[] {
+    const systemContent = aiContext === "queries" ? QUERY_SYSTEM_PROMPT : SYSTEM_PROMPT;
+    const system: ChatMessage = { role: "system", content: systemContent };
+    const history: ChatMessage[] = aiChat.map((e) => ({
+      role: e.role,
+      content: e.content,
+    }));
+    return [system, ...history, ...extraMessages];
+  }
+
+  function aiChat_(options: { messages: ChatMessage[]; signal?: AbortSignal; onToken?: (t: string) => void }) {
+    return providerChat({ config: aiProviderConfig, ...options });
+  }
+
+  async function handleAiSend() {
+    const text = aiInput.trim();
+    if (!text || !aiSelectedModel) return;
+
+    aiAbortRef.current?.abort();
+    const controller = new AbortController();
+    aiAbortRef.current = controller;
+
+    pushChatEntry("user", text);
+    setAiInput("");
+    setAiPreview("");
+
+    const hasExistingSchema = schemaSql.trim().length > 0;
+
+    try {
+      if (aiContext === "queries") {
+        await handleQuerySend(text, controller, hasExistingSchema);
+      } else {
+        await handleSchemaSend(text, controller, hasExistingSchema && aiDirty);
+      }
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      setAiStatus("error");
+      pushChatEntry("assistant", `Error: ${toErrorMessage(error)}`);
+      appendConsole("warn", `AI error: ${toErrorMessage(error)}`);
+    }
+  }
+
+  async function handleSchemaSend(text: string, controller: AbortController, hasExistingSchema: boolean) {
+    if (aiMode === "ask") {
+      setAiStatus("thinking");
+      const askMsg = buildAskMessage(text, hasExistingSchema ? schemaSql : undefined);
+      const raw = await aiChat_({ messages: buildChatMessages([askMsg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+      if (controller.signal.aborted) return;
+      pushChatEntry("assistant", raw);
+      setAiStatus("idle");
+      setAiPreview("");
+    } else if (aiMode === "plan") {
+      setAiStatus("thinking");
+      const planMsg = buildPlanMessage(text, hasExistingSchema ? schemaSql : undefined);
+      const raw = await aiChat_({ messages: buildChatMessages([planMsg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+      if (controller.signal.aborted) return;
+      pushChatEntry("assistant", raw);
+      setAiStatus("idle");
+      setAiPreview("");
+    } else {
+      const isFirstMessage = aiChat.length <= 1;
+
+      if (isFirstMessage && !hasExistingSchema) {
+        setAiStatus("thinking");
+        const clarifyMsg = buildClarificationMessage(text);
+        const clarifyRaw = await aiChat_({ messages: buildChatMessages([clarifyMsg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+        if (controller.signal.aborted) return;
+
+        if (isReadyResponse(clarifyRaw)) {
+          pushChatEntry("assistant", t("ai.status.generatingOk"));
+          setAiPreview("");
+          setAiStatus("generating");
+          const genMsg = buildGenerateMessage();
+          const genRaw = await aiChat_({ messages: buildChatMessages([clarifyMsg, { role: "assistant", content: "---READY---" }, genMsg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+          if (controller.signal.aborted) return;
+          await applyAiOutput(genRaw, controller.signal);
+        } else {
+          pushChatEntry("assistant", extractQuestions(clarifyRaw));
+          setAiStatus("idle");
+          setAiPreview("");
+        }
+      } else if (hasExistingSchema) {
+        setAiStatus("generating");
+        const execMsg = buildExecuteMessage(text, schemaSql, diagramMmd);
+        const raw = await aiChat_({ messages: buildChatMessages([execMsg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+        if (controller.signal.aborted) return;
+        if (hasSchemaMarkers(raw)) { await applyAiOutput(raw, controller.signal); } else { pushChatEntry("assistant", raw); setAiStatus("idle"); setAiPreview(""); }
+      } else {
+        setAiStatus("generating");
+        const genMsg = buildGenerateMessage();
+        const raw = await aiChat_({ messages: buildChatMessages([genMsg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+        if (controller.signal.aborted) return;
+        if (hasSchemaMarkers(raw)) { await applyAiOutput(raw, controller.signal); } else { pushChatEntry("assistant", raw); setAiStatus("idle"); setAiPreview(""); }
+      }
+    }
+  }
+
+  async function handleQuerySend(text: string, controller: AbortController, hasSchema: boolean) {
+    if (!hasSchema) {
+      pushChatEntry("assistant", t("ai.noSchema"));
+      setAiStatus("idle");
+      return;
+    }
+
+    if (aiMode === "ask") {
+      setAiStatus("thinking");
+      const msg = buildQueryAskMessage(text, schemaSql);
+      const raw = await aiChat_({ messages: buildChatMessages([msg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+      if (controller.signal.aborted) return;
+      pushChatEntry("assistant", raw);
+      setAiStatus("idle");
+      setAiPreview("");
+    } else if (aiMode === "plan") {
+      setAiStatus("thinking");
+      const msg = buildQueryPlanMessage(text, schemaSql, queriesSql);
+      const raw = await aiChat_({ messages: buildChatMessages([msg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+      if (controller.signal.aborted) return;
+      pushChatEntry("assistant", raw);
+      setAiStatus("idle");
+      setAiPreview("");
+    } else {
+      setAiStatus("generating");
+      const msg = buildQueryExecuteMessage(text, schemaSql, queriesSql);
+      const raw = await aiChat_({ messages: buildChatMessages([msg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+      if (controller.signal.aborted) return;
+      if (hasQueryMarkers(raw)) { applyQueryOutput(raw); } else { pushChatEntry("assistant", raw); setAiStatus("idle"); setAiPreview(""); }
+    }
+  }
+
+  async function handleAutoGenerateQueries() {
+    if (!schemaSql.trim() || !aiSelectedModel) return;
+
+    aiAbortRef.current?.abort();
+    const controller = new AbortController();
+    aiAbortRef.current = controller;
+
+    pushChatEntry("user", t("ai.output.autoGeneratePrompt"));
+    setAiPreview("");
+    setAiStatus("generating");
+
+    try {
+      const msg = buildAutoGenerateQueriesMessage(schemaSql, queriesSql);
+      const raw = await aiChat_({ messages: buildChatMessages([msg]), signal: controller.signal, onToken: (t) => setAiPreview((p) => p + t) });
+      if (controller.signal.aborted) return;
+      if (hasQueryMarkers(raw)) { applyQueryOutput(raw); } else { pushChatEntry("assistant", raw); setAiStatus("idle"); setAiPreview(""); }
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      setAiStatus("error");
+      pushChatEntry("assistant", `Error: ${toErrorMessage(error)}`);
+    }
+  }
+
+  function applyQueryOutput(raw: string) {
+    const queries = parseQueryOutput(raw);
+    if (!queries) {
+      pushChatEntry("assistant", t("ai.output.queriesFailed"));
+      setAiStatus("idle");
+      setAiPreview("");
+      return;
+    }
+
+    // Append to existing queries
+    setQueriesSql((prev) => {
+      const existing = prev.trim();
+      return existing ? `${existing}\n\n-- ── AI-generated queries ──────────────────────────\n\n${queries}` : queries;
+    });
+
+    // Also set the command bar to the first query for quick execution
+    const firstQuery = queries.split(/;\s*\n/).find((q) => q.trim() && !q.trim().startsWith("--"));
+    if (firstQuery) {
+      setCommandSql(firstQuery.trim().replace(/;?\s*$/, ";"));
+    }
+
+    setAiDirty(true);
+    pushChatEntry("assistant", t("ai.output.queriesGenerated"));
+    appendConsole("ok", `AI generated queries (${aiSelectedModel})`);
+    setActiveTab("queries");
+    setAiPreview("");
+    setAiStatus("done");
+  }
+
+  async function applyAiOutput(raw: string, signal: AbortSignal) {
+    const parsed = parseSchemaOutput(raw);
+
+    if (!parsed.schema && !parsed.seed && !parsed.queries && !parsed.diagram) {
+      pushChatEntry("assistant", raw.length > 300 ? t("ai.output.artifactsFailed") : raw);
+      setAiStatus("idle");
+      setAiPreview("");
+      return;
+    }
+
+    if (parsed.schema) setSchemaSql(parsed.schema);
+    if (parsed.seed) setSeedSql(parsed.seed);
+    if (parsed.queries) setQueriesSql(parsed.queries);
+    if (parsed.diagram) setDiagramMmd(parsed.diagram);
+    setAiDirty(true);
+
+    const parts = [
+      parsed.schema ? "schema" : "",
+      parsed.seed ? "seed" : "",
+      parsed.queries ? "queries" : "",
+      parsed.diagram ? "diagram" : "",
+    ].filter(Boolean);
+    pushChatEntry("assistant", t("ai.output.generated").replace("{parts}", parts.join(", ")));
+    appendConsole("ok", `AI generated artifacts (${aiSelectedModel}): ${parts.join(", ")}`);
+    setActiveTab("schema");
+    setAiPreview("");
+
+    // Auto-generate session name
+    if (!aiSessionName && parsed.schema) {
+      try {
+        const nameMsg = buildNameMessage(parsed.schema);
+        const name = await aiChat_({
+          messages: [{ role: "system", content: "Respond with ONLY a short name (2-4 words, lowercase-hyphens). Nothing else." }, nameMsg],
+          signal,
+        });
+        if (!signal.aborted) {
+          const cleaned = name.trim().replace(/[^a-z0-9-]/gi, "").toLowerCase().slice(0, 40) || "untitled-schema";
+          setAiSessionName(cleaned);
+        }
+      } catch {
+        // Naming is best-effort
+      }
+    }
+
+    setAiStatus("done");
+  }
+
+  function handleAiCancel() {
+    aiAbortRef.current?.abort();
+    setAiStatus("idle");
+    setAiPreview("");
+  }
+
+  function handleAiNewSession() {
+    if (aiDirty && !window.confirm(t("ai.confirmNewSession"))) {
+      return;
+    }
+    setAiChat([]);
+    setAiSessionName("");
+    setAiDirty(false);
+    setAiInput("");
+    setAiPreview("");
+    setAiStatus("idle");
+  }
+
+  // Scroll chat to bottom on new messages
+  useEffect(() => {
+    aiChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [aiChat, aiPreview]);
+
+  // Warn before reload when there's unsaved AI work
+  useEffect(() => {
+    if (!aiDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [aiDirty]);
+
+  // Cmd+. to cycle AI modes
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey && e.key === ".") {
+        e.preventDefault();
+        setAiMode((prev) => {
+          const modes: AiMode[] = ["ask", "plan", "execute"];
+          return modes[(modes.indexOf(prev) + 1) % modes.length];
+        });
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const engineDot = engineStatus === "ready"
+    ? "bg-emerald-400"
+    : engineStatus === "booting"
+      ? "bg-amber-400 animate-pulse"
+      : engineStatus === "error"
+        ? "bg-rose-400"
+        : "bg-slate-500";
+
+  const lastConsoleEntry = entries.at(-1);
+
+  const activeTabMeta = WORKSPACE_TABS.find((t) => t.key === activeTab);
+  const isEditableTab = activeTabMeta?.editable === true;
 
   return (
-    <main className="grid min-h-[calc(100vh-8rem)] gap-4 lg:grid-cols-[380px_1fr]">
-      <section className="flex min-h-[620px] flex-col rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-        <header className="mb-4 border-b border-white/10 pb-3">
-          <h2 className="text-base font-semibold text-slate-100">Command Workspace</h2>
-          <p className="text-xs text-slate-400">
-            Fase 4: comandos SQL + artifacts editables + preview de esquema.
-          </p>
-        </header>
+    <main className="flex h-[calc(100vh-4.5rem)] flex-col gap-3">
+      {/* ── TOP TOOLBAR ───────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white/[0.03] px-3 py-2">
+        <select
+          id="db-example"
+          value={selectedSlug}
+          onChange={(event) => setSelectedSlug(event.target.value)}
+          className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-sm text-slate-100 outline-none transition-colors hover:bg-white/[0.1] focus:ring-1 focus:ring-white/20"
+        >
+          {availableExamples.map((example) => (
+            <option key={example.slug} value={example.slug}>
+              {example.title}
+            </option>
+          ))}
+        </select>
 
-        <div className="space-y-2">
-          <label
-            className="text-xs font-semibold uppercase tracking-wider text-slate-500"
-            htmlFor="db-example"
+        <button
+          type="button"
+          onClick={() => {
+            hydrateFromExample(selectedExample, t("example.reset").replace("{title}", selectedExample.title));
+            if (isInteractiveEngine) {
+              void bootstrapDatabase({
+                schema: selectedExample.schemaSql,
+                seed: selectedExample.seedSql,
+                reason: `reset ${selectedExample.slug}`,
+              });
+            }
+          }}
+          className="rounded-lg px-2 py-1.5 text-xs text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
+          title={t("toolbar.resetExample")}
+        >
+          {t("toolbar.reset")}
+        </button>
+
+        {resourceUrl ? (
+          <a
+            href={resourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg px-2 py-1.5 text-xs text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
           >
-            Example
-          </label>
-          <select
-            id="db-example"
-            value={selectedSlug}
-            onChange={(event) => setSelectedSlug(event.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-db-400/70"
-          >
-            {availableExamples.map((example) => (
-              <option key={example.slug} value={example.slug}>
-                {example.title}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-slate-400">{selectedExample.description}</p>
-          <div className="flex flex-wrap gap-2">
+            {t("toolbar.view")}
+          </a>
+        ) : null}
+
+        <div className="flex-1" />
+
+        <span className="rounded-lg bg-white/[0.06] px-2 py-1 text-xs text-slate-400">
+          pglite
+        </span>
+
+        <div className="flex items-center gap-1.5">
+          <span className={`h-2 w-2 rounded-full ${engineDot}`} />
+          <span className="text-xs text-slate-400">{engineStatus}</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void applyEditorSqlToEngine()}
+          disabled={isBootstrapping || !isInteractiveEngine}
+          className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {isBootstrapping ? t("toolbar.applying") : t("toolbar.apply")}
+        </button>
+
+        {/* Language toggle */}
+        <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
+          {(["en", "es"] as const).map((l) => (
             <button
+              key={l}
               type="button"
-              onClick={() => {
-                hydrateFromExample(
-                  selectedExample,
-                  `Editor restablecido con: ${selectedExample.title}`
-                );
-                if (isInteractiveEngine) {
-                  void bootstrapDatabase({
-                    schema: selectedExample.schemaSql,
-                    seed: selectedExample.seedSql,
-                    reason: `reset ${selectedExample.slug}`,
-                  });
-                }
-              }}
-              className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 transition-colors hover:bg-slate-800"
-            >
-              Restablecer ejemplo
-            </button>
-            {resourceUrl ? (
-              <a
-                href={resourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1.5 text-xs text-cyan-100 transition-colors hover:bg-cyan-500/20"
-              >
-                Ver recurso en www
-              </a>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Runtime</p>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
-            <label className="space-y-1">
-              <span className="text-[11px] uppercase tracking-wider text-slate-500">Provider</span>
-              <select
-                value={selectedProvider}
-                onChange={(event) =>
-                  setSelectedProvider(event.target.value as DbVizRuntimeProvider)
-                }
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-db-400/70"
-              >
-                <option value="local">local</option>
-                <option value="supabase">supabase</option>
-              </select>
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-[11px] uppercase tracking-wider text-slate-500">
-                Local Engine
-              </span>
-              <select
-                value={selectedLocalEngine}
-                onChange={(event) => setSelectedLocalEngine(event.target.value as DbVizLocalEngine)}
-                disabled={selectedProvider !== "local"}
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-db-400/70 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <option value="docker">docker</option>
-                <option value="pglite">pglite</option>
-              </select>
-            </label>
-          </div>
-
-          <p className="mt-2 text-xs text-slate-300">{runtimeHint}</p>
-          {selectedProvider === "supabase" && runtimeConfig.supabaseProjectUrl ? (
-            <p className="mt-1 text-[11px] text-slate-400">
-              Project URL: {runtimeConfig.supabaseProjectUrl}
-            </p>
-          ) : null}
-          <pre className="mt-2 overflow-auto rounded border border-white/10 bg-slate-950 px-2 py-1.5 font-mono text-[11px] text-cyan-100">
-            {runtimeCommandHint}
-          </pre>
-        </div>
-
-        <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              SQL Engine
-            </p>
-            <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                engineStatus === "ready"
-                  ? "border border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
-                  : engineStatus === "booting"
-                    ? "border border-amber-400/40 bg-amber-500/10 text-amber-200"
-                    : engineStatus === "error"
-                      ? "border border-rose-400/40 bg-rose-500/10 text-rose-200"
-                      : "border border-slate-500/40 bg-slate-700/40 text-slate-300"
+              onClick={() => setLocale(l)}
+              className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
+                locale === l
+                  ? "bg-white/[0.1] text-slate-200"
+                  : "text-slate-500 hover:text-slate-300"
               }`}
             >
-              {engineStatus}
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
+      <div className="grid flex-1 gap-3 overflow-hidden lg:grid-cols-[1fr_1.4fr]">
+
+        {/* ── LEFT: AI CHAT (full height) ─────────────────────────── */}
+        <div className="flex flex-col overflow-hidden rounded-xl bg-white/[0.03]">
+          {/* Header */}
+          <div className="flex items-center gap-2 px-3 py-2.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-violet-500/20 text-[11px] text-violet-300">
+              {t("ai.label")}
             </span>
-          </div>
-          <p className="mt-2 text-xs text-slate-300">{engineMessage}</p>
-          <button
-            type="button"
-            onClick={() => void applyEditorSqlToEngine()}
-            disabled={isBootstrapping || !isInteractiveEngine}
-            className="mt-3 w-full rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100 transition-colors hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isInteractiveEngine
-              ? isBootstrapping
-                ? "Aplicando schema + seed..."
-                : "Aplicar schema + seed al motor"
-              : "Disponible solo en local+pglite"}
-          </button>
-        </div>
+            <span className="text-sm font-medium text-slate-200">
+              {aiSessionName || t("ai.designer")}
+            </span>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/60 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Command SQL
-          </p>
-          <textarea
-            value={commandSql}
-            onChange={(event) => setCommandSql(event.target.value)}
-            placeholder="select * from users limit 20;"
-            className="mt-2 min-h-[120px] w-full resize-y rounded-lg border border-white/10 bg-slate-950 px-3 py-2 font-mono text-xs leading-5 text-slate-100 outline-none focus:border-db-400/70"
-            spellCheck={false}
-          />
-          <button
-            type="button"
-            onClick={() => void runCommand()}
-            disabled={isRunningCommand || engineStatus !== "ready" || !isInteractiveEngine}
-            className="mt-2 w-full rounded-lg bg-db-500 px-3 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-db-400 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isInteractiveEngine
-              ? isRunningCommand
-                ? "Ejecutando..."
-                : "Ejecutar comando SQL"
-              : "Ejecución solo en local+pglite"}
-          </button>
-        </div>
+            {/* Context toggle */}
+            <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
+              {(["schema", "queries"] as const).map((ctx) => (
+                <button
+                  key={ctx}
+                  type="button"
+                  onClick={() => setAiContext(ctx)}
+                  className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
+                    aiContext === ctx
+                      ? "bg-white/[0.1] text-slate-200"
+                      : "text-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  {ctx === "schema" ? t("ai.context.schema") : t("ai.context.queries")}
+                </button>
+              ))}
+            </div>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/60 p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Artifacts
-            </p>
+            <div className="flex-1" />
+            {aiDirty ? (
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-400" title={t("ai.unsavedWork")} />
+            ) : null}
+            {aiModels.length > 0 ? (
+              <span className="rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-slate-500">
+                {PROVIDER_DEFAULTS[providerCfg.provider].label}
+              </span>
+            ) : null}
             <button
               type="button"
-              onClick={exportAllArtifacts}
-              className="rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-100 transition-colors hover:bg-emerald-500/20"
+              onClick={() => setSettingsOpen(true)}
+              className="rounded-md bg-white/[0.06] px-2 py-1 text-[11px] text-slate-400 transition-colors hover:bg-white/[0.1] hover:text-slate-200"
+              title={t("ai.settingsTitle")}
             >
-              Exportar todo
+              {t("ai.settings")}
             </button>
           </div>
 
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {ARTIFACT_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setArtifactTab(tab.key)}
-                className={`rounded-lg px-2.5 py-1 text-xs transition-colors ${
-                  artifactTab === tab.key
-                    ? "bg-slate-700 text-white"
-                    : "border border-white/10 text-slate-300 hover:bg-slate-800"
-                }`}
+          {/* Model toolbar */}
+          {aiModels.length > 0 ? (
+            <div className="flex items-center gap-2 border-t border-white/[0.04] px-3 py-1.5">
+              <select
+                value={aiSelectedModel}
+                onChange={(event) => setAiSelectedModel(event.target.value)}
+                disabled={aiStatus === "generating" || aiStatus === "thinking"}
+                className="flex-1 rounded-md bg-white/[0.06] px-2 py-1 text-[11px] text-slate-300 outline-none transition-colors hover:bg-white/[0.1] disabled:opacity-40"
               >
-                {tab.label}
+                {aiModels.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => void fetchAiModels()}
+                disabled={aiStatus === "loading-models" || aiStatus === "generating" || aiStatus === "thinking"}
+                className="rounded-md bg-white/[0.06] px-1.5 py-1 text-[11px] text-slate-500 transition-colors hover:bg-white/[0.1] hover:text-slate-300 disabled:opacity-40"
+                title={t("ai.refreshModels")}
+              >
+                ↻
               </button>
+              {aiContext === "queries" && schemaSql.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => void handleAutoGenerateQueries()}
+                  disabled={aiStatus === "generating" || aiStatus === "thinking"}
+                  className="rounded-md bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-400 transition-colors hover:bg-emerald-500/20 disabled:opacity-40"
+                  title={t("ai.autoGenerateQueries")}
+                >
+                  {t("ai.autoGenerate")}
+                </button>
+              ) : null}
+              {aiChat.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleAiNewSession}
+                  className="rounded-md bg-white/[0.06] px-2 py-1 text-[11px] text-slate-500 transition-colors hover:bg-white/[0.1] hover:text-slate-300"
+                  title={t("ai.newSession")}
+                >
+                  {t("ai.new")}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Chat messages */}
+          <div className="flex-1 space-y-2.5 overflow-auto px-3 py-3">
+            {aiChat.length === 0 && aiStatus !== "thinking" && aiStatus !== "generating" ? (
+              <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                {aiContext === "schema" ? (
+                  <>
+                    <p className="text-sm text-slate-500">{t("ai.empty.describeDb")}</p>
+                    <p className="max-w-[280px] text-xs leading-5 text-slate-600">
+                      {t("ai.empty.describeDbHint")}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-slate-500">{t("ai.empty.generateQueries")}</p>
+                    <p className="max-w-[280px] text-xs leading-5 text-slate-600">
+                      {t("ai.empty.generateQueriesHint")}
+                    </p>
+                    {schemaSql.trim() && aiSelectedModel ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleAutoGenerateQueries()}
+                        disabled={aiStatus === "generating" || aiStatus === "thinking"}
+                        className="rounded-lg bg-emerald-500/15 px-3 py-1.5 text-[11px] font-medium text-emerald-300 transition-colors hover:bg-emerald-500/25 disabled:opacity-40"
+                      >
+                        {t("ai.autoGenerateQueries")}
+                      </button>
+                    ) : (
+                      <p className="text-[11px] text-slate-600">
+                        {!schemaSql.trim() ? t("ai.empty.loadSchemaFirst") : t("ai.empty.connectFirst")}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : null}
+
+            {aiChat.map((entry) => (
+              <div
+                key={entry.id}
+                className={`flex ${entry.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[90%] rounded-xl px-3.5 py-2.5 text-xs leading-5 ${
+                    entry.role === "user"
+                      ? "bg-violet-500/15 text-slate-200"
+                      : "bg-white/[0.06] text-slate-300"
+                  }`}
+                >
+                  {entry.role === "assistant" ? (
+                    <div
+                      className="chat-markdown"
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(entry.content) }}
+                    />
+                  ) : (
+                    <p className="whitespace-pre-wrap">{entry.content}</p>
+                  )}
+                  <p className="mt-1.5 text-[10px] text-slate-600">
+                    {new Date(entry.timestamp).toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
             ))}
+
+            {(aiStatus === "thinking" || aiStatus === "generating") && aiPreview ? (
+              <div className="flex justify-start">
+                <div className="max-w-[90%] rounded-xl bg-white/[0.06] px-3.5 py-2.5">
+                  <pre className="max-h-[140px] overflow-auto font-mono text-[11px] leading-4 text-slate-400">
+                    {aiPreview}
+                  </pre>
+                </div>
+              </div>
+            ) : (aiStatus === "thinking" || aiStatus === "generating") && !aiPreview ? (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-xl bg-white/[0.06] px-3.5 py-2.5 text-xs text-slate-500">
+                  <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-violet-400" />
+                  {aiStatus === "thinking" ? t("ai.status.evaluating") : t("ai.status.generating")}
+                </div>
+              </div>
+            ) : null}
+
+            <div ref={aiChatEndRef} />
           </div>
 
-          <textarea
-            value={getCurrentArtifactValue(artifactTab)}
-            onChange={(event) => setCurrentArtifactValue(artifactTab, event.target.value)}
-            className="mt-3 min-h-[170px] w-full resize-y rounded-lg border border-white/10 bg-slate-950 px-3 py-2 font-mono text-xs leading-5 text-slate-100 outline-none focus:border-db-400/70"
-            spellCheck={false}
-          />
-          <div className="mt-2 flex justify-end">
-            <button
-              type="button"
-              onClick={() => exportArtifact(artifactTab)}
-              className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 transition-colors hover:bg-slate-800"
-            >
-              Exportar {ARTIFACT_TABS.find((tab) => tab.key === artifactTab)?.fileName}
-            </button>
+          {/* Input area with mode selector */}
+          <div className="border-t border-white/[0.04]">
+            {/* Mode tabs */}
+            <div className="flex items-center gap-1 px-3 pt-2">
+              {(["ask", "plan", "execute"] as const).map((mode) => {
+                const labels: Record<AiMode, string> = { ask: t("ai.mode.ask"), plan: t("ai.mode.plan"), execute: t("ai.mode.execute") };
+                const colors: Record<AiMode, { active: string; inactive: string }> = {
+                  ask: { active: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-500/30", inactive: "text-slate-500 hover:text-sky-300 hover:bg-sky-500/10" },
+                  plan: { active: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30", inactive: "text-slate-500 hover:text-amber-300 hover:bg-amber-500/10" },
+                  execute: { active: "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30", inactive: "text-slate-500 hover:text-emerald-300 hover:bg-emerald-500/10" },
+                };
+                const isActive = aiMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setAiMode(mode)}
+                    className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${isActive ? colors[mode].active : colors[mode].inactive}`}
+                  >
+                    {labels[mode]}
+                  </button>
+                );
+              })}
+              <span className="ml-auto text-[10px] text-slate-600">
+                {aiContext === "queries"
+                  ? aiMode === "ask" ? t("ai.modeDesc.queryAsk") : aiMode === "plan" ? t("ai.modeDesc.queryPlan") : t("ai.modeDesc.queryExecute")
+                  : aiMode === "ask" ? t("ai.modeDesc.schemaAsk") : aiMode === "plan" ? t("ai.modeDesc.schemaPlan") : t("ai.modeDesc.schemaExecute")}
+              </span>
+            </div>
+
+            {/* Textarea + send */}
+            <div className="flex items-end gap-2 px-3 pb-2.5 pt-1.5">
+              <textarea
+                value={aiInput}
+                onChange={(event) => setAiInput(event.target.value)}
+                placeholder={
+                  aiContext === "queries"
+                    ? aiMode === "ask"
+                      ? t("ai.ph.queryAsk")
+                      : aiMode === "plan"
+                        ? t("ai.ph.queryPlan")
+                        : t("ai.ph.queryExecute")
+                    : aiMode === "ask"
+                      ? t("ai.ph.schemaAsk")
+                      : aiMode === "plan"
+                        ? t("ai.ph.schemaPlan")
+                        : aiDirty
+                          ? t("ai.ph.schemaRefine")
+                          : t("ai.ph.schemaGenerate")
+                }
+                disabled={aiStatus === "generating" || aiStatus === "thinking" || aiModels.length === 0}
+                rows={2}
+                className="min-h-[40px] max-h-[100px] flex-1 resize-none rounded-lg bg-white/[0.04] px-3 py-2 text-xs leading-5 text-slate-200 outline-none ring-1 ring-white/[0.06] transition-colors placeholder:text-slate-600 focus:ring-white/[0.12] disabled:opacity-50"
+                spellCheck={false}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void handleAiSend();
+                  }
+                }}
+              />
+              {aiStatus === "generating" || aiStatus === "thinking" ? (
+                <button
+                  type="button"
+                  onClick={handleAiCancel}
+                  className="rounded-lg bg-rose-500/15 px-3 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-500/25"
+                >
+                  {t("ai.mode.stop")}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void handleAiSend()}
+                  disabled={!aiSelectedModel || !aiInput.trim()}
+                  className={`rounded-lg px-3 py-2 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                    aiMode === "ask"
+                      ? "bg-sky-500/20 text-sky-300 hover:bg-sky-500/30"
+                      : aiMode === "plan"
+                        ? "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
+                        : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                  }`}
+                >
+                  {aiMode === "ask" ? t("ai.mode.ask") : aiMode === "plan" ? t("ai.mode.plan") : t("ai.mode.execute")}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/70 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Consola</p>
-          <ul className="mt-2 max-h-[180px] space-y-1.5 overflow-auto pr-1">
+        {/* ── RIGHT: UNIFIED WORKSPACE ────────────────────────────── */}
+        <div className="flex flex-col overflow-hidden rounded-xl bg-white/[0.03]">
+          {/* Tab bar */}
+          <div className="flex items-center gap-0.5 border-b border-white/[0.06] px-2 pt-1">
+            {WORKSPACE_TABS.map((tab) => {
+              const colors = TAB_COLORS[tab.key];
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-1.5 rounded-t-lg px-3 py-2 text-xs transition-all ${
+                    isActive
+                      ? `${colors.active} text-slate-100`
+                      : "text-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${colors.dot} ${isActive ? "" : "opacity-40"}`} />
+                  {t(`tab.${tab.key}` as any)}
+                  {tab.key === "results" && lastResults.length > 0 ? (
+                    <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-db-500/20 px-1 text-[10px] text-db-300">
+                      {lastResults.length}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+            <div className="flex-1" />
+            {activeTabMeta?.fileName ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => exportArtifact(activeTab)}
+                  className="mb-0.5 rounded-md px-2 py-1 text-[11px] text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
+                >
+                  {t("export.button")}
+                </button>
+                <button
+                  type="button"
+                  onClick={exportAllArtifacts}
+                  className="mb-0.5 rounded-md px-2 py-1 text-[11px] text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
+                >
+                  {t("export.all")}
+                </button>
+              </>
+            ) : null}
+          </div>
+
+          {/* Tab content */}
+          <div className="flex-1 overflow-auto">
+            {/* Editable code tabs: schema, seed, queries */}
+            {isEditableTab ? (
+              <SqlEditor
+                value={getTabValue(activeTab)}
+                onChange={(v) => setTabValue(activeTab, v)}
+              />
+            ) : activeTab === "diagram" ? (
+              <div className="space-y-4 p-4">
+                <SchemaDiagramCanvas diagramMmd={diagramMmd} locale={locale} />
+                <details className="group">
+                  <summary className="cursor-pointer text-[11px] text-slate-500 transition-colors hover:text-slate-300">
+                    {t("diagram.viewSource")}
+                  </summary>
+                  <textarea
+                    value={diagramMmd}
+                    onChange={(event) => setDiagramMmd(event.target.value)}
+                    className="mt-2 min-h-[120px] w-full resize-y rounded-lg bg-black/30 p-3 font-mono text-[11px] leading-5 text-slate-400 outline-none"
+                    spellCheck={false}
+                  />
+                </details>
+              </div>
+            ) : activeTab === "erd" ? (
+              <div className="p-4">
+                <CrowsFootDiagram schemaSql={schemaSql} locale={locale} />
+              </div>
+            ) : activeTab === "migrations" ? (
+              <div className="space-y-4 p-4">
+                <div>
+                  <p className="mb-2 text-xs font-medium text-slate-400">{t("migrations.snapshot")}</p>
+                  <pre className="max-h-[240px] overflow-auto rounded-lg bg-black/30 p-3 font-mono text-[11px] leading-5 text-slate-400">
+                    {toMigrationSnapshot(migrationsSql)}
+                  </pre>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-medium text-slate-400">{t("migrations.history")}</p>
+                  {migrationLog.length === 0 ? (
+                    <p className="text-xs text-slate-600">{t("migrations.noMigrations")}</p>
+                  ) : (
+                    <ol className="space-y-2">
+                      {migrationLog.map((migration) => (
+                        <li key={migration.id} className="rounded-lg bg-black/20 p-2.5">
+                          <p className="text-[11px] text-slate-500">
+                            #{migration.id} &middot; {new Date(migration.createdAtISO).toLocaleString(locale === "es" ? "es-CO" : "en-US")}
+                          </p>
+                          <pre className="mt-1 max-h-[100px] overflow-auto font-mono text-[11px] leading-5 text-slate-300">
+                            {migration.sql}
+                          </pre>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* results tab */
+              <div className="p-4">
+                {lastResults.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <p className="text-sm text-slate-500">{t("results.noResults")}</p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      {t("results.executeHint")}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {lastResults.map((statementResult) => {
+                      const { result, rows, statementNumber } = statementResult;
+                      const columns = result.fields.map((field) => field.name);
+                      const fallbackColumns =
+                        columns.length > 0 ? columns : rows.length > 0 ? Object.keys(rows[0].row) : [];
+                      const previewRows = rows.slice(0, MAX_RESULT_ROWS);
+                      return (
+                        <div key={statementResult.id}>
+                          <p className="mb-1.5 text-[11px] text-slate-500">
+                            {t("results.statement").replace("{num}", String(statementNumber))} &middot; {t("results.rows").replace("{count}", String(rows.length))} &middot;{" "}
+                            {t("results.affected").replace("{count}", String(result.affectedRows ?? 0))}
+                          </p>
+                          {fallbackColumns.length === 0 ? (
+                            <p className="text-xs text-slate-600">{t("results.noColumns")}</p>
+                          ) : (
+                            <div className="overflow-auto rounded-lg bg-black/20">
+                              <table className="min-w-full border-collapse text-[11px]">
+                                <thead>
+                                  <tr className="border-b border-white/[0.06]">
+                                    {fallbackColumns.map((column) => (
+                                      <th key={column} className="px-3 py-2 text-left font-medium text-slate-400">
+                                        {column}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {previewRows.map((previewRow) => {
+                                    const record = previewRow.row;
+                                    return (
+                                      <tr key={previewRow.id} className="border-b border-white/[0.03] transition-colors hover:bg-white/[0.02]">
+                                        {fallbackColumns.map((column) => (
+                                          <td key={`${previewRow.id}-${column}`} className="px-3 py-1.5 text-slate-300">
+                                            {formatCell(record[column])}
+                                          </td>
+                                        ))}
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                          {rows.length > MAX_RESULT_ROWS ? (
+                            <p className="mt-1 text-[11px] text-slate-600">
+                              {t("results.showing").replace("{shown}", String(MAX_RESULT_ROWS)).replace("{total}", String(rows.length))}
+                            </p>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── BOTTOM BAR: Command SQL + Console ────────────────────── */}
+      <div className="flex items-start gap-3 rounded-xl bg-white/[0.03] px-3 py-2.5">
+        <span className="mt-1.5 font-mono text-xs text-slate-600">SQL&gt;</span>
+        <textarea
+          value={commandSql}
+          onChange={(event) => setCommandSql(event.target.value)}
+          placeholder="select * from users limit 20;"
+          rows={1}
+          className="min-h-[32px] max-h-[120px] flex-1 resize-y bg-transparent font-mono text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-600"
+          spellCheck={false}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+              event.preventDefault();
+              void runCommand();
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => void runCommand()}
+          disabled={isRunningCommand || engineStatus !== "ready" || !isInteractiveEngine}
+          className="rounded-lg bg-db-500/20 px-4 py-1.5 text-xs font-medium text-db-300 transition-colors hover:bg-db-500/30 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {isRunningCommand ? t("bottom.running") : t("bottom.run")}
+        </button>
+
+        <div className="ml-1 border-l border-white/[0.06] pl-3">
+          <button
+            type="button"
+            onClick={() => setConsoleOpen((prev) => !prev)}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
+          >
+            {t("bottom.console")}
+            {lastConsoleEntry ? (
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  lastConsoleEntry.kind === "ok"
+                    ? "bg-emerald-400"
+                    : lastConsoleEntry.kind === "warn"
+                      ? "bg-amber-400"
+                      : "bg-sky-400"
+                }`}
+              />
+            ) : null}
+          </button>
+        </div>
+      </div>
+
+      {/* Console overlay */}
+      {consoleOpen ? (
+        <div className="rounded-xl bg-black/40 p-3 backdrop-blur">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-medium text-slate-500">{t("bottom.console")}</span>
+            <button
+              type="button"
+              onClick={() => setConsoleOpen(false)}
+              className="text-[11px] text-slate-600 transition-colors hover:text-slate-400"
+            >
+              {t("bottom.close")}
+            </button>
+          </div>
+          <ul className="max-h-[160px] space-y-0.5 overflow-auto">
             {entries.map((entry) => (
-              <li key={entry.id} className="text-xs text-slate-300">
+              <li key={entry.id} className="font-mono text-[11px] text-slate-400">
                 <span
                   className={
                     entry.kind === "ok"
-                      ? "text-emerald-300"
+                      ? "text-emerald-400"
                       : entry.kind === "warn"
-                        ? "text-amber-300"
-                        : "text-sky-300"
+                        ? "text-amber-400"
+                        : "text-slate-500"
                   }
                 >
-                  {entry.kind === "ok" ? "[ok]" : entry.kind === "warn" ? "[warn]" : "[info]"}
+                  {entry.kind === "ok" ? "ok" : entry.kind === "warn" ? "!!" : "--"}
                 </span>{" "}
                 {entry.message}
               </li>
             ))}
           </ul>
         </div>
-      </section>
+      ) : null}
 
-      <section className="min-h-[620px] rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-        <header className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
-          <div className="flex items-center gap-2">
-            {PREVIEW_TABS.map((tab) => (
+      {/* ── AI SETTINGS DRAWER ──────────────────────────────────── */}
+      {settingsOpen ? (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSettingsOpen(false)}
+            onKeyDown={(e) => { if (e.key === "Escape") setSettingsOpen(false); }}
+            role="button"
+            tabIndex={-1}
+            aria-label="Close settings"
+          />
+          <div className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col bg-slate-900 shadow-2xl shadow-black/40">
+            {/* Drawer header */}
+            <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+              <h2 className="text-sm font-semibold text-slate-100">{t("settings.title")}</h2>
               <button
-                key={tab.key}
                 type="button"
-                onClick={() => setPreviewTab(tab.key)}
-                className={`rounded-lg px-3 py-1.5 text-sm ${
-                  previewTab === tab.key
-                    ? "bg-slate-700 text-white"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`}
+                onClick={() => setSettingsOpen(false)}
+                className="rounded-md px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
               >
-                {tab.label}
+                {t("settings.close")}
               </button>
-            ))}
-          </div>
-          <span className="text-xs text-slate-400">Comandos ejecutados: {executedCount}</span>
-        </header>
-
-        {previewTab === "diagram" ? (
-          <div className="space-y-3">
-            <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Schema Diagram
-              </p>
-              <SchemaDiagramCanvas diagramMmd={diagramMmd} />
-            </div>
-            <details className="rounded-xl border border-white/10 bg-slate-900/60 p-3">
-              <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-slate-500">
-                diagram.mmd source
-              </summary>
-              <pre className="mt-3 max-h-[220px] overflow-auto rounded-lg border border-white/10 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200">
-                {diagramMmd}
-              </pre>
-            </details>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                migrations.sql snapshot
-              </p>
-              <pre className="max-h-[250px] overflow-auto rounded-lg border border-white/10 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200">
-                {toMigrationSnapshot(migrationsSql)}
-              </pre>
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Migration history
-              </p>
-              {migrationLog.length === 0 ? (
-                <p className="text-xs text-slate-400">
-                  No hay migraciones ejecutadas aún. Ejecuta un comando para registrarlo.
-                </p>
-              ) : (
-                <ol className="space-y-2">
-                  {migrationLog.map((migration) => (
-                    <li
-                      key={migration.id}
-                      className="rounded-lg border border-white/10 bg-slate-950/70 p-2"
-                    >
-                      <p className="text-[11px] text-slate-400">
-                        #{migration.id} · {new Date(migration.createdAtISO).toLocaleString("es-CO")}
-                      </p>
-                      <pre className="mt-1 max-h-[120px] overflow-auto font-mono text-[11px] leading-5 text-slate-200">
-                        {migration.sql}
-                      </pre>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </div>
-          </div>
-        )}
+            {/* Drawer body */}
+            <div className="flex-1 space-y-5 overflow-auto px-5 py-5">
+              {/* Provider selector */}
+              <div>
+                <label className="mb-1.5 block text-[11px] font-medium text-slate-400">{t("settings.provider")}</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(Object.keys(PROVIDER_DEFAULTS) as AiProvider[]).map((p) => {
+                    const isActive = providerCfg.provider === p;
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => {
+                          updateProviderCfg({
+                            provider: p,
+                            baseUrl: PROVIDER_DEFAULTS[p].baseUrl,
+                            apiKey: p === "ollama" ? "" : providerCfg.apiKey,
+                            model: "",
+                          });
+                          setAiModels([]);
+                          setAiSelectedModel("");
+                        }}
+                        className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                          isActive
+                            ? "bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/30"
+                            : "bg-white/[0.04] text-slate-500 hover:bg-white/[0.08] hover:text-slate-300"
+                        }`}
+                      >
+                        {PROVIDER_DEFAULTS[p].label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-        <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-3">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Resultados de la última ejecución
-          </p>
-          {lastResults.length === 0 ? (
-            <p className="text-xs text-slate-400">
-              Ejecuta un comando SQL para ver filas, campos y filas afectadas.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {lastResults.map((statementResult) => {
-                const { result, rows, statementNumber } = statementResult;
-                const columns = result.fields.map((field) => field.name);
-                const fallbackColumns =
-                  columns.length > 0 ? columns : rows.length > 0 ? Object.keys(rows[0].row) : [];
-                const previewRows = rows.slice(0, MAX_RESULT_ROWS);
-                return (
-                  <article
-                    key={statementResult.id}
-                    className="rounded-lg border border-white/10 bg-slate-950/70 p-2"
-                  >
-                    <p className="text-[11px] text-slate-400">
-                      Sentencia #{statementNumber} · {rows.length} fila(s) ·{" "}
-                      {result.affectedRows ?? 0} afectada(s)
-                    </p>
+              {/* Base URL */}
+              <div>
+                <label className="mb-1.5 block text-[11px] font-medium text-slate-400">
+                  {providerCfg.provider === "ollama" ? t("settings.ollamaUrl") : t("settings.baseUrl")}
+                </label>
+                <input
+                  type="text"
+                  value={providerCfg.baseUrl}
+                  onChange={(e) => updateProviderCfg({ baseUrl: e.target.value })}
+                  className="w-full rounded-lg bg-white/[0.04] px-3 py-2 font-mono text-xs text-slate-200 outline-none ring-1 ring-white/[0.06] transition-colors placeholder:text-slate-600 focus:ring-white/[0.15]"
+                  placeholder={PROVIDER_DEFAULTS[providerCfg.provider].baseUrl}
+                  spellCheck={false}
+                />
+              </div>
 
-                    {fallbackColumns.length === 0 ? (
-                      <p className="mt-2 text-xs text-slate-400">Sin columnas para mostrar.</p>
-                    ) : (
-                      <div className="mt-2 overflow-auto rounded border border-white/10">
-                        <table className="min-w-full border-collapse text-[11px]">
-                          <thead className="bg-slate-900">
-                            <tr>
-                              {fallbackColumns.map((column) => (
-                                <th
-                                  key={column}
-                                  className="border-b border-white/10 px-2 py-1 text-left font-semibold text-slate-300"
-                                >
-                                  {column}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {previewRows.map((previewRow) => {
-                              const record = previewRow.row;
-                              return (
-                                <tr key={previewRow.id}>
-                                  {fallbackColumns.map((column) => (
-                                    <td
-                                      key={`${previewRow.id}-${column}`}
-                                      className="border-b border-white/10 px-2 py-1 text-slate-200"
-                                    >
-                                      {formatCell(record[column])}
-                                    </td>
-                                  ))}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-
-                    {rows.length > MAX_RESULT_ROWS ? (
-                      <p className="mt-1 text-[11px] text-slate-400">
-                        Mostrando {MAX_RESULT_ROWS} de {rows.length} filas.
-                      </p>
+              {/* API Key */}
+              {providerCfg.provider !== "ollama" ? (
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="text-[11px] font-medium text-slate-400">{t("settings.apiKey")}</label>
+                    {PROVIDER_DEFAULTS[providerCfg.provider].keyUrl ? (
+                      <a
+                        href={PROVIDER_DEFAULTS[providerCfg.provider].keyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-violet-400 transition-colors hover:text-violet-300"
+                      >
+                        {t("settings.getKey")}
+                      </a>
                     ) : null}
-                  </article>
-                );
-              })}
+                  </div>
+                  <input
+                    type="password"
+                    value={providerCfg.apiKey}
+                    onChange={(e) => updateProviderCfg({ apiKey: e.target.value })}
+                    className="w-full rounded-lg bg-white/[0.04] px-3 py-2 font-mono text-xs text-slate-200 outline-none ring-1 ring-white/[0.06] transition-colors placeholder:text-slate-600 focus:ring-white/[0.15]"
+                    placeholder="sk-..."
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                  <p className="mt-1 text-[10px] text-slate-600">
+                    {t("settings.apiKeyHint")}
+                  </p>
+                </div>
+              ) : null}
+
+              {/* Load models button */}
+              <button
+                type="button"
+                onClick={() => void fetchAiModels()}
+                disabled={aiStatus === "loading-models" || (providerCfg.provider !== "ollama" && !providerCfg.apiKey)}
+                className="w-full rounded-lg bg-violet-500/15 py-2.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {aiStatus === "loading-models" ? t("settings.loadingModels") : t("settings.loadModels")}
+              </button>
+
+              {/* Model selector */}
+              {aiModels.length > 0 ? (
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-slate-400">{t("settings.model")}</label>
+                  <select
+                    value={aiSelectedModel}
+                    onChange={(e) => {
+                      setAiSelectedModel(e.target.value);
+                      updateProviderCfg({ model: e.target.value });
+                    }}
+                    className="w-full rounded-lg bg-white/[0.04] px-3 py-2 text-xs text-slate-200 outline-none ring-1 ring-white/[0.06] transition-colors hover:bg-white/[0.08]"
+                  >
+                    {aiModels.map((m) => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+
+              {/* Status */}
+              <div className="rounded-lg bg-white/[0.03] px-3 py-2.5">
+                <p className="text-[11px] text-slate-500">
+                  {t("settings.status")} {aiModels.length > 0
+                    ? t("settings.modelsAvailable").replace("{count}", String(aiModels.length))
+                    : aiStatus === "loading-models"
+                      ? t("settings.loading")
+                      : aiStatus === "error"
+                        ? t("settings.connectionFailed")
+                        : t("settings.notConnected")}
+                </p>
+                {aiSelectedModel ? (
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    {t("settings.active")} <span className="font-mono text-violet-300">{aiSelectedModel}</span>
+                  </p>
+                ) : null}
+              </div>
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </>
+      ) : null}
+      <HelpChat aiConfig={aiProviderConfig} locale={locale} />
     </main>
   );
 }

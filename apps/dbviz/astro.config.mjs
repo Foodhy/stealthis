@@ -9,4 +9,9 @@ export default defineConfig({
   adapter: cloudflare(),
   server: { port: 4327 },
   integrations: [react(), tailwind({ applyBaseStyles: false })],
+  vite: {
+    optimizeDeps: {
+      exclude: ["@electric-sql/pglite"],
+    },
+  },
 });

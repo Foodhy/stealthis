@@ -5,3 +5,4 @@ export const SHOW_LOWER_BG_ANIMATION = true;
 
 export const SHOW_STYLEFORGE_STUDIO = false;
 export const SHOW_BUILD_BUTTON = false;
+export const SHOW_DBVIZ = true;

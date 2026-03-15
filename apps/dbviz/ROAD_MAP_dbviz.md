@@ -7,21 +7,20 @@ Construir una vertical completa de **database-schemas relacionales** dentro de S
 - App `dbviz` para crear/probar/revisar esquemas por comandos.
 - Evolucion posterior: conexion con Supabase + generacion asistida por IA (Ollama).
 
-## Estado actual (2026-03-05)
+## Estado actual (2026-03-15)
 - Fase 0: completada.
 - Fase 1: completada.
 - Fase 2: completada (8 recursos iniciales publicados).
 - Fase 3: completada (Lab renderiza SQL + ERD).
 - Fase 4: completada (commands workspace + artifacts + ejecución local `pglite`).
 - Fase 5: completada en local (`docker` + `pglite`) con validación automática y reporte.
-- Fase 6: en progreso (check + pull Supabase + export de borrador a `packages/content/resources/<slug>` + runtime selector en UI).
-- Fase 7: pendiente.
-- Fase 8: pendiente.
+- Fase 6: completada (check + pull Supabase + export de borrador a `packages/content/resources/<slug>` + runtime selector en UI).
+- Fase 7: completada (multi-provider AI: Ollama/OpenAI/Claude/Gemini + prompt templates + chat modes + markdown/SQL highlighting + bilingual help chat).
+- Fase 8: completada (deploy a Cloudflare Pages, UX polish, help chat widget).
 
-## Siguiente foco inmediato
-1. Conectar el flujo de import Supabase dentro de la UI de `dbviz` (actualmente el import es CLI-first).
-2. Agregar endpoint/backend en `dbviz` para ejecutar preview directo con `local+docker` y modo seguro para `supabase`.
-3. Integrar `dbviz:validate` y `dbviz:supabase:check` en CI cuando se estabilice baseline global de lint.
+## Siguiente foco (backlog)
+1. Integrar `dbviz:validate` y `dbviz:supabase:check` en CI cuando se estabilice baseline global de lint.
+2. Expandir backlog: query-patterns, db-migrations, db-performance, data-warehousing.
 
 ## Scope (solo database)
 Incluye:

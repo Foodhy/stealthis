@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useTranslations, type Locale } from "../i18n";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -418,9 +419,11 @@ function TableNode({
 
 interface SchemaDiagramCanvasProps {
   diagramMmd: string;
+  locale: Locale;
 }
 
-export default function SchemaDiagramCanvas({ diagramMmd }: SchemaDiagramCanvasProps) {
+export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagramCanvasProps) {
+  const t = useTranslations(locale);
   const [tables, setTables] = useState<SchemaTable[]>([]);
   const [relations, setRelations] = useState<SchemaRelation[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -434,14 +437,14 @@ export default function SchemaDiagramCanvas({ diagramMmd }: SchemaDiagramCanvasP
     if (!src) {
       setTables([]);
       setRelations([]);
-      setParseError("No hay contenido de diagrama para renderizar.");
+      setParseError(t("canvas.noDiagramContent"));
       return;
     }
 
     try {
       const { tables: rawTables, relations: rawRelations } = parseMermaidER(src);
       if (rawTables.length === 0) {
-        setParseError("No se detectaron tablas en el diagrama. Asegúrate de usar formato erDiagram.");
+        setParseError(t("canvas.noTablesDetected"));
         setTables([]);
         setRelations([]);
         return;
@@ -451,7 +454,7 @@ export default function SchemaDiagramCanvas({ diagramMmd }: SchemaDiagramCanvasP
       setParseError(null);
       setSelected(null);
     } catch (err) {
-      setParseError(err instanceof Error ? err.message : "Error al parsear el diagrama.");
+      setParseError(err instanceof Error ? err.message : t("canvas.parseError"));
     }
   }, [diagramMmd]);
 
@@ -503,7 +506,7 @@ export default function SchemaDiagramCanvas({ diagramMmd }: SchemaDiagramCanvasP
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
           </svg>
-          <span className="text-[11px] text-slate-500">Arrastra las tablas para reposicionarlas</span>
+          <span className="text-[11px] text-slate-500">{t("canvas.dragHint")}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -514,13 +517,13 @@ export default function SchemaDiagramCanvas({ diagramMmd }: SchemaDiagramCanvasP
                 : "border-white/10 text-slate-400 hover:text-slate-200"
             }`}
           >
-            {animated ? "✦ Animado" : "Estático"}
+            {animated ? "✦ " + t("canvas.animated") : t("canvas.static")}
           </button>
           <button
             onClick={handleReset}
             className="rounded-lg border border-white/10 px-2.5 py-1 text-[11px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200"
           >
-            Reset
+            {t("canvas.reset")}
           </button>
         </div>
       </div>
@@ -584,20 +587,20 @@ export default function SchemaDiagramCanvas({ diagramMmd }: SchemaDiagramCanvasP
       {/* Legend */}
       <div className="flex flex-wrap gap-4 text-[11px] text-slate-500">
         <span className="flex items-center gap-1.5">
-          <span className="font-mono font-bold text-[#e3b341]">PK</span> Primary key
+          <span className="font-mono font-bold text-[#e3b341]">PK</span> {t("canvas.primaryKey")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="font-mono font-bold text-[#bc8cff]">FK</span> Foreign key
+          <span className="font-mono font-bold text-[#bc8cff]">FK</span> {t("canvas.foreignKey")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-px w-6 border-t-2 border-dashed border-slate-600" /> Relación
+          <span className="inline-block h-px w-6 border-t-2 border-dashed border-slate-600" /> {t("canvas.relation")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-px w-6 border-t-2 border-blue-500" /> Relación activa
+          <span className="inline-block h-px w-6 border-t-2 border-blue-500" /> {t("canvas.activeRelation")}
         </span>
         {tables.length > 0 && (
           <span className="ml-auto text-slate-600">
-            {tables.length} tabla{tables.length !== 1 ? "s" : ""} · {relations.length} relaci{relations.length !== 1 ? "ones" : "ón"}
+            {tables.length} {tables.length !== 1 ? t("canvas.tablesPlural") : t("canvas.tables")} · {relations.length} {relations.length !== 1 ? t("canvas.relationsPlural") : t("canvas.relationSingular")}
           </span>
         )}
       </div>
