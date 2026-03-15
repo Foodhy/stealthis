@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
-
-const DEFAULT_SITE = "https://dbviz.stealthis.dev";
+import { getDbvizOrigin } from "../lib/site";
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = (site ?? new URL(DEFAULT_SITE)).toString().replace(/\/$/, "");
-  const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${origin}/</loc></url></urlset>`;
+  const origin = getDbvizOrigin(site);
+  const urls = [`${origin}/`, `${origin}/llms.txt`, `${origin}/ai-index.json`];
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((url) => `<url><loc>${url}</loc></url>`).join("")}</urlset>`;
 
   return new Response(xml, {
     headers: {

@@ -17,6 +17,8 @@ Construir una vertical completa de **database-schemas relacionales** dentro de S
 - Fase 6: completada (check + pull Supabase + export de borrador a `packages/content/resources/<slug>` + runtime selector en UI).
 - Fase 7: completada (multi-provider AI: Ollama/OpenAI/Claude/Gemini + prompt templates + chat modes + markdown/SQL highlighting + bilingual help chat).
 - Fase 8: completada (deploy a Cloudflare Pages, UX polish, help chat widget).
+- Fase 8.5: completada (guided tour con driver.js, temas Dark/Light, tour popover bilingüe, auto-start en primera visita).
+- Fase 9: en progreso (menú contextual interactivo en ERD: agregar/editar/eliminar tablas y columnas con click derecho, propagación a Schema SQL).
 
 ## Siguiente foco (backlog)
 1. Integrar `dbviz:validate` y `dbviz:supabase:check` en CI cuando se estabilice baseline global de lint.
@@ -238,6 +240,50 @@ Entregable:
 
 Criterio de aceptacion:
 - Equipo puede crear/publicar/revisar schemas end-to-end sin pasos manuales ambiguos.
+
+## Fase 8.5 - Guided Tour y temas visuales
+Objetivo:
+Onboarding interactivo y personalización visual.
+
+Tareas:
+- [x] Integrar `driver.js` para tour guiado paso a paso (10 pasos).
+- [x] Traducciones completas EN/ES para el tour.
+- [x] Auto-start en primera visita (persistido en localStorage).
+- [x] Paso del tour que abre el Settings drawer programáticamente.
+- [x] Temas visuales: Dark (default) y Soft Light.
+- [x] CSS custom properties para theming global (backgrounds, texto, bordes, inputs, accents, syntax highlighting).
+- [x] Selector de tema en toolbar con persistencia en localStorage.
+
+Entregable:
+- Tour interactivo bilingüe + 2 temas visuales completos.
+
+Criterio de aceptacion:
+- Primera visita lanza tour automatico.
+- Boton `?` relanza el tour.
+- Tema Light es completamente legible (texto oscuro, paneles claros, código con GitHub Light highlighting).
+
+## Fase 9 - ERD interactivo con menú contextual
+Objetivo:
+Permitir crear y modificar esquemas directamente desde el diagrama ERD con click derecho.
+
+Tareas:
+- [x] Componente `ErdContextMenu` (dark-themed, viewport-aware, esc/click-outside close).
+- [x] `tablesToSql()` para regenerar DDL desde estructuras en memoria.
+- [x] Click derecho en canvas → Agregar tabla.
+- [x] Click derecho en tabla → Agregar columna, Renombrar tabla, Eliminar tabla.
+- [x] Click derecho en columna → Editar columna, Eliminar columna.
+- [x] Propagación de cambios al tab Schema via `onSchemaChange` callback.
+- [x] Preservación de posiciones de tablas en ediciones internas (ref flag).
+- [x] Traducciones EN/ES para menú contextual.
+- [ ] Reemplazo de `window.prompt()` por modales inline (mejora futura).
+
+Entregable:
+- ERD completamente interactivo: crear esquemas sin escribir SQL.
+
+Criterio de aceptacion:
+- Usuario puede construir un schema completo (tablas + columnas + FKs) desde el ERD.
+- Cambios se reflejan inmediatamente en el tab Schema.
+- AI chat puede complementar las ediciones manuales.
 
 ## Backlog database (despues del MVP)
 - `query-patterns` (joins, CTEs, windows, reportes)

@@ -45,6 +45,8 @@ export const ResourceTargetSchema = z.enum([
   "vue",
   "svelte",
   "astro",
+  "react-native",
+  "expo",
   "typescript",
   "python",
   // Content targets
@@ -64,6 +66,8 @@ export const ResourceCollectionSchema = z.enum([
   "dashboard",
   "remotion",
   "effects",
+  "mobile-nav",
+  "charts",
 ]);
 
 export const ResourceMetaSchema = z.object({

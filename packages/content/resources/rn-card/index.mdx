@@ -1,0 +1,84 @@
+---
+slug: rn-card
+title: React Native Card
+description: A versatile card component for React Native with image header, content area, footer actions, and multiple variants — elevated, outlined, and filled.
+category: components
+type: component
+tags: [card, container, surface, react-native, layout, elevation]
+tech: [react-native, typescript]
+difficulty: easy
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Card
+
+A composable card component built entirely with React Native core APIs. Supports three visual variants, an optional pressable wrapper with scale animation, and compound sub-components for header, body, and footer sections.
+
+### Variants
+
+| Variant | Look |
+|---------|------|
+| `elevated` | White surface with shadow / elevation — the default card style. |
+| `outlined` | Transparent background with a thin border. |
+| `filled` | Solid tinted background, no border or shadow. |
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `"elevated" \| "outlined" \| "filled"` | `"elevated"` | Visual style of the card. |
+| `onPress` | `() => void` | — | When provided, wraps the card in a pressable area with a subtle scale animation. |
+| `style` | `ViewStyle` | — | Additional styles merged onto the card container. |
+| `children` | `ReactNode` | — | Compose with `Card.Header`, `Card.Body`, and `Card.Footer`. |
+
+**Card.Header**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `imageUri` | `string` | Source URI for the header image. |
+| `height` | `number` | Image height in pixels (default `180`). |
+| `overlay` | `boolean` | Show a gradient overlay on the image. |
+| `children` | `ReactNode` | Content rendered on top of the image (e.g. a title). |
+
+**Card.Body**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `ReactNode` | Main content area with horizontal and vertical padding. |
+
+**Card.Footer**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `ReactNode` | Typically a row of action buttons aligned to the end. |
+
+### Usage
+
+```tsx
+<Card variant="elevated" onPress={() => console.log("tapped")}>
+  <Card.Header imageUri="https://picsum.photos/400/200" overlay>
+    <Text style={{ color: "#fff", fontSize: 18 }}>Mountain View</Text>
+  </Card.Header>
+  <Card.Body>
+    <Text>A beautiful landscape captured at golden hour.</Text>
+  </Card.Body>
+  <Card.Footer>
+    <Pressable><Text>Share</Text></Pressable>
+    <Pressable><Text>Save</Text></Pressable>
+  </Card.Footer>
+</Card>
+```
+
+### How it works
+
+The component uses a compound-component pattern — `Card.Header`, `Card.Body`, and `Card.Footer` are attached as static properties on the `Card` function. Each sub-component is a plain `View` with scoped styles; the parent `Card` applies variant-specific styles (shadow, border, or background) to the outer wrapper.
+
+When `onPress` is supplied, the card is wrapped in an `Animated.View` driven by a `Pressable`. On press-in the card scales down to `0.97`; on release it springs back to `1.0` using React Native's `Animated` API with `useNativeDriver` for 60 fps performance.
+
+No third-party libraries are required — everything is built on `react-native` core primitives.

@@ -3,6 +3,7 @@ import Base from "@layouts/Base.astro";
 import CodeTabs from "@components/CodeTabs.astro";
 import ActionMenu from "@components/ActionMenu.astro";
 import RemotionPreview from "@components/RemotionPreview";
+import ExpoSnackEmbed from "@components/ExpoSnackEmbed.astro";
 import TechIcon from "@components/TechIcon.astro";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -83,12 +84,17 @@ const hasTS =
   existsSync(path.join(snippetsDir, "next.tsx")) ||
   existsSync(path.join(snippetsDir, "typescript.ts")) ||
   existsSync(path.join(snippetsDir, "typescript.tsx"));
+const hasReactNative =
+  existsSync(path.join(snippetsDir, "react-native.tsx")) ||
+  existsSync(path.join(snippetsDir, "expo.tsx"));
 
 const languageBadges = [...(hasTS ? ["TS"] : []), ...(hasJS ? ["JS"] : [])];
 
 const TARGET_LABELS: Record<string, string> = {
   html: "HTML",
   react: "React",
+  "react-native": "React Native",
+  expo: "Expo",
   next: "Next.js",
   vue: "Vue",
   svelte: "Svelte",
@@ -297,6 +303,13 @@ const structuredData = [
         <div class="rounded-2xl border border-white/8 bg-surface-900/60 p-4">
           <RemotionPreview client:only="react" slug={slug} />
         </div>
+      </section>
+    )}
+
+    {hasReactNative && (
+      <section class="mb-12">
+        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Expo Snack</h2>
+        <ExpoSnackEmbed slug={slug} title={title} tech={tech} />
       </section>
     )}
 

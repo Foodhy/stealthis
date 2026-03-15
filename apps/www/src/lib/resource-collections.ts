@@ -13,6 +13,8 @@ interface ResourceCollectionCandidate {
 
 const DASHBOARD_HINTS = new Set(["dashboard", "admin", "data-viz"]);
 const CARD_HINTS = new Set(["card", "cards"]);
+const MOBILE_NAV_HINTS = new Set(["mobile-nav", "bottom-nav", "tab-bar", "drawer", "fab", "mobile-menu"]);
+const CHART_HINTS = new Set(["chart", "data-visualization", "graph", "pie", "donut", "bar-chart", "geo-chart"]);
 
 function normalize(value: string): string {
   return value.trim().toLowerCase();
@@ -61,6 +63,24 @@ export function resolveResourceCollections(
     normalizedTitle.includes("dashboard")
   ) {
     resolved.add("dashboard");
+  }
+
+  if (
+    [...MOBILE_NAV_HINTS].some((token) => normalizedTags.has(token)) ||
+    normalizedTitle.includes("bottom nav") ||
+    normalizedTitle.includes("mobile nav") ||
+    (normalizedTags.has("navigation") && normalizedTags.has("mobile")) ||
+    (normalizedTags.has("navigation") && normalizedTags.has("menu"))
+  ) {
+    resolved.add("mobile-nav");
+  }
+
+  if (
+    [...CHART_HINTS].some((token) => normalizedTags.has(token)) ||
+    normalizedTitle.includes("chart") ||
+    normalizedTitle.includes("graph")
+  ) {
+    resolved.add("charts");
   }
 
   return RESOURCE_COLLECTION_IDS.filter((id) => resolved.has(id));

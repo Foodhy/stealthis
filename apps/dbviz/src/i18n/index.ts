@@ -235,10 +235,64 @@ const translations = {
     "help.q3": "How do I run SQL queries?",
     "help.q4": "How do I export my schema?",
 
+    // ERD Context Menu
+    "erd.ctx.addTable": "Add table",
+    "erd.ctx.addColumn": "Add column",
+    "erd.ctx.renameTable": "Rename table",
+    "erd.ctx.deleteTable": "Delete table",
+    "erd.ctx.editColumn": "Edit column",
+    "erd.ctx.deleteColumn": "Delete column",
+    "erd.ctx.promptTableName": "Table name:",
+    "erd.ctx.promptColumnDef": "Column (name type):",
+    "erd.ctx.confirmDeleteTable": "Delete table \"{name}\"?",
+    "erd.ctx.confirmDeleteColumn": "Delete column \"{name}\"?",
+
     // Language Switcher
     "lang.en": "EN",
     "lang.es": "ES",
     "lang.switchLabel": "Language",
+
+    // Guided Tour
+    "tour.start": "Tour",
+    "tour.next": "Next",
+    "tour.prev": "Previous",
+    "tour.done": "Done",
+    "tour.progress": "{{current}} of {{total}}",
+    "tour.welcome.title": "Welcome to DbViz",
+    "tour.welcome.description":
+      "DbViz is a browser-based database design tool. Let's take a quick tour of the main features.",
+    "tour.examples.title": "Database Examples",
+    "tour.examples.description":
+      "Pick a pre-built database schema to explore, or start from scratch.",
+    "tour.apply.title": "Apply to Engine",
+    "tour.apply.description":
+      "Click Apply to load the schema and seed data into the in-browser PostgreSQL engine (PGlite).",
+    "tour.engine.title": "Engine Status",
+    "tour.engine.description":
+      "Shows whether the SQL engine is idle, booting, ready, or in error state.",
+    "tour.aiPanel.title": "AI Designer",
+    "tour.aiPanel.description":
+      "Chat with an AI to design schemas or generate queries. Switch between Schema and Queries context.",
+    "tour.aiModes.title": "AI Modes",
+    "tour.aiModes.description":
+      "Ask questions, plan architecture, or execute SQL generation. Use Cmd+. to cycle modes.",
+    "tour.tabs.title": "Workspace Tabs",
+    "tour.tabs.description":
+      "Switch between Diagram, ERD, Schema, Seed, Queries, Migrations, and Results views.",
+    "tour.erdContext.title": "Interactive ERD",
+    "tour.erdContext.description":
+      "Right-click on the canvas to add tables, on a table header to add columns or rename, and on a column to edit or delete. Changes sync to the Schema tab instantly.",
+    "tour.sqlBar.title": "SQL Command Bar",
+    "tour.sqlBar.description":
+      "Run ad-hoc SQL queries here. Press Cmd+Enter (or Ctrl+Enter) to execute.",
+    "tour.settings.title": "AI Provider Settings",
+    "tour.settings.description":
+      "Configure your AI provider here — choose between Ollama (local), OpenAI, Claude, or Gemini. Set your API key and load available models.",
+    "tour.langToggle.title": "Language",
+    "tour.langToggle.description":
+      "Switch the interface between English and Spanish.",
+    "tour.theme.dark": "Dark theme",
+    "tour.theme.soft": "Light theme",
   },
   es: {
     // General / Shared
@@ -492,10 +546,64 @@ const translations = {
     "help.q3": "\u00bfC\u00f3mo ejecuto consultas SQL?",
     "help.q4": "\u00bfC\u00f3mo exporto mi esquema?",
 
+    // ERD Context Menu
+    "erd.ctx.addTable": "Agregar tabla",
+    "erd.ctx.addColumn": "Agregar columna",
+    "erd.ctx.renameTable": "Renombrar tabla",
+    "erd.ctx.deleteTable": "Eliminar tabla",
+    "erd.ctx.editColumn": "Editar columna",
+    "erd.ctx.deleteColumn": "Eliminar columna",
+    "erd.ctx.promptTableName": "Nombre de tabla:",
+    "erd.ctx.promptColumnDef": "Columna (nombre tipo):",
+    "erd.ctx.confirmDeleteTable": "\u00bfEliminar tabla \"{name}\"?",
+    "erd.ctx.confirmDeleteColumn": "\u00bfEliminar columna \"{name}\"?",
+
     // Language Switcher
     "lang.en": "EN",
     "lang.es": "ES",
     "lang.switchLabel": "Idioma",
+
+    // Guided Tour
+    "tour.start": "Tour",
+    "tour.next": "Siguiente",
+    "tour.prev": "Anterior",
+    "tour.done": "Listo",
+    "tour.progress": "{{current}} de {{total}}",
+    "tour.welcome.title": "Bienvenido a DbViz",
+    "tour.welcome.description":
+      "DbViz es una herramienta de diseño de bases de datos en el navegador. Hagamos un recorrido rápido por las funciones principales.",
+    "tour.examples.title": "Ejemplos de Bases de Datos",
+    "tour.examples.description":
+      "Elige un esquema preconstruido para explorar, o comienza desde cero.",
+    "tour.apply.title": "Aplicar al Motor",
+    "tour.apply.description":
+      "Haz clic en Aplicar para cargar el esquema y los datos de prueba en el motor PostgreSQL del navegador (PGlite).",
+    "tour.engine.title": "Estado del Motor",
+    "tour.engine.description":
+      "Muestra si el motor SQL está inactivo, iniciando, listo o en estado de error.",
+    "tour.aiPanel.title": "Diseñador IA",
+    "tour.aiPanel.description":
+      "Chatea con una IA para diseñar esquemas o generar consultas. Cambia entre contexto de Esquema y Consultas.",
+    "tour.aiModes.title": "Modos de IA",
+    "tour.aiModes.description":
+      "Haz preguntas, planifica arquitectura o ejecuta generación de SQL. Usa Cmd+. para alternar modos.",
+    "tour.tabs.title": "Pestañas del Espacio de Trabajo",
+    "tour.tabs.description":
+      "Alterna entre Diagrama, ERD, Esquema, Seed, Consultas, Migraciones y Resultados.",
+    "tour.erdContext.title": "ERD Interactivo",
+    "tour.erdContext.description":
+      "Haz clic derecho en el canvas para agregar tablas, en el encabezado de una tabla para agregar columnas o renombrar, y en una columna para editar o eliminar. Los cambios se sincronizan con el tab Esquema al instante.",
+    "tour.sqlBar.title": "Barra de Comandos SQL",
+    "tour.sqlBar.description":
+      "Ejecuta consultas SQL ad-hoc aquí. Presiona Cmd+Enter (o Ctrl+Enter) para ejecutar.",
+    "tour.settings.title": "Configuración del Proveedor IA",
+    "tour.settings.description":
+      "Configura tu proveedor de IA aquí — elige entre Ollama (local), OpenAI, Claude o Gemini. Ingresa tu API key y carga los modelos disponibles.",
+    "tour.langToggle.title": "Idioma",
+    "tour.langToggle.description":
+      "Cambia la interfaz entre Inglés y Español.",
+    "tour.theme.dark": "Tema oscuro",
+    "tour.theme.soft": "Tema claro",
   },
 } as const;
 

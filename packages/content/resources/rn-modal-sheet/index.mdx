@@ -1,0 +1,63 @@
+---
+slug: rn-modal-sheet
+title: React Native Bottom Sheet Modal
+description: A draggable bottom sheet modal for React Native with gesture dismiss, snap points, backdrop overlay, and spring animations using the Animated API.
+category: components
+type: component
+tags: [modal, bottom-sheet, sheet, gesture, react-native, overlay]
+tech: [react-native, typescript]
+difficulty: med
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Bottom Sheet Modal
+
+A performant, gesture-driven bottom sheet modal built entirely with React Native's built-in `Animated` API and `PanResponder`. No third-party libraries required. Supports multiple snap points, backdrop tap-to-dismiss, swipe-down-to-close with velocity detection, and smooth spring animations.
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `visible` | `boolean` | `false` | Controls whether the sheet is open or closed. |
+| `onClose` | `() => void` | — | Callback fired when the sheet is dismissed (swipe, backdrop tap, or programmatic). |
+| `snapPoints` | `number[]` | `[0.5]` | Array of fractional screen heights the sheet can snap to (e.g. `[0.5, 0.9]`). |
+| `children` | `React.ReactNode` | — | Content rendered inside the sheet body. |
+
+### Usage
+
+```tsx
+import React, { useState } from "react";
+import { View, Button } from "react-native";
+import BottomSheetModal from "./BottomSheetModal";
+
+export default function App() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button title="Open Sheet" onPress={() => setOpen(true)} />
+      <BottomSheetModal
+        visible={open}
+        onClose={() => setOpen(false)}
+        snapPoints={[0.5, 0.9]}
+      >
+        {/* Your content here */}
+      </BottomSheetModal>
+    </View>
+  );
+}
+```
+
+### How it works
+
+1. **Animated translateY** — The sheet's vertical position is driven by a single `Animated.Value`. When `visible` becomes `true`, a spring animation moves the sheet from off-screen to the first snap point.
+2. **PanResponder** — A pan responder attached to the drag handle tracks vertical gestures. On release, the component calculates the nearest snap point (or dismisses if the user flicked downward fast enough).
+3. **Velocity threshold** — If the downward release velocity exceeds a threshold, the sheet dismisses regardless of position, giving a natural "flick to close" feel.
+4. **Backdrop** — A semi-transparent overlay fades in alongside the sheet. Tapping it fires `onClose`.
+5. **Spring physics** — All transitions use `Animated.spring` with tuned tension/friction values for a native-feeling bounce.

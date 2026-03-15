@@ -1,0 +1,74 @@
+---
+slug: rn-toast
+title: React Native Toast Notifications
+description: A toast notification system for React Native with success, error, warning, and info variants. Supports auto-dismiss, swipe-to-dismiss, and stacking.
+category: components
+type: component
+tags: [toast, notification, alert, feedback, react-native, snackbar]
+tech: [react-native, typescript]
+difficulty: med
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Toast Notifications
+
+A lightweight, zero-dependency toast notification system built with React Native's `Animated` API. Toasts slide in from the top, stack when multiple are active, and auto-dismiss after a configurable duration. Four built-in variants cover the most common feedback patterns: **success**, **error**, **warning**, and **info**.
+
+### Variants
+
+| Variant   | Color  | Icon | Use case                          |
+| --------- | ------ | ---- | --------------------------------- |
+| `success` | Green  | checkmark circle | Confirming a completed action     |
+| `error`   | Red    | X circle         | Showing a failure or validation error |
+| `warning` | Amber  | warning triangle | Cautioning before a destructive action |
+| `info`    | Blue   | info circle      | Providing neutral information     |
+
+### Props
+
+| Prop       | Type                                       | Default | Description                              |
+| ---------- | ------------------------------------------ | ------- | ---------------------------------------- |
+| `message`  | `string`                                   | —       | Text displayed inside the toast          |
+| `variant`  | `"success" \| "error" \| "warning" \| "info"` | `"info"` | Visual style of the toast               |
+| `duration` | `number`                                   | `3000`  | Auto-dismiss delay in milliseconds       |
+| `action`   | `{ label: string; onPress: () => void }`   | —       | Optional action button on the right side |
+
+### Usage
+
+```tsx
+import { ToastProvider, useToast } from "./toast";
+
+function MyScreen() {
+  const { show } = useToast();
+
+  return (
+    <Button
+      title="Save"
+      onPress={() => {
+        save();
+        show({ message: "Saved successfully", variant: "success" });
+      }}
+    />
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <MyScreen />
+    </ToastProvider>
+  );
+}
+```
+
+### How it works
+
+1. **ToastProvider** wraps the app and holds an array of active toasts in state. It renders them in an absolutely-positioned container pinned to the top of the screen.
+2. **useToast** exposes a `show()` function that pushes a new toast onto the array with a unique ID and starts the slide-in animation.
+3. Each toast uses `Animated.timing` to translate from off-screen (`translateY: -100`) to its stacked position. When the auto-dismiss timer fires, the reverse animation plays before the toast is removed from state.
+4. Multiple toasts stack vertically — each one's `top` offset is computed from its index in the array, so newer toasts push older ones down.

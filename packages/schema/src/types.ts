@@ -36,6 +36,8 @@ export type ResourceTarget =
   | "vue"
   | "svelte"
   | "astro"
+  | "react-native"
+  | "expo"
   | "typescript"
   | "python"
   | "markdown"
@@ -52,7 +54,9 @@ export type ResourceCollection =
   | "cards"
   | "dashboard"
   | "remotion"
-  | "effects";
+  | "effects"
+  | "mobile-nav"
+  | "charts";
 
 export interface ResourceAuthor {
   name: string;
