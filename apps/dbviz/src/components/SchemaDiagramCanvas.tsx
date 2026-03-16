@@ -427,6 +427,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
   const [tables, setTables] = useState<SchemaTable[]>([]);
   const [relations, setRelations] = useState<SchemaRelation[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
   const [animated, setAnimated] = useState(true);
   const [parseError, setParseError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -519,8 +520,32 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
           >
             {animated ? "✦ " + t("canvas.animated") : t("canvas.static")}
           </button>
+          <div className="flex items-center gap-0.5 rounded-lg border border-white/10 px-0.5 py-0.5">
+            <button
+              onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
+              disabled={zoom <= 0.25}
+              className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
+              title="Zoom out"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" /></svg>
+            </button>
+            <button
+              onClick={() => setZoom(1)}
+              className="min-w-[34px] rounded px-1 py-0.5 text-center text-[10px] text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <button
+              onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+              disabled={zoom >= 3}
+              className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
+              title="Zoom in"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" /></svg>
+            </button>
+          </div>
           <button
-            onClick={handleReset}
+            onClick={() => { handleReset(); setZoom(1); }}
             className="rounded-lg border border-white/10 px-2.5 py-1 text-[11px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200"
           >
             {t("canvas.reset")}
@@ -534,17 +559,24 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
         className="overflow-auto rounded-xl border border-white/10 bg-slate-950"
         style={{ minHeight: 380 }}
         onClick={() => setSelected(null)}
+        onWheel={(e) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            setZoom((z) => Math.min(3, Math.max(0.25, z + (e.deltaY < 0 ? 0.1 : -0.1))));
+          }
+        }}
       >
         <style>{`
           @keyframes dash { to { stroke-dashoffset: -18; } }
           .animate-dash { animation: dash 0.8s linear infinite; }
         `}</style>
         <svg
-          width={canvasW}
-          height={canvasH}
+          width={canvasW * zoom}
+          height={canvasH * zoom}
           className="block"
           style={{ display: "block" }}
         >
+        <g transform={`scale(${zoom})`}>
           {/* Grid pattern */}
           <defs>
             <pattern id="schema-grid" width="24" height="24" patternUnits="userSpaceOnUse">
@@ -581,6 +613,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
               onClick={setSelected}
             />
           ))}
+        </g>
         </svg>
       </div>
 

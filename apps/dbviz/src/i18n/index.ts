@@ -247,10 +247,35 @@ const translations = {
     "erd.ctx.confirmDeleteTable": "Delete table \"{name}\"?",
     "erd.ctx.confirmDeleteColumn": "Delete column \"{name}\"?",
 
+    // Chat History
+    "chat.previousChats": "Previous chats",
+
+    // Save / Load Projects
+    "save.button": "Save",
+    "save.title": "Save Project",
+    "save.nameLabel": "Project name",
+    "save.namePlaceholder": "My database project...",
+    "save.save": "Save",
+    "save.cancel": "Cancel",
+    "save.saved": "Project saved: {name}",
+    "save.overwrite": "Overwrite existing project \"{name}\"?",
+    "load.button": "Load",
+    "load.title": "Saved Projects",
+    "load.empty": "No saved projects yet.",
+    "load.close": "Close",
+    "load.loaded": "Project loaded: {name}",
+    "load.delete": "Delete",
+    "load.confirmDelete": "Delete project \"{name}\"?",
+    "load.deleted": "Project deleted: {name}",
+    "load.savedAt": "Saved {date}",
+
     // Language Switcher
     "lang.en": "EN",
     "lang.es": "ES",
     "lang.switchLabel": "Language",
+
+    // Mobile Navigation
+    "mobile.workspace": "Workspace",
 
     // Guided Tour
     "tour.start": "Tour",
@@ -558,10 +583,35 @@ const translations = {
     "erd.ctx.confirmDeleteTable": "\u00bfEliminar tabla \"{name}\"?",
     "erd.ctx.confirmDeleteColumn": "\u00bfEliminar columna \"{name}\"?",
 
+    // Chat History
+    "chat.previousChats": "Chats anteriores",
+
+    // Save / Load Projects
+    "save.button": "Guardar",
+    "save.title": "Guardar Proyecto",
+    "save.nameLabel": "Nombre del proyecto",
+    "save.namePlaceholder": "Mi proyecto de base de datos...",
+    "save.save": "Guardar",
+    "save.cancel": "Cancelar",
+    "save.saved": "Proyecto guardado: {name}",
+    "save.overwrite": "\u00bfSobrescribir proyecto existente \"{name}\"?",
+    "load.button": "Cargar",
+    "load.title": "Proyectos Guardados",
+    "load.empty": "No hay proyectos guardados a\u00fan.",
+    "load.close": "Cerrar",
+    "load.loaded": "Proyecto cargado: {name}",
+    "load.delete": "Eliminar",
+    "load.confirmDelete": "\u00bfEliminar proyecto \"{name}\"?",
+    "load.deleted": "Proyecto eliminado: {name}",
+    "load.savedAt": "Guardado {date}",
+
     // Language Switcher
     "lang.en": "EN",
     "lang.es": "ES",
     "lang.switchLabel": "Idioma",
+
+    // Mobile Navigation
+    "mobile.workspace": "Espacio de trabajo",
 
     // Guided Tour
     "tour.start": "Tour",

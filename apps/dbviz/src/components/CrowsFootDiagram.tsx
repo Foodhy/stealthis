@@ -726,6 +726,7 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
     y: number;
     target: ErdContextMenuTarget;
   } | null>(null);
+  const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const isInternalEdit = useRef(false);
 
@@ -833,15 +834,15 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
       const container = containerRef.current;
       if (!container) return;
       const rect = container.getBoundingClientRect();
-      const svgX = e.clientX - rect.left + container.scrollLeft;
-      const svgY = e.clientY - rect.top + container.scrollTop;
+      const svgX = (e.clientX - rect.left + container.scrollLeft) / zoom;
+      const svgY = (e.clientY - rect.top + container.scrollTop) / zoom;
       setContextMenu({
         x: e.clientX,
         y: e.clientY,
         target: { kind: "canvas", svgX, svgY },
       });
     },
-    []
+    [zoom]
   );
 
   // Handle ERD context menu actions
@@ -1080,8 +1081,32 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
             {tables.length} {tables.length !== 1 ? t("erd.tablesPlural") : t("erd.tables")} ·{" "}
             {relations.length} {relations.length !== 1 ? t("erd.relationshipsPlural") : t("erd.relationship")}
           </span>
+          <div className="flex items-center gap-0.5 rounded-lg border border-white/10 px-0.5 py-0.5">
+            <button
+              onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
+              disabled={zoom <= 0.25}
+              className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
+              title="Zoom out"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" /></svg>
+            </button>
+            <button
+              onClick={() => setZoom(1)}
+              className="min-w-[34px] rounded px-1 py-0.5 text-center text-[10px] text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <button
+              onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+              disabled={zoom >= 3}
+              className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
+              title="Zoom in"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" /></svg>
+            </button>
+          </div>
           <button
-            onClick={handleReset}
+            onClick={() => { handleReset(); setZoom(1); }}
             className="rounded-lg border border-white/10 px-2.5 py-1 text-[11px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200"
           >
             {t("erd.resetLayout")}
@@ -1094,6 +1119,12 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
         ref={containerRef}
         className="overflow-auto rounded-xl border border-white/10 bg-slate-950"
         style={{ minHeight: 380, cursor: "default" }}
+        onWheel={(e) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            setZoom((z) => Math.min(3, Math.max(0.25, z + (e.deltaY < 0 ? 0.1 : -0.1))));
+          }
+        }}
         onMouseDown={(e) => {
           // Only pan if clicking the canvas background (not a table)
           if (e.target === e.currentTarget || (e.target as Element).tagName === "svg" || (e.target as Element).tagName === "rect") {
@@ -1109,11 +1140,12 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
         }}
       >
         <svg
-          width={canvasW}
-          height={canvasH}
+          width={canvasW * zoom}
+          height={canvasH * zoom}
           className="block"
           style={{ display: "block" }}
         >
+        <g transform={`scale(${zoom})`}>
           {/* Grid pattern */}
           <defs>
             <pattern
@@ -1168,6 +1200,7 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
               onContextMenu={handleTableContextMenu}
             />
           ))}
+        </g>
         </svg>
       </div>
 
