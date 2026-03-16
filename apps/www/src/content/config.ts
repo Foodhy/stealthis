@@ -1,5 +1,4 @@
-import { fileURLToPath } from "node:url";
-import { defineCollection, z } from "astro:content";
+import { defineCollection, z } from "astro:content/v2";
 import { glob } from "astro/loaders";
 
 const ResourceCategorySchema = z.enum([
@@ -68,7 +67,7 @@ const ResourceCollectionSchema = z.enum([
 const resources = defineCollection({
   loader: glob({
     pattern: "*/index.mdx",
-    base: fileURLToPath(new URL("../../../../packages/content/resources", import.meta.url)),
+    base: new URL("../../../../packages/content/resources", import.meta.url).href,
   }),
   schema: z.object({
     slug: z.string(),
