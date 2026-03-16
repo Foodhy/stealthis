@@ -1,9 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslations, type Locale } from "../i18n";
+import ErdContextMenu, {
+  type ErdContextMenuTarget,
+  type ErdAction,
+} from "./ErdContextMenu";
+import { tablesToSql } from "../lib/sql-generator";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-interface SchemaColumn {
+export interface SchemaColumn {
   name: string;
   type: string;
   pk: boolean;
@@ -12,7 +17,7 @@ interface SchemaColumn {
   references?: { table: string; column: string };
 }
 
-interface SchemaTable {
+export interface SchemaTable {
   id: string;
   name: string;
   color: string;
@@ -485,11 +490,13 @@ function TableNode({
   onDrag,
   selected,
   onClick,
+  onContextMenu,
 }: {
   table: SchemaTable;
   onDrag: (id: string, dx: number, dy: number) => void;
   selected: boolean;
   onClick: (id: string) => void;
+  onContextMenu?: (e: React.MouseEvent, tableId: string, columnName?: string) => void;
 }) {
   const dragRef = useRef<{ startX: number; startY: number } | null>(null);
   const isDragging = useRef(false);
@@ -614,10 +621,21 @@ function TableNode({
         fontSize={13}
         fontWeight="bold"
         fontFamily="monospace"
-        style={{ letterSpacing: "0.02em" }}
+        style={{ letterSpacing: "0.02em", pointerEvents: "none" }}
       >
         {table.name}
       </text>
+      {/* Header right-click hit area */}
+      <rect
+        width={TABLE_W}
+        height={HEADER_H}
+        fill="transparent"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onContextMenu?.(e, table.id);
+        }}
+      />
 
       {/* Columns */}
       {table.columns.map((col, i) => {
@@ -641,6 +659,7 @@ function TableNode({
                 fontSize={9}
                 fontWeight="bold"
                 fontFamily="monospace"
+                style={{ pointerEvents: "none" }}
               >
                 {col.pk ? "PK" : "FK"}
               </text>
@@ -653,6 +672,7 @@ function TableNode({
               fontSize={11}
               fontWeight={col.pk ? "bold" : "normal"}
               fontFamily="monospace"
+              style={{ pointerEvents: "none" }}
             >
               {col.name}
             </text>
@@ -664,9 +684,22 @@ function TableNode({
               fill="#475569"
               fontSize={10}
               fontFamily="monospace"
+              style={{ pointerEvents: "none" }}
             >
               {col.type}
             </text>
+            {/* Column right-click hit area */}
+            <rect
+              y={cy}
+              width={TABLE_W}
+              height={ROW_H}
+              fill="transparent"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onContextMenu?.(e, table.id, col.name);
+              }}
+            />
           </g>
         );
       })}
@@ -679,21 +712,32 @@ function TableNode({
 interface CrowsFootDiagramProps {
   schemaSql: string;
   locale: Locale;
+  onSchemaChange?: (newSql: string) => void;
 }
 
-export default function CrowsFootDiagram({ schemaSql, locale }: CrowsFootDiagramProps) {
+export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: CrowsFootDiagramProps) {
   const t = useTranslations(locale);
   const [tables, setTables] = useState<SchemaTable[]>([]);
   const [relations, setRelations] = useState<SchemaRelation[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    target: ErdContextMenuTarget;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isInternalEdit = useRef(false);
 
   // Pan state
   const panRef = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
 
   // Rebuild diagram whenever schemaSql changes
   useEffect(() => {
+    if (isInternalEdit.current) {
+      isInternalEdit.current = false;
+      return;
+    }
     const src = schemaSql.trim();
     if (!src) {
       setTables([]);
@@ -741,6 +785,211 @@ export default function CrowsFootDiagram({ schemaSql, locale }: CrowsFootDiagram
     });
     setSelected(null);
   }, []);
+
+  // Helper: rebuild relations from tables array
+  const buildRelations = (tbls: SchemaTable[]): SchemaRelation[] => {
+    const rels: SchemaRelation[] = [];
+    for (const tbl of tbls) {
+      for (const col of tbl.columns) {
+        if (col.fk && col.references) {
+          rels.push({
+            fromTable: tbl.id,
+            fromColumn: col.name,
+            toTable: col.references.table,
+            toColumn: col.references.column,
+            nullable: col.nullable,
+          });
+        }
+      }
+    }
+    return rels;
+  };
+
+  // Apply a mutation to tables, regenerate SQL, push to parent
+  const applyEdit = (next: SchemaTable[]) => {
+    isInternalEdit.current = true;
+    setTables(next);
+    setRelations(buildRelations(next));
+    onSchemaChange?.(tablesToSql(next));
+    setContextMenu(null);
+  };
+
+  // Handle table right-click
+  const handleTableContextMenu = useCallback(
+    (e: React.MouseEvent, tableId: string, columnName?: string) => {
+      e.preventDefault();
+      const target: ErdContextMenuTarget = columnName
+        ? { kind: "column", tableId, columnName }
+        : { kind: "table", tableId };
+      setContextMenu({ x: e.clientX, y: e.clientY, target });
+    },
+    []
+  );
+
+  // Handle canvas right-click
+  const handleCanvasContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const svgX = e.clientX - rect.left + container.scrollLeft;
+      const svgY = e.clientY - rect.top + container.scrollTop;
+      setContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        target: { kind: "canvas", svgX, svgY },
+      });
+    },
+    []
+  );
+
+  // Handle ERD context menu actions
+  const handleErdAction = useCallback(
+    (action: ErdAction) => {
+      if (action.type === "addTable") {
+        const name = window.prompt(t("erd.ctx.promptTableName" as any));
+        if (!name || !name.trim()) return;
+        const safeName = name.trim().replace(/\s+/g, "_").toLowerCase();
+        const next = tables.map((tbl) => ({ ...tbl, columns: [...tbl.columns] }));
+        next.push({
+          id: safeName,
+          name: safeName,
+          color: TABLE_COLORS[next.length % TABLE_COLORS.length],
+          x: action.svgX,
+          y: action.svgY,
+          columns: [
+            {
+              name: "id",
+              type: "bigint",
+              pk: true,
+              fk: false,
+              nullable: false,
+            },
+          ],
+        });
+        applyEdit(next);
+      } else if (action.type === "renameTable") {
+        const tbl = tables.find((t) => t.id === action.tableId);
+        if (!tbl) return;
+        const newName = window.prompt(
+          t("erd.ctx.promptTableName" as any),
+          tbl.name
+        );
+        if (!newName || !newName.trim() || newName.trim() === tbl.name) return;
+        const safeName = newName.trim().replace(/\s+/g, "_").toLowerCase();
+        const oldName = tbl.name;
+        const next = tables.map((tb) => {
+          const cols = tb.columns.map((c) => {
+            if (c.fk && c.references && c.references.table === oldName) {
+              return { ...c, references: { ...c.references, table: safeName } };
+            }
+            return { ...c };
+          });
+          if (tb.id === action.tableId) {
+            return { ...tb, id: safeName, name: safeName, columns: cols };
+          }
+          return { ...tb, columns: cols };
+        });
+        applyEdit(next);
+      } else if (action.type === "deleteTable") {
+        const tbl = tables.find((t) => t.id === action.tableId);
+        if (!tbl) return;
+        const msg = t("erd.ctx.confirmDeleteTable" as any).replace(
+          "{name}",
+          tbl.name
+        );
+        if (!window.confirm(msg)) return;
+        const oldName = tbl.name;
+        const next = tables
+          .filter((tb) => tb.id !== action.tableId)
+          .map((tb) => ({
+            ...tb,
+            columns: tb.columns.map((c) => {
+              if (c.fk && c.references && c.references.table === oldName) {
+                return { ...c, fk: false, references: undefined };
+              }
+              return { ...c };
+            }),
+          }));
+        applyEdit(next);
+      } else if (action.type === "addColumn") {
+        const input = window.prompt(t("erd.ctx.promptColumnDef" as any));
+        if (!input || !input.trim()) return;
+        const parts = input.trim().split(/\s+/);
+        const colName = parts[0] || "col";
+        const colType = parts[1] || "text";
+        const restUpper = parts.slice(2).join(" ").toUpperCase();
+        const notNull = restUpper.includes("NOT NULL");
+        const next = tables.map((tb) => {
+          if (tb.id !== action.tableId) return { ...tb, columns: [...tb.columns] };
+          return {
+            ...tb,
+            columns: [
+              ...tb.columns,
+              {
+                name: colName,
+                type: colType,
+                pk: false,
+                fk: false,
+                nullable: !notNull,
+              },
+            ],
+          };
+        });
+        applyEdit(next);
+      } else if (action.type === "editColumn") {
+        const tbl = tables.find((t) => t.id === action.tableId);
+        if (!tbl) return;
+        const col = tbl.columns.find((c) => c.name === action.columnName);
+        if (!col) return;
+        const prefill = `${col.name} ${col.type}${col.nullable ? "" : " NOT NULL"}`;
+        const input = window.prompt(
+          t("erd.ctx.promptColumnDef" as any),
+          prefill
+        );
+        if (!input || !input.trim()) return;
+        const parts = input.trim().split(/\s+/);
+        const newName = parts[0] || col.name;
+        const newType = parts[1] || col.type;
+        const restUpper = parts.slice(2).join(" ").toUpperCase();
+        const notNull = restUpper.includes("NOT NULL");
+        const next = tables.map((tb) => {
+          if (tb.id !== action.tableId) return { ...tb, columns: [...tb.columns] };
+          return {
+            ...tb,
+            columns: tb.columns.map((c) => {
+              if (c.name !== action.columnName) return { ...c };
+              return {
+                ...c,
+                name: newName,
+                type: newType,
+                nullable: !notNull && !c.pk,
+              };
+            }),
+          };
+        });
+        applyEdit(next);
+      } else if (action.type === "deleteColumn") {
+        const tbl = tables.find((t) => t.id === action.tableId);
+        if (!tbl) return;
+        const msg = t("erd.ctx.confirmDeleteColumn" as any).replace(
+          "{name}",
+          action.columnName
+        );
+        if (!window.confirm(msg)) return;
+        const next = tables.map((tb) => {
+          if (tb.id !== action.tableId) return { ...tb, columns: [...tb.columns] };
+          return {
+            ...tb,
+            columns: tb.columns.filter((c) => c.name !== action.columnName),
+          };
+        });
+        applyEdit(next);
+      }
+    },
+    [tables, t, onSchemaChange]
+  );
 
   // Pan handler for empty canvas area
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
@@ -852,6 +1101,12 @@ export default function CrowsFootDiagram({ schemaSql, locale }: CrowsFootDiagram
             handleCanvasMouseDown(e);
           }
         }}
+        onContextMenu={(e) => {
+          // Canvas right-click (only if not on a table — tables handle their own)
+          if (e.target === e.currentTarget || (e.target as Element).tagName === "svg" || (e.target as Element).closest?.("g") === null) {
+            handleCanvasContextMenu(e);
+          }
+        }}
       >
         <svg
           width={canvasW}
@@ -875,7 +1130,14 @@ export default function CrowsFootDiagram({ schemaSql, locale }: CrowsFootDiagram
               />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#crowsfoot-grid)" />
+          <rect
+            width="100%"
+            height="100%"
+            fill="url(#crowsfoot-grid)"
+            onContextMenu={(e) => {
+              handleCanvasContextMenu(e);
+            }}
+          />
 
           {/* Relations — rendered behind tables */}
           {relations.map((rel, i) => {
@@ -903,6 +1165,7 @@ export default function CrowsFootDiagram({ schemaSql, locale }: CrowsFootDiagram
               onDrag={handleDrag}
               selected={selected === t.id}
               onClick={setSelected}
+              onContextMenu={handleTableContextMenu}
             />
           ))}
         </svg>
@@ -1050,6 +1313,18 @@ export default function CrowsFootDiagram({ schemaSql, locale }: CrowsFootDiagram
           {t("erd.active")}
         </span>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ErdContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          target={contextMenu.target}
+          onAction={handleErdAction}
+          onClose={() => setContextMenu(null)}
+          t={t as (key: string) => string}
+        />
+      )}
     </div>
   );
 }

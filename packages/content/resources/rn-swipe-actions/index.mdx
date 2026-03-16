@@ -1,0 +1,60 @@
+---
+slug: rn-swipe-actions
+title: React Native Swipe Actions
+description: A swipeable list item for React Native with reveal-on-swipe action buttons (delete, archive, pin) using PanResponder and Animated API.
+category: components
+type: component
+tags: [swipe, gesture, list-item, delete, archive, react-native, actions]
+tech: [react-native, typescript]
+difficulty: med
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Swipe Actions
+
+A swipeable list item component that reveals contextual action buttons as the user swipes horizontally. Swipe left to reveal right-side actions (delete, archive), swipe right to reveal a left-side action (pin/star). Built entirely with React Native's `PanResponder` and `Animated` API — no external gesture libraries required.
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | Content rendered inside the swipeable row |
+| `leftActions` | `SwipeAction[]` | `[]` | Actions revealed when swiping right (appear on the left side) |
+| `rightActions` | `SwipeAction[]` | `[]` | Actions revealed when swiping left (appear on the right side) |
+| `onFullSwipeLeft` | `() => void` | — | Callback fired when the user fully swipes left past the threshold |
+| `onFullSwipeRight` | `() => void` | — | Callback fired when the user fully swipes right past the threshold |
+
+Each `SwipeAction` has the shape `{ label: string; color: string; icon?: string; onPress: () => void }`.
+
+### Usage
+
+Wrap any list item content with `SwipeableRow` and pass action arrays:
+
+```tsx
+<SwipeableRow
+  rightActions={[
+    { label: "Archive", color: "#3b82f6", onPress: handleArchive },
+    { label: "Delete", color: "#ef4444", onPress: handleDelete },
+  ]}
+  leftActions={[
+    { label: "Star", color: "#22c55e", onPress: handleStar },
+  ]}
+  onFullSwipeLeft={handleDelete}
+>
+  <EmailItem subject="Hello world" />
+</SwipeableRow>
+```
+
+### How it works
+
+1. A `PanResponder` captures horizontal drag gestures on the row.
+2. The row content translates along the x-axis via `Animated.Value`, revealing action buttons positioned absolutely behind it.
+3. Actions are progressively revealed — each button scales up and fades in as the swipe distance increases past its individual threshold.
+4. On release, if the swipe distance is below the snap threshold the row springs back to center. If above, it triggers the full-swipe callback and animates the row off-screen.
+5. The spring animation uses `Animated.spring` with moderate tension/friction for a natural feel.

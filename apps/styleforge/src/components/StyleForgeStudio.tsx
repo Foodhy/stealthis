@@ -18,6 +18,7 @@ import {
   modelOptionsForProvider,
 } from "../lib/styleforge/presets";
 
+import type { StyleForgeCollectionGroup, CollectionResource } from "../lib/styleforge/collections";
 import { CollectionOverview } from "./views/CollectionOverview";
 import { CollectionDetail } from "./views/CollectionDetail";
 import { SearchDiscovery } from "./views/SearchDiscovery";
@@ -523,7 +524,15 @@ export default function StyleForgeStudio() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [revealedComponentCount, setRevealedComponentCount] = useState(0);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [currentView, setCurrentView] = useState<"generator" | "collections" | "collection_detail" | "templates" | "assets" | "settings">("generator");
+  const [currentView, setCurrentView] = useState<"generator" | "collections" | "collection_detail" | "templates" | "assets" | "comparison" | "settings">("generator");
+
+  // Collection views state
+  const [explicitCollections, setExplicitCollections] = useState<StyleForgeCollectionGroup[]>([]);
+  const [categoryCollections, setCategoryCollections] = useState<StyleForgeCollectionGroup[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<StyleForgeCollectionGroup | null>(null);
+  const [comparisonA, setComparisonA] = useState<CollectionResource | null>(null);
+  const [comparisonB, setComparisonB] = useState<CollectionResource | null>(null);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
 
   useEffect(() => {
     try {
@@ -585,6 +594,27 @@ export default function StyleForgeStudio() {
   useEffect(() => {
     window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
+
+  useEffect(() => {
+    if (currentView !== "collections" && currentView !== "collection_detail" && currentView !== "assets") return;
+    if (explicitCollections.length > 0) return; // already loaded
+
+    async function loadCollections() {
+      setIsLoadingCollections(true);
+      try {
+        const resp = await fetch("/api/styleforge/collections");
+        if (!resp.ok) throw new Error("Failed to load collections");
+        const data = await resp.json() as { explicit: StyleForgeCollectionGroup[]; byCategory: StyleForgeCollectionGroup[] };
+        setExplicitCollections(data.explicit);
+        setCategoryCollections(data.byCategory);
+      } catch (error) {
+        setStatusMessage(`Collections loading failed: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        setIsLoadingCollections(false);
+      }
+    }
+    loadCollections();
+  }, [currentView]);
 
   useEffect(() => {
     async function loadReferences() {
@@ -924,7 +954,7 @@ export default function StyleForgeStudio() {
           </button>
           <button
             type="button"
-            className={`sf-nav-icon-item ${currentView === "collections" || currentView === "collection_detail" ? "is-active" : ""}`}
+            className={`sf-nav-icon-item ${currentView === "collections" || currentView === "collection_detail" || currentView === "comparison" ? "is-active" : ""}`}
             title="Collections"
             onClick={() => setCurrentView("collections")}
           >
@@ -1086,10 +1116,63 @@ export default function StyleForgeStudio() {
         </div>
       </aside>
 
-      {currentView === "collections" && <div onClick={() => setCurrentView("collection_detail")} className="flex-1 overflow-hidden" style={{ cursor: "pointer" }}><CollectionOverview /></div>}
-      {currentView === "collection_detail" && <CollectionDetail />}
-      {currentView === "templates" && <ComparisonScreen />}
-      {currentView === "assets" && <SearchDiscovery />}
+      {currentView === "collections" && (
+        isLoadingCollections ? (
+          <div className="flex-1 flex items-center justify-center text-slate-500">
+            <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+            Loading collections...
+          </div>
+        ) : (
+          <CollectionOverview
+            explicit={explicitCollections}
+            byCategory={categoryCollections}
+            onSelectCollection={(coll) => { setSelectedCollection(coll); setCurrentView("collection_detail"); }}
+            onNewCollection={() => setCurrentView("generator")}
+          />
+        )
+      )}
+      {currentView === "collection_detail" && selectedCollection && (
+        <CollectionDetail
+          collection={selectedCollection}
+          onBack={() => setCurrentView("collections")}
+          onCompare={(a, b) => { setComparisonA(a); setComparisonB(b); setCurrentView("comparison"); }}
+          onPreview={() => {}}
+        />
+      )}
+      {currentView === "comparison" && comparisonA && comparisonB && (
+        <ComparisonScreen
+          resourceA={comparisonA}
+          resourceB={comparisonB}
+          onBack={() => setCurrentView("collection_detail")}
+        />
+      )}
+      {currentView === "templates" && comparisonA && comparisonB ? (
+        <ComparisonScreen
+          resourceA={comparisonA}
+          resourceB={comparisonB}
+          onBack={() => setCurrentView("collections")}
+        />
+      ) : currentView === "templates" && (
+        <div className="flex-1 flex items-center justify-center text-slate-500 flex-col gap-3">
+          <span className="material-symbols-outlined text-4xl">compare</span>
+          <p>Select two resources from a collection to compare them.</p>
+          <button type="button" className="sf-pill-btn" onClick={() => setCurrentView("collections")}>
+            Browse Collections
+          </button>
+        </div>
+      )}
+      {currentView === "assets" && (
+        <SearchDiscovery
+          onSelectResource={(resource) => {
+            // Find or create a temporary collection for the resource's category
+            const catColl = categoryCollections.find((c) => c.id === `cat-${resource.category}`);
+            if (catColl) {
+              setSelectedCollection(catColl);
+              setCurrentView("collection_detail");
+            }
+          }}
+        />
+      )}
 
       {currentView === "generator" && (
         <div className="sf-shell">

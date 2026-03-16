@@ -351,6 +351,9 @@ Componentes para mostrar datos visualmente: gráficos, métricas, indicadores.
 | `chart-funnel` | Funnel / conversion chart | vanilla-js, svg | med | ✅ |
 | `chart-treemap` | Treemap proportional blocks | vanilla-js, css | hard | ✅ |
 | `chart-sankey` | Sankey flow diagram (D3.js) | d3, svg | hard | ✅ |
+| `chart-stacked-bar` | Stacked bar chart (year-over-year) | vanilla-js, svg | med | ✅ |
+| `chart-geo-dist` | Geographic distribution with map + bars | vanilla-js, svg | hard | ✅ |
+| `chart-donut-products` | Donut chart — product categories | vanilla-js, svg | easy | ✅ |
 
 ### Metrics & Indicators
 
@@ -870,3 +873,91 @@ Composiciones de animación con Remotion para videos generativos.
 | `remotion-timeline` | Animated timeline video | remotion | med | ✅ |
 
 ---
+
+## Phase 23 — React Native / Expo ✅ DONE (2026-03-06)
+
+Componentes nativos para React Native y Expo, más variantes RN de recursos existentes.
+
+> **Snippet format:** `snippets/react-native.tsx` (plain RN) and `snippets/expo.tsx` (Expo-specific APIs). Uses existing `components` category with `react-native` / `expo` targets.
+
+### Navigation & Shell
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `rn-stack-navigator` | Stack navigation with transitions | react-native, expo-router | med | ✅ |
+| `rn-bottom-tabs` | Bottom tab navigator with icons | react-native, expo-router | easy | ✅ |
+| `rn-drawer-nav` | Drawer navigation sidebar | react-native, expo-router | med | ✅ |
+| `rn-top-tabs` | Swipeable top tab bar | react-native | med | ✅ |
+| `rn-header-animated` | Collapsible/animated header on scroll | react-native, reanimated | hard | ✅ |
+
+### Core Components
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `rn-button-variants` | Button styles (solid, outline, ghost, icon) | react-native | easy | ✅ |
+| `rn-text-input` | Styled text input with validation | react-native | easy | ✅ |
+| `rn-modal-sheet` | Bottom sheet modal (gesture dismiss) | react-native, reanimated | med | ✅ |
+| `rn-toast` | Toast notification system | react-native, reanimated | med | ✅ |
+| `rn-action-sheet` | Native-feel action sheet | react-native | easy | ✅ |
+| `rn-card` | Card component with variants | react-native | easy | ✅ |
+| `rn-avatar` | Avatar with fallback initials | react-native | easy | ✅ |
+| `rn-badge` | Badge / chip component | react-native | easy | ✅ |
+| `rn-accordion` | Animated accordion / collapsible | react-native, reanimated | med | ✅ |
+| `rn-skeleton` | Skeleton loading placeholder | react-native, reanimated | easy | ✅ |
+
+### Lists & Data
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `rn-flatlist-pull-refresh` | FlatList with pull-to-refresh | react-native | easy | ✅ |
+| `rn-section-list` | Grouped section list with sticky headers | react-native | med | ✅ |
+| `rn-swipe-actions` | Swipeable list item (delete, archive) | react-native, reanimated, gesture-handler | med | ✅ |
+| `rn-infinite-scroll` | Infinite scroll with loading indicator | react-native | med | ✅ |
+| `rn-search-filter` | Search bar with filtered list | react-native | med | ✅ |
+| `rn-drag-reorder` | Drag-to-reorder list | react-native, reanimated, gesture-handler | hard | ✅ |
+
+### Gestures & Animation
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `rn-gesture-swipe-card` | Tinder-style swipe cards | react-native, reanimated, gesture-handler | hard | ✅ |
+| `rn-pinch-zoom` | Pinch-to-zoom image viewer | react-native, gesture-handler | hard | ✅ |
+| `rn-shared-transition` | Shared element transition | react-native, reanimated | hard | ✅ |
+| `rn-spring-animation` | Spring physics animations | react-native, reanimated | med | ✅ |
+| `rn-parallax-scroll` | Parallax scroll effect | react-native, reanimated | med | ✅ |
+| `rn-lottie-player` | Lottie animation player | react-native, lottie-react-native | easy | ✅ |
+
+### Expo-specific
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `expo-camera` | Camera with photo capture | expo, expo-camera | med | ✅ |
+| `expo-image-picker` | Image picker with preview | expo, expo-image-picker | easy | ✅ |
+| `expo-notifications` | Push notification setup | expo, expo-notifications | med | ✅ |
+| `expo-haptics` | Haptic feedback patterns | expo, expo-haptics | easy | ✅ |
+| `expo-auth-biometric` | Biometric authentication | expo, expo-local-authentication | med | ✅ |
+| `expo-file-system` | File download/upload with progress | expo, expo-file-system | med | ✅ |
+| `expo-maps` | Map view with markers | expo, react-native-maps | hard | ✅ |
+| `expo-barcode` | Barcode / QR scanner | expo, expo-camera | med | ✅ |
+
+### RN Variants of Existing Resources
+
+Existing library components re-implemented as React Native snippets (`react-native.tsx`).
+
+| Existing Slug | RN Variant | Difficulty | Status |
+|---|---|---|---|
+| `toggle-switch` | iOS-style toggle (RN) | easy | ✅ |
+| `toast-system` | Toast stack (RN) | med | ✅ |
+| `skeleton-loader` | Skeleton loader (RN) | easy | ✅ |
+| `modal-dialog` | Modal dialog (RN) | easy | ✅ |
+| `bottom-sheet` | Bottom sheet (RN) | med | ✅ |
+| `swipe-action` | Swipe actions (RN) | med | ✅ |
+| `pull-to-refresh` | Pull to refresh (RN) | easy | ✅ |
+| `carousel` | Gesture carousel (RN) | hard | ✅ |
+| `accordion-spring` | Spring accordion (RN) | med | ✅ |
+| `progress-bar` | Progress bar (RN) | easy | ✅ |
+| `dropdown-menu` | Dropdown menu (RN) | med | ✅ |
+| `otp-input` | OTP input (RN) | med | ✅ |
+| `chat-interface` | AI chat UI (RN) | med | ✅ |
+| `like-button` | Animated like button (RN) | easy | ✅ |
+| `countdown-timer` | Countdown timer (RN) | easy | ✅ |

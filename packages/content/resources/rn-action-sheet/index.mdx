@@ -1,0 +1,62 @@
+---
+slug: rn-action-sheet
+title: React Native Action Sheet
+description: An iOS-style action sheet component for React Native with title, message, action buttons, cancel button, and destructive action styling.
+category: components
+type: component
+tags: [action-sheet, modal, ios, menu, react-native, picker]
+tech: [react-native, typescript]
+difficulty: easy
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Action Sheet
+
+A fully animated, iOS-style action sheet built with pure React Native. It slides up from the bottom of the screen with a spring animation and includes a dimmed backdrop overlay. Actions are rendered as grouped buttons with hairline separators, matching the native iOS look and feel. Destructive actions are highlighted in red, and the cancel button is visually separated with a gap.
+
+### Props
+
+| Prop          | Type                                                                 | Required | Description                                      |
+| ------------- | -------------------------------------------------------------------- | -------- | ------------------------------------------------ |
+| `visible`     | `boolean`                                                            | Yes      | Controls whether the action sheet is displayed.   |
+| `onClose`     | `() => void`                                                         | Yes      | Called when the backdrop or cancel button is pressed. |
+| `title`       | `string`                                                             | No       | Optional title displayed at the top of the sheet. |
+| `message`     | `string`                                                             | No       | Optional message displayed below the title.       |
+| `actions`     | `Array<{ label: string; onPress: () => void; destructive?: boolean; disabled?: boolean }>` | Yes | Array of action button configurations. |
+| `cancelLabel` | `string`                                                             | Yes      | Label for the cancel button at the bottom.        |
+
+### Usage
+
+```tsx
+import ActionSheet from "./ActionSheet";
+
+const [visible, setVisible] = useState(false);
+
+<ActionSheet
+  visible={visible}
+  onClose={() => setVisible(false)}
+  title="Photo Options"
+  message="Choose an action for this photo"
+  actions={[
+    { label: "Take Photo", onPress: () => console.log("camera") },
+    { label: "Choose from Library", onPress: () => console.log("library") },
+    { label: "Delete Photo", onPress: () => console.log("delete"), destructive: true },
+  ]}
+  cancelLabel="Cancel"
+/>
+```
+
+### How it works
+
+1. **Backdrop fade** — An `Animated.Value` drives the backdrop opacity from 0 to 0.5 when `visible` becomes true, creating a smooth dim effect over the content behind the sheet.
+2. **Slide-up spring** — A second `Animated.Value` translates the sheet vertically. It starts off-screen at the bottom and springs upward using `Animated.spring` for a natural, bouncy entrance.
+3. **Grouped buttons** — Action buttons are rendered inside a single rounded container with 1px separator lines between them, replicating the grouped-table style from iOS action sheets.
+4. **Destructive styling** — Any action marked `destructive: true` renders its label in red (`#ef4444`), signaling a potentially harmful operation.
+5. **Cancel separation** — The cancel button sits in its own rounded container below the action group, separated by a small gap, matching the native iOS pattern.
+6. **Dismiss** — Tapping the backdrop or the cancel button triggers `onClose`, which reverses the animations and hides the sheet.

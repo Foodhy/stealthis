@@ -1,89 +1,192 @@
-export function CollectionOverview() {
-    return (
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-            <div className="max-w-7xl mx-auto">
-                {/* Controls */}
-                <div className="sf-controls-bar">
-                    <div className="sf-search-wrap">
-                        <span className="material-symbols-outlined">search</span>
-                        <input
-                            className="sf-search-input"
-                            placeholder="Search your collections..."
-                            type="text"
-                        />
-                    </div>
-                    <div className="sf-controls-actions">
-                        <button className="sf-pill-btn">
-                            <span className="material-symbols-outlined">filter_list</span>
-                            <span>Filter</span>
-                        </button>
-                        <button className="sf-pill-btn">
-                            <span className="material-symbols-outlined">sort</span>
-                            <span>Sort</span>
-                        </button>
-                        <button className="sf-cta-btn ml-auto md:ml-0">
-                            <span className="material-symbols-outlined">add</span>
-                            <span>New Collection</span>
-                        </button>
-                    </div>
-                </div>
+import { useState, useMemo } from "react";
+import type { StyleForgeCollectionGroup, CollectionResource } from "../../lib/styleforge/collections";
 
-                {/* Grid */}
-                <div className="sf-coll-grid">
-                    {/* Card 1 */}
-                    <div className="sf-coll-card">
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-                        <div className="sf-coll-thumb">
-                            <img
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                alt="Abstract 3D purple and blue geometric shapes"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsDIkAkLwI-F4qorWFYTR-xbqh3ShKBCz6WU6Js_nalna6gk0oMXem88Ua9pRe5AT8TGx9OT6H_v8C_v0iTFb5GBrpce_sdypyJ-oqHl4FR_71g-HlpQgkSg02RNliwG6mAEEYpJ4yBAp2PEc1kEaoOzpBJkMoAUVYLOZnfZ1etCENvOAmGy90Szpm6wSlp5-5gVaDJ1hr37x60D0u6Cb7avePLe83Wqk2DlBp4ZNtnX8HFKycEbfHFul7KrFFdx-o6IfZ7kR4F4U"
-                            />
-                            <div className="sf-coll-cat-badge">UI Design</div>
-                        </div>
-                        <div className="sf-coll-card-main">
-                            <h3>Quantum UI Kit</h3>
-                            <p className="sf-coll-card-desc">Comprehensive set of futuristic dashboard components with integrated dark mode support.</p>
-                        </div>
-                        <div className="sf-coll-card-foot">
-                            <div className="sf-coll-item-count">
-                                <span className="material-symbols-outlined">inventory_2</span>
-                                <span>124 Items</span>
-                            </div>
-                        </div>
-                    </div>
+interface Props {
+  explicit: StyleForgeCollectionGroup[];
+  byCategory: StyleForgeCollectionGroup[];
+  onSelectCollection: (collection: StyleForgeCollectionGroup) => void;
+  onNewCollection: () => void;
+}
 
-                    {/* Card 2 */}
-                    <div className="sf-coll-card">
-                        <div className="sf-coll-thumb">
-                            <img
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                alt="Minimalist abstract dark blue fluid gradient"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB722u5ZCmyqOB9zllzpnC8YK_d4xn9NYZHluZAHLrUOCjHqwt0bXte8malYKiyu3CHTaqvo92sag2DeEF--d5QhePTizYqcxD4AmsGtiS1-9CnNEsCWEJAdhdgkKd1zTKQCzSBobH5RwvYosjk8E_w8qnQ7lgsX486i9Z7n_k98IdnU7gsYWWN78mCSzxi2BDz4awyD-jVXjxtz0kcG7pP06TkGwwqi_uV17-TDCCIw-csewEGCy68fv4kJiUAsnV5CaKp12-ttn4"
-                            />
-                            <div className="sf-coll-cat-badge" style={{ color: "#6366f1", borderColor: "rgba(99,102,241,0.2)" }}>Branding</div>
-                        </div>
-                        <div className="sf-coll-card-main">
-                            <h3>Neo-Tokyo Brand</h3>
-                            <p className="sf-coll-card-desc">Cyberpunk inspired visual identity assets for modern tech startups and fintechs.</p>
-                        </div>
-                        <div className="sf-coll-card-foot">
-                            <div className="sf-coll-item-count">
-                                <span className="material-symbols-outlined">inventory_2</span>
-                                <span>45 Items</span>
-                            </div>
-                        </div>
-                    </div>
+const ICON_MAP: Record<string, string> = {
+  "cat-ui-components": "widgets",
+  "cat-web-animations": "animation",
+  "cat-patterns": "pattern",
+  "cat-pages": "web",
+  "cat-web-pages": "language",
+  "cat-design-styles": "palette",
+  "cat-prompts": "psychology",
+  "cat-remotion": "movie",
+  "cat-database-schemas": "storage",
+  "cat-components": "view_module",
+  "cat-ultra-high-definition-pages": "4k",
+  saas: "cloud",
+  motion: "slow_motion_video",
+  hero: "landscape",
+  cards: "view_agenda",
+  dashboard: "dashboard",
+  remotion: "videocam",
+  effects: "auto_awesome",
+};
 
-                    {/* Card 3 (Empty State) */}
-                    <div className="sf-coll-new-card">
-                        <div className="sf-coll-new-icon">
-                            <span className="material-symbols-outlined text-2xl">add_circle</span>
-                        </div>
-                        <span className="sf-coll-new-label">Create New Collection</span>
-                    </div>
-                </div>
-            </div>
+export function CollectionOverview({ explicit, byCategory, onSelectCollection, onNewCollection }: Props) {
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"items" | "name">("items");
+  const [showExplicit, setShowExplicit] = useState(true);
+
+  const allCollections = useMemo(() => {
+    const combined = [...explicit, ...byCategory];
+    let filtered = combined;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      filtered = combined.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.tags.some((t) => t.toLowerCase().includes(q)),
+      );
+    }
+    if (sortBy === "name") {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      filtered.sort((a, b) => b.itemCount - a.itemCount);
+    }
+    return filtered;
+  }, [explicit, byCategory, search, sortBy]);
+
+  const explicitCollections = allCollections.filter((c) => c.source === "explicit");
+  const categoryCollections = allCollections.filter((c) => c.source === "category");
+
+  return (
+    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+      <div className="max-w-7xl mx-auto">
+        {/* Controls */}
+        <div className="sf-controls-bar">
+          <div className="sf-search-wrap">
+            <span className="material-symbols-outlined">search</span>
+            <input
+              className="sf-search-input"
+              placeholder="Search collections..."
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="sf-controls-actions">
+            <button
+              type="button"
+              className={`sf-pill-btn ${showExplicit ? "is-active" : ""}`}
+              onClick={() => setShowExplicit(!showExplicit)}
+            >
+              <span className="material-symbols-outlined">filter_list</span>
+              <span>{showExplicit ? "All" : "Categories Only"}</span>
+            </button>
+            <button
+              type="button"
+              className="sf-pill-btn"
+              onClick={() => setSortBy(sortBy === "items" ? "name" : "items")}
+            >
+              <span className="material-symbols-outlined">sort</span>
+              <span>{sortBy === "items" ? "By Size" : "A-Z"}</span>
+            </button>
+            <button type="button" className="sf-cta-btn ml-auto md:ml-0" onClick={onNewCollection}>
+              <span className="material-symbols-outlined">add</span>
+              <span>New Collection</span>
+            </button>
+          </div>
         </div>
-    );
+
+        {/* Explicit Collections */}
+        {showExplicit && explicitCollections.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+              Curated Collections ({explicitCollections.length})
+            </h3>
+            <div className="sf-coll-grid">
+              {explicitCollections.map((coll) => (
+                <CollectionCard
+                  key={coll.id}
+                  collection={coll}
+                  onClick={() => onSelectCollection(coll)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Category Collections */}
+        <div>
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+            By Category ({categoryCollections.length})
+          </h3>
+          <div className="sf-coll-grid">
+            {categoryCollections.map((coll) => (
+              <CollectionCard
+                key={coll.id}
+                collection={coll}
+                onClick={() => onSelectCollection(coll)}
+              />
+            ))}
+            {/* New collection card */}
+            <button type="button" className="sf-coll-new-card" onClick={onNewCollection}>
+              <div className="sf-coll-new-icon">
+                <span className="material-symbols-outlined text-2xl">add_circle</span>
+              </div>
+              <span className="sf-coll-new-label">Create New Collection</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CollectionCard({
+  collection,
+  onClick,
+}: {
+  collection: StyleForgeCollectionGroup;
+  onClick: () => void;
+}) {
+  const icon = ICON_MAP[collection.id] ?? "folder";
+  const topTags = collection.tags.slice(0, 4);
+  const sourceBadge = collection.source === "explicit" ? "Curated" : "Category";
+
+  return (
+    <button type="button" className="sf-coll-card text-left" onClick={onClick}>
+      <div className="sf-coll-thumb" style={{ background: "var(--sf-surface-mid)" }}>
+        <div className="w-full h-full flex items-center justify-center">
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: "3rem", color: "var(--sf-primary)", opacity: 0.6 }}
+          >
+            {icon}
+          </span>
+        </div>
+        <div className="sf-coll-cat-badge">{sourceBadge}</div>
+      </div>
+      <div className="sf-coll-card-main">
+        <h3>{collection.name}</h3>
+        <p className="sf-coll-card-desc">{collection.description}</p>
+        {topTags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {topTags.map((tag) => (
+              <span
+                key={tag}
+                className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="sf-coll-card-foot">
+        <div className="sf-coll-item-count">
+          <span className="material-symbols-outlined">inventory_2</span>
+          <span>{collection.itemCount} Items</span>
+        </div>
+      </div>
+    </button>
+  );
 }

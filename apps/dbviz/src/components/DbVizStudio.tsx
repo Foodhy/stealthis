@@ -37,6 +37,7 @@ import {
   hasQueryMarkers,
 } from "../lib/schema-prompts";
 import SchemaDiagramCanvas from "./SchemaDiagramCanvas";
+import { useTour, TOUR_THEMES, type TourTheme } from "../lib/useTour";
 
 export type DbVizExample = {
   slug: string;
@@ -228,6 +229,8 @@ export default function DbVizStudio(props: Props) {
 function DbVizStudioInner({ examples, runtimeConfig }: Props) {
   const { locale, setLocale, t } = useLocale();
 
+
+
   const availableExamples = useMemo(
     () => (examples.length > 0 ? examples : [FALLBACK_EXAMPLE]),
     [examples]
@@ -269,6 +272,13 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
 
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { startTour, tourTheme, setTourTheme } = useTour(t, setSettingsOpen, setActiveTab);
+
+  // Sync theme to <html> so CSS custom properties apply globally
+  useEffect(() => {
+    document.documentElement.dataset.theme = tourTheme;
+  }, [tourTheme]);
+
   const [aiInput, setAiInput] = useState("");
   const [aiModels, setAiModels] = useState<AiModel[]>([]);
   const [aiSelectedModel, setAiSelectedModel] = useState("");
@@ -906,7 +916,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
       {/* ── TOP TOOLBAR ───────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white/[0.03] px-3 py-2">
         <select
-          id="db-example"
+          id="tour-examples"
           value={selectedSlug}
           onChange={(event) => setSelectedSlug(event.target.value)}
           className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-sm text-slate-100 outline-none transition-colors hover:bg-white/[0.1] focus:ring-1 focus:ring-white/20"
@@ -953,12 +963,13 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
           pglite
         </span>
 
-        <div className="flex items-center gap-1.5">
+        <div id="tour-engine" className="flex items-center gap-1.5">
           <span className={`h-2 w-2 rounded-full ${engineDot}`} />
           <span className="text-xs text-slate-400">{engineStatus}</span>
         </div>
 
         <button
+          id="tour-apply"
           type="button"
           onClick={() => void applyEditorSqlToEngine()}
           disabled={isBootstrapping || !isInteractiveEngine}
@@ -967,8 +978,39 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
           {isBootstrapping ? t("toolbar.applying") : t("toolbar.apply")}
         </button>
 
+        {/* Tour button + theme picker */}
+        <div className="flex items-center gap-0.5 rounded-md bg-white/[0.04] p-0.5">
+          <button
+            type="button"
+            onClick={startTour}
+            className="rounded px-2 py-0.5 text-[11px] font-medium text-slate-400 transition-all hover:bg-white/[0.08] hover:text-slate-200"
+            title={t("tour.start")}
+          >
+            ?
+          </button>
+          {(TOUR_THEMES as readonly TourTheme[]).map((th) => {
+            const dots: Record<TourTheme, string> = {
+              dark: "bg-violet-400",
+              soft: "bg-amber-300",
+            };
+            return (
+              <button
+                key={th}
+                type="button"
+                onClick={() => setTourTheme(th)}
+                className={`flex items-center justify-center rounded px-1.5 py-1 transition-all ${
+                  tourTheme === th ? "bg-white/[0.1]" : "hover:bg-white/[0.06]"
+                }`}
+                title={t(`tour.theme.${th}` as any)}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${dots[th]} ${tourTheme === th ? "" : "opacity-40"}`} />
+              </button>
+            );
+          })}
+        </div>
+
         {/* Language toggle */}
-        <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
+        <div id="tour-lang-toggle" className="flex items-center rounded-md bg-white/[0.04] p-0.5">
           {(["en", "es"] as const).map((l) => (
             <button
               key={l}
@@ -990,7 +1032,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
       <div className="grid flex-1 gap-3 overflow-hidden lg:grid-cols-[1fr_1.4fr]">
 
         {/* ── LEFT: AI CHAT (full height) ─────────────────────────── */}
-        <div className="flex flex-col overflow-hidden rounded-xl bg-white/[0.03]">
+        <div id="tour-ai-panel" className="flex flex-col overflow-hidden rounded-xl bg-white/[0.03]">
           {/* Header */}
           <div className="flex items-center gap-2 px-3 py-2.5">
             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-violet-500/20 text-[11px] text-violet-300">
@@ -1171,7 +1213,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
           {/* Input area with mode selector */}
           <div className="border-t border-white/[0.04]">
             {/* Mode tabs */}
-            <div className="flex items-center gap-1 px-3 pt-2">
+            <div id="tour-ai-modes" className="flex items-center gap-1 px-3 pt-2">
               {(["ask", "plan", "execute"] as const).map((mode) => {
                 const labels: Record<AiMode, string> = { ask: t("ai.mode.ask"), plan: t("ai.mode.plan"), execute: t("ai.mode.execute") };
                 const colors: Record<AiMode, { active: string; inactive: string }> = {
@@ -1260,7 +1302,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
         {/* ── RIGHT: UNIFIED WORKSPACE ────────────────────────────── */}
         <div className="flex flex-col overflow-hidden rounded-xl bg-white/[0.03]">
           {/* Tab bar */}
-          <div className="flex items-center gap-0.5 border-b border-white/[0.06] px-2 pt-1">
+          <div id="tour-tabs" className="flex items-center gap-0.5 border-b border-white/[0.06] px-2 pt-1">
             {WORKSPACE_TABS.map((tab) => {
               const colors = TAB_COLORS[tab.key];
               const isActive = activeTab === tab.key;
@@ -1330,8 +1372,8 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                 </details>
               </div>
             ) : activeTab === "erd" ? (
-              <div className="p-4">
-                <CrowsFootDiagram schemaSql={schemaSql} locale={locale} />
+              <div id="tour-erd-canvas" className="p-4">
+                <CrowsFootDiagram schemaSql={schemaSql} locale={locale} onSchemaChange={(sql) => setSchemaSql(sql)} />
               </div>
             ) : activeTab === "migrations" ? (
               <div className="space-y-4 p-4">
@@ -1433,7 +1475,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
       </div>
 
       {/* ── BOTTOM BAR: Command SQL + Console ────────────────────── */}
-      <div className="flex items-start gap-3 rounded-xl bg-white/[0.03] px-3 py-2.5">
+      <div id="tour-sql-bar" className="flex items-start gap-3 rounded-xl bg-white/[0.03] px-3 py-2.5">
         <span className="mt-1.5 font-mono text-xs text-slate-600">SQL&gt;</span>
         <textarea
           value={commandSql}
@@ -1525,7 +1567,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
             tabIndex={-1}
             aria-label="Close settings"
           />
-          <div className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col bg-slate-900 shadow-2xl shadow-black/40">
+          <div id="tour-settings-drawer" className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col bg-slate-900 shadow-2xl shadow-black/40">
             {/* Drawer header */}
             <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
               <h2 className="text-sm font-semibold text-slate-100">{t("settings.title")}</h2>
