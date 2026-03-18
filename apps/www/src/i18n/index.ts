@@ -314,6 +314,33 @@ const en = {
   "lang.option.it": "Italian",
   "lang.option.pl": "Polish",
   "lang.option.uk": "Ukrainian",
+  // Settings
+  "settings.title": "Settings",
+  "settings.account": "Account",
+  "settings.profileSettings": "Profile settings",
+  "settings.userFallback": "User",
+  "settings.unauth.message": "You need to log in to edit your settings.",
+  "settings.unauth.cta": "Login with GitHub",
+  "settings.displayName": "Display Name",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "A short bio about you...",
+  "settings.bio.tip": "Tip: keep it short and clear.",
+  "settings.save": "Save",
+  "settings.saving": "Saving...",
+  "settings.saved": "Saved.",
+  "settings.saveError": "Could not save.",
+  "settings.dangerZone.title": "Danger Zone",
+  "settings.dangerZone.description":
+    "Delete your account permanently. This cannot be undone. Published skills remain public.",
+  "settings.dangerZone.deleteButton": "Delete account",
+  "settings.dangerZone.confirm":
+    "Delete your account permanently. This cannot be undone. Published skills remain public.",
+
+  // Dashboard
+  "dashboard.title": "Dashboard",
+  "dashboard.account": "Account",
+  "dashboard.description":
+    "This is a placeholder dashboard page. Once authentication is fully wired, you can surface user-specific content here.",
 } as const;
 
 const es = {
@@ -574,10 +601,64 @@ const es = {
   "lang.option.it": "Italiano",
   "lang.option.pl": "Polaco",
   "lang.option.uk": "Ucraniano",
+  // Settings
+  "settings.title": "Configuración",
+  "settings.account": "Cuenta",
+  "settings.profileSettings": "Ajustes de perfil",
+  "settings.userFallback": "Usuario",
+  "settings.unauth.message": "Necesitas iniciar sesión para editar tus ajustes.",
+  "settings.unauth.cta": "Iniciar sesión con GitHub",
+  "settings.displayName": "Nombre para mostrar",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Una breve descripción sobre ti...",
+  "settings.bio.tip": "Tip: mantenla corta y clara.",
+  "settings.save": "Guardar",
+  "settings.saving": "Guardando...",
+  "settings.saved": "Guardado.",
+  "settings.saveError": "No se pudo guardar.",
+  "settings.dangerZone.title": "Danger Zone",
+  "settings.dangerZone.description":
+    "Elimina tu cuenta permanentemente. Esto no se puede deshacer. Las skills publicadas permanecen públicas.",
+  "settings.dangerZone.deleteButton": "Eliminar cuenta",
+  "settings.dangerZone.confirm":
+    "Elimina tu cuenta permanentemente. Esto no se puede deshacer. Las skills publicadas permanecen públicas.",
+
+  // Dashboard
+  "dashboard.title": "Dashboard",
+  "dashboard.account": "Cuenta",
+  "dashboard.description":
+    "Esta es una página de Dashboard de ejemplo. Una vez que la autenticación esté completamente configurada, podrás mostrar aquí contenido específico del usuario.",
 } as const;
 
 const fr: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Paramètres",
+  "settings.account": "Compte",
+  "settings.profileSettings": "Paramètres du profil",
+  "settings.userFallback": "Utilisateur",
+  "settings.unauth.message": "Vous devez vous connecter pour modifier vos paramètres.",
+  "settings.unauth.cta": "Se connecter avec GitHub",
+  "settings.displayName": "Nom d'affichage",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Une courte biographie à propos de vous...",
+  "settings.bio.tip": "Astuce : gardez-la courte et claire.",
+  "settings.save": "Enregistrer",
+  "settings.saving": "Enregistrement...",
+  "settings.saved": "Enregistré.",
+  "settings.saveError": "Impossible de sauvegarder.",
+  "settings.dangerZone.title": "Zone dangereuse",
+  "settings.dangerZone.description":
+    "Supprimez votre compte définitivement. Cela ne peut pas être annulé. Les compétences publiées restent publiques.",
+  "settings.dangerZone.deleteButton": "Supprimer le compte",
+  "settings.dangerZone.confirm":
+    "Supprimez votre compte définitivement. Cela ne peut pas être annulé. Les compétences publiées restent publiques.",
+
+  // Dashboard
+  "dashboard.title": "Tableau de bord",
+  "dashboard.account": "Compte",
+  "dashboard.description":
+    "Ceci est une page de tableau de bord factice. Une fois l'authentification complètement configurée, vous pourrez afficher ici du contenu spécifique à l'utilisateur.",
   "nav.library": "Bibliothèque",
   "nav.build": "Builder",
   "nav.styleforge": "StyleForge",
@@ -798,6 +879,33 @@ const fr: Record<keyof typeof en, string> = {
 
 const ja: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "設定",
+  "settings.account": "アカウント",
+  "settings.profileSettings": "プロフィール設定",
+  "settings.userFallback": "ユーザー",
+  "settings.unauth.message": "設定を編集するにはログインが必要です。",
+  "settings.unauth.cta": "GitHubでログイン",
+  "settings.displayName": "表示名",
+  "settings.bio": "自己紹介",
+  "settings.bio.placeholder": "あなたについての短い自己紹介...",
+  "settings.bio.tip": "ヒント：短く分かりやすく。",
+  "settings.save": "保存",
+  "settings.saving": "保存中...",
+  "settings.saved": "保存しました。",
+  "settings.saveError": "保存できませんでした。",
+  "settings.dangerZone.title": "危険地帯",
+  "settings.dangerZone.description":
+    "アカウントを永久に削除します。これは元に戻せません。公開されたスキルは公開のままです。",
+  "settings.dangerZone.deleteButton": "アカウントを削除",
+  "settings.dangerZone.confirm":
+    "アカウントを永久に削除します。これは元に戻せません。公開されたスキルは公開のままです。",
+
+  // Dashboard
+  "dashboard.title": "ダッシュボード",
+  "dashboard.account": "アカウント",
+  "dashboard.description":
+    "これはダッシュボードのプレースホルダーです。認証を完全に連携できたら、ここにユーザー固有のコンテンツを表示できます。",
   "nav.library": "ライブラリ",
   "nav.docs": "ドキュメント",
   "nav.build": "ビルダー",
@@ -1027,6 +1135,33 @@ const ja: Record<keyof typeof en, string> = {
 
 const ms: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Tetapan",
+  "settings.account": "Akaun",
+  "settings.profileSettings": "Tetapan profil",
+  "settings.userFallback": "Pengguna",
+  "settings.unauth.message": "Anda perlu log masuk untuk mengubah suai tetapan anda.",
+  "settings.unauth.cta": "Log masuk dengan GitHub",
+  "settings.displayName": "Nama paparan",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Bio pendek tentang anda...",
+  "settings.bio.tip": "Petua: kekalkan ringkas dan jelas.",
+  "settings.save": "Simpan",
+  "settings.saving": "Menyimpan...",
+  "settings.saved": "Disimpan.",
+  "settings.saveError": "Tidak dapat menyimpan.",
+  "settings.dangerZone.title": "Zon Bahaya",
+  "settings.dangerZone.description":
+    "Padamkan akaun anda secara kekal. Ini tidak boleh dibuat semula. Kemahiran yang diterbitkan kekal umum.",
+  "settings.dangerZone.deleteButton": "Padamkan akaun",
+  "settings.dangerZone.confirm":
+    "Padamkan akaun anda secara kekal. Ini tidak boleh dibuat semula. Kemahiran yang diterbitkan kekal umum.",
+
+  // Dashboard
+  "dashboard.title": "Papan pemuka",
+  "dashboard.account": "Akaun",
+  "dashboard.description":
+    "Ini halaman papan pemuka contoh. Setelah pengesahan disiapkan sepenuhnya, anda boleh memaparkan kandungan khusus pengguna di sini.",
   "nav.library": "Perpustakaan",
   "nav.docs": "Dokumen",
   "nav.lab": "Makmal",
@@ -1231,6 +1366,33 @@ const ms: Record<keyof typeof en, string> = {
 
 const hi: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "सेटिंग्स",
+  "settings.account": "खाता",
+  "settings.profileSettings": "प्रोफ़ाइल सेटिंग्स",
+  "settings.userFallback": "उपयोगकर्ता",
+  "settings.unauth.message": "सेटिंग्स संपादित करने के लिए आपको लॉग इन करना होगा।",
+  "settings.unauth.cta": "GitHub के साथ लॉग इन करें",
+  "settings.displayName": "डिस्प्ले नाम",
+  "settings.bio": "बायो",
+  "settings.bio.placeholder": "आपके बारे में एक संक्षिप्त बायो...",
+  "settings.bio.tip": "टिप: इसे छोटा और स्पष्ट रखें।",
+  "settings.save": "सेव करें",
+  "settings.saving": "सेव हो रहा है...",
+  "settings.saved": "सेव हो गया।",
+  "settings.saveError": "सेव नहीं हो सका।",
+  "settings.dangerZone.title": "डेंजर ज़ोन",
+  "settings.dangerZone.description":
+    "अपने खाते को स्थायी रूप से हटा दें। इसे वापस नहीं किया जा सकता। प्रकाशित स्किल्स सार्वजनिक रहेंगी।",
+  "settings.dangerZone.deleteButton": "खाता हटाएं",
+  "settings.dangerZone.confirm":
+    "अपने खाते को स्थायी रूप से हटा दें। इसे वापस नहीं किया जा सकता। प्रकाशित स्किल्स सार्वजनिक रहेंगी।",
+
+  // Dashboard
+  "dashboard.title": "डैशबोर्ड",
+  "dashboard.account": "खाता",
+  "dashboard.description":
+    "यह एक डैशबोर्ड प्लेसहोल्डर पेज है। एक बार प्रमाणीकरण पूरी तरह सेट हो जाए, तो आप यहां उपयोगकर्ता-विशिष्ट सामग्री दिखा सकते हैं।",
   "nav.library": "लाइब्रेरी",
   "nav.docs": "डॉक्स",
   "nav.lab": "लैब",
@@ -1432,6 +1594,33 @@ const hi: Record<keyof typeof en, string> = {
 
 const ko: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "설정",
+  "settings.account": "계정",
+  "settings.profileSettings": "프로필 설정",
+  "settings.userFallback": "사용자",
+  "settings.unauth.message": "설정을 편집하려면 로그인해야 합니다.",
+  "settings.unauth.cta": "GitHub으로 로그인",
+  "settings.displayName": "표시 이름",
+  "settings.bio": "소개",
+  "settings.bio.placeholder": "당신에 대한 짧은 소개...",
+  "settings.bio.tip": "팁: 짧고 명확하게 작성하세요.",
+  "settings.save": "저장",
+  "settings.saving": "저장 중...",
+  "settings.saved": "저장됨.",
+  "settings.saveError": "저장할 수 없습니다.",
+  "settings.dangerZone.title": "위험 영역",
+  "settings.dangerZone.description":
+    "계정을 영구적으로 삭제합니다. 되돌릴 수 없습니다. 게시된 스킬은 공개 상태로 유지됩니다.",
+  "settings.dangerZone.deleteButton": "계정 삭제",
+  "settings.dangerZone.confirm":
+    "계정을 영구적으로 삭제합니다. 되돌릴 수 없습니다. 게시된 스킬은 공개 상태로 유지됩니다.",
+
+  // Dashboard
+  "dashboard.title": "대시보드",
+  "dashboard.account": "계정",
+  "dashboard.description":
+    "이것은 대시보드 자리 표시자 페이지입니다. 인증을 완전히 연결하면 여기에서 사용자별 콘텐츠를 표시할 수 있습니다.",
   "nav.library": "라이브러리",
   "nav.docs": "문서",
   "nav.lab": "랩",
@@ -1634,6 +1823,33 @@ const ko: Record<keyof typeof en, string> = {
 
 const nl: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Instellingen",
+  "settings.account": "Account",
+  "settings.profileSettings": "Profielinstellingen",
+  "settings.userFallback": "Gebruiker",
+  "settings.unauth.message": "Je moet ingelogd zijn om je instellingen te bewerken.",
+  "settings.unauth.cta": "Inloggen met GitHub",
+  "settings.displayName": "Weergavenaam",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Een korte bio over jou...",
+  "settings.bio.tip": "Tip: houd het kort en duidelijk.",
+  "settings.save": "Opslaan",
+  "settings.saving": "Bezig met opslaan...",
+  "settings.saved": "Opgeslagen.",
+  "settings.saveError": "Kon niet opslaan.",
+  "settings.dangerZone.title": "Gevaarzone",
+  "settings.dangerZone.description":
+    "Verwijder je account permanent. Dit kan niet ongedaan worden gemaakt. Gepubliceerde skills blijven openbaar.",
+  "settings.dangerZone.deleteButton": "Account verwijderen",
+  "settings.dangerZone.confirm":
+    "Verwijder je account permanent. Dit kan niet ongedaan worden gemaakt. Gepubliceerde skills blijven openbaar.",
+
+  // Dashboard
+  "dashboard.title": "Dashboard",
+  "dashboard.account": "Account",
+  "dashboard.description":
+    "Dit is een placeholder-dashboardpagina. Zodra authenticatie volledig is ingesteld, kun je hier gebruikersspecifieke content weergeven.",
   "nav.library": "Bibliotheek",
   "nav.docs": "Documentatie",
   "nav.lab": "Lab",
@@ -1838,6 +2054,33 @@ const nl: Record<keyof typeof en, string> = {
 
 const de: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Einstellungen",
+  "settings.account": "Konto",
+  "settings.profileSettings": "Profileinstellungen",
+  "settings.userFallback": "Benutzer",
+  "settings.unauth.message": "Du musst eingeloggt sein, um deine Einstellungen zu bearbeiten.",
+  "settings.unauth.cta": "Mit GitHub einloggen",
+  "settings.displayName": "Anzeigename",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Eine kurze Bio über dich...",
+  "settings.bio.tip": "Tipp: kurz und klar halten.",
+  "settings.save": "Speichern",
+  "settings.saving": "Speichern...",
+  "settings.saved": "Gespeichert.",
+  "settings.saveError": "Konnte nicht speichern.",
+  "settings.dangerZone.title": "Gefahrenzone",
+  "settings.dangerZone.description":
+    "Lösche dein Konto dauerhaft. Das kann nicht rückgängig gemacht werden. Veröffentliche Skills bleiben öffentlich.",
+  "settings.dangerZone.deleteButton": "Konto löschen",
+  "settings.dangerZone.confirm":
+    "Lösche dein Konto dauerhaft. Das kann nicht rückgängig gemacht werden. Veröffentliche Skills bleiben öffentlich.",
+
+  // Dashboard
+  "dashboard.title": "Dashboard",
+  "dashboard.account": "Konto",
+  "dashboard.description":
+    "Dies ist eine Dashboard-Platzhalterseite. Sobald die Authentifizierung vollständig verkabelt ist, kannst du hier benutzerspezifischen Inhalt anzeigen.",
   "nav.library": "Bibliothek",
   "nav.docs": "Doku",
   "nav.lab": "Lab",
@@ -2043,6 +2286,33 @@ const de: Record<keyof typeof en, string> = {
 
 const ptBr: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Configurações",
+  "settings.account": "Conta",
+  "settings.profileSettings": "Configurações do perfil",
+  "settings.userFallback": "Usuário",
+  "settings.unauth.message": "Você precisa fazer login para editar suas configurações.",
+  "settings.unauth.cta": "Entrar com GitHub",
+  "settings.displayName": "Nome de exibição",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Uma breve bio sobre você...",
+  "settings.bio.tip": "Dica: mantenha curta e clara.",
+  "settings.save": "Salvar",
+  "settings.saving": "Salvando...",
+  "settings.saved": "Salvo.",
+  "settings.saveError": "Não foi possível salvar.",
+  "settings.dangerZone.title": "Zona de Perigo",
+  "settings.dangerZone.description":
+    "Exclua sua conta permanentemente. Isso não pode ser desfeito. As skills publicadas permanecem públicas.",
+  "settings.dangerZone.deleteButton": "Excluir conta",
+  "settings.dangerZone.confirm":
+    "Exclua sua conta permanentemente. Isso não pode ser desfeito. As skills publicadas permanecem públicas.",
+
+  // Dashboard
+  "dashboard.title": "Painel",
+  "dashboard.account": "Conta",
+  "dashboard.description":
+    "Esta é uma página de painel de exemplo. Quando a autenticação estiver totalmente configurada, você poderá exibir conteúdo específico do usuário aqui.",
   "nav.library": "Biblioteca",
   "nav.docs": "Documentação",
   "nav.lab": "Lab",
@@ -2247,6 +2517,33 @@ const ptBr: Record<keyof typeof en, string> = {
 
 const zhCn: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "设置",
+  "settings.account": "账户",
+  "settings.profileSettings": "个人资料设置",
+  "settings.userFallback": "用户",
+  "settings.unauth.message": "你需要登录才能编辑你的设置。",
+  "settings.unauth.cta": "使用 GitHub 登录",
+  "settings.displayName": "显示名称",
+  "settings.bio": "简介",
+  "settings.bio.placeholder": "关于你的简短简介...",
+  "settings.bio.tip": "提示：保持简短且清晰。",
+  "settings.save": "保存",
+  "settings.saving": "保存中...",
+  "settings.saved": "已保存。",
+  "settings.saveError": "无法保存。",
+  "settings.dangerZone.title": "危险区域",
+  "settings.dangerZone.description":
+    "永久删除你的账户。这无法撤销。已发布的技能仍将保持公开。",
+  "settings.dangerZone.deleteButton": "删除账户",
+  "settings.dangerZone.confirm":
+    "永久删除你的账户。这无法撤销。已发布的技能仍将保持公开。",
+
+  // Dashboard
+  "dashboard.title": "仪表盘",
+  "dashboard.account": "账户",
+  "dashboard.description":
+    "这是一个仪表盘占位页面。认证完全接入后，你可以在此展示特定用户的内容。",
   "nav.library": "资源库",
   "nav.docs": "文档",
   "nav.lab": "实验室",
@@ -2490,6 +2787,33 @@ const zhCn: Record<keyof typeof en, string> = {
 
 const zhHk: Record<keyof typeof en, string> = {
   ...zhCn,
+  // Settings
+  "settings.title": "設定",
+  "settings.account": "帳戶",
+  "settings.profileSettings": "個人資料設定",
+  "settings.userFallback": "使用者",
+  "settings.unauth.message": "你需要登入才能編輯你的設定。",
+  "settings.unauth.cta": "使用 GitHub 登入",
+  "settings.displayName": "顯示名稱",
+  "settings.bio": "簡介",
+  "settings.bio.placeholder": "關於你的簡短簡介...",
+  "settings.bio.tip": "提示：保持簡短且清楚。",
+  "settings.save": "儲存",
+  "settings.saving": "正在儲存...",
+  "settings.saved": "已儲存。",
+  "settings.saveError": "無法儲存。",
+  "settings.dangerZone.title": "危險區",
+  "settings.dangerZone.description":
+    "永久刪除你的帳戶。這無法復原。已發布的技能將保持公開。",
+  "settings.dangerZone.deleteButton": "刪除帳戶",
+  "settings.dangerZone.confirm":
+    "永久刪除你的帳戶。這無法復原。已發布的技能將保持公開。",
+
+  // Dashboard
+  "dashboard.title": "儀表板",
+  "dashboard.account": "帳戶",
+  "dashboard.description":
+    "這是儀表板示例頁面。當驗證完全設定後，你可以在此顯示使用者專屬內容。",
   "nav.library": "資源庫",
   "nav.docs": "文件",
   "nav.lab": "實驗室",
@@ -2664,6 +2988,33 @@ const zhHk: Record<keyof typeof en, string> = {
 
 const it: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Impostazioni",
+  "settings.account": "Account",
+  "settings.profileSettings": "Impostazioni del profilo",
+  "settings.userFallback": "Utente",
+  "settings.unauth.message": "Devi effettuare l'accesso per modificare le impostazioni.",
+  "settings.unauth.cta": "Accedi con GitHub",
+  "settings.displayName": "Nome visualizzato",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Una breve bio su di te...",
+  "settings.bio.tip": "Suggerimento: tienila breve e chiara.",
+  "settings.save": "Salva",
+  "settings.saving": "Salvataggio...",
+  "settings.saved": "Salvato.",
+  "settings.saveError": "Impossibile salvare.",
+  "settings.dangerZone.title": "Zona di pericolo",
+  "settings.dangerZone.description":
+    "Elimina il tuo account in modo permanente. Non può essere annullato. Le skill pubblicate resteranno pubbliche.",
+  "settings.dangerZone.deleteButton": "Elimina account",
+  "settings.dangerZone.confirm":
+    "Elimina il tuo account in modo permanente. Non può essere annullato. Le skill pubblicate resteranno pubbliche.",
+
+  // Dashboard
+  "dashboard.title": "Dashboard",
+  "dashboard.account": "Account",
+  "dashboard.description":
+    "Questa è una pagina dashboard segnaposto. Una volta che l'autenticazione è completamente collegata, potrai mostrare qui contenuti specifici per l'utente.",
   "nav.library": "Libreria",
   "nav.docs": "Documentazione",
   "nav.lab": "Lab",
@@ -2919,6 +3270,33 @@ const it: Record<keyof typeof en, string> = {
 
 const pl: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Ustawienia",
+  "settings.account": "Konto",
+  "settings.profileSettings": "Ustawienia profilu",
+  "settings.userFallback": "Użytkownik",
+  "settings.unauth.message": "Musisz się zalogować, aby edytować swoje ustawienia.",
+  "settings.unauth.cta": "Zaloguj się przez GitHub",
+  "settings.displayName": "Nazwa wyświetlana",
+  "settings.bio": "Bio",
+  "settings.bio.placeholder": "Krótka bio o Tobie...",
+  "settings.bio.tip": "Wskazówka: trzymaj to krótko i jasno.",
+  "settings.save": "Zapisz",
+  "settings.saving": "Zapisywanie...",
+  "settings.saved": "Zapisano.",
+  "settings.saveError": "Nie udało się zapisać.",
+  "settings.dangerZone.title": "Strefa zagrożenia",
+  "settings.dangerZone.description":
+    "Trwale usuń swoje konto. Nie można tego cofnąć. Opublikowane umiejętności pozostają publiczne.",
+  "settings.dangerZone.deleteButton": "Usuń konto",
+  "settings.dangerZone.confirm":
+    "Trwale usuń swoje konto. Nie można tego cofnąć. Opublikowane umiejętności pozostają publiczne.",
+
+  // Dashboard
+  "dashboard.title": "Panel",
+  "dashboard.account": "Konto",
+  "dashboard.description":
+    "To przykładowa strona panelu. Po pełnym skonfigurowaniu uwierzytelniania możesz tu wyświetlać treści specyficzne dla użytkownika.",
   "nav.library": "Biblioteka",
   "nav.docs": "Dokumentacja",
   "nav.lab": "Lab",
@@ -3175,6 +3553,33 @@ const pl: Record<keyof typeof en, string> = {
 
 const uk: Record<keyof typeof en, string> = {
   ...en,
+  // Settings
+  "settings.title": "Налаштування",
+  "settings.account": "Обліковий запис",
+  "settings.profileSettings": "Налаштування профілю",
+  "settings.userFallback": "Користувач",
+  "settings.unauth.message": "Щоб редагувати налаштування, потрібно увійти.",
+  "settings.unauth.cta": "Увійти через GitHub",
+  "settings.displayName": "Ім'я для відображення",
+  "settings.bio": "Біо",
+  "settings.bio.placeholder": "Коротке біо про себе...",
+  "settings.bio.tip": "Порада: зробіть коротко й чітко.",
+  "settings.save": "Зберегти",
+  "settings.saving": "Збереження...",
+  "settings.saved": "Збережено.",
+  "settings.saveError": "Не вдалося зберегти.",
+  "settings.dangerZone.title": "Зона небезпеки",
+  "settings.dangerZone.description":
+    "Завжди видаліть ваш обліковий запис. Це неможливо скасувати. Опубліковані навички залишаться публічними.",
+  "settings.dangerZone.deleteButton": "Видалити обліковий запис",
+  "settings.dangerZone.confirm":
+    "Завжди видаліть ваш обліковий запис. Це неможливо скасувати. Опубліковані навички залишаться публічними.",
+
+  // Dashboard
+  "dashboard.title": "Панель",
+  "dashboard.account": "Обліковий запис",
+  "dashboard.description":
+    "Це сторінка-заглушка панелі. Після повного налаштування автентифікації ви зможете показувати тут контент, спеціально для користувача.",
   "nav.library": "Бібліотека",
   "nav.docs": "Документація",
   "nav.lab": "Lab",
@@ -3514,7 +3919,7 @@ export function getLocalizedPath(pathname: string, locale: Locale): string {
 export function getAlternateLinks(pathname: string, site = "https://stealthis.dev") {
   const cleanSite = site.replace(/\/$/, "");
 
-  const links = LOCALES.map((locale) => ({
+  const links: Array<{ hreflang: string; href: string }> = LOCALES.map((locale) => ({
     hreflang: locale,
     href: `${cleanSite}${getLocalizedPath(pathname, locale)}`,
   }));

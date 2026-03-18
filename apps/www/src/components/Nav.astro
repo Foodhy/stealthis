@@ -832,7 +832,7 @@ const menuTitle = menuLabels[locale].title;
   }
 </style>
 
-<script>
+<script define:vars={{ localePrefix: prefix }}>
   async function initAuthMenu() {
     const container = document.getElementById("nav-auth");
     if (!container) return;
@@ -978,13 +978,12 @@ const menuTitle = menuLabels[locale].title;
   const switchLocale = (targetLocale) => {
     if (!locales.includes(targetLocale)) return;
     localStorage.setItem(localeStorageKey, targetLocale);
+    try {
+      // Cookie for SSR so pages can pick the locale without relying on `/[locale]/...` URLs.
+      document.cookie = `${localeStorageKey}=${targetLocale}; Path=/; Max-Age=31536000; SameSite=Lax;`;
+    } catch {}
 
-    const { barePath } = splitLocaleFromPath(window.location.pathname);
-    const nextPath = toLocalizedPath(targetLocale, barePath);
-
-    if (nextPath !== window.location.pathname) {
-      window.location.assign(`${nextPath}${window.location.search}${window.location.hash}`);
-    }
+    window.location.reload();
   };
 
   document.querySelectorAll("[data-language-select]").forEach((selectEl) => {

@@ -9,6 +9,7 @@ import {
   LOCALE_OG_TAG,
   LOCALE_STORAGE_KEY,
   getLocaleFromUrl,
+  isLocale,
   getLocalizedPath,
   stripLocaleFromPath,
 } from "@i18n/index";
@@ -36,7 +37,12 @@ const {
   alternateLinks = [],
   structuredData,
 } = Astro.props;
-const locale = getLocaleFromUrl(Astro.url);
+let locale = getLocaleFromUrl(Astro.url);
+// If there's no locale prefix in the URL, prefer the selected language cookie.
+if (locale === DEFAULT_LOCALE) {
+  const cookieLocale = Astro.cookies.get(LOCALE_STORAGE_KEY)?.value;
+  if (isLocale(cookieLocale)) locale = cookieLocale;
+}
 const site = Astro.site ?? new URL("https://stealthis.dev");
 const canonicalURL = new URL(canonicalPath, site).toString();
 const imageURL = new URL(image ?? "/social-card.webp", site).toString();
@@ -197,14 +203,17 @@ const aiIndexURL = new URL("/ai-index.json", site).toString();
       const current = splitLocaleFromPath(window.location.pathname);
 
       if (!current.hasPrefix && preferredLocale !== defaultLocale) {
-        // Some pages (e.g. Settings) are not implemented for every locale yet.
-        // Avoid redirecting to a locale-prefixed route that would 404.
-        const blocked = ["/settings", "/dashboard"];
-        const bare = current.barePath ?? "/";
-        const isBlocked =
-          blocked.some((p) => bare === p || bare.startsWith(`${p}/`)) ||
-          blocked.some((p) => bare === `${p}/`);
-        if (isBlocked) return;
+        // Keep these routes unprefixed and translate them via cookie.
+        // This avoids depending on `/[locale]/...` routes existing.
+        const barePath = current.barePath ?? "/";
+        if (
+          barePath === "/settings" ||
+          barePath.startsWith("/settings/") ||
+          barePath === "/dashboard" ||
+          barePath.startsWith("/dashboard/")
+        ) {
+          return;
+        }
 
         const targetPath = toLocalePath(preferredLocale, current.barePath);
         const targetUrl = `${targetPath}${window.location.search}${window.location.hash}`;
