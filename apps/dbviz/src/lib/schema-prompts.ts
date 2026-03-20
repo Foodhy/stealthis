@@ -2,17 +2,31 @@ import type { OllamaChatMessage } from "./ollama";
 
 // ─── System prompt (always first message) ────────────────────────────────────
 
-export const SYSTEM_PROMPT = `You are a PostgreSQL database architect inside DBViz, a schema design tool.
-Your job is to help users design relational database schemas step by step.
+export const SYSTEM_PROMPT = `You are a PostgreSQL database architect inside DBViz, a browser-based tool powered by PGlite (PostgreSQL in WebAssembly).
 
-RULES FOR ALL RESPONSES:
+OUTPUT RULES:
+- Inside ---SCHEMA---, ---SEED---, ---QUERIES--- blocks: output ONLY valid SQL statements. No natural language, no comments explaining placement, no prose. Every line must be valid SQL or a SQL comment (starting with --).
+- Outside artifact blocks: use natural language freely.
+
+SQL SYNTAX RULES (PGlite):
+- ONLY standard PostgreSQL syntax. NEVER SQL Server, MySQL, or T-SQL.
+- Primary keys: BIGSERIAL PRIMARY KEY. Never use identity(1,1) or GENERATED AS IDENTITY.
+- Enums: first CREATE TYPE, then CREATE TABLE referencing that type. Example:
+  CREATE TYPE order_status AS ENUM ('pending', 'shipped', 'delivered');
+  CREATE TABLE orders (id BIGSERIAL PRIMARY KEY, status order_status NOT NULL DEFAULT 'pending');
+  Never write ENUM inline like ENUM 'x' | 'y' or ENUM('x','y') inside a column definition.
+- Strings: TEXT (not VARCHAR). Timestamps: TIMESTAMPTZ DEFAULT now(). Money: NUMERIC(10,2).
+- Identifiers: snake_case, no backticks. Double quotes only if strictly needed.
+
+SCHEMA QUALITY:
+- Proper FKs with REFERENCES, NOT NULL, UNIQUE. Indexes on FK columns.
+- created_at and updated_at TIMESTAMPTZ DEFAULT now() on every table.
+- Order: CREATE TYPE first, then CREATE TABLE in dependency order (referenced tables first), then CREATE INDEX.
+
+GENERAL:
 - Be concise and direct.
-- When you need more information, ask SHORT numbered questions (max 3 at a time).
-- When you have enough information to generate, output the schema artifacts.
-- Always use PostgreSQL syntax: bigint identity PKs, timestamptz, text, snake_case.
-- Include proper FKs, NOT NULL, UNIQUE, indexes on FKs and common query columns.
-- Add created_at/updated_at timestamps to every table.
-- Use ENUM types or CHECK constraints for status fields.`;
+- Ask max 3 short numbered questions when you need clarification.
+- Generate artifacts when you have enough information.`;
 
 // ─── Clarification check ─────────────────────────────────────────────────────
 
@@ -46,7 +60,7 @@ export function buildGenerateMessage(context?: {
 }): OllamaChatMessage {
   const hasContext = context?.currentSchema?.trim();
   const contextBlock = hasContext
-    ? `\n\nCURRENT SCHEMA (build on top of this, do not lose existing tables unless asked):\n\`\`\`sql\n${context.currentSchema}\n\`\`\`\n\nCURRENT DIAGRAM:\n\`\`\`\n${context.currentDiagram}\n\`\`\``
+    ? `\n\nCURRENT SCHEMA (build on top of this, do not lose existing tables unless asked):\n\`\`\`sql\n${context?.currentSchema ?? ""}\n\`\`\`\n\nCURRENT DIAGRAM:\n\`\`\`\n${context?.currentDiagram ?? ""}\n\`\`\``
     : "";
 
   return {
@@ -56,18 +70,36 @@ export function buildGenerateMessage(context?: {
 OUTPUT FORMAT — return EXACTLY these four blocks. No markdown fences around the blocks. No extra commentary outside blocks.
 
 ---SCHEMA---
-(Complete DDL: CREATE TYPE, CREATE TABLE, CREATE INDEX)
+(Complete DDL: CREATE TYPE first, then CREATE TABLE in dependency order, then CREATE INDEX. Use BIGSERIAL PRIMARY KEY for IDs.)
 
 ---SEED---
-(INSERT statements with 3-5 realistic rows per table)
+(INSERT statements with 3-5 realistic rows per table, in dependency order so FK references exist)
 
 ---QUERIES---
-(5-8 useful SELECT queries with comments)
+(5-8 useful SELECT queries, each with a -- comment. Include JOINs, aggregations, and filters.)
 
 ---DIAGRAM---
 (Mermaid erDiagram syntax with all tables, columns, types, PK/FK markers, and relationships)
 
-Example diagram:
+Example schema pattern:
+CREATE TYPE order_status AS ENUM ('pending', 'shipped', 'delivered');
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE orders (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id),
+  status order_status NOT NULL DEFAULT 'pending',
+  total NUMERIC(10,2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+Example diagram pattern:
 erDiagram
   users {
     bigint id PK
@@ -78,6 +110,7 @@ erDiagram
   orders {
     bigint id PK
     bigint user_id FK
+    order_status status
     numeric total
     timestamptz created_at
   }
@@ -159,7 +192,7 @@ export function buildExecuteMessage(instruction: string, currentSchema?: string,
   const hasContext = currentSchema?.trim();
 
   if (hasContext) {
-    return buildRefinementMessage(instruction || "Generate/update the schema based on our discussion so far.", currentSchema, currentDiagram ?? "");
+    return buildRefinementMessage(instruction || "Generate/update the schema based on our discussion so far.", currentSchema ?? "", currentDiagram ?? "");
   }
 
   return {
@@ -236,16 +269,17 @@ function cleanBlock(text: string): string {
 
 // ─── Query-focused system prompt ─────────────────────────────────────────────
 
-export const QUERY_SYSTEM_PROMPT = `You are a PostgreSQL query expert inside DBViz, a schema design tool.
+export const QUERY_SYSTEM_PROMPT = `You are a PostgreSQL query expert inside DBViz, a browser-based schema design tool powered by PGlite.
 Your job is to help users write, understand, and optimize SQL queries for their database schema.
 
 RULES FOR ALL RESPONSES:
 - Be concise and direct.
-- Always use PostgreSQL syntax.
-- Write clear, well-commented queries.
-- Use meaningful aliases for tables in JOINs.
-- Prefer explicit JOIN syntax over implicit joins.
-- Include LIMIT for potentially large result sets.`;
+- ALWAYS use standard PostgreSQL syntax. NEVER use SQL Server or MySQL syntax.
+- Write clear, well-commented queries with -- comments.
+- Use meaningful aliases for tables in JOINs (e.g., u for users, o for orders).
+- Prefer explicit JOIN syntax (INNER JOIN, LEFT JOIN) over implicit joins.
+- Include LIMIT for potentially large result sets.
+- Only reference tables and columns that exist in the provided schema.`;
 
 // ─── Query Ask mode ──────────────────────────────────────────────────────────
 

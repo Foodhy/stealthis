@@ -247,10 +247,55 @@ const translations = {
     "erd.ctx.confirmDeleteTable": "Delete table \"{name}\"?",
     "erd.ctx.confirmDeleteColumn": "Delete column \"{name}\"?",
 
+    // DB Chat Panel
+    "chat.designer": "Designer",
+    "chat.chat": "Chat",
+    "chat.intent.ask": "Ask",
+    "chat.intent.suggest": "Suggest",
+    "chat.intent.explain": "Explain",
+    "chat.placeholder.ask": "Ask anything about your database...",
+    "chat.placeholder.suggest": "What should I suggest improvements for?",
+    "chat.placeholder.explain": "What should I explain about the schema?",
+    "chat.send": "Send",
+    "chat.new": "New",
+    "chat.empty": "Ask questions, get suggestions, or request explanations about your database schema.",
+    "chat.noSchema": "Load or create a schema first to chat about it.",
+
+    // Query Actions
+    "query.copy": "Copy",
+    "query.paste": "Paste",
+    "query.run": "Run",
+    "query.copied": "Query copied.",
+
+    // Chat History
+    "chat.previousChats": "Previous chats",
+
+    // Save / Load Projects
+    "save.button": "Save",
+    "save.title": "Save Project",
+    "save.nameLabel": "Project name",
+    "save.namePlaceholder": "My database project...",
+    "save.save": "Save",
+    "save.cancel": "Cancel",
+    "save.saved": "Project saved: {name}",
+    "save.overwrite": "Overwrite existing project \"{name}\"?",
+    "load.button": "Load",
+    "load.title": "Saved Projects",
+    "load.empty": "No saved projects yet.",
+    "load.close": "Close",
+    "load.loaded": "Project loaded: {name}",
+    "load.delete": "Delete",
+    "load.confirmDelete": "Delete project \"{name}\"?",
+    "load.deleted": "Project deleted: {name}",
+    "load.savedAt": "Saved {date}",
+
     // Language Switcher
     "lang.en": "EN",
     "lang.es": "ES",
     "lang.switchLabel": "Language",
+
+    // Mobile Navigation
+    "mobile.workspace": "Workspace",
 
     // Guided Tour
     "tour.start": "Tour",
@@ -558,10 +603,55 @@ const translations = {
     "erd.ctx.confirmDeleteTable": "\u00bfEliminar tabla \"{name}\"?",
     "erd.ctx.confirmDeleteColumn": "\u00bfEliminar columna \"{name}\"?",
 
+    // DB Chat Panel
+    "chat.designer": "Diseñador",
+    "chat.chat": "Chat",
+    "chat.intent.ask": "Preguntar",
+    "chat.intent.suggest": "Sugerir",
+    "chat.intent.explain": "Explicar",
+    "chat.placeholder.ask": "Pregunta lo que quieras sobre tu base de datos...",
+    "chat.placeholder.suggest": "¿Sobre qué debo sugerir mejoras?",
+    "chat.placeholder.explain": "¿Qué debo explicar del esquema?",
+    "chat.send": "Enviar",
+    "chat.new": "Nuevo",
+    "chat.empty": "Haz preguntas, obtén sugerencias o pide explicaciones sobre tu esquema de base de datos.",
+    "chat.noSchema": "Carga o crea un esquema primero para chatear sobre él.",
+
+    // Query Actions
+    "query.copy": "Copiar",
+    "query.paste": "Pegar",
+    "query.run": "Ejecutar",
+    "query.copied": "Consulta copiada.",
+
+    // Chat History
+    "chat.previousChats": "Chats anteriores",
+
+    // Save / Load Projects
+    "save.button": "Guardar",
+    "save.title": "Guardar Proyecto",
+    "save.nameLabel": "Nombre del proyecto",
+    "save.namePlaceholder": "Mi proyecto de base de datos...",
+    "save.save": "Guardar",
+    "save.cancel": "Cancelar",
+    "save.saved": "Proyecto guardado: {name}",
+    "save.overwrite": "\u00bfSobrescribir proyecto existente \"{name}\"?",
+    "load.button": "Cargar",
+    "load.title": "Proyectos Guardados",
+    "load.empty": "No hay proyectos guardados a\u00fan.",
+    "load.close": "Cerrar",
+    "load.loaded": "Proyecto cargado: {name}",
+    "load.delete": "Eliminar",
+    "load.confirmDelete": "\u00bfEliminar proyecto \"{name}\"?",
+    "load.deleted": "Proyecto eliminado: {name}",
+    "load.savedAt": "Guardado {date}",
+
     // Language Switcher
     "lang.en": "EN",
     "lang.es": "ES",
     "lang.switchLabel": "Idioma",
+
+    // Mobile Navigation
+    "mobile.workspace": "Espacio de trabajo",
 
     // Guided Tour
     "tour.start": "Tour",

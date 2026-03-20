@@ -5,7 +5,6 @@ import SqlEditor from "./SqlEditor";
 import HelpChat from "./HelpChat";
 import CrowsFootDiagram from "./CrowsFootDiagram";
 import { LocaleProvider, useLocale } from "../i18n/LocaleContext";
-import type { Locale } from "../i18n";
 import {
   type AiProvider,
   type AiProviderConfig,
@@ -166,6 +165,178 @@ function saveProviderConfig(config: StoredProviderConfig) {
   } catch { /* ignore */ }
 }
 
+/* ── Project persistence (localStorage) ─────────────────────── */
+
+const PROJECTS_STORAGE_KEY = "dbviz-projects";
+
+type SavedProject = {
+  name: string;
+  savedAt: string;
+  schemaSql: string;
+  seedSql: string;
+  queriesSql: string;
+  diagramMmd: string;
+  migrationsSql: string;
+  aiChat: AiChatEntry[];
+  aiSessionName: string;
+};
+
+function loadSavedProjects(): SavedProject[] {
+  try {
+    const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as SavedProject[];
+  } catch { /* ignore */ }
+  return [];
+}
+
+function persistProjects(projects: SavedProject[]) {
+  try {
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+  } catch { /* ignore */ }
+}
+
+const CHATS_STORAGE_KEY = "dbviz-chat-history";
+const MAX_SAVED_CHATS = 20;
+
+type SavedChat = {
+  id: string;
+  name: string;
+  savedAt: string;
+  messages: AiChatEntry[];
+  context: "schema" | "queries";
+};
+
+function loadSavedChats(): SavedChat[] {
+  try {
+    const raw = localStorage.getItem(CHATS_STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as SavedChat[];
+  } catch { /* ignore */ }
+  return [];
+}
+
+function persistChats(chats: SavedChat[]) {
+  try {
+    localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(chats.slice(0, MAX_SAVED_CHATS)));
+  } catch { /* ignore */ }
+}
+
+/**
+ * Sanitize AI-generated SQL to be PGlite-compatible.
+ * Handles common incompatibilities from various AI models:
+ * - SQL Server `identity(1,1)` syntax → BIGSERIAL/SERIAL
+ * - PostgreSQL `GENERATED ALWAYS AS IDENTITY` → BIGSERIAL/SERIAL
+ * - Inline `ENUM 'a' | 'b'` or `ENUM('a','b')` → TEXT + CHECK
+ * - MySQL-style `ENUM('a','b')` as column type → TEXT + CHECK
+ */
+function sanitizeSqlForPglite(sql: string): string {
+  let result = sql;
+
+  // ── Identity columns ──────────────────────────────────────
+
+  // SQL Server style: "bigint identity(1,1)" → BIGSERIAL
+  result = result.replace(
+    /\bbigint\b\s+identity\s*\(\s*\d+\s*,\s*\d+\s*\)/gi,
+    "BIGSERIAL"
+  );
+
+  // SQL Server style: "int/integer identity(1,1)" → SERIAL
+  result = result.replace(
+    /\b(?:integer|int)\b\s+identity\s*\(\s*\d+\s*,\s*\d+\s*\)/gi,
+    "SERIAL"
+  );
+
+  // PostgreSQL style: "bigint ... GENERATED ALWAYS/BY DEFAULT AS IDENTITY" → BIGSERIAL
+  result = result.replace(
+    /\bbigint\b\s+(PRIMARY\s+KEY\s+)?GENERATED\s+(ALWAYS|BY\s+DEFAULT)\s+AS\s+IDENTITY/gi,
+    "BIGSERIAL $1"
+  );
+
+  // PostgreSQL style: "int/integer ... GENERATED ALWAYS/BY DEFAULT AS IDENTITY" → SERIAL
+  result = result.replace(
+    /\b(?:integer|int)\b\s+(PRIMARY\s+KEY\s+)?GENERATED\s+(ALWAYS|BY\s+DEFAULT)\s+AS\s+IDENTITY/gi,
+    "SERIAL $1"
+  );
+
+  // Generic fallback: any remaining "GENERATED ... AS IDENTITY" → remove it
+  result = result.replace(
+    /\bGENERATED\s+(ALWAYS|BY\s+DEFAULT)\s+AS\s+IDENTITY/gi,
+    ""
+  );
+
+  // Generic fallback: any remaining "identity(n,n)" → remove it
+  result = result.replace(
+    /\bidentity\s*\(\s*\d+\s*,\s*\d+\s*\)/gi,
+    ""
+  );
+
+  // ── Inline ENUM syntax (not valid PostgreSQL) ─────────────
+
+  // Pattern: ENUM 'val1' | 'val2' | 'val3'  (pipe-separated)
+  // → TEXT CHECK (col IN ('val1','val2','val3'))
+  result = result.replace(
+    /^(\s+)(\w+)\s+ENUM\s+'([^']+)'(?:\s*\|\s*'([^']+)')+/gim,
+    (_match, indent: string, colName: string) => {
+      const values = [..._match.matchAll(/'([^']+)'/g)].map((m) => m[1]);
+      const inList = values.map((v) => `'${v}'`).join(", ");
+      return `${indent}${colName} TEXT CHECK (${colName} IN (${inList}))`;
+    }
+  );
+
+  // Pattern: ENUM('val1', 'val2', 'val3')  (MySQL-style, parenthesized)
+  // → TEXT CHECK (col IN ('val1','val2','val3'))
+  result = result.replace(
+    /^(\s+)(\w+)\s+ENUM\s*\(\s*('[^']+'\s*(?:,\s*'[^']+'\s*)*)\)/gim,
+    (_match, indent: string, colName: string, valuesRaw: string) => {
+      const values = [...valuesRaw.matchAll(/'([^']+)'/g)].map((m) => m[1]);
+      const inList = values.map((v) => `'${v}'`).join(", ");
+      return `${indent}${colName} TEXT CHECK (${colName} IN (${inList}))`;
+    }
+  );
+
+  // Fallback: any remaining "ENUM 'single_name'" (named enum reference) → TEXT
+  result = result.replace(
+    /\bENUM\s+'[^']+'/gi,
+    "TEXT"
+  );
+
+  // ── Strip natural language mixed into SQL ───────────────────
+  // AI models sometimes append prose after valid SQL, e.g.:
+  //   CREATE TYPE x AS ENUM (...) BEFORE the 'table' table;
+  // Strip everything after a closing ) that isn't SQL syntax
+  result = result.replace(
+    /(\))\s+(?:BEFORE|AFTER|ABOVE|BELOW|PRIOR|FOLLOWING|NOTE|THIS|PLACE|PUT)\b[^;]*;?/gi,
+    "$1;"
+  );
+
+  // Strip lines that are pure natural language (don't start with SQL statement keywords)
+  // Only keep lines that start with SQL keywords, are indented (part of a statement), or are comments/empty
+  const sqlStatementStart = /^\s*(?:CREATE|ALTER|DROP|INSERT|UPDATE|DELETE|SELECT|SET|BEGIN|COMMIT|GRANT|REVOKE|WITH|EXPLAIN)\b/i;
+  const isSqlContent = /^\s*(?:\(|,|\)|[a-z_]+\s+(?:BIGSERIAL|SERIAL|BIGINT|INT|INTEGER|TEXT|BOOLEAN|NUMERIC|TIMESTAMPTZ|TIMESTAMP|DATE|JSONB|JSON|UUID|VARCHAR|CHAR|REAL|FLOAT|DOUBLE)\b)/i;
+  result = result
+    .split("\n")
+    .map((line) => {
+      const trimmed = line.trim();
+      // Keep: empty lines, SQL comments, statement starts, indented SQL content, closing parens/semicolons
+      if (
+        !trimmed ||
+        trimmed.startsWith("--") ||
+        sqlStatementStart.test(line) ||
+        isSqlContent.test(line) ||
+        /^\s*\)/.test(line) ||
+        /^\s*[a-z_]+\s+(NOT\s+NULL|REFERENCES|DEFAULT|UNIQUE|PRIMARY|CHECK|CONSTRAINT)\b/i.test(line) ||
+        /^\s*;/.test(line) ||
+        /^\s*(FOREIGN|PRIMARY|UNIQUE|CHECK|CONSTRAINT)\b/i.test(line)
+      ) {
+        return line;
+      }
+      // Comment out prose lines
+      return `-- ${line}`;
+    })
+    .join("\n");
+
+  return result;
+}
+
 let runtimeEntityId = 0;
 
 function nextEntryId<T extends { id: number }>(entries: T[]) {
@@ -247,6 +418,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
   );
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("diagram");
+  const [mobilePanel, setMobilePanel] = useState<"ai" | "workspace">("workspace");
 
   const [schemaSql, setSchemaSql] = useState(selectedExample.schemaSql);
   const [seedSql, setSeedSql] = useState(selectedExample.seedSql);
@@ -272,17 +444,31 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
 
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const { startTour, tourTheme, setTourTheme } = useTour(t, setSettingsOpen, setActiveTab);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [loadDrawerOpen, setLoadDrawerOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [savedProjects, setSavedProjects] = useState<SavedProject[]>(loadSavedProjects);
+  const [savedChats, setSavedChats] = useState<SavedChat[]>(loadSavedChats);
+  const { startTour, tourTheme, setTourTheme } = useTour(t, setSettingsOpen, (tab: string) => setActiveTab(tab as WorkspaceTab));
 
   // Sync theme to <html> so CSS custom properties apply globally
   useEffect(() => {
     document.documentElement.dataset.theme = tourTheme;
   }, [tourTheme]);
 
+  const [aiPanelMode, setAiPanelMode] = useState<"designer" | "chat">("designer");
+  const [chatIntent, setChatIntent] = useState<"ask" | "suggest" | "explain">("ask");
+  const [chatMessages, setChatMessages] = useState<AiChatEntry[]>([]);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const [chatInput, setChatInput] = useState("");
+  const [chatStatus, setChatStatus] = useState<"idle" | "thinking">("idle");
+  const [chatPreview, setChatPreview] = useState("");
+  const chatAbortRef = useRef<AbortController | null>(null);
+
   const [aiInput, setAiInput] = useState("");
   const [aiModels, setAiModels] = useState<AiModel[]>([]);
   const [aiSelectedModel, setAiSelectedModel] = useState("");
-  const [aiStatus, setAiStatus] = useState<"idle" | "loading-models" | "thinking" | "generating" | "done" | "error">("idle");
+  const [aiStatus, setAiStatus] = useState<"idle" | "loading-models" | "thinking" | "generating" | "error">("idle");
   const [aiChat, setAiChat] = useState<AiChatEntry[]>([]);
   const [aiSessionName, setAiSessionName] = useState("");
   const [aiPreview, setAiPreview] = useState("");
@@ -382,25 +568,62 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
           return;
         }
 
-        if (payload.schema.trim()) {
-          await db.exec(payload.schema);
-        }
-        if (payload.seed.trim()) {
-          await db.exec(payload.seed);
-        }
-
-        if (token !== bootstrapTokenRef.current) {
-          await db.close();
-          return;
-        }
-
+        // Keep the db reference alive even if schema/seed fails,
+        // so users can still run commands manually to fix issues.
         dbRef.current = db;
-        setEngineStatus("ready");
-        setEngineMessage(t("engine.initialized").replace("{reason}", payload.reason));
-        appendConsole(
-          "ok",
-          t("engine.schemaApplied").replace("{status}", payload.schema.trim() ? t("engine.applied") : t("engine.empty")) + (payload.seed.trim() ? t("engine.seedApplied") : "")
-        );
+
+        let schemaOk = true;
+        let seedOk = true;
+
+        if (payload.schema.trim()) {
+          try {
+            await db.exec(payload.schema);
+          } catch (firstError) {
+            // Retry with sanitized SQL (fix GENERATED AS IDENTITY, etc.)
+            const sanitized = sanitizeSqlForPglite(payload.schema);
+            if (sanitized !== payload.schema) {
+              try {
+                await db.exec(sanitized);
+                appendConsole("info", "Schema auto-fixed for PGlite compatibility.");
+              } catch (retryError) {
+                schemaOk = false;
+                const message = toErrorMessage(retryError);
+                setEngineStatus("ready");
+                setEngineMessage(t("engine.error").replace("{message}", message));
+                appendConsole("warn", t("engine.initFailed").replace("{message}", message));
+              }
+            } else {
+              schemaOk = false;
+              const message = toErrorMessage(firstError);
+              setEngineStatus("ready");
+              setEngineMessage(t("engine.error").replace("{message}", message));
+              appendConsole("warn", t("engine.initFailed").replace("{message}", message));
+            }
+          }
+        }
+
+        if (token !== bootstrapTokenRef.current) return;
+
+        if (schemaOk && payload.seed.trim()) {
+          try {
+            await db.exec(payload.seed);
+          } catch (error) {
+            seedOk = false;
+            const message = toErrorMessage(error);
+            appendConsole("warn", `Seed error: ${message}`);
+          }
+        }
+
+        if (token !== bootstrapTokenRef.current) return;
+
+        if (schemaOk) {
+          setEngineStatus("ready");
+          setEngineMessage(t("engine.initialized").replace("{reason}", payload.reason));
+          appendConsole(
+            "ok",
+            t("engine.schemaApplied").replace("{status}", payload.schema.trim() ? t("engine.applied") : t("engine.empty")) + (seedOk && payload.seed.trim() ? t("engine.seedApplied") : "")
+          );
+        }
       } catch (error) {
         const message = toErrorMessage(error);
         setEngineStatus("error");
@@ -519,6 +742,43 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
     }
   }
 
+  async function runCommandDirect(sql: string) {
+    if (!isInteractiveEngine) {
+      appendConsole("warn", t("engine.sqlLocalOnly"));
+      return;
+    }
+    const normalized = sql.trim();
+    if (!normalized) return;
+
+    const db = dbRef.current;
+    if (!db || engineStatus !== "ready") {
+      appendConsole("warn", t("engine.notReady"));
+      return;
+    }
+
+    setIsRunningCommand(true);
+    try {
+      const results = await db.exec(normalized);
+      const statementResults: QueryResultEntry[] = results.map((result, statementIndex) => ({
+        id: nextRuntimeId("stmt"),
+        statementNumber: statementIndex + 1,
+        result,
+        rows: result.rows.map((row) => ({
+          id: nextRuntimeId("row"),
+          row: row && typeof row === "object" ? (row as Record<string, unknown>) : { value: row },
+        })),
+      }));
+      setLastResults(statementResults);
+      const totalRows = results.reduce((acc, result) => acc + result.rows.length, 0);
+      appendConsole("ok", t("engine.commandExecuted").replace("{count}", String(results.length)).replace("{rows}", String(totalRows)));
+      setActiveTab("results");
+    } catch (error) {
+      appendConsole("warn", t("engine.sqlError").replace("{message}", toErrorMessage(error)));
+    } finally {
+      setIsRunningCommand(false);
+    }
+  }
+
   function exportArtifact(tab: WorkspaceTab) {
     const target = WORKSPACE_TABS.find((item) => item.key === tab);
     if (!target?.fileName) return;
@@ -543,6 +803,90 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
       downloadTextFile(`${slug}-${tab.fileName}`, content);
     }
     appendConsole("ok", t("export.allExported"));
+  }
+
+  /* ── Save / Load project ──────────────────────────────────── */
+
+  function openSaveDialog() {
+    setSaveName(aiSessionName || selectedExample.title);
+    setSaveDialogOpen(true);
+  }
+
+  function handleSaveProject() {
+    const name = saveName.trim();
+    if (!name) return;
+
+    const existing = savedProjects.find((p) => p.name === name);
+    if (existing && !window.confirm(t("save.overwrite").replace("{name}", name))) return;
+
+    const project: SavedProject = {
+      name,
+      savedAt: new Date().toISOString(),
+      schemaSql,
+      seedSql,
+      queriesSql,
+      diagramMmd,
+      migrationsSql,
+      aiChat,
+      aiSessionName,
+    };
+
+    const updated = existing
+      ? savedProjects.map((p) => (p.name === name ? project : p))
+      : [...savedProjects, project];
+
+    setSavedProjects(updated);
+    persistProjects(updated);
+    setSaveDialogOpen(false);
+    appendConsole("ok", t("save.saved").replace("{name}", name));
+  }
+
+  function handleLoadProject(project: SavedProject) {
+    setSchemaSql(project.schemaSql);
+    setSeedSql(project.seedSql);
+    setQueriesSql(project.queriesSql);
+    setDiagramMmd(project.diagramMmd);
+    setMigrationsSql(project.migrationsSql);
+    setCommandSql("");
+    setAiChat(project.aiChat ?? []);
+    setAiSessionName(project.aiSessionName ?? "");
+    setAiDirty(false);
+    setAiPreview("");
+    setAiStatus("idle");
+    setAiInput("");
+    setLoadDrawerOpen(false);
+    appendConsole("info", t("load.loaded").replace("{name}", project.name));
+
+    if (isInteractiveEngine) {
+      void bootstrapDatabase({
+        schema: project.schemaSql,
+        seed: project.seedSql,
+        reason: `load ${project.name}`,
+      });
+    }
+  }
+
+  function handleDeleteProject(name: string) {
+    if (!window.confirm(t("load.confirmDelete").replace("{name}", name))) return;
+    const updated = savedProjects.filter((p) => p.name !== name);
+    setSavedProjects(updated);
+    persistProjects(updated);
+    appendConsole("info", t("load.deleted").replace("{name}", name));
+  }
+
+  function handleLoadChat(chat: SavedChat) {
+    setAiChat(chat.messages);
+    setAiSessionName(chat.name);
+    setAiContext(chat.context);
+    setAiDirty(false);
+    setAiPreview("");
+    setAiStatus("idle");
+  }
+
+  function handleDeleteChat(chatId: string) {
+    const updated = savedChats.filter((c) => c.id !== chatId);
+    setSavedChats(updated);
+    persistChats(updated);
   }
 
   useEffect(() => {
@@ -800,7 +1144,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
     appendConsole("ok", `AI generated queries (${aiSelectedModel})`);
     setActiveTab("queries");
     setAiPreview("");
-    setAiStatus("done");
+    setAiStatus("idle");
   }
 
   async function applyAiOutput(raw: string, signal: AbortSignal) {
@@ -827,8 +1171,17 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
     ].filter(Boolean);
     pushChatEntry("assistant", t("ai.output.generated").replace("{parts}", parts.join(", ")));
     appendConsole("ok", `AI generated artifacts (${aiSelectedModel}): ${parts.join(", ")}`);
-    setActiveTab("schema");
+    setActiveTab("diagram");
     setAiPreview("");
+
+    // Auto-bootstrap PGlite with the new schema + seed so queries work immediately
+    if (parsed.schema && isInteractiveEngine) {
+      void bootstrapDatabase({
+        schema: parsed.schema,
+        seed: parsed.seed,
+        reason: "ai-generate",
+      });
+    }
 
     // Auto-generate session name
     if (!aiSessionName && parsed.schema) {
@@ -847,7 +1200,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
       }
     }
 
-    setAiStatus("done");
+    setAiStatus("idle");
   }
 
   function handleAiCancel() {
@@ -856,9 +1209,90 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
     setAiPreview("");
   }
 
+  /* ── DB Chat (ask about your database) ────────────────────── */
+
+  const CHAT_INTENTS: Record<"ask" | "suggest" | "explain", { prefix: string }> = {
+    ask: { prefix: "" },
+    suggest: { prefix: "[SUGGESTION REQUEST] Based on the schema, suggest improvements, missing indexes, normalization opportunities, or best practices:\n\n" },
+    explain: { prefix: "[EXPLANATION REQUEST] Explain the following about the schema in simple terms:\n\n" },
+  };
+
+  async function handleChatSend() {
+    const text = chatInput.trim();
+    if (!text || !aiSelectedModel) return;
+
+    chatAbortRef.current?.abort();
+    const controller = new AbortController();
+    chatAbortRef.current = controller;
+
+    const userMsg = text;
+    setChatMessages((prev) => [...prev, { id: Date.now(), role: "user", content: userMsg, timestamp: new Date().toISOString() }]);
+    setChatInput("");
+    setChatPreview("");
+    setChatStatus("thinking");
+
+    const intentPrefix = CHAT_INTENTS[chatIntent].prefix;
+    const systemMsg: ChatMessage = {
+      role: "system",
+      content: `You are a helpful PostgreSQL database assistant. The user has the following schema loaded:\n\n\`\`\`sql\n${schemaSql}\n\`\`\`\n${seedSql.trim() ? `\nSeed data:\n\`\`\`sql\n${seedSql}\n\`\`\`\n` : ""}\nAnswer questions about this schema. Be concise, use examples when helpful. If suggesting queries, use valid PostgreSQL syntax.`,
+    };
+
+    const history: ChatMessage[] = chatMessages.slice(-10).map((m) => ({ role: m.role, content: m.content }));
+    history.push({ role: "user", content: intentPrefix + userMsg });
+
+    try {
+      const raw = await aiChat_({
+        messages: [systemMsg, ...history],
+        signal: controller.signal,
+        onToken: (tok) => setChatPreview((p) => p + tok),
+      });
+      if (!controller.signal.aborted) {
+        setChatMessages((prev) => [...prev, { id: Date.now() + 1, role: "assistant", content: raw, timestamp: new Date().toISOString() }]);
+      }
+    } catch {
+      if (!controller.signal.aborted) {
+        setChatMessages((prev) => [...prev, { id: Date.now() + 1, role: "assistant", content: "Error: could not get a response.", timestamp: new Date().toISOString() }]);
+      }
+    } finally {
+      setChatStatus("idle");
+      setChatPreview("");
+    }
+  }
+
+  function handleChatCancel() {
+    chatAbortRef.current?.abort();
+    setChatStatus("idle");
+    setChatPreview("");
+  }
+
+  function handleChatClear() {
+    setChatMessages([]);
+    setChatInput("");
+    setChatPreview("");
+    setChatStatus("idle");
+  }
+
+  // Scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages, chatPreview]);
+
   function handleAiNewSession() {
     if (aiDirty && !window.confirm(t("ai.confirmNewSession"))) {
       return;
+    }
+    // Auto-save current chat to history before clearing
+    if (aiChat.length > 0) {
+      const chatToSave: SavedChat = {
+        id: `chat-${Date.now()}`,
+        name: aiSessionName || aiChat[0].content.slice(0, 50),
+        savedAt: new Date().toISOString(),
+        messages: aiChat,
+        context: aiContext,
+      };
+      const updated = [chatToSave, ...savedChats].slice(0, MAX_SAVED_CHATS);
+      setSavedChats(updated);
+      persistChats(updated);
     }
     setAiChat([]);
     setAiSessionName("");
@@ -973,9 +1407,25 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
           type="button"
           onClick={() => void applyEditorSqlToEngine()}
           disabled={isBootstrapping || !isInteractiveEngine}
-          className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:opacity-40"
+          className="dbviz-btn-apply rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isBootstrapping ? t("toolbar.applying") : t("toolbar.apply")}
+        </button>
+
+        <button
+          type="button"
+          onClick={openSaveDialog}
+          className="dbviz-btn-save rounded-lg px-2 py-1.5 text-xs font-medium transition-colors"
+        >
+          {t("save.button")}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => { setSavedProjects(loadSavedProjects()); setLoadDrawerOpen(true); }}
+          className="dbviz-btn-load rounded-lg px-2 py-1.5 text-xs font-medium transition-colors"
+        >
+          {t("load.button")}
         </button>
 
         {/* Tour button + theme picker */}
@@ -1028,37 +1478,72 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
         </div>
       </div>
 
+      {/* ── MOBILE PANEL SWITCHER (visible < lg) ─────────────────── */}
+      <div className="flex items-center gap-1 rounded-xl bg-white/[0.03] p-1 lg:hidden">
+        {(["ai", "workspace"] as const).map((panel) => (
+          <button
+            key={panel}
+            type="button"
+            onClick={() => setMobilePanel(panel)}
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+              mobilePanel === panel
+                ? "bg-white/[0.1] text-slate-100"
+                : "text-slate-500 hover:text-slate-300"
+            }`}
+          >
+            {panel === "ai" ? t("ai.designer") : t("mobile.workspace")}
+          </button>
+        ))}
+      </div>
+
       {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
       <div className="grid flex-1 gap-3 overflow-hidden lg:grid-cols-[1fr_1.4fr]">
 
         {/* ── LEFT: AI CHAT (full height) ─────────────────────────── */}
-        <div id="tour-ai-panel" className="flex flex-col overflow-hidden rounded-xl bg-white/[0.03]">
+        <div id="tour-ai-panel" className={`flex flex-col overflow-hidden rounded-xl bg-white/[0.03] ${mobilePanel !== "ai" ? "hidden lg:flex" : ""}`}>
           {/* Header */}
           <div className="flex items-center gap-2 px-3 py-2.5">
             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-violet-500/20 text-[11px] text-violet-300">
               {t("ai.label")}
             </span>
-            <span className="text-sm font-medium text-slate-200">
-              {aiSessionName || t("ai.designer")}
-            </span>
 
-            {/* Context toggle */}
+            {/* Panel mode toggle: Designer / Chat */}
             <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
-              {(["schema", "queries"] as const).map((ctx) => (
+              {(["designer", "chat"] as const).map((mode) => (
                 <button
-                  key={ctx}
+                  key={mode}
                   type="button"
-                  onClick={() => setAiContext(ctx)}
+                  onClick={() => setAiPanelMode(mode)}
                   className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
-                    aiContext === ctx
+                    aiPanelMode === mode
                       ? "bg-white/[0.1] text-slate-200"
                       : "text-slate-500 hover:text-slate-300"
                   }`}
                 >
-                  {ctx === "schema" ? t("ai.context.schema") : t("ai.context.queries")}
+                  {mode === "designer" ? t("chat.designer") : t("chat.chat")}
                 </button>
               ))}
             </div>
+
+            {/* Context toggle (designer only) */}
+            {aiPanelMode === "designer" ? (
+              <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
+                {(["schema", "queries"] as const).map((ctx) => (
+                  <button
+                    key={ctx}
+                    type="button"
+                    onClick={() => setAiContext(ctx)}
+                    className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
+                      aiContext === ctx
+                        ? "bg-white/[0.1] text-slate-200"
+                        : "text-slate-500 hover:text-slate-300"
+                    }`}
+                  >
+                    {ctx === "schema" ? t("ai.context.schema") : t("ai.context.queries")}
+                  </button>
+                ))}
+              </div>
+            ) : null}
 
             <div className="flex-1" />
             {aiDirty ? (
@@ -1078,6 +1563,124 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
               {t("ai.settings")}
             </button>
           </div>
+
+          {/* ── CHAT MODE ─────────────────────────────────────────── */}
+          {aiPanelMode === "chat" ? (
+            <>
+              {/* Intent selector + New */}
+              <div className="flex items-center gap-2 border-t border-white/[0.04] px-3 py-1.5">
+                <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
+                  {(["ask", "suggest", "explain"] as const).map((intent) => {
+                    const labels = { ask: t("chat.intent.ask"), suggest: t("chat.intent.suggest"), explain: t("chat.intent.explain") };
+                    const isActive = chatIntent === intent;
+                    return (
+                      <button
+                        key={intent}
+                        type="button"
+                        onClick={() => setChatIntent(intent)}
+                        className={`rounded px-2 py-0.5 text-[11px] font-medium transition-all ${
+                          isActive ? "bg-white/[0.1] text-slate-200" : "text-slate-500 hover:text-slate-300"
+                        }`}
+                      >
+                        {labels[intent]}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex-1" />
+                {chatMessages.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={handleChatClear}
+                    className="rounded-md bg-white/[0.06] px-2 py-1 text-[11px] text-slate-500 transition-colors hover:bg-white/[0.1] hover:text-slate-300"
+                  >
+                    {t("chat.new")}
+                  </button>
+                ) : null}
+              </div>
+
+              {/* Chat messages */}
+              <div className="flex-1 space-y-2.5 overflow-auto px-3 py-3">
+                {chatMessages.length === 0 && chatStatus !== "thinking" ? (
+                  <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                    <p className="text-sm text-slate-500">
+                      {schemaSql.trim() ? t("chat.empty") : t("chat.noSchema")}
+                    </p>
+                  </div>
+                ) : null}
+
+                {chatMessages.map((entry) => (
+                  <div key={entry.id} className={`flex ${entry.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[90%] rounded-xl px-3.5 py-2.5 text-xs leading-5 ${
+                      entry.role === "user" ? "bg-violet-500/15 text-slate-200" : "bg-white/[0.06] text-slate-300"
+                    }`}>
+                      {entry.role === "assistant" ? (
+                        <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: renderMarkdown(entry.content) }} />
+                      ) : (
+                        <p className="whitespace-pre-wrap">{entry.content}</p>
+                      )}
+                      <p className="mt-1.5 text-[10px] text-slate-600">
+                        {new Date(entry.timestamp).toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {chatStatus === "thinking" && chatPreview ? (
+                  <div className="flex justify-start">
+                    <div className="max-w-[90%] rounded-xl bg-white/[0.06] px-3.5 py-2.5">
+                      <div className="chat-markdown text-xs leading-5 text-slate-300" dangerouslySetInnerHTML={{ __html: renderMarkdown(chatPreview) }} />
+                    </div>
+                  </div>
+                ) : chatStatus === "thinking" ? (
+                  <div className="flex justify-start">
+                    <div className="flex items-center gap-2 rounded-xl bg-white/[0.06] px-3.5 py-2.5 text-xs text-slate-500">
+                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-violet-400" />
+                      {t("ai.status.evaluating")}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Chat input */}
+              <div className="border-t border-white/[0.04]">
+                <div className="flex items-end gap-2 px-3 py-2.5">
+                  <textarea
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder={
+                      chatIntent === "ask" ? t("chat.placeholder.ask")
+                        : chatIntent === "suggest" ? t("chat.placeholder.suggest")
+                        : t("chat.placeholder.explain")
+                    }
+                    disabled={chatStatus === "thinking" || aiModels.length === 0 || !schemaSql.trim()}
+                    rows={2}
+                    className="min-h-[40px] max-h-[100px] flex-1 resize-none rounded-lg bg-white/[0.04] px-3 py-2 text-xs leading-5 text-slate-200 outline-none ring-1 ring-white/[0.06] transition-colors placeholder:text-slate-600 focus:ring-white/[0.12] disabled:opacity-50"
+                    spellCheck={false}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void handleChatSend(); } }}
+                  />
+                  {chatStatus === "thinking" ? (
+                    <button type="button" onClick={handleChatCancel} className="rounded-lg bg-rose-500/15 px-3 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-500/25">
+                      {t("ai.mode.stop")}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void handleChatSend()}
+                      disabled={!aiSelectedModel || !chatInput.trim() || !schemaSql.trim()}
+                      className="rounded-lg bg-violet-500/20 px-3 py-2 text-[11px] font-medium text-violet-300 transition-colors hover:bg-violet-500/30 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {t("chat.send")}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+          <>
+          {/* ── DESIGNER MODE ─────────────────────────────────────── */}
 
           {/* Model toolbar */}
           {aiModels.length > 0 ? (
@@ -1130,7 +1733,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
           {/* Chat messages */}
           <div className="flex-1 space-y-2.5 overflow-auto px-3 py-3">
             {aiChat.length === 0 && aiStatus !== "thinking" && aiStatus !== "generating" ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+              <div className="flex h-full flex-col items-center justify-start gap-3 pt-8 text-center">
                 {aiContext === "schema" ? (
                   <>
                     <p className="text-sm text-slate-500">{t("ai.empty.describeDb")}</p>
@@ -1160,6 +1763,37 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                     )}
                   </>
                 )}
+
+                {/* Previous chats */}
+                {savedChats.length > 0 ? (
+                  <div className="mt-4 w-full max-w-[320px]">
+                    <p className="mb-2 text-[11px] font-medium text-slate-500">{t("chat.previousChats")}</p>
+                    <ul className="space-y-1">
+                      {savedChats.slice(0, 8).map((chat) => (
+                        <li key={chat.id} className="group flex items-center gap-1.5 rounded-lg transition-colors hover:bg-white/[0.04]">
+                          <button
+                            type="button"
+                            onClick={() => handleLoadChat(chat)}
+                            className="flex-1 truncate px-2.5 py-2 text-left text-[11px] text-slate-400 transition-colors hover:text-slate-200"
+                          >
+                            <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-violet-400/40" />
+                            {chat.name}
+                            <span className="ml-1.5 text-[10px] text-slate-600">
+                              {new Date(chat.savedAt).toLocaleDateString()}
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteChat(chat.id)}
+                            className="rounded px-1.5 py-1 text-[10px] text-slate-600 opacity-0 transition-all hover:text-rose-400 group-hover:opacity-100"
+                          >
+                            ×
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
@@ -1297,10 +1931,12 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
               )}
             </div>
           </div>
+          </>
+          )}
         </div>
 
         {/* ── RIGHT: UNIFIED WORKSPACE ────────────────────────────── */}
-        <div className="flex flex-col overflow-hidden rounded-xl bg-white/[0.03]">
+        <div className={`flex flex-col overflow-hidden rounded-xl bg-white/[0.03] ${mobilePanel !== "workspace" ? "hidden lg:flex" : ""}`}>
           {/* Tab bar */}
           <div id="tour-tabs" className="flex items-center gap-0.5 border-b border-white/[0.06] px-2 pt-1">
             {WORKSPACE_TABS.map((tab) => {
@@ -1350,8 +1986,75 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
 
           {/* Tab content */}
           <div className="flex-1 overflow-auto">
-            {/* Editable code tabs: schema, seed, queries */}
-            {isEditableTab ? (
+            {/* Queries tab: individual query blocks with run/copy */}
+            {activeTab === "queries" ? (
+              <div className="flex h-full flex-col">
+                {(() => {
+                  const raw = queriesSql.trim();
+                  // Split SQL into individual statements by comment headers or semicolons
+                  const queries = raw
+                    ? raw.split(/(?=^--\s*.+$)/m).map((s) => s.trim()).filter(Boolean)
+                    : [];
+                  return queries.length > 0 ? (
+                    <div className="flex-1 overflow-auto">
+                      <div className="space-y-1 p-3">
+                        {queries.map((query, i) => {
+                          const lines = query.split("\n");
+                          const commentLine = lines[0]?.startsWith("--") ? lines[0].replace(/^--\s*/, "") : "";
+                          const sqlOnly = commentLine ? lines.slice(1).join("\n").trim() : query.trim();
+                          return (
+                            <div key={i} className="group relative rounded-lg bg-white/[0.03] ring-1 ring-white/[0.04] transition-colors hover:bg-white/[0.05]">
+                              {commentLine ? (
+                                <div className="flex items-center gap-2 border-b border-white/[0.04] px-3 py-1.5">
+                                  <span className="flex-1 text-[11px] font-medium text-slate-400">{commentLine}</span>
+                                </div>
+                              ) : null}
+                              <pre className="overflow-x-auto px-3 py-2 font-mono text-[11px] leading-5 text-slate-300">
+                                {sqlOnly || query}
+                              </pre>
+                              <div className="absolute right-2 top-1.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                <button
+                                  type="button"
+                                  onClick={() => { void navigator.clipboard.writeText(sqlOnly || query); appendConsole("ok", t("query.copied")); }}
+                                  className="dbviz-query-btn rounded px-1.5 py-0.5 text-[10px] transition-colors"
+                                >
+                                  {t("query.copy")}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setCommandSql(sqlOnly || query); }}
+                                  className="dbviz-query-btn rounded px-1.5 py-0.5 text-[10px] transition-colors"
+                                >
+                                  {t("query.paste")}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setCommandSql(sqlOnly || query); void runCommandDirect(sqlOnly || query); }}
+                                  className="dbviz-query-btn-run rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors"
+                                >
+                                  {t("query.run")}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="border-t border-white/[0.04]">
+                        <SqlEditor
+                          value={queriesSql}
+                          onChange={(v) => setQueriesSql(v)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <SqlEditor
+                      value={queriesSql}
+                      onChange={(v) => setQueriesSql(v)}
+                    />
+                  );
+                })()}
+              </div>
+            ) : isEditableTab ? (
               <SqlEditor
                 value={getTabValue(activeTab)}
                 onChange={(v) => setTabValue(activeTab, v)}
@@ -1475,7 +2178,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
       </div>
 
       {/* ── BOTTOM BAR: Command SQL + Console ────────────────────── */}
-      <div id="tour-sql-bar" className="flex items-start gap-3 rounded-xl bg-white/[0.03] px-3 py-2.5">
+      <div id="tour-sql-bar" className={`flex items-start gap-3 rounded-xl bg-white/[0.03] px-3 py-2.5 ${mobilePanel !== "workspace" ? "hidden lg:flex" : ""}`}>
         <span className="mt-1.5 font-mono text-xs text-slate-600">SQL&gt;</span>
         <textarea
           value={commandSql}
@@ -1712,6 +2415,97 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
         </>
       ) : null}
       <HelpChat aiConfig={aiProviderConfig} locale={locale} />
+
+      {/* ── SAVE PROJECT DIALOG ──────────────────────────────────── */}
+      {saveDialogOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl dbviz-modal-bg p-6 shadow-2xl ring-1 ring-white/[0.08]">
+            <h3 className="mb-4 text-sm font-semibold text-slate-100">{t("save.title")}</h3>
+            <label className="mb-1.5 block text-[11px] font-medium text-slate-400">{t("save.nameLabel")}</label>
+            <input
+              type="text"
+              autoFocus
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSaveProject(); if (e.key === "Escape") setSaveDialogOpen(false); }}
+              placeholder={t("save.namePlaceholder")}
+              className="mb-4 w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 outline-none ring-1 ring-white/[0.08] placeholder:text-slate-600 focus:ring-violet-500/40"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setSaveDialogOpen(false)}
+                className="rounded-lg px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
+              >
+                {t("save.cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveProject}
+                disabled={!saveName.trim()}
+                className="rounded-lg bg-violet-500/20 px-4 py-1.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-500/30 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {t("save.save")}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ── LOAD PROJECTS DRAWER ─────────────────────────────────── */}
+      {loadDrawerOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="flex w-full max-w-md flex-col rounded-2xl dbviz-modal-bg shadow-2xl ring-1 ring-white/[0.08]" style={{ maxHeight: "70vh" }}>
+            <div className="flex items-center justify-between px-5 py-4">
+              <h3 className="text-sm font-semibold text-slate-100">{t("load.title")}</h3>
+              <button
+                type="button"
+                onClick={() => setLoadDrawerOpen(false)}
+                className="rounded-lg px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
+              >
+                {t("load.close")}
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto px-5 pb-5">
+              {savedProjects.length === 0 ? (
+                <p className="py-8 text-center text-xs text-slate-500">{t("load.empty")}</p>
+              ) : (
+                <ul className="space-y-2">
+                  {savedProjects.map((project) => (
+                    <li
+                      key={project.name}
+                      className="group flex items-center gap-3 rounded-xl bg-white/[0.04] px-4 py-3 transition-colors hover:bg-white/[0.08]"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleLoadProject(project)}
+                        className="flex-1 text-left"
+                      >
+                        <p className="text-sm font-medium text-slate-200">{project.name}</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">
+                          {t("load.savedAt").replace("{date}", new Date(project.savedAt).toLocaleString())}
+                          {project.aiChat?.length ? (
+                            <span className="ml-2 inline-flex items-center gap-1 rounded bg-violet-500/10 px-1.5 py-0.5 text-[10px] text-violet-400">
+                              {project.aiChat.length} {t("chat.previousChats").toLowerCase()}
+                            </span>
+                          ) : null}
+                        </p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProject(project.name)}
+                        className="rounded-md px-2 py-1 text-[11px] text-slate-600 opacity-0 transition-all hover:bg-rose-500/15 hover:text-rose-400 group-hover:opacity-100"
+                      >
+                        {t("load.delete")}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
