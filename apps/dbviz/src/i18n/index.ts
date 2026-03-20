@@ -247,6 +247,26 @@ const translations = {
     "erd.ctx.confirmDeleteTable": "Delete table \"{name}\"?",
     "erd.ctx.confirmDeleteColumn": "Delete column \"{name}\"?",
 
+    // DB Chat Panel
+    "chat.designer": "Designer",
+    "chat.chat": "Chat",
+    "chat.intent.ask": "Ask",
+    "chat.intent.suggest": "Suggest",
+    "chat.intent.explain": "Explain",
+    "chat.placeholder.ask": "Ask anything about your database...",
+    "chat.placeholder.suggest": "What should I suggest improvements for?",
+    "chat.placeholder.explain": "What should I explain about the schema?",
+    "chat.send": "Send",
+    "chat.new": "New",
+    "chat.empty": "Ask questions, get suggestions, or request explanations about your database schema.",
+    "chat.noSchema": "Load or create a schema first to chat about it.",
+
+    // Query Actions
+    "query.copy": "Copy",
+    "query.paste": "Paste",
+    "query.run": "Run",
+    "query.copied": "Query copied.",
+
     // Chat History
     "chat.previousChats": "Previous chats",
 
@@ -582,6 +602,26 @@ const translations = {
     "erd.ctx.promptColumnDef": "Columna (nombre tipo):",
     "erd.ctx.confirmDeleteTable": "\u00bfEliminar tabla \"{name}\"?",
     "erd.ctx.confirmDeleteColumn": "\u00bfEliminar columna \"{name}\"?",
+
+    // DB Chat Panel
+    "chat.designer": "Diseñador",
+    "chat.chat": "Chat",
+    "chat.intent.ask": "Preguntar",
+    "chat.intent.suggest": "Sugerir",
+    "chat.intent.explain": "Explicar",
+    "chat.placeholder.ask": "Pregunta lo que quieras sobre tu base de datos...",
+    "chat.placeholder.suggest": "¿Sobre qué debo sugerir mejoras?",
+    "chat.placeholder.explain": "¿Qué debo explicar del esquema?",
+    "chat.send": "Enviar",
+    "chat.new": "Nuevo",
+    "chat.empty": "Haz preguntas, obtén sugerencias o pide explicaciones sobre tu esquema de base de datos.",
+    "chat.noSchema": "Carga o crea un esquema primero para chatear sobre él.",
+
+    // Query Actions
+    "query.copy": "Copiar",
+    "query.paste": "Pegar",
+    "query.run": "Ejecutar",
+    "query.copied": "Consulta copiada.",
 
     // Chat History
     "chat.previousChats": "Chats anteriores",

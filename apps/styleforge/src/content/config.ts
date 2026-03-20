@@ -38,6 +38,8 @@ const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
 const ResourceTargetSchema = z.enum([
   "html",
   "react",
+  "react-native",
+  "expo",
   "next",
   "vue",
   "svelte",
@@ -60,6 +62,7 @@ const ResourceCollectionSchema = z.enum([
   "dashboard",
   "remotion",
   "effects",
+  "mobile-nav",
 ]);
 
 const resources = defineCollection({
