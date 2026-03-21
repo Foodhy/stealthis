@@ -5,10 +5,7 @@ import { getCollection } from "astro:content";
 import ShowcaseCard from "@components/ShowcaseCard.astro";
 import { getLocaleFromUrl } from "@i18n/index";
 import Base from "@layouts/Base.astro";
-import { SITE_URLS } from "@lib/urls";
-
 const locale = getLocaleFromUrl(Astro.url);
-const labUrl = SITE_URLS.lab;
 
 const allResources = await getCollection("resources");
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -48,14 +45,6 @@ const showcaseItems = allResources
     srcdoc = srcdoc.replace(
       /<\/head>/i,
       "<style>::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}</style></head>"
-    );
-
-    // Rewrite absolute /vendor/ paths to the lab origin so gsap/three load correctly
-    srcdoc = srcdoc.replaceAll('"/vendor/', `"${labUrl}/vendor/`);
-    // lenis.mjs is not present in the lab vendor dir — swap to CDN
-    srcdoc = srcdoc.replaceAll(
-      `"${labUrl}/vendor/lenis/dist/lenis.mjs"`,
-      '"https://cdn.jsdelivr.net/npm/lenis@1.3.17/dist/lenis.mjs"'
     );
 
     return { resource, srcdoc };

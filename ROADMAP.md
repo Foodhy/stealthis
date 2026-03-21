@@ -961,3 +961,51 @@ Existing library components re-implemented as React Native snippets (`react-nati
 | `chat-interface` | AI chat UI (RN) | med | ✅ |
 | `like-button` | Animated like button (RN) | easy | ✅ |
 | `countdown-timer` | Countdown timer (RN) | easy | ✅ |
+
+---
+
+## Phase 24 — Full Page Templates (Extended) ✅ DONE (2026-03-20)
+
+Páginas completas que aprovechan los 225+ componentes existentes. Cada página combina múltiples componentes en un layout cohesivo y funcional.
+
+> **Concept:** Phase 12 cubrió páginas básicas (404, pricing, checkout, blog post). Esta fase agrega las páginas que faltan para cubrir los flujos más comunes de cualquier aplicación web.
+
+### Dashboard & Admin
+
+| Slug | Description | Componentes que usa | Difficulty | Status |
+|---|---|---|---|---|
+| `dashboard-page` | Admin dashboard con métricas, gráficos y tabla | `chart-line`, `chart-bar`, `chart-pie`, `kpi-card`, `stat-card`, `data-table`, `sparkline` | hard | ✅ |
+| `analytics-page` | Analytics dashboard con date range y reportes | `chart-area`, `chart-funnel`, `chart-heatmap`, `date-range-picker`, `metric-comparison`, `data-table` | hard | ✅ |
+| `settings-page` | Settings / profile page con tabs y formularios | `settings-panel`, `user-profile-card`, `avatar-group`, `toggle-group`, `tabs-vertical`, `input-variants` | med | ✅ |
+
+### Content & Blog
+
+| Slug | Description | Componentes que usa | Difficulty | Status |
+|---|---|---|---|---|
+| `blog-listing-page` | Blog index / archive con grid de posts | `pagination`, `search-autocomplete`, `badge`, `masonry-grid`, `empty-state` | med | ✅ |
+| `changelog-page` | Changelog / release notes con timeline | `timeline`, `badge`, `code-block`, `diff-viewer`, `anchor-nav` | med | ✅ |
+| `faq-page` | FAQ / Help center con buscador | `accordion-spring`, `search-autocomplete`, `breadcrumb-nav`, `empty-state`, `chat-widget` | easy | ✅ |
+
+### Team & Social
+
+| Slug | Description | Componentes que usa | Difficulty | Status |
+|---|---|---|---|---|
+| `team-page` | Team / people page con perfiles y roles | `user-profile-card`, `avatar-group`, `badge`, `social-feed`, `masonry-grid` | easy | ✅ |
+| `notifications-page` | Centro de notificaciones full page | `notification-center`, `comment-thread`, `timeline`, `avatar-group`, `tabs-vertical`, `empty-state` | med | ✅ |
+
+### Search & Discovery
+
+| Slug | Description | Componentes que usa | Difficulty | Status |
+|---|---|---|---|---|
+| `search-results-page` | Página de resultados de búsqueda | `search-autocomplete`, `advanced-filters`, `data-list`, `pagination`, `badge`, `empty-state` | med | ✅ |
+| `shop-category-page` | E-commerce category / shop listing | `product-card`, `advanced-filters`, `pagination`, `breadcrumb-nav`, `range-slider`, `image-gallery-grid` | hard | ✅ |
+| `wishlist-page` | Wishlist / saved items | `product-card`, `like-button`, `shopping-cart`, `badge`, `pagination`, `empty-state` | easy | ✅ |
+
+### Utility & Functional
+
+| Slug | Description | Componentes que usa | Difficulty | Status |
+|---|---|---|---|---|
+| `invoice-page` | Invoice history con lista y detalle | `print-invoice`, `data-table`, `badge`, `alert-banner`, `pagination`, `modal-dialog` | med | ✅ |
+| `status-page` | System / API status page | `api-status-board`, `status-indicator`, `timeline`, `badge`, `chart-line`, `alert-banner` | med | ✅ |
+| `file-manager-page` | File browser / document manager | `file-tree`, `data-table`, `breadcrumb-nav`, `drag-to-reorder`, `upload-progress`, `modal-dialog`, `document-preview` | hard | ✅ |
+| `onboarding-page` | Multi-step onboarding / welcome flow | `mobile-stepper`, `multi-step-form`, `progress-bar`, `steps-progress`, `alert-banner` | med | ✅ |
