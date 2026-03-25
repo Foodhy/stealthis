@@ -14,28 +14,21 @@ const allResources = await getCollection("resources");
 const labExamples = allResources.filter(
   (resource: any) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0
 );
+const byNewest = (a: any, b: any) =>
+  (b.data.createdAt ?? "").localeCompare(a.data.createdAt ?? "");
+
 const easyMarquee = labExamples
   .filter((resource: any) => resource.data.difficulty === "easy")
+  .sort(byNewest)
   .slice(0, 12);
 const medMarquee = labExamples
   .filter((resource: any) => resource.data.difficulty === "med")
+  .sort(byNewest)
   .slice(0, 12);
-const hardPriorityCategories = new Set(["web-pages", "pages"]);
-const hardOnlyExamples = labExamples.filter((resource: any) => resource.data.difficulty === "hard");
-const hardPriorityExamples = hardOnlyExamples.filter((resource: any) =>
-  hardPriorityCategories.has(resource.data.category)
-);
-const hardOtherExamples = hardOnlyExamples.filter(
-  (resource: any) => !hardPriorityCategories.has(resource.data.category)
-);
-const hardFallbackPages = labExamples.filter(
-  (resource: any) =>
-    resource.data.difficulty === "med" && hardPriorityCategories.has(resource.data.category)
-);
-const hardMarquee = [...hardPriorityExamples, ...hardOtherExamples, ...hardFallbackPages].slice(
-  0,
-  20
-);
+const hardMarquee = labExamples
+  .filter((resource: any) => resource.data.difficulty === "hard")
+  .sort(byNewest)
+  .slice(0, 20);
 const categoryCount = new Set(allResources.map((resource: any) => resource.data.category)).size;
 
 const rotatingWords = (t("hero.rotatingWords") as string).split(",").map((w) => w.trim());
@@ -239,6 +232,22 @@ const structuredData = [
 
   <!-- Hero -->
   <section class="hero-stage relative overflow-hidden pt-20 pb-16 min-w-0">
+    <!-- Retro grids – left & right -->
+    <div class="hero-retro-grid hero-retro-grid--left" aria-hidden="true">
+      <canvas class="hero-retro-canvas" data-side="left"></canvas>
+      <div class="hero-retro-glow hero-retro-glow--a"></div>
+      <div class="hero-retro-glow hero-retro-glow--b"></div>
+      <div class="hero-retro-glow hero-retro-glow--c"></div>
+      <div class="hero-retro-sweep"></div>
+    </div>
+    <div class="hero-retro-grid hero-retro-grid--right" aria-hidden="true">
+      <canvas class="hero-retro-canvas" data-side="right"></canvas>
+      <div class="hero-retro-glow hero-retro-glow--a"></div>
+      <div class="hero-retro-glow hero-retro-glow--b"></div>
+      <div class="hero-retro-glow hero-retro-glow--c"></div>
+      <div class="hero-retro-sweep"></div>
+    </div>
+
     <div class="container-xl text-center hero-container min-w-0 relative">
       <div class="hero-cta-shell mx-auto max-w-5xl px-5 py-9 sm:px-10 sm:py-12">
         <h1 class="hero-anim-item text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] mb-6 hero-title-gradient min-w-0">
@@ -782,6 +791,144 @@ const structuredData = [
     });
   </script>
 
+  <!-- Interactive grid canvas for retro panels -->
+  <script>
+    (function () {
+      "use strict";
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const CELL = 28;
+      const GAP = 2;
+      const RADIUS = 3;
+      const ILLUM_R = 180;
+      const TRAIL_R = 100;
+      const GLOW_R = 34, GLOW_G = 211, GLOW_B = 238;
+      const BASE_ALPHA = 0.045;
+
+      const panels: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; cols: number; rows: number; mx: number; my: number; tx: number; ty: number; dpr: number; animId: number }[] = [];
+
+      document.querySelectorAll<HTMLCanvasElement>(".hero-retro-canvas").forEach((canvas) => {
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        panels.push({ canvas, ctx, cols: 0, rows: 0, mx: -9999, my: -9999, tx: -9999, ty: -9999, dpr: 1, animId: 0 });
+      });
+
+      if (!panels.length) return;
+
+      function resize() {
+        for (const p of panels) {
+          const rect = p.canvas.parentElement!.getBoundingClientRect();
+          p.dpr = window.devicePixelRatio || 1;
+          p.canvas.width = rect.width * p.dpr;
+          p.canvas.height = rect.height * p.dpr;
+          p.canvas.style.width = rect.width + "px";
+          p.canvas.style.height = rect.height + "px";
+          p.cols = Math.ceil(rect.width / (CELL + GAP)) + 1;
+          p.rows = Math.ceil(rect.height / (CELL + GAP)) + 1;
+        }
+      }
+
+      function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+
+      function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      function draw() {
+        for (const p of panels) {
+          p.mx = lerp(p.mx, p.tx, 0.12);
+          p.my = lerp(p.my, p.ty, 0.12);
+          const { ctx, cols, rows, dpr, mx, my } = p;
+          const w = p.canvas.width / dpr;
+          const h = p.canvas.height / dpr;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, w, h);
+
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const x = c * (CELL + GAP);
+              const y = r * (CELL + GAP);
+              const cx = x + CELL / 2;
+              const cy = y + CELL / 2;
+              const dx = cx - mx;
+              const dy = cy - my;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const intensity = Math.max(0, 1 - dist / ILLUM_R);
+              const si = intensity * intensity;
+              const trail = Math.max(0, 1 - dist / (ILLUM_R + TRAIL_R));
+              const st = trail * trail * 0.25;
+              const fi = Math.min(1, si + st);
+              const alpha = BASE_ALPHA + fi * 0.5;
+
+              ctx.fillStyle = `rgba(${GLOW_R},${GLOW_G},${GLOW_B},${alpha.toFixed(3)})`;
+
+              if (fi > 0.01) {
+                ctx.shadowColor = `rgba(${GLOW_R},${GLOW_G},${GLOW_B},${(fi * 0.5).toFixed(3)})`;
+                ctx.shadowBlur = fi * 10;
+              } else {
+                ctx.fillStyle = `rgba(255,255,255,${BASE_ALPHA})`;
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur = 0;
+              }
+
+              roundRect(ctx, x, y, CELL, CELL, RADIUS);
+              ctx.fill();
+              ctx.shadowColor = "transparent";
+              ctx.shadowBlur = 0;
+
+              if (fi > 0.1) {
+                ctx.strokeStyle = `rgba(${GLOW_R},${GLOW_G},${GLOW_B},${(fi * 0.25).toFixed(3)})`;
+                ctx.lineWidth = 0.5;
+                roundRect(ctx, x, y, CELL, CELL, RADIUS);
+                ctx.stroke();
+              }
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+
+      for (const p of panels) {
+        const parent = p.canvas.parentElement!;
+        parent.addEventListener("mousemove", (e: MouseEvent) => {
+          const rect = parent.getBoundingClientRect();
+          p.tx = e.clientX - rect.left;
+          p.ty = e.clientY - rect.top;
+        });
+        parent.addEventListener("mouseleave", () => {
+          p.tx = -9999;
+          p.ty = -9999;
+        });
+        parent.addEventListener("touchmove", (e: TouchEvent) => {
+          const rect = parent.getBoundingClientRect();
+          const t = e.touches[0];
+          p.tx = t.clientX - rect.left;
+          p.ty = t.clientY - rect.top;
+        }, { passive: true });
+        parent.addEventListener("touchend", () => {
+          p.tx = -9999;
+          p.ty = -9999;
+        });
+      }
+
+      resize();
+      requestAnimationFrame(draw);
+
+      let rt: ReturnType<typeof setTimeout>;
+      window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(resize, 150); });
+    })();
+  </script>
+
   <style>
     .home-page-shell {
       isolation: isolate;
@@ -795,28 +942,165 @@ const structuredData = [
     .hero-stage {
       isolation: isolate;
     }
+    /* --- Shine border (rotating gradient) on hero card --- */
+    @property --hero-shine-angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
     .hero-cta-shell {
       position: relative;
       border-radius: 28px;
-      border: 1px solid rgb(148 163 184 / 18%);
-      background: linear-gradient(180deg, rgb(5 13 28 / 84%), rgb(6 16 34 / 66%));
+      border: none;
+      background: transparent;
       box-shadow:
-        inset 0 0 0 1px rgb(148 163 184 / 7%),
         0 24px 60px rgb(2 6 23 / 55%),
         0 0 40px rgb(14 165 233 / 15%);
       backdrop-filter: blur(10px);
       overflow: hidden;
     }
+    .hero-cta-shell::before {
+      content: "";
+      position: absolute;
+      inset: -200%;
+      background: conic-gradient(
+        from var(--hero-shine-angle, 0deg),
+        #22d3ee,
+        transparent 25%,
+        transparent 50%,
+        #3b82f6,
+        transparent 75%,
+        #22d3ee
+      );
+      animation: hero-shine-rotate 4s linear infinite;
+      z-index: 0;
+    }
+    @keyframes hero-shine-rotate {
+      0%   { --hero-shine-angle: 0deg; }
+      100% { --hero-shine-angle: 360deg; }
+    }
+    /* Fallback for browsers without @property */
+    @supports not (background: paint(something)) {
+      .hero-cta-shell::before {
+        animation: hero-shine-rotate-fallback 4s linear infinite;
+      }
+      @keyframes hero-shine-rotate-fallback {
+        0%   { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    }
     .hero-cta-shell::after {
       content: "";
       position: absolute;
-      inset: 1px;
-      border-radius: 27px;
-      background: linear-gradient(180deg, rgb(15 23 42 / 56%), rgb(2 6 23 / 18%));
+      inset: 2px;
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgb(5 13 28 / 95%), rgb(6 16 34 / 92%));
+      z-index: 0;
     }
     .hero-cta-shell > * {
       position: relative;
       z-index: 1;
+    }
+
+    /* --- Retro grid – left & right panels --- */
+    .hero-retro-grid {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 45%;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .hero-retro-grid--left {
+      left: 0;
+      -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 85%);
+      mask-image: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 85%);
+    }
+    .hero-retro-grid--right {
+      right: 0;
+      -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.7) 0%, transparent 85%);
+      mask-image: linear-gradient(to left, rgba(0,0,0,0.7) 0%, transparent 85%);
+    }
+    .hero-retro-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* --- Floating glow orbs (ocean-like) --- */
+    .hero-retro-glow {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, transparent 70%);
+      filter: blur(30px);
+      opacity: 0;
+      z-index: 1;
+      mix-blend-mode: screen;
+    }
+    .hero-retro-glow--a {
+      animation: retro-float-a 7s ease-in-out infinite;
+    }
+    .hero-retro-glow--b {
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+      animation: retro-float-b 9s ease-in-out infinite 2s;
+    }
+    .hero-retro-glow--c {
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, transparent 70%);
+      filter: blur(20px);
+      animation: retro-float-c 11s ease-in-out infinite 4s;
+    }
+    @keyframes retro-float-a {
+      0%   { opacity: 0;   top: 70%;  left: 10%; }
+      15%  { opacity: 0.8; }
+      50%  { opacity: 0.4; top: 20%;  left: 55%; }
+      85%  { opacity: 0.7; }
+      100% { opacity: 0;   top: 70%;  left: 10%; }
+    }
+    @keyframes retro-float-b {
+      0%   { opacity: 0;   top: 15%;  left: 60%; }
+      20%  { opacity: 0.6; }
+      50%  { opacity: 0.3; top: 65%;  left: 20%; }
+      80%  { opacity: 0.7; }
+      100% { opacity: 0;   top: 15%;  left: 60%; }
+    }
+    @keyframes retro-float-c {
+      0%   { opacity: 0;   top: 45%;  left: 30%; }
+      25%  { opacity: 0.5; }
+      50%  { opacity: 0.2; top: 10%;  left: 70%; }
+      75%  { opacity: 0.6; top: 80%;  left: 45%; }
+      100% { opacity: 0;   top: 45%;  left: 30%; }
+    }
+
+    /* --- Sweep highlight that travels across the grid --- */
+    .hero-retro-sweep {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(34, 211, 238, 0.12) 45%,
+        rgba(59, 130, 246, 0.08) 55%,
+        transparent 100%
+      );
+      background-size: 100% 300%;
+      animation: retro-sweep 6s ease-in-out infinite;
+    }
+    .hero-retro-grid--right .hero-retro-sweep {
+      animation-delay: -3s;
+    }
+    @keyframes retro-sweep {
+      0%   { background-position: 0 100%; }
+      50%  { background-position: 0 0%; }
+      100% { background-position: 0 100%; }
     }
     .hero-title-gradient > span {
       background: linear-gradient(to bottom, white, rgb(148 163 184));
@@ -1484,7 +1768,10 @@ const structuredData = [
         border-radius: 24px;
       }
       .hero-cta-shell::after {
-        border-radius: 23px;
+        border-radius: 22px;
+      }
+      .hero-retro-grid {
+        width: 35%;
       }
       .examples-marquee-stack {
         gap: 0.95rem;
@@ -1517,8 +1804,14 @@ const structuredData = [
       .hero-integrate-link,
       .manifesto-animate-pulse,
       .manifesto-animate-float,
-      .manifesto-animate-glow {
+      .manifesto-animate-glow,
+      .hero-cta-shell::before,
+      .hero-retro-glow,
+      .hero-retro-sweep {
         animation: none !important;
+      }
+      .hero-retro-canvas {
+        display: none;
       }
       .hero-rotating-word-gradient {
         background-position: 0% 50%;
