@@ -63,6 +63,15 @@ export interface ResourceAuthor {
   src: string;
 }
 
+export interface CodePenExample {
+  id: string;
+  title: string;
+  penUrl: string;
+  description?: string;
+  height?: number;
+  defaultTab?: "result" | "html,result" | "css,result" | "js,result";
+}
+
 export interface ResourceMeta {
   slug: string;
   title: string;
@@ -78,6 +87,7 @@ export interface ResourceMeta {
   labRoute?: string;
   license: string;
   author?: ResourceAuthor;
+  codepenExamples?: CodePenExample[];
   createdAt: string;
   updatedAt: string;
 }

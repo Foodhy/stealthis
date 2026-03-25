@@ -1,0 +1,126 @@
+---
+import { getCodePenEmbedUrl } from "@lib/codepen";
+import ActionMenu from "@components/ActionMenu.astro";
+import { useTranslations, type Locale } from "@i18n/index";
+import { SITE_URLS } from "@lib/urls";
+import type { CollectionEntry } from "astro:content";
+
+interface CodePenExample {
+  id: string;
+  title: string;
+  penUrl: string;
+  description?: string;
+  height?: number;
+  defaultTab?: "result" | "html,result" | "css,result" | "js,result";
+}
+
+interface Props {
+  examples: CodePenExample[];
+  sectionTitle: string;
+  previewLabel: string;
+  resource: CollectionEntry<"resources">;
+  locale?: Locale;
+}
+
+const { examples, sectionTitle, previewLabel, resource, locale = "en" } = Astro.props;
+const t = useTranslations(locale);
+const { labRoute } = resource.data;
+---
+
+<section class="mb-12">
+  <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+    {sectionTitle}
+  </h2>
+
+  <div class="space-y-6">
+    {examples.map((example) => {
+      const embedUrl = getCodePenEmbedUrl(example.penUrl, {
+        defaultTab: example.defaultTab,
+        height: example.height,
+      });
+      const height = example.height ?? 520;
+
+      return (
+        <div class="rounded-2xl border border-white/8 bg-surface-900/60 overflow-hidden">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-white/8">
+            <div class="min-w-0 flex-1">
+              <h3 class="text-sm font-medium text-slate-200 truncate">{example.title}</h3>
+              {example.description && (
+                <p class="text-xs text-slate-500 mt-0.5 truncate">{example.description}</p>
+              )}
+            </div>
+            <div class="flex items-center gap-2 shrink-0 ml-4">
+              {labRoute && (
+                <a
+                  href={`${SITE_URLS.lab}${labRoute}`}
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-xs font-medium text-cyan-300 hover:bg-cyan-500/25 hover:text-cyan-100 transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                  {t("resource.openLab")}
+                </a>
+              )}
+              <ActionMenu resource={resource} locale={locale} />
+            </div>
+          </div>
+
+          {embedUrl ? (
+            <div class="codepen-lazy" data-src={embedUrl} data-height={height}>
+              <div
+                class="flex items-center justify-center text-slate-500 text-sm"
+                style={`height:${height}px`}
+              >
+                <button
+                  type="button"
+                  class="codepen-load-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/6 hover:bg-white/10 border border-white/8 transition-colors text-slate-300"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5,3 19,12 5,21" />
+                  </svg>
+                  {previewLabel}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              class="flex items-center justify-center text-slate-500 text-sm"
+              style={`height:${height}px`}
+            >
+              <span>CodePen embed unavailable</span>
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>(".codepen-lazy").forEach((container) => {
+    const btn = container.querySelector(".codepen-load-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const src = container.dataset.src;
+      const height = container.dataset.height ?? "520";
+      if (!src) return;
+
+      const iframe = document.createElement("iframe");
+      iframe.src = src;
+      iframe.style.width = "100%";
+      iframe.style.height = `${height}px`;
+      iframe.style.border = "0";
+      iframe.setAttribute("loading", "lazy");
+      iframe.setAttribute("allowfullscreen", "true");
+      iframe.setAttribute(
+        "allow",
+        "accelerometer; camera; encrypted-media; geolocation; gyroscope; microphone; midi"
+      );
+
+      container.replaceChildren(iframe);
+    });
+  });
+</script>

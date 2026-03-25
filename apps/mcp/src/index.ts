@@ -205,6 +205,7 @@ function handleListResources(args: Record<string, string>) {
     tech: r.tech,
     tags: r.tags,
     labRoute: r.labRoute,
+    hasCodepenExamples: Array.isArray(r.codepenExamples) && r.codepenExamples.length > 0,
     resourceUrl: `https://stealthis.dev/r/${r.slug}`,
   }));
 
