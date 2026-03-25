@@ -11,7 +11,10 @@ export type ResourceCategoryPhase2 =
   | "boilerplates"
   | "remotion"
   | "database-schemas"
-  | "ultra-high-definition-pages";
+  | "ultra-high-definition-pages"
+  | "music"
+  | "3d-models"
+  | "3d-interactions";
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 

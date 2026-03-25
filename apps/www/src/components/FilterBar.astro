@@ -77,7 +77,8 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
           | "category.mcp-servers" | "category.architectures" | "category.boilerplates" | "category.remotion"
           | "category.database-schemas"
           | "category.ultra-high-definition-pages"
-          | "category.design-styles";
+          | "category.design-styles"
+          | "category.music";
         return (
           <button class="chip" data-filter="category" data-value={cat}>{t(key)}</button>
         );
@@ -238,18 +239,24 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     return true;
   }
 
+  let pendingScroll = false;
+
   function applyFilters() {
     let visible = 0;
+    const visibleSlugs = new Set<string>();
     cards.forEach((card) => {
       const show = matches(card);
       card.style.display = show ? "" : "none";
-      if (show) visible++;
+      if (show) {
+        visible++;
+        visibleSlugs.add(card.dataset.slug ?? "");
+      }
     });
 
-    // Hide category sections with no visible cards
+    // Hide category sections with no visible cards (use slug set for reliability)
     document.querySelectorAll<HTMLElement>("[data-category-section]").forEach((section) => {
       const hasVisible = [...section.querySelectorAll<HTMLElement>("[data-slug]")]
-        .some((c) => c.style.display !== "none");
+        .some((c) => visibleSlugs.has(c.dataset.slug ?? ""));
       section.style.display = hasVisible ? "" : "none";
     });
 
@@ -273,6 +280,17 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 
     if (resultsCount) {
       resultsCount.textContent = `${visible} resource${visible !== 1 ? "s" : ""}`;
+    }
+
+    // Scroll to the resource grid so filtered results are immediately visible
+    if (pendingScroll) {
+      pendingScroll = false;
+      const grid = document.getElementById("resource-grid");
+      if (grid && visible > 0) {
+        requestAnimationFrame(() => {
+          grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
     }
   }
 
@@ -298,6 +316,7 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       const filter = btn.dataset.filter as "collection" | "category" | "difficulty" | "tech" | "author";
       const value = btn.dataset.value ?? "all";
 
+      if (value !== "all") pendingScroll = true;
       setFilter(filter, value);
     });
   });
@@ -366,6 +385,11 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 
   const authorParam = params.get("author");
   if (authorParam) setFilter("author", authorParam, false);
+
+  // Scroll to results on initial load if a specific filter is active from URL
+  if (categoryParam || collectionParam || difficultyParam || techParam || authorParam) {
+    pendingScroll = true;
+  }
 
   const searchParam = params.get("search");
   if (searchParam && searchInput) {

@@ -18,6 +18,9 @@ export const ResourceCategorySchema = z.enum([
   "database-schemas",
   "ultra-high-definition-pages",
   "design-styles",
+  "music",
+  "3d-models",
+  "3d-interactions",
 ]);
 
 export const ResourceTypeSchema = z.enum([
