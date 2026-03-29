@@ -21,6 +21,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   architectures: "Architectures",
   boilerplates: "Boilerplates",
   remotion: "Remotion",
+  "database-schemas": "Database Schemas",
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -36,6 +37,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   architectures: "#8f84ff",
   boilerplates: "#52c0ff",
   remotion: "#53a5ff",
+  "database-schemas": "#22d3ee",
 };
 
 const escapeXml = (value: string) =>

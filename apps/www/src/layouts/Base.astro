@@ -2,7 +2,17 @@
 import "../styles/global.css";
 import Nav from "@components/Nav.astro";
 import Footer from "@components/Footer.astro";
-import { getLocaleFromUrl, type Locale } from "@i18n/index";
+import { BRAND_NAME, DEFAULT_SEO_KEYWORDS, mergeKeywords } from "@lib/seo";
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  LOCALE_OG_TAG,
+  LOCALE_STORAGE_KEY,
+  getLocaleFromUrl,
+  isLocale,
+  getLocalizedPath,
+  stripLocaleFromPath,
+} from "@i18n/index";
 
 interface Props {
   title: string;
@@ -11,6 +21,7 @@ interface Props {
   imageAlt?: string;
   canonicalPath?: string;
   noindex?: boolean;
+  keywords?: string[];
   alternateLinks?: Array<{ hreflang: string; href: string }>;
   structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
@@ -22,17 +33,30 @@ const {
   imageAlt,
   canonicalPath = Astro.url.pathname,
   noindex = false,
+  keywords = [],
   alternateLinks = [],
   structuredData,
 } = Astro.props;
-const locale = getLocaleFromUrl(Astro.url);
+let locale = getLocaleFromUrl(Astro.url);
+// If there's no locale prefix in the URL, prefer the selected language cookie.
+if (locale === DEFAULT_LOCALE) {
+  const cookieLocale = Astro.cookies.get(LOCALE_STORAGE_KEY)?.value;
+  if (isLocale(cookieLocale)) locale = cookieLocale;
+}
 const site = Astro.site ?? new URL("https://stealthis.dev");
 const canonicalURL = new URL(canonicalPath, site).toString();
 const imageURL = new URL(image ?? "/social-card.webp", site).toString();
 const socialImageAlt = imageAlt ?? `${title} preview card`;
-const robots = noindex ? "noindex, nofollow" : "index, follow";
-const ogLocale: Record<Locale, string> = { en: "en_US", es: "es_ES" };
+const robots = noindex
+  ? "noindex, nofollow"
+  : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 const structuredDataJson = structuredData ? JSON.stringify(structuredData) : null;
+const resolvedCurrentPath = getLocalizedPath(Astro.url.pathname, locale);
+const { hasLocalePrefix } = stripLocaleFromPath(Astro.url.pathname);
+const keywordMeta = mergeKeywords(DEFAULT_SEO_KEYWORDS, keywords).join(", ");
+const llmsURL = new URL("/llms.txt", site).toString();
+const llmsFullURL = new URL("/llms-full.txt", site).toString();
+const aiIndexURL = new URL("/ai-index.json", site).toString();
 ---
 
 <!doctype html>
@@ -41,19 +65,29 @@ const structuredDataJson = structuredData ? JSON.stringify(structuredData) : nul
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content={robots} />
+    <meta name="googlebot" content={robots} />
     <meta name="theme-color" content="#0b1120" />
+    <meta name="application-name" content={BRAND_NAME} />
+    <meta name="apple-mobile-web-app-title" content={BRAND_NAME} />
     <link rel="canonical" href={canonicalURL} />
     {alternateLinks.map((link) => (
       <link rel="alternate" hreflang={link.hreflang} href={link.href} />
     ))}
-    <title>{title} — StealThis.dev</title>
+    <link rel="alternate" type="text/plain" title={`${BRAND_NAME} llms.txt`} href={llmsURL} />
+    <link rel="alternate" type="text/plain" title={`${BRAND_NAME} full llms.txt`} href={llmsFullURL} />
+    <link rel="alternate" type="application/json" title={`${BRAND_NAME} AI index`} href={aiIndexURL} />
+    <title>{title} — {BRAND_NAME}</title>
     <meta name="description" content={description} />
+    <meta name="keywords" content={keywordMeta} />
+    <meta name="author" content={BRAND_NAME} />
+    <meta name="creator" content={BRAND_NAME} />
+    <meta name="publisher" content={BRAND_NAME} />
 
     <!-- Open Graph -->
-    <meta property="og:title" content={`${title} — StealThis.dev`} />
+    <meta property="og:title" content={`${title} — ${BRAND_NAME}`} />
     <meta property="og:description" content={description} />
-    <meta property="og:site_name" content="StealThis.dev" />
-    <meta property="og:locale" content={ogLocale[locale]} />
+    <meta property="og:site_name" content={BRAND_NAME} />
+    <meta property="og:locale" content={LOCALE_OG_TAG[locale]} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={imageURL} />
@@ -63,7 +97,7 @@ const structuredDataJson = structuredData ? JSON.stringify(structuredData) : nul
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={`${title} — StealThis.dev`} />
+    <meta name="twitter:title" content={`${title} — ${BRAND_NAME}`} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
     <meta name="twitter:image:alt" content={socialImageAlt} />
@@ -88,14 +122,104 @@ const structuredDataJson = structuredData ? JSON.stringify(structuredData) : nul
     </main>
     <Footer locale={locale} />
 
-    <!-- i18n detection -->
-    <script>
-      const stored = localStorage.getItem("stealthis:locale");
-      const preferred = stored ?? navigator.language.split("-")[0];
-      const supported = ["en", "es"];
-      if (preferred && supported.includes(preferred) && !window.location.pathname.startsWith(`/${preferred}/`)) {
-        if (preferred === "es" && !window.location.pathname.startsWith("/es")) {
-          // Don't auto-redirect — let user choose via selector
+    <script
+      define:vars={{
+        defaultLocale: DEFAULT_LOCALE,
+        locales: LOCALES,
+        localeStorageKey: LOCALE_STORAGE_KEY,
+        resolvedCurrentPath,
+        hasLocalePrefix,
+      }}
+    >
+      const REGION_TO_LOCALE = {
+        FR: "fr",
+        JP: "ja",
+        ES: "es",
+        MX: "es",
+        AR: "es",
+        CO: "es",
+        CL: "es",
+        PE: "es",
+        MY: "ms",
+        IN: "hi",
+        KR: "ko",
+        NL: "nl",
+        DE: "de",
+        BR: "pt-br",
+        HK: "zh-hk",
+        CN: "zh-cn",
+        CH: "de",
+        IT: "it",
+        PL: "pl",
+        UA: "uk",
+      };
+
+      const toLocalePath = (locale, barePath) => {
+        if (locale === defaultLocale) return barePath;
+        if (barePath === "/") return `/${locale}/`;
+        return `/${locale}${barePath}`;
+      };
+
+      const splitLocaleFromPath = (pathname) => {
+        const parts = pathname.split("/");
+        const maybeLocale = parts[1];
+        if (locales.includes(maybeLocale) && maybeLocale !== defaultLocale) {
+          const barePath = `/${parts.slice(2).join("/")}` || "/";
+          return { hasPrefix: true, barePath: barePath === "/" ? "/" : barePath.replace(/\/$/, "") };
+        }
+        return { hasPrefix: false, barePath: pathname || "/" };
+      };
+
+      const detectLocale = () => {
+        const navigatorCandidates = [navigator.language, ...(navigator.languages ?? [])]
+          .filter(Boolean)
+          .map((value) => value.toLowerCase());
+
+        for (const candidate of navigatorCandidates) {
+          if (locales.includes(candidate)) {
+            return candidate;
+          }
+
+          const parts = candidate.split("-");
+          const [languageCode] = parts;
+          const regionCode = parts.length > 1 ? parts[parts.length - 1] : undefined;
+          if (locales.includes(languageCode)) {
+            return languageCode;
+          }
+
+          if (regionCode) {
+            const mapped = REGION_TO_LOCALE[regionCode.toUpperCase()];
+            if (mapped && locales.includes(mapped)) return mapped;
+          }
+        }
+
+        return defaultLocale;
+      };
+
+      const storedLocale = localStorage.getItem(localeStorageKey);
+      const preferredLocale = locales.includes(storedLocale)
+        ? storedLocale
+        : detectLocale();
+      const current = splitLocaleFromPath(window.location.pathname);
+
+      if (!current.hasPrefix && preferredLocale !== defaultLocale) {
+        // Keep these routes unprefixed and translate them via cookie.
+        // This avoids depending on `/[locale]/...` routes existing.
+        const barePath = current.barePath ?? "/";
+        if (
+          barePath === "/settings" ||
+          barePath.startsWith("/settings/") ||
+          barePath === "/dashboard" ||
+          barePath.startsWith("/dashboard/")
+        ) {
+          return;
+        }
+
+        const targetPath = toLocalePath(preferredLocale, current.barePath);
+        const targetUrl = `${targetPath}${window.location.search}${window.location.hash}`;
+
+        if (targetPath !== resolvedCurrentPath || hasLocalePrefix) {
+          window.location.replace(targetUrl);
         }
       }
     </script>

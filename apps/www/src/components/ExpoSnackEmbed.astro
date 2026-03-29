@@ -1,0 +1,73 @@
+---
+import { readFileSync, existsSync } from "node:fs";
+import path from "node:path";
+
+interface Props {
+  slug: string;
+  title: string;
+  tech?: string[];
+}
+
+const { slug, title, tech = [] } = Astro.props;
+
+const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
+const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
+
+// Try react-native.tsx first, then expo.tsx
+const rnPath = path.join(snippetsDir, "react-native.tsx");
+const expoPath = path.join(snippetsDir, "expo.tsx");
+const snippetPath = existsSync(rnPath) ? rnPath : existsSync(expoPath) ? expoPath : null;
+
+const code = snippetPath ? readFileSync(snippetPath, "utf-8") : "";
+
+// Extract dependencies from imports (e.g., "expo-haptics", "react-native-reanimated")
+const depRegex = /from\s+["']([^"'./][^"']*)["']/g;
+const deps = new Set<string>();
+let match: RegExpExecArray | null;
+while ((match = depRegex.exec(code)) !== null) {
+  const dep = match[1];
+  // Skip react and react-native (built-in to Snack)
+  if (dep !== "react" && dep !== "react-native") {
+    deps.add(dep);
+  }
+}
+const depsString = [...deps].join(",");
+
+// Build snack files JSON — use App.tsx so Snack enables TypeScript
+// Must be URL-encoded for the embed script to parse correctly
+const snackFiles = encodeURIComponent(JSON.stringify({
+  "App.tsx": { type: "CODE", contents: code },
+}));
+---
+
+<div class="expo-snack-wrapper rounded-2xl border border-white/8 bg-surface-900/60 overflow-hidden">
+  <div
+    data-snack-files={snackFiles}
+    data-snack-name={title}
+    data-snack-dependencies={depsString}
+    data-snack-platform="web"
+    data-snack-theme="dark"
+    data-snack-preview="true"
+    data-snack-supportedPlatforms="mydevice,ios,android,web"
+    class="snack-embed"
+  ></div>
+</div>
+
+<script is:inline src="https://snack.expo.dev/embed.js"></script>
+
+<style>
+  .expo-snack-wrapper {
+    min-height: 500px;
+  }
+  .snack-embed {
+    width: 100%;
+    height: 600px;
+    overflow: hidden;
+    border: none;
+  }
+  @media (min-width: 768px) {
+    .snack-embed {
+      height: 700px;
+    }
+  }
+</style>

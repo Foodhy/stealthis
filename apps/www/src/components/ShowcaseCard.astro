@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { useTranslations, type Locale } from "@i18n/index";
+import { getLocalePrefix, useTranslations, type Locale } from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
 
 interface Props {
@@ -11,9 +11,10 @@ interface Props {
 
 const { resource, srcdoc, locale = "en" } = Astro.props;
 const t = useTranslations(locale);
-const { slug, title, description, category, difficulty, labRoute } = resource.data;
+const { slug, title, description, category, difficulty, labRoute, createdAt, updatedAt, collections: resourceCollections } = resource.data;
+const sortDate = typeof createdAt === "string" ? createdAt : (typeof updatedAt === "string" ? updatedAt : "");
 
-const prefix = locale === "es" ? "/es" : "";
+const prefix = getLocalePrefix(locale);
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
 const difficultyKey = `resource.difficulty.${difficulty}` as
   | "resource.difficulty.easy"
@@ -32,15 +33,21 @@ const categoryKey = `category.${category}` as
   | "category.mcp-servers"
   | "category.architectures"
   | "category.boilerplates"
-  | "category.remotion";
+  | "category.remotion"
+  | "category.database-schemas"
+  | "category.ultra-high-definition-pages"
+  | "category.design-styles";
 const categoryLabel = t(categoryKey);
-const isTall = ["web-pages", "patterns", "pages"].includes(category);
 ---
 
 <article
-  class={`showcase-card masonry-item${isTall ? " showcase-card--tall" : ""}`}
+  class={`showcase-card masonry-item showcase-card--${difficulty}`}
   data-slug={slug}
   data-category={category}
+  data-difficulty={difficulty}
+  data-title={(title ?? "").toLowerCase()}
+  data-created-at={sortDate}
+  data-collections={resourceCollections.length > 0 ? resourceCollections.join(",") : ""}
   data-srcdoc={srcdoc}
 >
   <div class="showcase-preview">
@@ -95,7 +102,7 @@ const isTall = ["web-pages", "patterns", "pages"].includes(category);
           href={`${prefix}/r/${slug}`}
           class="showcase-code-btn"
         >
-          View Code
+          {t("showcase.viewCode")}
         </a>
       </div>
     </div>
@@ -107,6 +114,8 @@ const isTall = ["web-pages", "patterns", "pages"].includes(category);
     position: relative;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    min-height: 0;
     border-radius: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(15, 23, 42, 0.5);
@@ -122,15 +131,12 @@ const isTall = ["web-pages", "patterns", "pages"].includes(category);
   .showcase-preview {
     position: relative;
     width: 100%;
-    height: 280px;
+    height: auto;
+    min-height: 0;
+    flex: 1 1 auto;
     overflow: hidden;
     background: #0b1221;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    flex-shrink: 0;
-  }
-
-  .showcase-card--tall .showcase-preview {
-    height: 500px;
   }
 
   .showcase-preview iframe {

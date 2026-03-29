@@ -1,0 +1,58 @@
+---
+slug: rn-gesture-swipe-card
+title: React Native Swipe Cards
+description: Tinder-style swipeable card stack for React Native with PanResponder gestures, rotation on drag, like/nope overlays, and spring-back animation.
+category: components
+type: component
+tags: [swipe, cards, tinder, gesture, stack, react-native, dating]
+tech: [react-native, typescript]
+difficulty: hard
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Swipe Cards
+
+A Tinder-style swipeable card stack built entirely with React Native's built-in `PanResponder` and `Animated` APIs. Cards are stacked with the top card fully interactive while subsequent cards sit slightly scaled down behind it. Dragging horizontally rotates the card proportionally, fading in a green "LIKE" or red "NOPE" overlay depending on swipe direction. Releasing past a configurable threshold flings the card off-screen with a spring animation, while releasing below the threshold snaps the card back to center.
+
+### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `T[]` | Yes | Array of items to render as cards. |
+| `renderCard` | `(item: T) => React.ReactNode` | Yes | Render function for each card's content. |
+| `onSwipeLeft` | `(item: T) => void` | No | Callback fired when a card is swiped left (rejected). |
+| `onSwipeRight` | `(item: T) => void` | No | Callback fired when a card is swiped right (liked). |
+| `onEmpty` | `() => void` | No | Callback fired when all cards have been swiped. |
+
+### Usage
+
+```tsx
+import SwipeCardStack from "./SwipeCardStack";
+
+const profiles = [
+  { id: 1, name: "Alex", age: 28, bio: "Loves hiking and coffee." },
+  { id: 2, name: "Jordan", age: 24, bio: "Music producer & cat parent." },
+];
+
+<SwipeCardStack
+  data={profiles}
+  renderCard={(item) => <ProfileCard profile={item} />}
+  onSwipeLeft={(item) => console.log("Nope:", item.name)}
+  onSwipeRight={(item) => console.log("Like:", item.name)}
+  onEmpty={() => console.log("No more cards!")}
+/>;
+```
+
+### How it works
+
+1. **Card stacking** — Cards are rendered in reverse order using `position: "absolute"` so the first item in the array sits on top. Cards behind the active card are progressively scaled down and shifted vertically to create a deck illusion.
+2. **PanResponder gestures** — A `PanResponder` is attached to the top card. On `onPanResponderMove`, the card's `translateX` animated value is updated to follow the finger, and a derived `rotate` interpolation tilts the card proportionally (up to ~12 degrees).
+3. **Like / Nope overlays** — Two absolutely-positioned overlays ("LIKE" in green, "NOPE" in red) sit inside each card. Their opacity is interpolated from `translateX`: swiping right fades in the LIKE label, swiping left fades in NOPE.
+4. **Threshold release** — On `onPanResponderRelease`, if the horizontal displacement exceeds a threshold (default 120px), the card is animated off-screen using `Animated.spring`. Otherwise, it springs back to `{ x: 0, y: 0 }`.
+5. **Deck advancement** — After the exit animation completes, the current index increments and the next card's scale animates from its resting value up to 1, smoothly "promoting" it to the active position.

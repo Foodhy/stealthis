@@ -1,0 +1,71 @@
+---
+slug: rn-flatlist-pull-refresh
+title: React Native Pull to Refresh List
+description: A FlatList with pull-to-refresh functionality, custom refresh indicator, loading states, and empty state placeholder for React Native.
+category: components
+type: component
+tags: [list, flatlist, pull-to-refresh, refresh, react-native, scroll]
+tech: [react-native, typescript]
+difficulty: easy
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Pull to Refresh List
+
+A reusable FlatList wrapper that provides built-in pull-to-refresh behavior, a custom refresh indicator, loading states with an activity indicator footer, and an empty state placeholder. Drop it into any React Native screen to get a polished scrollable list experience with minimal setup.
+
+### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `data` | `T[]` | Yes | Array of items to render in the list. |
+| `renderItem` | `ListRenderItem<T>` | Yes | Function that returns the JSX for each list item. |
+| `onRefresh` | `() => void` | Yes | Callback triggered when the user pulls to refresh. |
+| `refreshing` | `boolean` | Yes | Whether the refresh indicator is currently active. |
+| `emptyMessage` | `string` | No | Custom message displayed when the list has no items. Defaults to `"No items to display"`. |
+| `ListHeaderComponent` | `React.ReactElement` | No | Optional header rendered above the list content. |
+| `loading` | `boolean` | No | When true, shows an activity indicator at the bottom of the list. |
+| `keyExtractor` | `(item: T, index: number) => string` | No | Function to extract a unique key for each item. |
+
+### Usage
+
+```tsx
+import PullToRefreshList from "./PullToRefreshList";
+
+function MyScreen() {
+  const [items, setItems] = useState(data);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchData().then((newData) => {
+      setItems(newData);
+      setRefreshing(false);
+    });
+  };
+
+  return (
+    <PullToRefreshList
+      data={items}
+      renderItem={({ item }) => <MyListItem item={item} />}
+      onRefresh={handleRefresh}
+      refreshing={refreshing}
+      emptyMessage="Nothing here yet"
+    />
+  );
+}
+```
+
+### How it works
+
+The component wraps React Native's `FlatList` and attaches a `RefreshControl` with custom tint and title colors. When the user pulls the list past the scroll threshold, the `onRefresh` callback fires and the refresh indicator appears until `refreshing` is set back to `false`.
+
+A footer `ActivityIndicator` is conditionally rendered when the `loading` prop is true, useful for paginated lists that load more data as the user scrolls. When the `data` array is empty and no loading is in progress, the component renders a centered placeholder view with the `emptyMessage` text, giving users clear feedback that the list is intentionally empty rather than broken.
+
+An `ItemSeparatorComponent` renders a subtle divider between rows automatically, keeping the list visually clean without requiring manual separator logic in each `renderItem` implementation.

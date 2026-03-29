@@ -1,18 +1,19 @@
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
+import { LOCALES, getLocalizedPath } from "@i18n/index";
 
 const DEFAULT_SITE = "https://stealthis.dev";
+const LOCALIZED_BASE_PATHS = ["/", "/library/", "/showcase/", "/changelog"];
 const STATIC_PATHS = [
-  "/",
-  "/library/",
-  "/showcase/",
-  "/changelog",
-  "/es/",
-  "/es/library/",
-  "/es/changelog",
+  ...new Set(
+    LOCALIZED_BASE_PATHS.flatMap((path) =>
+      LOCALES.map((locale) => getLocalizedPath(path, locale))
+    )
+  ),
   "/llms.txt",
   "/llms-full.txt",
   "/ai-index.json",
+  "/library-index.json",
 ];
 
 const formatDate = (value: string) => {
@@ -30,8 +31,12 @@ export const GET: APIRoute = async ({ site }) => {
 
   for (const resource of resources) {
     const lastmod = formatDate(resource.data.updatedAt ?? resource.data.createdAt);
-    urls.push({ loc: `${origin}/r/${resource.data.slug}`, lastmod });
-    urls.push({ loc: `${origin}/es/r/${resource.data.slug}`, lastmod });
+    for (const locale of LOCALES) {
+      urls.push({
+        loc: `${origin}${getLocalizedPath(`/r/${resource.data.slug}`, locale)}`,
+        lastmod,
+      });
+    }
   }
 
   const body = urls

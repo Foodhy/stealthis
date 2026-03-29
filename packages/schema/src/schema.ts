@@ -15,6 +15,9 @@ export const ResourceCategorySchema = z.enum([
   "architectures",
   "boilerplates",
   "remotion",
+  "database-schemas",
+  "ultra-high-definition-pages",
+  "design-styles",
 ]);
 
 export const ResourceTypeSchema = z.enum([
@@ -29,6 +32,7 @@ export const ResourceTypeSchema = z.enum([
   "mcp-server",
   "architecture",
   "boilerplate",
+  "schema",
 ]);
 
 export const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
@@ -41,12 +45,17 @@ export const ResourceTargetSchema = z.enum([
   "vue",
   "svelte",
   "astro",
+  "react-native",
+  "expo",
   "typescript",
   "python",
   // Content targets
   "markdown",
   "yaml",
   "json",
+  "sql",
+  "mermaid",
+  "dbml",
 ]);
 
 export const ResourceCollectionSchema = z.enum([
@@ -56,6 +65,9 @@ export const ResourceCollectionSchema = z.enum([
   "cards",
   "dashboard",
   "remotion",
+  "effects",
+  "mobile-nav",
+  "charts",
 ]);
 
 export const ResourceMetaSchema = z.object({

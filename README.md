@@ -6,10 +6,33 @@ StealThis.dev is a Bun-workspace monorepo for an open-source resource library of
 - Documentation site (`docs`) with Starlight guides
 - Full-screen demo runner (`lab`) for runnable snippets
 - Project graph explorer (`build`) for planning implementations
+- DB visualizer (`dbviz`) for relational schema commands and diagrams
 - MCP server (`mcp`) to expose the catalog to AI tools
 - Remotion app (`remotion`) for animation/video compositions
 
 The canonical source of resource content lives in `packages/content/resources/<slug>/`.
+
+## Website Locales
+
+`apps/www` currently exposes these localized routes:
+
+- `en` — English
+- `es` — Spanish
+- `fr` — French
+- `ja` — Japanese
+- `ms` — Malay
+- `hi` — Hindi
+- `ko` — Korean
+- `nl` — Dutch
+- `de` — German
+- `pt-br` — Brazilian Portuguese
+- `zh-hk` — Traditional Chinese (Hong Kong)
+- `zh-cn` — Simplified Chinese (China)
+- `it` — Italian
+- `pl` — Polish
+- `uk` — Ukrainian
+
+Browser locale detection also maps `UA` users to `uk`.
 
 ## Monorepo Structure
 
@@ -20,6 +43,7 @@ The canonical source of resource content lives in `packages/content/resources/<s
 │   ├── docs       # Astro + Starlight docs
 │   ├── lab        # Full-screen demo runner (iframe srcdoc)
 │   ├── build      # Astro + React graph builder
+│   ├── dbviz      # Astro + React database visualizer
 │   ├── mcp        # Hono + Cloudflare Worker MCP server
 │   └── remotion   # Remotion compositions
 ├── packages
@@ -59,6 +83,7 @@ bun run dev:www      # http://localhost:4321
 bun run dev:docs     # http://localhost:4322
 bun run dev:lab      # http://localhost:4323
 bun run dev:build    # http://localhost:4324
+bun run dev:dbviz    # http://localhost:4327
 bun run dev:mcp      # http://localhost:8787 (Wrangler)
 bun run dev:remotion # http://localhost:4325
 ```
@@ -71,15 +96,17 @@ bun run dev:www
 bun run dev:docs
 bun run dev:lab
 bun run dev:build
+bun run dev:dbviz
 bun run dev:mcp
 bun run dev:remotion
 
 # builds
-bun run build         # www + docs + lab + build + mcp
+bun run build         # www + docs + lab + build + styleforge + dbviz + mcp
 bun run build:www
 bun run build:docs
 bun run build:lab
 bun run build:build
+bun run build:dbviz
 bun run build:mcp
 bun run build:remotion
 
@@ -99,6 +126,7 @@ bun run --filter @stealthis/mcp catalog
 - Docs: [https://docs.stealthis.dev](https://docs.stealthis.dev)
 - Lab: [https://lab.stealthis.dev](https://lab.stealthis.dev)
 - Builder: [https://build.stealthis.dev](https://build.stealthis.dev)
+- DBViz: [https://dbviz.stealthis.dev](https://dbviz.stealthis.dev)
 - MCP: [https://mcp.stealthis.dev/mcp](https://mcp.stealthis.dev/mcp)
 
 ## Resource Content Model

@@ -1,5 +1,4 @@
-import { fileURLToPath } from "node:url";
-import { defineCollection, z } from "astro:content";
+import { defineCollection, z } from "astro:content/v2";
 import { glob } from "astro/loaders";
 
 const ResourceCategorySchema = z.enum([
@@ -15,6 +14,9 @@ const ResourceCategorySchema = z.enum([
   "architectures",
   "boilerplates",
   "remotion",
+  "database-schemas",
+  "ultra-high-definition-pages",
+  "design-styles",
 ]);
 
 const ResourceTypeSchema = z.enum([
@@ -27,6 +29,7 @@ const ResourceTypeSchema = z.enum([
   "mcp-server",
   "architecture",
   "boilerplate",
+  "schema",
 ]);
 
 const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
@@ -34,6 +37,8 @@ const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
 const ResourceTargetSchema = z.enum([
   "html",
   "react",
+  "react-native",
+  "expo",
   "next",
   "vue",
   "svelte",
@@ -43,6 +48,9 @@ const ResourceTargetSchema = z.enum([
   "markdown",
   "yaml",
   "json",
+  "sql",
+  "mermaid",
+  "dbml",
 ]);
 
 const ResourceCollectionSchema = z.enum([
@@ -52,12 +60,14 @@ const ResourceCollectionSchema = z.enum([
   "cards",
   "dashboard",
   "remotion",
+  "effects",
+  "mobile-nav",
 ]);
 
 const resources = defineCollection({
   loader: glob({
     pattern: "*/index.mdx",
-    base: fileURLToPath(new URL("../../../../packages/content/resources", import.meta.url)),
+    base: new URL("../../../../packages/content/resources", import.meta.url).href,
   }),
   schema: z.object({
     slug: z.string(),

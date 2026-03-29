@@ -2,50 +2,206 @@
 import Base from "@layouts/Base.astro";
 import HeroCodeSpaceBackground from "@components/HeroCodeSpaceBackground.astro";
 import { getCollection } from "astro:content";
-import { useTranslations, getLocaleFromUrl } from "@i18n/index";
+import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
+import { BRAND_ALIASES, BRAND_NAME, BRAND_SHORT_NAME, mergeKeywords } from "@lib/seo";
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
+const prefix = getLocalePrefix(locale);
 
 const allResources = await getCollection("resources");
-const labExamples = allResources.filter((resource: any) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0);
-const easyMarquee = labExamples.filter((resource: any) => resource.data.difficulty === "easy").slice(0, 12);
-const medMarquee = labExamples.filter((resource: any) => resource.data.difficulty === "med").slice(0, 12);
+const labExamples = allResources.filter(
+  (resource: any) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0
+);
+const easyMarquee = labExamples
+  .filter((resource: any) => resource.data.difficulty === "easy")
+  .slice(0, 12);
+const medMarquee = labExamples
+  .filter((resource: any) => resource.data.difficulty === "med")
+  .slice(0, 12);
 const hardPriorityCategories = new Set(["web-pages", "pages"]);
 const hardOnlyExamples = labExamples.filter((resource: any) => resource.data.difficulty === "hard");
-const hardPriorityExamples = hardOnlyExamples.filter((resource: any) => hardPriorityCategories.has(resource.data.category));
-const hardOtherExamples = hardOnlyExamples.filter((resource: any) => !hardPriorityCategories.has(resource.data.category));
-const hardFallbackPages = labExamples.filter(
-  (resource: any) => resource.data.difficulty === "med" && hardPriorityCategories.has(resource.data.category)
+const hardPriorityExamples = hardOnlyExamples.filter((resource: any) =>
+  hardPriorityCategories.has(resource.data.category)
 );
-const hardMarquee = [...hardPriorityExamples, ...hardOtherExamples, ...hardFallbackPages].slice(0, 20);
+const hardOtherExamples = hardOnlyExamples.filter(
+  (resource: any) => !hardPriorityCategories.has(resource.data.category)
+);
+const hardFallbackPages = labExamples.filter(
+  (resource: any) =>
+    resource.data.difficulty === "med" && hardPriorityCategories.has(resource.data.category)
+);
+const hardMarquee = [...hardPriorityExamples, ...hardOtherExamples, ...hardFallbackPages].slice(
+  0,
+  20
+);
 const categoryCount = new Set(allResources.map((resource: any) => resource.data.category)).size;
 
 const rotatingWords = (t("hero.rotatingWords") as string).split(",").map((w) => w.trim());
+const categoryCards = [
+  {
+    slug: "web-animations",
+    icon: "✦",
+    label: t("category.web-animations"),
+    desc: t("home.categories.desc.webAnimations"),
+    comingSoon: false,
+  },
+  {
+    slug: "web-pages",
+    icon: "◻",
+    label: t("category.web-pages"),
+    desc: t("home.categories.desc.webPages"),
+    comingSoon: false,
+  },
+  {
+    slug: "pages",
+    icon: "▭",
+    label: t("category.pages"),
+    desc: t("home.categories.desc.pages"),
+    comingSoon: false,
+  },
+  {
+    slug: "ui-components",
+    icon: "◈",
+    label: t("category.ui-components"),
+    desc: t("home.categories.desc.uiComponents"),
+    comingSoon: false,
+  },
+  {
+    slug: "components",
+    icon: "▧",
+    label: t("category.components"),
+    desc: t("home.categories.desc.components"),
+    comingSoon: false,
+  },
+  {
+    slug: "patterns",
+    icon: "◎",
+    label: t("category.patterns"),
+    desc: t("home.categories.desc.patterns"),
+    comingSoon: false,
+  },
+  {
+    slug: "remotion",
+    icon: "▶",
+    label: t("category.remotion"),
+    desc: t("home.categories.desc.remotion"),
+    comingSoon: false,
+  },
+  {
+    slug: "database-schemas",
+    icon: "⌬",
+    label: t("category.database-schemas"),
+    desc: t("home.categories.desc.databaseSchemas"),
+    comingSoon: false,
+  },
+  {
+    slug: "prompts",
+    icon: "✺",
+    label: t("category.prompts"),
+    desc: t("home.categories.desc.prompts"),
+    comingSoon: false,
+  },
+  {
+    slug: "music",
+    icon: "♫",
+    label: t("category.music"),
+    desc: t("home.categories.desc.music"),
+    comingSoon: true,
+  },
+  {
+    slug: "skills",
+    icon: "☀",
+    label: t("category.skills"),
+    desc: t("home.categories.desc.skills"),
+    comingSoon: true,
+  },
+  {
+    slug: "mcp-servers",
+    icon: "⛶",
+    label: t("category.mcp-servers"),
+    desc: t("home.categories.desc.mcpServers"),
+    comingSoon: true,
+  },
+  {
+    slug: "architectures",
+    icon: "⚙",
+    label: t("category.architectures"),
+    desc: t("home.categories.desc.architectures"),
+    comingSoon: true,
+  },
+] as const;
+const scramblePhrases = (t("home.scramble.phrases") as string)
+  .split("||")
+  .map((phrase) => phrase.trim());
+const scrambleStaticLines = [
+  t("home.scramble.static1"),
+  t("home.scramble.static2"),
+  t("home.scramble.static3"),
+  t("home.scramble.static4"),
+];
 // Hue base por palabra para gradiente (grados) — estilo lgc-37-gradient-text-scroll
 const wordHues = [0, 45, 120, 200, 280, 320];
-const homeDescription =
-  "Steal production-ready web animations, pages, components, prompts, and MCP setups. Copy the code, launch demos in Lab, and ship faster.";
-const alternateLinks = [
-  { hreflang: "en", href: "https://stealthis.dev/" },
-  { hreflang: "es", href: "https://stealthis.dev/es/" },
-  { hreflang: "x-default", href: "https://stealthis.dev/" },
-];
+const homeDescriptionByLocale = {
+  en: "Steal production-ready web animations, pages, components, and database schemas. Copy the code, open Lab demos, and ship faster.",
+  es: "Copia animaciones, páginas, componentes y esquemas de base de datos listos para producción. Abre demos en Lab y publica más rápido.",
+  fr: "Copiez des animations, pages, composants et schémas de base de données prêts pour la production. Lancez des démos dans Lab et livrez plus vite.",
+  ja: "本番で使えるアニメーション、ページ、コンポーネント、データベーススキーマをそのままコピー。Labでデモを試して素早く実装できます。",
+  ms: "Salin animasi web, halaman, komponen, dan skema pangkalan data sedia produksi. Salin kod, buka demo di Lab, dan lancarkan lebih cepat.",
+  hi: "प्रोडक्शन-रेडी वेब एनीमेशन, पेज, कंपोनेंट और डेटाबेस स्कीमा कॉपी करें। कोड कॉपी करें, Lab डेमो खोलें और तेज़ी से शिप करें।",
+  ko: "프로덕션 준비가 된 웹 애니메이션, 페이지, 컴포넌트, 데이터베이스 스키마를 가져가세요. 코드를 복사하고 Lab 데모를 열어 더 빠르게 출시하세요.",
+  nl: "Kopieer production-ready webanimaties, pagina's, componenten en databaseschema's. Kopieer de code, open demo's in Lab en lever sneller op.",
+  de: "Kopiere produktionsreife Web-Animationen, Seiten, Komponenten und Datenbankschemata. Code kopieren, Lab-Demos öffnen und schneller liefern.",
+  "pt-br":
+    "Copie animações web, páginas, componentes e esquemas de banco de dados prontos para produção. Copie o código, abra demos no Lab e entregue mais rápido.",
+  "zh-hk":
+    "複製可直接上線的 Web 動畫、頁面、元件與資料庫結構。複製程式碼、打開 Lab 範例，並更快交付。",
+  "zh-cn": "复制可直接用于生产的 Web 动画、页面、组件和数据库结构。复制代码，打开 Lab 示例，更快发布。",
+  it: "Copia animazioni web, pagine, componenti e schemi database pronti per la produzione. Copia il codice, apri i demo in Lab e rilascia più velocemente.",
+  pl: "Kopiuj gotowe do produkcji animacje webowe, strony, komponenty i schematy baz danych. Kopiuj kod, otwieraj dema w Lab i wdrażaj szybciej.",
+  uk: "Копіюй готові до продакшену веб-анімації, сторінки, компоненти й схеми баз даних. Копіюй код, відкривай демо в Lab і випускай швидше.",
+} as const satisfies Partial<Record<typeof locale, string>>;
+const homeDescription = homeDescriptionByLocale[locale] ?? homeDescriptionByLocale.en;
+const alternateLinks = getAlternateLinks("/");
+const canonicalPath = prefix ? `${prefix}/` : "/";
+const homeKeywords = mergeKeywords(BRAND_ALIASES, [
+  BRAND_NAME,
+  BRAND_SHORT_NAME,
+  "steal this code",
+  "steal this components",
+  "copy web components",
+  "copy web animations",
+  "open source code snippets",
+  "production-ready frontend references",
+  "website sections",
+  "Lab demos",
+  "MCP resources",
+]);
 const structuredData = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "StealThis.dev",
-    url: "https://stealthis.dev/",
-    inLanguage: ["en", "es"],
+    name: BRAND_NAME,
+    alternateName: BRAND_ALIASES,
+    url: `https://stealthis.dev${canonicalPath}`,
+    inLanguage: locale,
     description: homeDescription,
+    keywords: homeKeywords,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://stealthis.dev/library/?search={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
   },
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "StealThis.dev",
+    name: BRAND_NAME,
+    alternateName: BRAND_ALIASES,
     url: "https://stealthis.dev/",
+    description: homeDescription,
+    keywords: homeKeywords,
     sameAs: ["https://github.com/Foodhy/stealthis"],
   },
 ];
@@ -55,7 +211,8 @@ const structuredData = [
   title="StealThis"
   description={homeDescription}
   image="/og/home.webp"
-  canonicalPath="/"
+  canonicalPath={canonicalPath}
+  keywords={homeKeywords}
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >
@@ -101,17 +258,17 @@ const structuredData = [
           {t("hero.subtitle.after")}
         </p>
 
-        <form class="hero-anim-item hero-search-shell mx-auto mb-8 max-w-2xl" action="/library" method="get">
-          <label for="hero-home-search" class="sr-only">Search library</label>
+        <form class="hero-anim-item hero-search-shell mx-auto mb-8 max-w-2xl" action={`${prefix}/library`} method="get">
+          <label for="hero-home-search" class="sr-only">{t("home.search.label")}</label>
           <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
-          <input id="hero-home-search" name="search" type="search" placeholder="Press CMD+K to search..." autocomplete="off" />
+          <input id="hero-home-search" name="search" type="search" placeholder={t("home.search.placeholder")} autocomplete="off" />
         </form>
 
         <div class="hero-anim-item flex flex-wrap gap-3 justify-center">
           <a
-            href="/library"
+            href={`${prefix}/library`}
             class="hero-primary-cta inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base"
           >
             {t("hero.cta.browse")}
@@ -120,7 +277,7 @@ const structuredData = [
             </svg>
           </a>
           <a
-            href="/showcase"
+            href={`${prefix}/showcase`}
             class="hero-showcase-cta inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -144,17 +301,17 @@ const structuredData = [
       <div class="hero-anim-item hero-stats flex items-center justify-center gap-8 mt-10 text-sm flex-wrap">
         <div class="flex flex-col items-center gap-1">
           <span class="hero-count text-2xl font-bold text-white" data-count={allResources.length}>{allResources.length}</span>
-          <span class="text-slate-500">Resources</span>
+          <span class="text-slate-500">{t("home.stats.resources")}</span>
         </div>
         <div class="w-px h-8 bg-white/10"></div>
         <div class="flex flex-col items-center gap-1">
           <span class="hero-count text-2xl font-bold text-white" data-count={categoryCount}>{categoryCount}</span>
-          <span class="text-slate-500">Categories</span>
+          <span class="text-slate-500">{t("home.stats.categories")}</span>
         </div>
         <div class="w-px h-8 bg-white/10"></div>
         <div class="flex flex-col items-center gap-1">
           <span class="text-2xl font-bold text-white">MIT</span>
-          <span class="text-slate-500">License</span>
+          <span class="text-slate-500">{t("home.stats.license")}</span>
         </div>
       </div>
     </div>
@@ -1366,13 +1523,11 @@ const structuredData = [
   <section class="container-xl pb-20 examples-marquee-section" aria-labelledby="featured-resources-title">
     <div class="examples-marquee-head">
       <div>
-        <h2 id="featured-resources-title" class="text-xl font-semibold text-white">Featured Resources</h2>
-        <p class="examples-marquee-lead">
-          Open runnable demos directly in Lab. Compare difficulty, scan stack tags, and pick the right reference before building.
-        </p>
+        <h2 id="featured-resources-title" class="text-xl font-semibold text-white">{t("home.featured.title")}</h2>
+        <p class="examples-marquee-lead">{t("home.featured.lead")}</p>
       </div>
-      <a href="/library" class="text-sm text-brand-400 hover:text-brand-300 transition-colors font-medium">
-        View all →
+      <a href={`${prefix}/library`} class="text-sm text-brand-400 hover:text-brand-300 transition-colors font-medium">
+        {t("home.featured.viewAll")} →
       </a>
     </div>
 
@@ -1396,7 +1551,7 @@ const structuredData = [
                       <span class="examples-marquee-tag">{tech}</span>
                     ))}
                   </div>
-                  <span class="examples-marquee-lab">Lab</span>
+                  <span class="examples-marquee-lab">{t("home.featured.lab")}</span>
                 </div>
               </a>
             ))}
@@ -1423,7 +1578,7 @@ const structuredData = [
                       <span class="examples-marquee-tag">{tech}</span>
                     ))}
                   </div>
-                  <span class="examples-marquee-lab">Lab</span>
+                  <span class="examples-marquee-lab">{t("home.featured.lab")}</span>
                 </div>
               </a>
             ))}
@@ -1450,7 +1605,7 @@ const structuredData = [
                       <span class="examples-marquee-tag">{tech}</span>
                     ))}
                   </div>
-                  <span class="examples-marquee-lab">Lab</span>
+                  <span class="examples-marquee-lab">{t("home.featured.lab")}</span>
                 </div>
               </a>
             ))}
@@ -1462,23 +1617,10 @@ const structuredData = [
 
   <!-- Categories section -->
   <section class="container-xl pb-20">
-    <h2 class="text-xl font-semibold text-white mb-8">Browse by Category</h2>
+    <h2 class="text-xl font-semibold text-white mb-8">{t("home.categories.title")}</h2>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {([
-        { slug: "web-animations", icon: "✦", label: t("category.web-animations"), desc: "Scroll effects, parallax, canvas", comingSoon: false },
-        { slug: "web-pages", icon: "◻", label: t("category.web-pages"), desc: "Landings, heroes, pricing pages", comingSoon: false },
-        { slug: "pages", icon: "▭", label: t("category.pages"), desc: "Full-page layouts and sections", comingSoon: false },
-        { slug: "ui-components", icon: "◈", label: t("category.ui-components"), desc: "Buttons, cards, forms, modals", comingSoon: false },
-        { slug: "components", icon: "▧", label: t("category.components"), desc: "Reusable UI blocks and snippets", comingSoon: false },
-        { slug: "patterns", icon: "◎", label: t("category.patterns"), desc: "Loaders, hover effects, menus", comingSoon: false },
-        { slug: "remotion", icon: "▶", label: t("category.remotion"), desc: "React-powered video templates", comingSoon: false },
-        { slug: "prompts", icon: "✺", label: t("category.prompts"), desc: "AI prompts and workflows", comingSoon: false },
-        { slug: "music", icon: "♫", label: t("category.music"), desc: "Audio, players, visualizers", comingSoon: true },
-        { slug: "skills", icon: "☀", label: t("category.skills"), desc: "AI skills and workflows", comingSoon: true },
-        { slug: "mcp-servers", icon: "⛶", label: t("category.mcp-servers"), desc: "MCP servers and tools", comingSoon: true },
-        { slug: "architectures", icon: "⚙", label: t("category.architectures"), desc: "Architectures and patterns", comingSoon: true },
-      ]).map((cat) =>
+      {categoryCards.map((cat) =>
         cat.comingSoon ? (
           <div
             class="flex flex-col gap-3 p-5 rounded-2xl border border-white/6 bg-surface-900/30 cursor-not-allowed opacity-70"
@@ -1495,7 +1637,7 @@ const structuredData = [
           </div>
         ) : (
           <a
-            href={`/library?category=${cat.slug}`}
+            href={`${prefix}/library?category=${cat.slug}`}
             class="group flex flex-col gap-3 p-5 rounded-2xl border border-white/8 bg-surface-900/50 hover:bg-surface-800/60 hover:border-white/14 transition-all hover:-translate-y-0.5"
           >
             <span class="text-2xl">{cat.icon}</span>
@@ -1512,80 +1654,64 @@ const structuredData = [
   <section class="container-xl pb-24 manifesto-section" aria-labelledby="manifesto-title">
     <div class="manifesto-shell">
       <div>
-        <p class="manifesto-eyebrow manifesto-animate-pulse">Build with control</p>
-        <h2 id="manifesto-title" class="manifesto-title manifesto-animate-float">Take what works. Ship what you want.</h2>
-        <p class="manifesto-lead manifesto-animate-glow">For humans and bots who want to build software without starting from zero.</p>
-        <p class="manifesto-body">
-          StealThis is a reference-first library. Review each element, understand how it works, and reuse it in your own stack.
-          Less fragmentation, less complexity, and more control over the style system and tooling you want to build with.
-        </p>
-        <p class="manifesto-body">
-          The goal is simple: one collaborative place where knowledge, proven practices, and production-ready references live together.
-          You pick a base, adapt it, and move forward without rebuilding fundamentals every time.
-        </p>
+        <p class="manifesto-eyebrow manifesto-animate-pulse">{t("home.manifesto.eyebrow")}</p>
+        <h2 id="manifesto-title" class="manifesto-title manifesto-animate-float">{t("home.manifesto.title")}</h2>
+        <p class="manifesto-lead manifesto-animate-glow">{t("home.manifesto.lead")}</p>
+        <p class="manifesto-body">{t("home.manifesto.body1")}</p>
+        <p class="manifesto-body">{t("home.manifesto.body2")}</p>
       </div>
 
       <div>
-        <h3 class="manifesto-category-head">How to use this place</h3>
-        <div class="manifesto-text-flow" role="list" aria-label="How to use this place">
+        <h3 class="manifesto-category-head">{t("home.manifesto.howToTitle")}</h3>
+        <div class="manifesto-text-flow" role="list" aria-label={t("home.manifesto.howToAria")}>
           <p class="manifesto-flow-line" role="listitem">
             <span class="manifesto-step">01</span>
-            <span class="manifesto-accent">Find a reference</span> that already solves part of your problem.
+            <span class="manifesto-accent">{t("home.manifesto.step1.accent")}</span> {t("home.manifesto.step1.text")}
           </p>
           <p class="manifesto-flow-line manifesto-animate-pulse" role="listitem">
             <span class="manifesto-step">02</span>
-            <span class="manifesto-accent">Study it fast</span>: structure, behavior, and implementation details.
+            <span class="manifesto-accent">{t("home.manifesto.step2.accent")}</span> {t("home.manifesto.step2.text")}
           </p>
           <p class="manifesto-flow-line" role="listitem">
             <span class="manifesto-step">03</span>
-            <span class="manifesto-accent">Adapt it</span> to your style system, stack, and constraints.
+            <span class="manifesto-accent">{t("home.manifesto.step3.accent")}</span> {t("home.manifesto.step3.text")}
           </p>
           <p class="manifesto-flow-line manifesto-animate-float" role="listitem">
             <span class="manifesto-step">04</span>
-            <span class="manifesto-accent">Ship sooner</span> without sacrificing code quality.
+            <span class="manifesto-accent">{t("home.manifesto.step4.accent")}</span> {t("home.manifesto.step4.text")}
           </p>
         </div>
-        <p class="manifesto-micro manifesto-animate-pulse">
-          Less boilerplate. Less context switching. More building.
-        </p>
+        <p class="manifesto-micro manifesto-animate-pulse">{t("home.manifesto.micro")}</p>
       </div>
 
       <div class="manifesto-subsection">
         <div class="manifesto-divider" aria-hidden="true"></div>
-        <h3 class="manifesto-category-head manifesto-animate-glow">What you get in practice</h3>
-        <p class="manifesto-body">
-          You get a faster first version, stronger implementation references, and fewer dead starts.
-          Instead of stitching context from ten different sources, you work from one place and move with intent.
-        </p>
-        <div class="manifesto-text-flow" role="list" aria-label="Practical outcomes">
+        <h3 class="manifesto-category-head manifesto-animate-glow">{t("home.manifesto.practiceTitle")}</h3>
+        <p class="manifesto-body">{t("home.manifesto.practiceBody")}</p>
+        <div class="manifesto-text-flow" role="list" aria-label={t("home.manifesto.outcomesAria")}>
           <p class="manifesto-flow-line" role="listitem">
             <span class="manifesto-step">A</span>
-            <span class="manifesto-accent">Speed with control:</span> start from a real base and keep your own standards.
+            <span class="manifesto-accent">{t("home.manifesto.outcomeA.accent")}</span> {t("home.manifesto.outcomeA.text")}
           </p>
           <p class="manifesto-flow-line manifesto-animate-pulse" role="listitem">
             <span class="manifesto-step">B</span>
-            <span class="manifesto-accent">Shared language:</span> humans and bots can reason from the same references.
+            <span class="manifesto-accent">{t("home.manifesto.outcomeB.accent")}</span> {t("home.manifesto.outcomeB.text")}
           </p>
           <p class="manifesto-flow-line" role="listitem">
             <span class="manifesto-step">C</span>
-            <span class="manifesto-accent">Compounding knowledge:</span> every reuse makes the next build easier.
+            <span class="manifesto-accent">{t("home.manifesto.outcomeC.accent")}</span> {t("home.manifesto.outcomeC.text")}
           </p>
         </div>
-        <p class="manifesto-body">
-          Future direction: custom visual systems, custom workflow setups, and software creation from anywhere with your own rules.
-        </p>
+        <p class="manifesto-body">{t("home.manifesto.future")}</p>
       </div>
     </div>
   </section>
 
   <section class="container-xl pb-24 roadmap-section" aria-labelledby="roadmap-title">
     <div class="roadmap-shell">
-      <p class="roadmap-eyebrow">Roadmap in progress</p>
-      <h2 id="roadmap-title" class="roadmap-title">From foundations to an AI-first web framework</h2>
-      <p class="roadmap-lead">
-        We are building this in public, step by step. The path starts with strong foundations, then documentation quality,
-        then project generation workflows, and finally a lightweight framework to build web software with AI support.
-      </p>
+      <p class="roadmap-eyebrow">{t("home.roadmap.eyebrow")}</p>
+      <h2 id="roadmap-title" class="roadmap-title">{t("home.roadmap.title")}</h2>
+      <p class="roadmap-lead">{t("home.roadmap.lead")}</p>
 
       <!-- Horizontal SVG path draw -->
       <svg class="roadmap-svg" viewBox="0 0 900 120" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
@@ -1595,41 +1721,41 @@ const structuredData = [
         <!-- Dot 1 -->
         <circle class="roadmap-dot" data-c="1" cx="80" cy="60" r="18" />
         <text class="roadmap-dot-num" data-c="1" x="80" y="64" text-anchor="middle">01</text>
-        <text class="roadmap-dot-label" x="80" y="95" text-anchor="middle">Foundation</text>
+        <text class="roadmap-dot-label" x="80" y="95" text-anchor="middle">{t("home.roadmap.dot.foundation")}</text>
 
         <!-- Dot 2 -->
         <circle class="roadmap-dot" data-c="2" cx="340" cy="60" r="18" />
         <text class="roadmap-dot-num" data-c="2" x="340" y="64" text-anchor="middle">02</text>
-        <text class="roadmap-dot-label" x="340" y="95" text-anchor="middle">Docs quality</text>
+        <text class="roadmap-dot-label" x="340" y="95" text-anchor="middle">{t("home.roadmap.dot.docs")}</text>
 
         <!-- Dot 3 -->
         <circle class="roadmap-dot" data-c="3" cx="560" cy="60" r="18" />
         <text class="roadmap-dot-num" data-c="3" x="560" y="64" text-anchor="middle">03</text>
-        <text class="roadmap-dot-label" x="560" y="95" text-anchor="middle">Builder</text>
+        <text class="roadmap-dot-label" x="560" y="95" text-anchor="middle">{t("home.roadmap.dot.builder")}</text>
 
         <!-- Dot 4 -->
         <circle class="roadmap-dot" data-c="4" cx="820" cy="60" r="18" />
         <text class="roadmap-dot-num" data-c="4" x="820" y="64" text-anchor="middle">04</text>
-        <text class="roadmap-dot-label" x="820" y="95" text-anchor="middle">Framework</text>
+        <text class="roadmap-dot-label" x="820" y="95" text-anchor="middle">{t("home.roadmap.dot.framework")}</text>
       </svg>
 
       <!-- Phase descriptions: 2-col grid -->
       <div class="roadmap-phases">
         <div class="roadmap-phase-item" data-c="1">
-          <h3>Build the foundation</h3>
-          <p>Stabilize the base architecture, core pages, reusable primitives, and visual language.</p>
+          <h3>{t("home.roadmap.phase1.title")}</h3>
+          <p>{t("home.roadmap.phase1.body")}</p>
         </div>
         <div class="roadmap-phase-item" data-c="2">
-          <h3>Improve docs with best practices</h3>
-          <p>Make guidance clearer, practical, and actionable so people can implement faster with less confusion.</p>
+          <h3>{t("home.roadmap.phase2.title")}</h3>
+          <p>{t("home.roadmap.phase2.body")}</p>
         </div>
         <div class="roadmap-phase-item" data-c="3">
-          <h3>Improve the builder for project creation</h3>
-          <p>Reduce setup friction and make project scaffolding more controllable from references.</p>
+          <h3>{t("home.roadmap.phase3.title")}</h3>
+          <p>{t("home.roadmap.phase3.body")}</p>
         </div>
         <div class="roadmap-phase-item" data-c="4">
-          <h3>Create the basic StealThis framework</h3>
-          <p>A simple framework for web projects, inspired by Astro-style workflows and focused on AI-assisted creation.</p>
+          <h3>{t("home.roadmap.phase4.title")}</h3>
+          <p>{t("home.roadmap.phase4.body")}</p>
         </div>
       </div>
     </div>
@@ -1637,45 +1763,42 @@ const structuredData = [
 
   <section class="container-xl pb-24 keywords-section" aria-labelledby="keywords-title">
     <div class="keywords-shell">
-      <p class="keywords-eyebrow">Project language</p>
-      <h2 id="keywords-title" class="keywords-title">The words that define this project</h2>
-      <p class="keywords-lead">
-        These are not marketing terms. They are operating principles for how we build, share, and ship software with less
-        complexity and more ownership.
-      </p>
+      <p class="keywords-eyebrow">{t("home.keywords.eyebrow")}</p>
+      <h2 id="keywords-title" class="keywords-title">{t("home.keywords.title")}</h2>
+      <p class="keywords-lead">{t("home.keywords.lead")}</p>
 
-      <div class="keywords-list" role="list" aria-label="Project keywords and meanings">
+      <div class="keywords-list" role="list" aria-label={t("home.keywords.aria")}>
         <article class="keyword-row" role="listitem" data-align="left">
-          <p class="keyword-line">CONTROL</p>
-          <p class="keyword-copy"><span class="keyword-accent">Control</span> means choosing your stack, your style system, and your delivery pace without being locked into rigid defaults.</p>
+          <p class="keyword-line">{t("home.keywords.control.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.control.accent")}</span> {t("home.keywords.control.text")}</p>
         </article>
         <article class="keyword-row" role="listitem" data-align="center">
-          <p class="keyword-line">REFERENCE</p>
-          <p class="keyword-copy"><span class="keyword-accent">Reference</span> means learning from concrete implementations, not abstract threads scattered across disconnected sources.</p>
+          <p class="keyword-line">{t("home.keywords.reference.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.reference.accent")}</span> {t("home.keywords.reference.text")}</p>
         </article>
         <article class="keyword-row" role="listitem" data-align="right">
-          <p class="keyword-line">REUSE</p>
-          <p class="keyword-copy"><span class="keyword-accent">Reuse</span> is the default. Start from a proven base, adapt it, and spend energy on differentiation instead of repetition.</p>
+          <p class="keyword-line">{t("home.keywords.reuse.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.reuse.accent")}</span> {t("home.keywords.reuse.text")}</p>
         </article>
         <article class="keyword-row" role="listitem" data-align="left">
-          <p class="keyword-line">COLLABORATION</p>
-          <p class="keyword-copy"><span class="keyword-accent">Collaboration</span> means humans and bots building from the same context, conventions, and production references.</p>
+          <p class="keyword-line">{t("home.keywords.collaboration.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.collaboration.accent")}</span> {t("home.keywords.collaboration.text")}</p>
         </article>
         <article class="keyword-row" role="listitem" data-align="center">
-          <p class="keyword-line">PRACTICE</p>
-          <p class="keyword-copy"><span class="keyword-accent">Practice</span> is where quality emerges: repeatable workflows, tested patterns, and implementation discipline.</p>
+          <p class="keyword-line">{t("home.keywords.practice.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.practice.accent")}</span> {t("home.keywords.practice.text")}</p>
         </article>
         <article class="keyword-row" role="listitem" data-align="right">
-          <p class="keyword-line">OWNERSHIP</p>
-          <p class="keyword-copy"><span class="keyword-accent">Ownership</span> means understanding what you run, why it works, and how to evolve it when requirements change.</p>
+          <p class="keyword-line">{t("home.keywords.ownership.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.ownership.accent")}</span> {t("home.keywords.ownership.text")}</p>
         </article>
         <article class="keyword-row" role="listitem" data-align="left">
-          <p class="keyword-line">CLARITY</p>
-          <p class="keyword-copy"><span class="keyword-accent">Clarity</span> removes friction: one place for references, one language for decisions, one path from idea to delivery.</p>
+          <p class="keyword-line">{t("home.keywords.clarity.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.clarity.accent")}</span> {t("home.keywords.clarity.text")}</p>
         </article>
         <article class="keyword-row" role="listitem" data-align="center">
-          <p class="keyword-line">SHIP</p>
-          <p class="keyword-copy"><span class="keyword-accent">Ship</span> means reaching production sooner without dropping standards for architecture, accessibility, and maintainability.</p>
+          <p class="keyword-line">{t("home.keywords.ship.word")}</p>
+          <p class="keyword-copy"><span class="keyword-accent">{t("home.keywords.ship.accent")}</span> {t("home.keywords.ship.text")}</p>
         </article>
       </div>
     </div>
@@ -1683,26 +1806,23 @@ const structuredData = [
 
   <section class="container-xl pb-28 scramble-section" aria-labelledby="scramble-title">
     <div class="scramble-shell">
-      <p class="scramble-eyebrow">Steal This philosophy</p>
-      <h2 id="scramble-title" class="scramble-title">Words we reveal while we build</h2>
-      <p class="scramble-lead">
-        Every line below is a commitment to a more practical way of building software: grounded references, shared context,
-        and faster execution with control.
-      </p>
+      <p class="scramble-eyebrow">{t("home.scramble.eyebrow")}</p>
+      <h2 id="scramble-title" class="scramble-title">{t("home.scramble.title")}</h2>
+      <p class="scramble-lead">{t("home.scramble.lead")}</p>
 
       <!-- Single cycling scramble hero line -->
       <p
         class="scramble-cycle-line"
         aria-live="polite"
-        data-phrases={JSON.stringify(["STEAL THIS →", "BUILD WITH CONTROL", "START FROM REFERENCES", "HUMANS + BOTS", "LESS FRICTION, MORE SHIPPING"])}
+        data-phrases={JSON.stringify(scramblePhrases)}
       ></p>
 
       <!-- Static styled lines (scramble-in on scroll) -->
-      <div class="scramble-statics" role="list" aria-label="StealThis philosophy lines">
-        <p class="scramble-static-line" role="listitem" data-style="plain" data-text="BUILD WITH CONTROL"></p>
-        <p class="scramble-static-line" role="listitem" data-style="gradient" data-text="START FROM REFERENCES"></p>
-        <p class="scramble-static-line" role="listitem" data-style="muted" data-text="LESS FRICTION, MORE SHIPPING"></p>
-        <p class="scramble-static-line" role="listitem" data-style="outline" data-text="HUMANS + BOTS, SAME CONTEXT"></p>
+      <div class="scramble-statics" role="list" aria-label={t("home.scramble.staticAria")}>
+        <p class="scramble-static-line" role="listitem" data-style="plain" data-text={scrambleStaticLines[0]}></p>
+        <p class="scramble-static-line" role="listitem" data-style="gradient" data-text={scrambleStaticLines[1]}></p>
+        <p class="scramble-static-line" role="listitem" data-style="muted" data-text={scrambleStaticLines[2]}></p>
+        <p class="scramble-static-line" role="listitem" data-style="outline" data-text={scrambleStaticLines[3]}></p>
       </div>
     </div>
   </section>
