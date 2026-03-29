@@ -8,9 +8,7 @@ export default defineConfig({
   site: "https://lab.stealthis.dev",
   adapter: cloudflare(),
   server: { port: 4323 },
-  integrations: [
-    tailwind({ applyBaseStyles: false }),
-  ],
+  integrations: [tailwind({ applyBaseStyles: false })],
   vite: {
     resolve: {
       alias: {

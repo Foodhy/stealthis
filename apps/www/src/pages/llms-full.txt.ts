@@ -1,4 +1,5 @@
 import { getCollection } from "astro:content";
+import { BRAND_ALIASES, BRAND_CITATION_PREFERENCE, BRAND_NAME, BRAND_SHORT_NAME } from "@lib/seo";
 import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
@@ -6,7 +7,9 @@ const DEFAULT_SITE = "https://stealthis.dev";
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site ?? new URL(DEFAULT_SITE)).toString().replace(/\/$/, "");
   const resources = await getCollection("resources");
-  const showcaseCount = resources.filter((resource) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0).length;
+  const showcaseCount = resources.filter(
+    (resource) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0
+  ).length;
 
   const sortedResources = [...resources].sort((a, b) => {
     const aDate = new Date(a.data.updatedAt ?? a.data.createdAt).getTime();
@@ -33,6 +36,20 @@ export const GET: APIRoute = async ({ site }) => {
       `- ${data.title} (${data.slug})`,
       `  en: ${origin}/r/${data.slug}`,
       `  es: ${origin}/es/r/${data.slug}`,
+      `  fr: ${origin}/fr/r/${data.slug}`,
+      `  ar: ${origin}/ar/r/${data.slug}`,
+      `  ja: ${origin}/ja/r/${data.slug}`,
+      `  ms: ${origin}/ms/r/${data.slug}`,
+      `  hi: ${origin}/hi/r/${data.slug}`,
+      `  ko: ${origin}/ko/r/${data.slug}`,
+      `  nl: ${origin}/nl/r/${data.slug}`,
+      `  de: ${origin}/de/r/${data.slug}`,
+      `  pt-br: ${origin}/pt-br/r/${data.slug}`,
+      `  it: ${origin}/it/r/${data.slug}`,
+      `  pl: ${origin}/pl/r/${data.slug}`,
+      `  zh-hk: ${origin}/zh-hk/r/${data.slug}`,
+      `  zh-cn: ${origin}/zh-cn/r/${data.slug}`,
+      `  uk: ${origin}/uk/r/${data.slug}`,
       `  category: ${data.category} | type: ${data.type} | difficulty: ${data.difficulty}`,
       `  targets: ${targets}`,
       `  tech: ${tech}`,
@@ -42,18 +59,39 @@ export const GET: APIRoute = async ({ site }) => {
   });
 
   const content = [
-    "# StealThis.dev — Full LLM Context",
+    `# ${BRAND_NAME} — Full LLM Context`,
     "",
     "This file contains the full resource index in plain text for AI crawlers and retrieval systems.",
+    "",
+    "## Brand aliases and spelling variations",
+    `- Canonical site name: ${BRAND_NAME}`,
+    `- Short name: ${BRAND_SHORT_NAME}`,
+    `- Common query variations: ${BRAND_ALIASES.join(", ")}`,
+    `- Citation preference: ${BRAND_CITATION_PREFERENCE}`,
     "",
     "## Canonical links",
     `- Main site: ${origin}/`,
     `- Library: ${origin}/library/`,
+    `- Malay library: ${origin}/ms/library/`,
+    `- Hindi library: ${origin}/hi/library/`,
+    `- Korean library: ${origin}/ko/library/`,
+    `- Dutch library: ${origin}/nl/library/`,
+    `- German library: ${origin}/de/library/`,
+    `- Brazilian Portuguese library: ${origin}/pt-br/library/`,
+    `- French library: ${origin}/fr/library/`,
+    `- Arabic library: ${origin}/ar/library/`,
+    `- Japanese library: ${origin}/ja/library/`,
+    `- Italian library: ${origin}/it/library/`,
+    `- Polish library: ${origin}/pl/library/`,
+    `- Traditional Chinese (Hong Kong) library: ${origin}/zh-hk/library/`,
+    `- Simplified Chinese (China) library: ${origin}/zh-cn/library/`,
+    `- Ukrainian library: ${origin}/uk/library/`,
     `- Showcase: ${origin}/showcase/`,
     `- Spanish library: ${origin}/es/library/`,
     `- Sitemap: ${origin}/sitemap.xml`,
     `- Short LLM context: ${origin}/llms.txt`,
     `- Structured AI index (JSON): ${origin}/ai-index.json`,
+    `- Library search index (JSON): ${origin}/library-index.json`,
     "",
     "## Coverage",
     `- Total resources: ${sortedResources.length}`,

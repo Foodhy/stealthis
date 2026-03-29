@@ -10,9 +10,7 @@ import {
 
 // ── Config ────────────────────────────────────────────────────────────
 const USERNAME = "@creator";
-const CAPTION_WORDS = [
-  "Watch", "this", "crazy", "trick", "that", "will", "blow", "your", "mind!"
-];
+const CAPTION_WORDS = ["Watch", "this", "crazy", "trick", "that", "will", "blow", "your", "mind!"];
 const SONG = "♪ Original Sound · Creator";
 const DURATION = 450; // 15 s
 

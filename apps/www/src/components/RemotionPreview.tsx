@@ -10,7 +10,7 @@ interface Props {
 export default function RemotionPreview({ slug }: Props) {
   const compositions = useMemo(
     () => remotionCompositions.filter((c) => c.resourceSlug === slug),
-    [slug],
+    [slug]
   );
 
   const [selectedId, setSelectedId] = useState(compositions[0]?.id ?? "");
@@ -18,7 +18,7 @@ export default function RemotionPreview({ slug }: Props) {
 
   const current = useMemo(
     () => compositions.find((c) => c.id === selectedId) ?? compositions[0],
-    [compositions, selectedId],
+    [compositions, selectedId]
   );
 
   const codeEntry = current
@@ -82,7 +82,15 @@ export default function RemotionPreview({ slug }: Props) {
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Composition selector — only shown when multiple exist for this slug */}
       {compositions.length > 1 && (
-        <label style={{ display: "flex", flexDirection: "column", gap: 8, color: "#94a3b8", fontSize: 12 }}>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            color: "#94a3b8",
+            fontSize: 12,
+          }}
+        >
           Composition
           <select
             value={selectedId}

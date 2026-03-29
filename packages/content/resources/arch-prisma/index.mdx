@@ -1,0 +1,76 @@
+---
+slug: arch-prisma
+title: Prisma Schema Architecture
+description: Prisma schema structure with models, relations, multi-file schemas, migration workflow, and the Prisma Client generation pipeline.
+category: architectures
+type: architecture
+tags: [prisma, schema, orm, migrations, typescript, database]
+tech: [prisma, typescript]
+difficulty: easy
+targets: [html]
+labRoute: /architectures/arch-prisma
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## Prisma Schema Architecture
+
+Prisma provides a **declarative schema language** that defines your data models, relations, and database configuration in a single source of truth. The Prisma Client is auto-generated from this schema, giving you a fully typed database client.
+
+### Schema Structure
+
+A Prisma schema (`schema.prisma`) has three main blocks:
+
+1. **datasource**: Database provider and connection URL
+2. **generator**: Configures Prisma Client output
+3. **model**: Defines tables, columns, relations, and indexes
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  posts Post[]
+}
+```
+
+### Multi-File Schemas
+
+Since Prisma 5.15, you can split your schema across multiple `.prisma` files using the `prismaSchemaFolder` preview feature. This keeps large schemas organized by domain.
+
+### Relations
+
+Prisma supports one-to-one, one-to-many, and many-to-many relations with explicit relation fields:
+
+- One-to-many: `Post` has `authorId` referencing `User`
+- Many-to-many: Prisma auto-creates join tables or you define them explicitly
+- Self-relations: A `User` can follow other `User` records
+
+### Migration Workflow
+
+1. **Define/update** your schema in `.prisma` files
+2. **`prisma migrate dev`**: Creates a migration SQL file and applies it to your dev database
+3. **`prisma generate`**: Regenerates the typed Prisma Client
+4. **Use the client**: Import and use the fully typed client in your application
+
+### Seeding
+
+Define a `seed.ts` script and configure it in `package.json`. Run `prisma db seed` to populate your development database with test data.
+
+### Learn More
+
+- [Prisma Schema Overview](https://www.prisma.io/docs/orm/prisma-schema/overview)
+- [Prisma Relations](https://www.prisma.io/docs/orm/prisma-schema/data-model/relations)
+- [Prisma Migrate](https://www.prisma.io/docs/orm/prisma-migrate)

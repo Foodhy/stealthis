@@ -6,13 +6,17 @@
   document.querySelectorAll(".scroll-area").forEach(function (el) {
     let timer = null;
 
-    el.addEventListener("scroll", function () {
-      el.classList.add("scrolling");
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        el.classList.remove("scrolling");
-      }, 1000);
-    }, { passive: true });
+    el.addEventListener(
+      "scroll",
+      function () {
+        el.classList.add("scrolling");
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          el.classList.remove("scrolling");
+        }, 1000);
+      },
+      { passive: true }
+    );
   });
 
   // ── Build both-axes grid ─────────────────────────────────────────────────────

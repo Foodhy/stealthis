@@ -14,9 +14,9 @@ interface UseAnimatedCounterOptions {
 
 // ── Hook ────────────────────────────────────────────────────────────
 const easings: Record<EasingName, (t: number) => number> = {
-  linear:    (t) => t,
-  easeOut:   (t) => 1 - Math.pow(1 - t, 3),
-  easeInOut: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  linear: (t) => t,
+  easeOut: (t) => 1 - Math.pow(1 - t, 3),
+  easeInOut: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
 };
 
 export function useAnimatedCounter({
@@ -27,15 +27,16 @@ export function useAnimatedCounter({
   decimals = 0,
   easing = "easeOut",
 }: UseAnimatedCounterOptions) {
-  const ref      = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const [display, setDisplay] = useState(`${prefix}${(0).toFixed(decimals)}${suffix}`);
-  const reduced  =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     if (reduced) {
-      setDisplay(`${prefix}${target.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${suffix}`);
+      setDisplay(
+        `${prefix}${target.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${suffix}`
+      );
       return;
     }
 
@@ -49,7 +50,7 @@ export function useAnimatedCounter({
 
         const start = performance.now();
         function tick(now: number) {
-          const t   = Math.min((now - start) / duration, 1);
+          const t = Math.min((now - start) / duration, 1);
           const val = target * fn(t);
           setDisplay(
             `${prefix}${val.toLocaleString(undefined, {
@@ -156,15 +157,37 @@ export default function AnimatedCounterDemo() {
           width: "100%",
         }}
       >
-        <Stat target={12500}  prefix="$" suffix="+"      label="Monthly revenue"        color="#38bdf8" easing="easeOut"   />
-        <Stat target={98.6}   suffix="%"  decimals={1}   label="Customer satisfaction"  color="#22c55e" easing="easeOut"   />
-        <Stat target={4200}   suffix="+"                 label="Active users"           color="#a78bfa" easing="easeInOut" />
-        <Stat target={47}                               label="Countries served"        color="#f97316" easing="easeOut"   />
+        <Stat
+          target={12500}
+          prefix="$"
+          suffix="+"
+          label="Monthly revenue"
+          color="#38bdf8"
+          easing="easeOut"
+        />
+        <Stat
+          target={98.6}
+          suffix="%"
+          decimals={1}
+          label="Customer satisfaction"
+          color="#22c55e"
+          easing="easeOut"
+        />
+        <Stat target={4200} suffix="+" label="Active users" color="#a78bfa" easing="easeInOut" />
+        <Stat target={47} label="Countries served" color="#f97316" easing="easeOut" />
       </div>
 
       {/* Easing comparison */}
       <div style={{ textAlign: "center" }}>
-        <p style={{ fontSize: "0.72rem", color: "#334155", marginBottom: "1.25rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+        <p
+          style={{
+            fontSize: "0.72rem",
+            color: "#334155",
+            marginBottom: "1.25rem",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
           Easing variants
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>

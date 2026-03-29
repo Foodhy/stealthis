@@ -32,18 +32,18 @@ import {
 // SHARED DESIGN TOKENS
 // ─────────────────────────────────────────────
 const C = {
-  bg:       "#07071a",
-  surface:  "#0f1035",
-  border:   "#1e2060",
-  indigo:   "#6366f1",
-  violet:   "#8b5cf6",
-  cyan:     "#22d3ee",
-  green:    "#34d399",
-  amber:    "#fbbf24",
-  muted:    "#64748b",
-  subtle:   "#334155",
-  text:     "#f1f5f9",
-  dim:      "#94a3b8",
+  bg: "#07071a",
+  surface: "#0f1035",
+  border: "#1e2060",
+  indigo: "#6366f1",
+  violet: "#8b5cf6",
+  cyan: "#22d3ee",
+  green: "#34d399",
+  amber: "#fbbf24",
+  muted: "#64748b",
+  subtle: "#334155",
+  text: "#f1f5f9",
+  dim: "#94a3b8",
 };
 
 // ─────────────────────────────────────────────
@@ -283,15 +283,15 @@ const Slide2: React.FC = () => {
 // SLIDE 3 — File Structure (animated file tree)
 // ─────────────────────────────────────────────
 const FILE_TREE = [
-  { indent: 0, name: ".agents/",                  color: C.dim,    delay: 0  },
-  { indent: 1, name: "skills/",                   color: C.dim,    delay: 4  },
-  { indent: 2, name: "remotion-best-practices/",  color: C.amber,  delay: 8  },
-  { indent: 3, name: "SKILL.md",                  color: C.green,  delay: 12, badge: "entry point" },
-  { indent: 3, name: "rules/",                    color: C.dim,    delay: 16 },
-  { indent: 4, name: "animations.md",             color: C.cyan,   delay: 20, badge: "rule" },
-  { indent: 4, name: "timing.md",                 color: C.cyan,   delay: 24, badge: "rule" },
-  { indent: 4, name: "charts.md",                 color: C.cyan,   delay: 28, badge: "rule" },
-  { indent: 4, name: "... 36 more rules",         color: C.muted,  delay: 32 },
+  { indent: 0, name: ".agents/", color: C.dim, delay: 0 },
+  { indent: 1, name: "skills/", color: C.dim, delay: 4 },
+  { indent: 2, name: "remotion-best-practices/", color: C.amber, delay: 8 },
+  { indent: 3, name: "SKILL.md", color: C.green, delay: 12, badge: "entry point" },
+  { indent: 3, name: "rules/", color: C.dim, delay: 16 },
+  { indent: 4, name: "animations.md", color: C.cyan, delay: 20, badge: "rule" },
+  { indent: 4, name: "timing.md", color: C.cyan, delay: 24, badge: "rule" },
+  { indent: 4, name: "charts.md", color: C.cyan, delay: 28, badge: "rule" },
+  { indent: 4, name: "... 36 more rules", color: C.muted, delay: 32 },
 ];
 
 const Slide3: React.FC = () => {
@@ -339,7 +339,8 @@ const Slide3: React.FC = () => {
               {/* Tree connector */}
               {node.indent > 0 && (
                 <span style={{ color: C.subtle }}>
-                  {"│  ".repeat(node.indent - 1)}{"└─ "}
+                  {"│  ".repeat(node.indent - 1)}
+                  {"└─ "}
                 </span>
               )}
               {/* File/folder icon */}
@@ -371,20 +372,20 @@ const Slide3: React.FC = () => {
 // SLIDE 4 — Inside SKILL.md (anatomy)
 // ─────────────────────────────────────────────
 const CODE_LINES = [
-  { text: "---",                                        color: C.muted  },
-  { text: 'name: remotion-best-practices',              color: C.cyan   },
-  { text: 'description: Best practices for Remotion',   color: C.green  },
-  { text: 'metadata:',                                  color: C.dim    },
-  { text: '  tags: remotion, video, react, animation',  color: C.amber  },
-  { text: "---",                                        color: C.muted  },
-  { text: "",                                           color: C.dim    },
-  { text: "## When to use",                             color: C.violet },
-  { text: "Use whenever working with Remotion code.",   color: C.dim    },
-  { text: "",                                           color: C.dim    },
-  { text: "## Rules",                                   color: C.violet },
-  { text: "- [animations.md] — Frame-driven animations",color: C.text   },
-  { text: "- [timing.md]     — spring() + Easing",     color: C.text   },
-  { text: "- [charts.md]     — Bar, pie, line charts", color: C.text   },
+  { text: "---", color: C.muted },
+  { text: "name: remotion-best-practices", color: C.cyan },
+  { text: "description: Best practices for Remotion", color: C.green },
+  { text: "metadata:", color: C.dim },
+  { text: "  tags: remotion, video, react, animation", color: C.amber },
+  { text: "---", color: C.muted },
+  { text: "", color: C.dim },
+  { text: "## When to use", color: C.violet },
+  { text: "Use whenever working with Remotion code.", color: C.dim },
+  { text: "", color: C.dim },
+  { text: "## Rules", color: C.violet },
+  { text: "- [animations.md] — Frame-driven animations", color: C.text },
+  { text: "- [timing.md]     — spring() + Easing", color: C.text },
+  { text: "- [charts.md]     — Bar, pie, line charts", color: C.text },
 ];
 
 const Slide4: React.FC = () => {
@@ -415,7 +416,10 @@ const Slide4: React.FC = () => {
         {/* Fake editor dots */}
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
           {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
-            <div key={c} style={{ width: 14, height: 14, borderRadius: "50%", backgroundColor: c }} />
+            <div
+              key={c}
+              style={{ width: 14, height: 14, borderRadius: "50%", backgroundColor: c }}
+            />
           ))}
         </div>
 
@@ -480,12 +484,14 @@ const Slide5: React.FC = () => {
             transform: `translateX(${interpolate(leftP, [0, 1], [-60, 0])}px)`,
           }}
         >
-          <div style={{ color: "#f87171", fontSize: 22, fontWeight: 700, fontFamily: "sans-serif" }}>
-            ✗  No skill loaded
+          <div
+            style={{ color: "#f87171", fontSize: 22, fontWeight: 700, fontFamily: "sans-serif" }}
+          >
+            ✗ No skill loaded
           </div>
           <div style={{ color: C.muted, fontSize: 19, fontFamily: "sans-serif", lineHeight: 1.7 }}>
-            "To animate in Remotion, you can use CSS animations
-            or <span style={{ color: "#f87171" }}>transition: all 0.3s</span> on the element..."
+            "To animate in Remotion, you can use CSS animations or{" "}
+            <span style={{ color: "#f87171" }}>transition: all 0.3s</span> on the element..."
           </div>
           <div
             style={{
@@ -497,8 +503,8 @@ const Slide5: React.FC = () => {
               fontFamily: "monospace",
             }}
           >
-            ⚠ CSS transitions produce<br/>
-            ⚠ flickering in rendered video
+            ⚠ CSS transitions produce
+            <br />⚠ flickering in rendered video
           </div>
         </div>
 
@@ -540,8 +546,10 @@ const Slide5: React.FC = () => {
             transform: `translateX(${interpolate(rightP, [0, 1], [60, 0])}px)`,
           }}
         >
-          <div style={{ color: "#4ade80", fontSize: 22, fontWeight: 700, fontFamily: "sans-serif" }}>
-            ✓  remotion-best-practices loaded
+          <div
+            style={{ color: "#4ade80", fontSize: 22, fontWeight: 700, fontFamily: "sans-serif" }}
+          >
+            ✓ remotion-best-practices loaded
           </div>
           <div style={{ color: C.dim, fontSize: 19, fontFamily: "sans-serif", lineHeight: 1.7 }}>
             "CSS transitions are <span style={{ color: "#4ade80" }}>FORBIDDEN</span> in Remotion.
@@ -559,9 +567,10 @@ const Slide5: React.FC = () => {
               lineHeight: 1.6,
             }}
           >
-            {"const opacity = interpolate("}<br/>
-            {"  frame, [0, 30], [0, 1],"}  <br/>
-            {"  { extrapolateRight: 'clamp' }"}  <br/>
+            {"const opacity = interpolate("}
+            <br />
+            {"  frame, [0, 30], [0, 1],"} <br />
+            {"  { extrapolateRight: 'clamp' }"} <br />
             {");"}
           </div>
         </div>
@@ -574,10 +583,10 @@ const Slide5: React.FC = () => {
 // SLIDE 6 — Why It Matters (metrics + benefits)
 // ─────────────────────────────────────────────
 const BENEFITS = [
-  { text: "Domain precision over generic answers",     color: C.cyan   },
-  { text: "Prevents common mistakes before they happen", color: C.green  },
-  { text: "Modular: load only what the task needs",   color: C.amber  },
-  { text: "Reusable across agents & sessions",        color: C.violet },
+  { text: "Domain precision over generic answers", color: C.cyan },
+  { text: "Prevents common mistakes before they happen", color: C.green },
+  { text: "Modular: load only what the task needs", color: C.amber },
+  { text: "Reusable across agents & sessions", color: C.violet },
 ];
 
 const Slide6: React.FC = () => {
@@ -590,7 +599,7 @@ const Slide6: React.FC = () => {
       easing: Easing.out(Easing.quad),
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-    }),
+    })
   );
 
   const metricP = spring({ frame, fps, config: { damping: 200 } });
@@ -631,7 +640,9 @@ const Slide6: React.FC = () => {
           >
             {ruleCount}
           </span>
-          <span style={{ color: C.dim, fontSize: 20, fontFamily: "sans-serif", textAlign: "center" }}>
+          <span
+            style={{ color: C.dim, fontSize: 20, fontFamily: "sans-serif", textAlign: "center" }}
+          >
             specialized rule files
           </span>
           <span style={{ color: C.muted, fontSize: 16, fontFamily: "monospace" }}>
@@ -669,9 +680,7 @@ const Slide6: React.FC = () => {
                     flexShrink: 0,
                   }}
                 />
-                <span
-                  style={{ color: C.text, fontSize: 24, fontFamily: "sans-serif" }}
-                >
+                <span style={{ color: C.text, fontSize: 24, fontFamily: "sans-serif" }}>
                   {b.text}
                 </span>
               </div>
@@ -696,10 +705,9 @@ const Slide6: React.FC = () => {
                   transform: `translateY(${interpolate(p, [0, 1], [20, 0])}px)`,
                 }}
               >
-                $ ls .agents/skills/remotion-best-practices/rules/<br/>
-                <span style={{ color: C.dim }}>
-                  animations.md  timing.md  charts.md  ... +36 more
-                </span>
+                $ ls .agents/skills/remotion-best-practices/rules/
+                <br />
+                <span style={{ color: C.dim }}>animations.md timing.md charts.md ... +36 more</span>
               </div>
             );
           })()}

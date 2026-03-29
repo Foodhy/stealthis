@@ -1,0 +1,59 @@
+---
+slug: rn-bottom-tabs
+title: React Native Bottom Tabs
+description: A bottom tab navigator for React Native with animated indicator, badge support, icon + label layout, and haptic-ready tab switching.
+category: components
+type: component
+tags: [navigation, tabs, bottom-bar, tab-bar, react-native, menu]
+tech: [react-native, typescript]
+difficulty: easy
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Bottom Tabs
+
+A fully self-contained bottom tab navigator built with pure React Native. No third-party navigation library required — just drop it in, pass your tabs, and go. The component features a spring-animated sliding indicator, subtle icon scaling on the active tab, and optional badge counts on any tab icon.
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `tabs` | `Tab[]` | Array of tab definitions (see below) |
+| `initialTab` | `string` | Key of the tab to show initially (defaults to first tab) |
+
+Each item in the `tabs` array:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | Unique identifier for the tab |
+| `label` | `string` | Text label shown below the icon |
+| `icon` | `string` | Emoji or short text used as the tab icon |
+| `badge` | `string \| number` | Optional badge count or dot displayed on the icon |
+| `screen` | `ReactNode` | The content rendered when this tab is active |
+
+### Usage
+
+```tsx
+<BottomTabs
+  tabs={[
+    { key: "home", label: "Home", icon: "🏠", screen: <HomeScreen /> },
+    { key: "search", label: "Search", icon: "🔍", screen: <SearchScreen /> },
+    { key: "alerts", label: "Alerts", icon: "🔔", badge: 3, screen: <AlertsScreen /> },
+    { key: "profile", label: "Profile", icon: "👤", screen: <ProfileScreen /> },
+  ]}
+/>
+```
+
+### How it works
+
+1. **Tab state** is managed with a simple `useState` holding the active tab key. Switching tabs updates this key, which conditionally renders the matching `screen` node.
+2. **Sliding indicator** — An `Animated.Value` tracks the horizontal offset of the active tab. When the user taps a new tab, `Animated.spring` drives `translateX` to the new position, producing a smooth elastic slide beneath the tab bar.
+3. **Icon scale** — Each tab icon wraps in its own `Animated.Value` for scale. The active tab springs to `1.15` while inactive tabs settle back to `1.0`, giving a subtle but satisfying pop.
+4. **Badges** — If a tab has a `badge` prop, a small red circle is absolutely positioned on the top-right of the icon area. Numbers render inside; falsy values hide the badge entirely.
+5. **Safe area** — The tab bar applies bottom padding via a fixed value (adjustable) to stay above the home indicator on notched devices, keeping it usable without pulling in `react-native-safe-area-context`.

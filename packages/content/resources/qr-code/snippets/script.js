@@ -1,15 +1,15 @@
 (function () {
   "use strict";
 
-  const input      = document.getElementById("qr-input");
-  const btnGen     = document.getElementById("btn-generate");
-  const btnDl      = document.getElementById("btn-download");
-  const btnCopy    = document.getElementById("btn-copy");
-  const img        = document.getElementById("qr-img");
-  const spinner    = document.getElementById("qr-spinner");
-  const errorEl    = document.getElementById("qr-error");
+  const input = document.getElementById("qr-input");
+  const btnGen = document.getElementById("btn-generate");
+  const btnDl = document.getElementById("btn-download");
+  const btnCopy = document.getElementById("btn-copy");
+  const img = document.getElementById("qr-img");
+  const spinner = document.getElementById("qr-spinner");
+  const errorEl = document.getElementById("qr-error");
   const placeholder = document.getElementById("qr-placeholder");
-  const actions    = document.getElementById("qr-actions");
+  const actions = document.getElementById("qr-actions");
 
   let currentUrl = "";
   let debounceTimer = null;
@@ -17,18 +17,28 @@
     (text, size) =>
       "https://chart.googleapis.com/chart" +
       "?cht=qr" +
-      "&chs=" + size + "x" + size +
+      "&chs=" +
+      size +
+      "x" +
+      size +
       "&chld=M|1" +
-      "&chl=" + encodeURIComponent(text),
+      "&chl=" +
+      encodeURIComponent(text),
     (text, size) =>
       "https://api.qrserver.com/v1/create-qr-code/" +
-      "?size=" + size + "x" + size +
-      "&data=" + encodeURIComponent(text),
+      "?size=" +
+      size +
+      "x" +
+      size +
+      "&data=" +
+      encodeURIComponent(text),
     (text, size) =>
       "https://quickchart.io/qr" +
-      "?size=" + size +
+      "?size=" +
+      size +
       "&margin=1" +
-      "&text=" + encodeURIComponent(text),
+      "&text=" +
+      encodeURIComponent(text),
   ];
 
   /* ── Helpers ── */
@@ -66,7 +76,7 @@
     probe.onload = function () {
       currentUrl = url;
       img.src = url;
-      img.width  = size;
+      img.width = size;
       img.height = size;
       showState("ready");
     };
@@ -119,7 +129,7 @@
       const ta = document.createElement("textarea");
       ta.value = currentUrl;
       ta.style.position = "fixed";
-      ta.style.opacity  = "0";
+      ta.style.opacity = "0";
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
@@ -131,14 +141,18 @@
   function flash(btn, label) {
     const original = btn.textContent;
     btn.textContent = label;
-    setTimeout(() => { btn.textContent = original; }, 1800);
+    setTimeout(() => {
+      btn.textContent = original;
+    }, 1800);
   }
 
   /* ── Size change → regenerate if QR shown ── */
   document.querySelectorAll('input[name="qr-size"]').forEach((radio) => {
     radio.addEventListener("change", () => {
       // Update active pill styling
-      document.querySelectorAll(".size-pill").forEach((p) => p.classList.remove("size-pill--active"));
+      document
+        .querySelectorAll(".size-pill")
+        .forEach((p) => p.classList.remove("size-pill--active"));
       radio.closest(".size-pill").classList.add("size-pill--active");
 
       if (!img.classList.contains("hidden")) generate();
@@ -153,11 +167,17 @@
 
   /* ── Enter key ── */
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") { clearTimeout(debounceTimer); generate(); }
+    if (e.key === "Enter") {
+      clearTimeout(debounceTimer);
+      generate();
+    }
   });
 
   /* ── Button events ── */
-  btnGen.addEventListener("click", () => { clearTimeout(debounceTimer); generate(); });
+  btnGen.addEventListener("click", () => {
+    clearTimeout(debounceTimer);
+    generate();
+  });
   btnDl.addEventListener("click", download);
   btnCopy.addEventListener("click", copyUrl);
 

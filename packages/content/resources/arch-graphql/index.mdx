@@ -1,0 +1,120 @@
+---
+slug: arch-graphql
+title: "GraphQL Schema Architecture"
+description: "GraphQL API structure comparing schema-first vs code-first approaches with domain-based module organization and resolver patterns."
+category: architectures
+type: architecture
+tags: [graphql, apollo, yoga, schema, resolvers, backend]
+tech: [graphql, nodejs, typescript]
+difficulty: med
+targets: [html]
+labRoute: /architectures/arch-graphql
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## GraphQL Schema Architecture
+
+A reference architecture for organizing GraphQL APIs, comparing **schema-first** and **code-first** approaches and illustrating two folder structures — domain-based modules (recommended for scale) and role-based separation (simpler for small projects).
+
+### Schema-first vs Code-first
+
+| Aspect | Schema-first | Code-first |
+|---|---|---|
+| **Definition** | Write `.graphql` SDL files; generate types | Define schema in code (TypeScript decorators / builders) |
+| **Tools** | Apollo Server, GraphQL Yoga, graphql-tools | TypeGraphQL, Nexus, Pothos |
+| **Pros** | Clear contract, readable, great for collaboration | Single source of truth, full IDE support, no codegen step |
+| **Cons** | Requires codegen to keep types in sync | Schema is scattered across code files |
+| **Best for** | Teams that want a spec-first workflow | Solo/small teams who want maximum type safety |
+
+### Domain-based Modules (Recommended)
+
+Group everything related to a domain concept in one folder. Each module owns its schema, resolvers, data sources, and types. This mirrors how the team thinks about the product and scales naturally:
+
+```
+src/modules/users/
+├── schema.graphql     # Type definitions for User
+├── resolvers.ts       # Query/Mutation/Field resolvers
+├── datasource.ts      # Data access (DB, REST, etc.)
+└── types.ts           # TypeScript interfaces
+```
+
+Modules are merged at the root level using `mergeTypeDefs` / `mergeResolvers` from `@graphql-tools/merge`, or with a tool like GraphQL Modules.
+
+### Role-based Separation (Simpler)
+
+For smaller projects, grouping by _role_ (all type definitions together, all resolvers together) is easier to start with but can become unwieldy as the schema grows:
+
+```
+src/
+├── typeDefs/          # All .graphql files
+├── resolvers/         # All resolver files
+├── dataSources/       # All data source classes
+└── server.ts
+```
+
+### Resolver Patterns
+
+Resolvers are the heart of a GraphQL server. Best practices:
+
+- **Thin resolvers** — Resolvers should be one-liners that delegate to data sources or services. No business logic in resolvers.
+- **Context injection** — Pass auth info, DB connections, and DataLoader instances through the context object.
+- **Field resolvers** — Use them for computed fields, relationships, and authorization checks at the field level.
+
+```ts
+const resolvers = {
+  Query: {
+    user: (_, { id }, { dataSources }) =>
+      dataSources.usersAPI.getUser(id),
+  },
+  User: {
+    posts: (parent, _, { dataSources }) =>
+      dataSources.postsAPI.getByAuthor(parent.id),
+  },
+};
+```
+
+### The N+1 Problem & DataLoader
+
+GraphQL's nested nature makes it prone to N+1 queries. If a query fetches 50 users and each user has posts, that is 1 query for users + 50 queries for posts = 51 total.
+
+**DataLoader** batches and caches within a single request:
+
+```ts
+// context.ts
+import DataLoader from 'dataloader';
+
+export const createContext = () => ({
+  loaders: {
+    postsByAuthor: new DataLoader(async (authorIds) => {
+      const posts = await db.posts.findMany({
+        where: { authorId: { in: authorIds } },
+      });
+      return authorIds.map(id => posts.filter(p => p.authorId === id));
+    }),
+  },
+});
+```
+
+### Request Flow
+
+```
+Client Query → Parse & Validate → Execute Resolvers → DataSource / DataLoader → Format Response
+```
+
+1. **Parse** — The server parses the incoming query string into an AST.
+2. **Validate** — The AST is validated against the schema (types, fields, arguments).
+3. **Execute** — Resolvers are called top-down, field by field.
+4. **DataSource** — Each resolver delegates to a data source or DataLoader.
+5. **Response** — Results are assembled into the shape requested by the client.
+
+### References
+
+- [GraphQL.org — Schema & Types](https://graphql.org/learn/schema/)
+- [Apollo Server — Schema](https://www.apollographql.com/docs/apollo-server/schema/schema)
+- [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server)
+- [DataLoader — GitHub](https://github.com/graphql/dataloader)

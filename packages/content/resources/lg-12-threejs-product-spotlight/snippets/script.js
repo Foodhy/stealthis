@@ -64,7 +64,13 @@ product.add(body);
 
 const ring = new THREE.Mesh(
   new THREE.TorusGeometry(1.22, 0.08, 24, 80),
-  new THREE.MeshStandardMaterial({ color: 0x90e8ff, emissive: 0x478eb0, emissiveIntensity: 0.7, metalness: 0.4, roughness: 0.2 })
+  new THREE.MeshStandardMaterial({
+    color: 0x90e8ff,
+    emissive: 0x478eb0,
+    emissiveIntensity: 0.7,
+    metalness: 0.4,
+    roughness: 0.2,
+  })
 );
 ring.rotation.x = Math.PI / 2;
 ring.position.y = 0.7;
@@ -101,9 +107,9 @@ function animate(time) {
 
   const angle = -0.7 + p * 1.35;
   const radius = 7 - p * 2.1;
-  camera.position.x += ((Math.cos(angle) * radius) - camera.position.x) * 0.08;
-  camera.position.z += ((Math.sin(angle) * radius) - camera.position.z) * 0.08;
-  camera.position.y += ((0.5 + p * 1.4) - camera.position.y) * 0.08;
+  camera.position.x += (Math.cos(angle) * radius - camera.position.x) * 0.08;
+  camera.position.z += (Math.sin(angle) * radius - camera.position.z) * 0.08;
+  camera.position.y += (0.5 + p * 1.4 - camera.position.y) * 0.08;
   camera.lookAt(0, 0.35, 0);
 
   if (motionEnabled) {

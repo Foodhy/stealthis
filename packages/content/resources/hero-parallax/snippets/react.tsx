@@ -79,7 +79,9 @@ export default function HeroParallax() {
             Open Source
           </p>
           <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
-            Build beautiful<br />web experiences
+            Build beautiful
+            <br />
+            web experiences
           </h1>
           <p className="text-slate-500 text-lg leading-relaxed max-w-md">
             Reusable web resources — animations, pages, components, and patterns. All open source.

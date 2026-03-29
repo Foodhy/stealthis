@@ -1,0 +1,56 @@
+---
+slug: rn-pinch-zoom
+title: React Native Pinch to Zoom
+description: A pinch-to-zoom image viewer for React Native with pan gestures, double-tap to zoom, min/max scale limits, and smooth reset animation.
+category: components
+type: component
+tags: [pinch, zoom, image, gesture, pan, react-native, viewer]
+tech: [react-native, typescript]
+difficulty: hard
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Pinch to Zoom
+
+A self-contained pinch-to-zoom image viewer built entirely with React Native's built-in gesture system — no third-party gesture libraries required. Supports two-finger pinch scaling, single-finger panning when zoomed in, double-tap to toggle zoom, and smooth spring animations to snap back within bounds.
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | The content to make zoomable (typically an `<Image />`) |
+| `minScale` | `number` | `1` | Minimum allowed zoom level |
+| `maxScale` | `number` | `4` | Maximum allowed zoom level |
+| `doubleTapScale` | `number` | `2` | Zoom level applied on double-tap |
+
+### Usage
+
+```tsx
+import PinchZoomView from "./PinchZoomView";
+
+<PinchZoomView minScale={1} maxScale={5} doubleTapScale={2.5}>
+  <Image
+    source={{ uri: "https://picsum.photos/800/600" }}
+    style={{ width: "100%", height: "100%" }}
+    resizeMode="contain"
+  />
+</PinchZoomView>
+```
+
+### How it works
+
+1. **Pinch detection** — on every touch move, the component computes the Euclidean distance between two active touches. The ratio of the current distance to the distance at pinch start is multiplied by the base scale to produce a live scale value.
+
+2. **Pan detection** — when the image is zoomed beyond `1x`, a single finger drag translates the content via `Animated.Value` offsets. Panning is locked out at `1x` to avoid fighting with scroll containers.
+
+3. **Double-tap** — consecutive taps within 300 ms toggle between `1x` and `doubleTapScale`. The transition uses `Animated.spring` for a natural feel.
+
+4. **Bounds clamping** — on gesture end, if scale exceeds `maxScale` or drops below `minScale`, a spring animation snaps it back. Similarly, pan offsets are clamped so the content never leaves the viewport.
+
+5. **No external dependencies** — everything is implemented with React Native's `PanResponder` and `Animated` APIs, keeping the bundle lean and avoiding native module linking.

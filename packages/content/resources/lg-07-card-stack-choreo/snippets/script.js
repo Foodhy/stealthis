@@ -46,7 +46,10 @@ cards.forEach((c, i) => {
 if (!reduced && window.gsap) {
   const tl = window.gsap.timeline({ repeat: -1, repeatDelay: 0.6 });
   cards.forEach((c, i) => {
-    tl.to(c, { y: -220, rotation: i % 2 ? 9 : -9, opacity: 0, duration: 0.45, ease: "power2.in" }, i * 0.22)
-      .set(c, { y: 0, rotation: 0, opacity: 1 }, i * 0.22 + 0.46);
+    tl.to(
+      c,
+      { y: -220, rotation: i % 2 ? 9 : -9, opacity: 0, duration: 0.45, ease: "power2.in" },
+      i * 0.22
+    ).set(c, { y: 0, rotation: 0, opacity: 1 }, i * 0.22 + 0.46);
   });
 }

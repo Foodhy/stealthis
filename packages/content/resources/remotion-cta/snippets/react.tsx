@@ -87,12 +87,10 @@ const CTAButton: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) => 
   });
 
   // Shimmer sweep after button appears
-  const shimmerX = interpolate(
-    ((frame - 60) % 60),
-    [0, 60],
-    [-200, 420],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
+  const shimmerX = interpolate((frame - 60) % 60, [0, 60], [-200, 420], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
   const showShimmer = frame > 60;
 
   return (

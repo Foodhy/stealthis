@@ -6,14 +6,14 @@
    * @param {HTMLElement} el  — .text-rotate element
    */
   function TextRotate(el) {
-    const words    = JSON.parse(el.dataset.words || "[]");
-    const mode     = el.dataset.mode     || "fade";
+    const words = JSON.parse(el.dataset.words || "[]");
+    const mode = el.dataset.mode || "fade";
     const interval = parseInt(el.dataset.interval || "2500", 10);
 
     if (words.length < 2) return;
 
-    let index  = 0;
-    let timer  = null;
+    let index = 0;
+    let timer = null;
     let typing = false;
 
     if (mode === "type") {
@@ -51,7 +51,9 @@
       entering.className = "tr-word tr-enter";
       entering.textContent = words[next];
       el.appendChild(entering);
-      entering.addEventListener("animationend", () => entering.classList.remove("tr-enter"), { once: true });
+      entering.addEventListener("animationend", () => entering.classList.remove("tr-enter"), {
+        once: true,
+      });
 
       index = next;
     }

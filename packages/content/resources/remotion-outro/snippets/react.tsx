@@ -82,10 +82,7 @@ const SubscribeButton: React.FC<{ frame: number; fps: number }> = ({ frame, fps 
 
   // Pulse every 2 seconds after frame 120
   const pulseT = ((frame - 90) % 60) / 60;
-  const pulse =
-    frame > 90
-      ? 1 + 0.06 * Math.sin(pulseT * Math.PI * 2)
-      : 1;
+  const pulse = frame > 90 ? 1 + 0.06 * Math.sin(pulseT * Math.PI * 2) : 1;
 
   return (
     <div

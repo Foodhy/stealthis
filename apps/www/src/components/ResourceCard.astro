@@ -1,9 +1,8 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { useTranslations, type Locale } from "@i18n/index";
+import { getLocalePrefix, useTranslations, type Locale } from "@i18n/index";
 import { resolveResourceCollections } from "@lib/resource-collections";
+import { getResourceFilterTechTokens, getSnippetFlags } from "@lib/resource-tech";
 import { SITE_URLS } from "@lib/urls";
 
 interface Props {
@@ -18,7 +17,7 @@ const { slug, title, description, category, difficulty, tags, tech, targets, lab
 const authorName = author?.name;
 const resolvedCollections = resolveResourceCollections(resource.data);
 
-const prefix = locale === "es" ? "/es" : "";
+const prefix = getLocalePrefix(locale);
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
 const difficultyKey = `resource.difficulty.${difficulty}` as
   | "resource.difficulty.easy"
@@ -37,19 +36,16 @@ const categoryKey = `category.${category}` as
   | "category.mcp-servers"
   | "category.architectures"
   | "category.boilerplates"
-  | "category.remotion";
+  | "category.remotion"
+  | "category.database-schemas"
+  | "category.ultra-high-definition-pages";
 const categoryLabel = t(categoryKey);
 
-const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
-const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
-const hasJS = existsSync(path.join(snippetsDir, "script.js"));
-const hasTS =
-  existsSync(path.join(snippetsDir, "react.tsx")) ||
-  existsSync(path.join(snippetsDir, "next.tsx")) ||
-  existsSync(path.join(snippetsDir, "typescript.ts")) ||
-  existsSync(path.join(snippetsDir, "typescript.tsx"));
-
-const languageBadges = [...(hasTS ? ["TS"] : []), ...(hasJS ? ["JS"] : [])];
+const snippetFlags = getSnippetFlags(slug);
+const languageBadges = [
+  ...(snippetFlags.hasTS ? ["TS"] : []),
+  ...(snippetFlags.hasJS ? ["JS"] : []),
+];
 
 const TARGET_LABELS: Record<string, string> = {
   html: "HTML",
@@ -62,10 +58,14 @@ const TARGET_LABELS: Record<string, string> = {
   yaml: "YAML",
   json: "JSON",
   python: "Python",
+  sql: "SQL",
+  mermaid: "Mermaid",
+  dbml: "DBML",
 };
 
 const targetLabels = targets.map((target) => TARGET_LABELS[target] ?? target);
 const allBadges = [...languageBadges, ...targetLabels];
+const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
 ---
 
 <article
@@ -73,11 +73,13 @@ const allBadges = [...languageBadges, ...targetLabels];
   data-slug={slug}
   data-category={category}
   data-difficulty={difficulty}
-  data-tech={tech.join(",")}
+  data-tech={filterTechTokens.join(",")}
   data-tags={tags.join(",")}
   data-collections={resolvedCollections.join(",")}
   data-author={authorName ?? ""}
   data-created-at={resource.data.createdAt}
+  data-lab-route={labRoute ?? ""}
+  data-type={resource.data.type}
 >
   <!-- Header -->
   <div class="flex items-start justify-between gap-3">
@@ -109,7 +111,7 @@ const allBadges = [...languageBadges, ...targetLabels];
   )}
 
   <!-- Actions row — relative z-10 lifts everything above the ::after card overlay -->
-  <div class="relative z-10 flex items-center gap-2 mt-auto pt-1">
+  <div class="relative z-10 flex items-center gap-2 mt-auto pt-1" data-pagefind-ignore>
     <!-- Targets -->
     <div class="flex gap-1 mr-auto">
       {allBadges.map((label) => (

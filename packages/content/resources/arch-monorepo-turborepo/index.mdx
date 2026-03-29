@@ -1,0 +1,66 @@
+---
+slug: arch-monorepo-turborepo
+title: Turborepo Monorepo Architecture
+description: Turborepo monorepo structure with shared packages, task pipelines, remote caching, and parallel execution for multi-app projects.
+category: architectures
+type: architecture
+tags: [turborepo, monorepo, vercel, workspaces, caching]
+tech: [turborepo, typescript]
+difficulty: hard
+targets: [html]
+labRoute: /architectures/arch-monorepo-turborepo
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## Turborepo Monorepo Architecture
+
+Turborepo is a high-performance build system for JavaScript and TypeScript monorepos. It leverages **task pipelines**, **content-aware hashing**, and **remote caching** to dramatically speed up builds across multi-app projects.
+
+### Pipelines
+
+In `turbo.json`, you define a **pipeline** that declares relationships between tasks. Turborepo uses this graph to determine what can run in parallel and what must wait.
+
+```json
+{
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**"]
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "lint": {}
+  }
+}
+```
+
+- `"^build"` means "run `build` in all dependencies first."
+- `lint` has no dependencies, so it runs immediately in parallel with everything else.
+- `test` waits for `build` to finish.
+
+### Content-Aware Caching
+
+Turborepo hashes the **inputs** of every task (source files, environment variables, dependent outputs) and stores the result. If inputs haven't changed, it replays the cached output instantly -- even across CI runs with **Remote Caching** via Vercel.
+
+### Workspaces
+
+Turborepo works on top of your package manager's workspace feature (npm, pnpm, yarn, or bun). Shared packages in `packages/` are consumed by apps in `apps/` via standard workspace dependencies.
+
+### Key Concepts
+
+- **Task Graph**: Turborepo builds a directed acyclic graph of tasks and runs them in the optimal order.
+- **Pruned Subsets**: `turbo prune --scope=web` creates a sparse monorepo with only the packages needed for a given app -- perfect for Docker builds.
+- **Remote Caching**: Share cache artifacts across your entire team and CI. A cache hit means zero re-computation.
+- **Parallel Execution**: Independent tasks run simultaneously, using all available CPU cores.
+
+### Learn More
+
+- [Turborepo Documentation](https://turborepo.dev/docs)
+- [Turborepo Pipeline Configuration](https://turborepo.dev/docs/crafting-your-repository/configuring-tasks)
+- [Remote Caching Guide](https://turborepo.dev/docs/crafting-your-repository/caching)

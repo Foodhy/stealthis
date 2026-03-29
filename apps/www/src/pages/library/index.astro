@@ -4,18 +4,33 @@ import ResourceCard from "@components/ResourceCard.astro";
 import FilterBar from "@components/FilterBar.astro";
 import CollectionExplorer from "@components/CollectionExplorer.astro";
 import { getCollection } from "astro:content";
-import { useTranslations, getLocaleFromUrl } from "@i18n/index";
+import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
 import { SHOW_SORT_BAR } from "@lib/constant";
+import { getResourceFilterTechTokens } from "@lib/resource-tech";
+import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
+import { SITE_URLS } from "@lib/urls";
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
+const prefix = getLocalePrefix(locale);
 
 const allResources = (await getCollection("resources")).sort(
   (a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime()
 );
 
 const categories = [...new Set(allResources.map((r) => r.data.category))].sort();
-const techs = [...new Set(allResources.flatMap((r) => r.data.tech))].sort();
+const techSet = new Set<string>();
+for (const resource of allResources) {
+  for (const tech of getResourceFilterTechTokens(resource)) {
+    techSet.add(tech);
+  }
+}
+
+const PRIORITY_TECHS = ["js", "css", "html", "react", "react-native", "expo"];
+const techs = [
+  ...PRIORITY_TECHS.filter((tech) => techSet.has(tech)),
+  ...[...techSet].filter((tech) => !PRIORITY_TECHS.includes(tech)).sort(),
+];
 const authors = [
   ...new Set(allResources.flatMap((r) => (r.data.author ? [r.data.author.name] : []))),
 ].sort();
@@ -41,13 +56,28 @@ const CATEGORY_GROUPS = [
       "patterns",
       "components",
       "remotion",
+      "ultra-high-definition-pages",
+      "design-styles",
+      "music",
     ],
+  },
+  {
+    id: "3d",
+    label: "3D & Immersive",
+    description: "Three.js models, WebGL interactions, and immersive 3D experiences",
+    categories: ["3d-models", "3d-interactions"],
   },
   {
     id: "ai",
     label: "AI & Dev",
     description: "Prompts, skills, architectures, and server configs",
-    categories: ["prompts", "skills", "mcp-servers", "architectures", "boilerplates"],
+    categories: ["prompts", "plugins", "architectures", "boilerplates"],
+  },
+  {
+    id: "data",
+    label: "Data & SQL",
+    description: "Relational schemas with SQL, ERD diagrams, seed data, and query examples",
+    categories: ["database-schemas"],
   },
 ] as const;
 
@@ -63,31 +93,53 @@ type CategoryKey =
   | "category.mcp-servers"
   | "category.architectures"
   | "category.boilerplates"
-  | "category.remotion";
+  | "category.remotion"
+  | "category.database-schemas"
+  | "category.ultra-high-definition-pages"
+  | "category.design-styles"
+  | "category.music"
+  | "category.3d-models"
+  | "category.3d-interactions";
 
 const libraryDescription =
-  "Search 200+ open-source web resources by category, tech, difficulty, author, and collections. Copy snippets or open demos in Lab.";
-const alternateLinks = [
-  { hreflang: "en", href: "https://stealthis.dev/library/" },
-  { hreflang: "es", href: "https://stealthis.dev/es/library/" },
-  { hreflang: "x-default", href: "https://stealthis.dev/library/" },
-];
+  "Search open-source resources by category, tech, difficulty, author, and collections. Copy snippets, inspect SQL schemas, or open demos in Lab.";
+const canonicalPath = `${prefix}/library/`;
+const alternateLinks = getAlternateLinks("/library/");
+const libraryKeywords = mergeKeywords(BRAND_ALIASES, [
+  BRAND_NAME,
+  "stealthis library",
+  "steal this library",
+  "resource library",
+  "component library",
+  "animation library",
+  "frontend snippets",
+  "open source components",
+  "SQL schema examples",
+]);
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   name: "StealThis.dev Library",
-  url: "https://stealthis.dev/library/",
+  url: `https://stealthis.dev${canonicalPath}`,
   inLanguage: locale,
   description: libraryDescription,
+  keywords: libraryKeywords,
   numberOfItems: allResources.length,
+  isPartOf: {
+    "@type": "WebSite",
+    name: BRAND_NAME,
+    alternateName: BRAND_ALIASES,
+    url: "https://stealthis.dev/",
+  },
 };
 ---
 
 <Base
-  title="Library"
+  title={t("library.title")}
   description={libraryDescription}
   image="/og/library.webp"
-  canonicalPath="/library/"
+  canonicalPath={canonicalPath}
+  keywords={libraryKeywords}
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >
@@ -100,7 +152,210 @@ const structuredData = {
 
     <CollectionExplorer locale={locale} resources={allResources} />
 
-    <div class="flex flex-col lg:flex-row gap-8">
+    <!-- Mode switcher -->
+    <div class="flex items-center gap-2 mb-6" id="mode-switcher">
+      <button class="chip" data-mode="instant" id="mode-instant">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="18" y1="9" x2="18" y2="15"/><line x1="9" y1="18" x2="15" y2="18"/>
+        </svg>
+        {t("library.mode.instant")}
+        <span class="mode-badge">New</span>
+      </button>
+      <button class="chip" data-mode="discover" id="mode-discover">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        </svg>
+        {t("library.mode.discover")}
+        <span class="mode-badge">New</span>
+      </button>
+      <button class="chip chip--active" data-mode="browse" id="mode-browse">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+        {t("library.mode.browse")}
+      </button>
+    </div>
+
+    <!-- Mode 1: Graph Explorer -->
+    <div id="mode-instant-content" class="hidden" data-lab-url={SITE_URLS.lab}>
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-xs text-slate-600" id="graph-match-count"></span>
+        <label id="graph-fuzzy-label" class="hidden items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
+          <input type="checkbox" id="graph-fuzzy-toggle" class="w-3.5 h-3.5 rounded border-white/20 bg-surface-900 text-brand-500 focus:ring-brand-500/30 focus:ring-offset-0 cursor-pointer" />
+          Fuzzy
+        </label>
+      </div>
+
+      <!-- Graph view container -->
+      <div id="graph-container" class="relative rounded-2xl border border-white/8 overflow-hidden" style="height:75vh;">
+        <canvas id="graph-canvas" class="absolute inset-0 w-full h-full" style="cursor:grab;"></canvas>
+
+        <!-- Center overlay: title + search -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+          <h2 class="text-4xl sm:text-5xl font-bold text-white mb-6 select-none drop-shadow-lg">I want to steal</h2>
+          <div class="pointer-events-auto relative w-full max-w-md px-4">
+            <svg class="absolute left-8 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              id="graph-search-input"
+              type="search"
+              placeholder={t("library.instant.placeholder")}
+              class="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-950/80 backdrop-blur border border-white/14 text-base text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-brand-500/50 focus:ring-1 focus:ring-brand-500/30 transition-colors"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <!-- Zoom controls — bottom left -->
+        <div class="absolute bottom-3 left-3 z-10 flex flex-col gap-1">
+          <button id="graph-zoom-in" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-950/70 backdrop-blur border border-white/10 text-slate-400 hover:text-white hover:bg-surface-900/90 transition-colors" title="Zoom in">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button id="graph-zoom-out" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-950/70 backdrop-blur border border-white/10 text-slate-400 hover:text-white hover:bg-surface-900/90 transition-colors" title="Zoom out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button id="graph-reset-view" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-950/70 backdrop-blur border border-white/10 text-slate-400 hover:text-white hover:bg-surface-900/90 transition-colors" title="Reset view">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview panel (BELOW graph, not overlapping) -->
+      <div id="graph-preview" class="hidden mt-4 rounded-2xl border border-white/8 overflow-hidden bg-surface-900/50 relative">
+        <div class="flex items-stretch gap-0 w-full" style="height:55vh; max-height:600px;">
+          <!-- Info (40%) -->
+          <div class="w-2/5 p-5 overflow-y-auto shrink-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span id="graph-preview-category" class="text-xs font-medium text-slate-500"></span>
+              <span id="graph-preview-difficulty" class="badge text-xs"></span>
+            </div>
+            <h3 id="graph-preview-title" class="text-lg font-bold text-white mb-1.5"></h3>
+            <p id="graph-preview-desc" class="text-sm text-slate-400 leading-relaxed mb-3"></p>
+            <div id="graph-preview-tech" class="flex flex-wrap gap-1.5 mb-3"></div>
+            <div class="flex items-center gap-2">
+              <a id="graph-preview-link" href="#" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500/20 border border-brand-400/40 text-brand-300 text-xs font-medium hover:bg-brand-500/30 transition-colors">
+                {t("library.instant.preview.openPage")}
+              </a>
+              <a id="graph-preview-lab" href="#" target="_blank" rel="noopener" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/6 border border-white/10 text-slate-300 text-xs font-medium hover:bg-white/10 transition-colors">
+                {t("library.instant.preview.openLab")}
+              </a>
+            </div>
+          </div>
+          <!-- Iframe preview (60%) -->
+          <div id="graph-preview-iframe-wrap" class="flex-1 border-l border-white/8">
+            <iframe id="graph-preview-iframe" class="w-full h-full bg-white" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+          </div>
+          <!-- Close -->
+          <button id="graph-preview-close" class="absolute top-3 right-3 text-slate-500 hover:text-white transition-colors z-30" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mode 2: Guided Discovery -->
+    <div id="mode-discover-content" class="hidden">
+      <div class="max-w-2xl mx-auto">
+        <!-- Progress bar -->
+        <div class="flex items-center gap-3 mb-8">
+          <span class="text-xs text-slate-500 whitespace-nowrap" id="discover-step-label"></span>
+          <div class="flex-1 h-1 rounded-full bg-white/6 overflow-hidden">
+            <div id="discover-progress" class="h-full bg-brand-500 rounded-full transition-all duration-300" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Question container -->
+        <div id="discover-question-container">
+          <h2 id="discover-question-title" class="text-2xl font-bold text-white mb-2"></h2>
+          <p class="text-slate-400 text-sm mb-6">{t("library.discover.subtitle")}</p>
+          <p class="text-xs text-slate-600 mb-3" id="discover-multi-hint"></p>
+          <div id="discover-options" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+        </div>
+
+        <!-- Keyword input (shown on last step) -->
+        <div id="discover-keyword-step" class="hidden mt-6">
+          <label class="text-sm font-medium text-slate-300 mb-2 block">{t("library.discover.keyword.label")}</label>
+          <input
+            id="discover-keyword-input"
+            type="text"
+            placeholder={t("library.discover.keyword.placeholder")}
+            class="w-full px-4 py-2.5 rounded-xl bg-surface-900 border border-white/8 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-brand-500/50 focus:ring-1 focus:ring-brand-500/30 transition-colors"
+          />
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex items-center justify-between mt-8">
+          <div class="flex items-center gap-2">
+            <button id="discover-back" class="chip hidden">{t("library.discover.back")}</button>
+            <button id="discover-restart" class="chip hidden">{t("library.discover.restart")}</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="discover-skip" class="chip hidden">{t("library.discover.skip")}</button>
+            <button id="discover-next" class="chip chip--active hidden">{t("library.discover.next")}</button>
+            <button id="discover-show-results" class="chip chip--active hidden">{t("library.discover.showResults")}</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results (shown after wizard completes) -->
+      <div id="discover-results" class="hidden mt-6">
+        <div class="flex items-center gap-3 mb-4">
+          <h2 class="text-base font-bold text-white whitespace-nowrap">{t("library.discover.resultsTitle")}</h2>
+          <span class="text-xs text-slate-600" id="discover-results-count"></span>
+          <div class="flex-1 border-t border-white/6"></div>
+          <!-- View toggle -->
+          <div class="flex items-center gap-1">
+            <button id="discover-view-preview" class="chip chip--active text-xs" title="Preview view">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+            </button>
+            <button id="discover-view-grid" class="chip text-xs" title="Grid view">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
+            </button>
+          </div>
+          <button id="discover-restart-results" class="chip text-xs">{t("library.discover.restart")}</button>
+        </div>
+        <!-- Preview view (default) — list + iframe, fills viewport -->
+        <div id="discover-results-preview" class="flex flex-col lg:flex-row gap-0 rounded-xl border border-white/8 overflow-hidden" style="height:calc(100vh - 200px);">
+          <div class="w-full lg:w-2/5 flex flex-col bg-surface-900/50 border-r border-white/6" id="discover-preview-list-container">
+            <!-- Search within results -->
+            <div class="p-2 border-b border-white/6 shrink-0">
+              <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input
+                  id="discover-results-search"
+                  type="search"
+                  placeholder={t("library.search.placeholder")}
+                  class="w-full pl-8 pr-3 py-2 rounded-lg bg-surface-950/60 border border-white/6 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-brand-500/40 transition-colors"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <div class="overflow-y-auto flex-1">
+              <div id="discover-preview-list" class="divide-y divide-white/6"></div>
+            </div>
+          </div>
+          <div class="flex-1 min-w-0 bg-surface-900/30" id="discover-preview-panel">
+            <iframe id="discover-preview-iframe" class="w-full h-full bg-white" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+          </div>
+        </div>
+        <!-- Grid view (hidden by default) -->
+        <div id="discover-results-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <p class="hidden text-center text-slate-500 py-16" id="discover-empty">
+          {t("library.discover.noResults")}
+        </p>
+      </div>
+    </div>
+
+    <!-- Mode 3: Browse (existing) -->
+    <div class="flex flex-col lg:flex-row gap-8" id="mode-browse-content">
       <!-- Sidebar: filters -->
       <aside class="w-full lg:w-64 shrink-0">
         <FilterBar locale={locale} categories={categories} techs={techs} authors={authors} />
@@ -185,11 +440,13 @@ const structuredData = {
   const sortGrouped  = document.getElementById("sort-grouped") as HTMLButtonElement;
   const sortLatest   = document.getElementById("sort-latest") as HTMLButtonElement;
 
-  // Store each card's original parent grid + next sibling before any moves
-  type CardOrigin = { parent: Element; nextSibling: Element | null };
+  // Store each card's original parent grid and use a persistent anchor comment
+  type CardOrigin = { parent: Element; anchor: Comment };
   const origins = new Map<Element, CardOrigin>();
-  document.querySelectorAll<HTMLElement>("[data-slug]").forEach((card) => {
-    origins.set(card, { parent: card.parentElement!, nextSibling: card.nextElementSibling });
+  document.querySelectorAll<HTMLElement>("article[data-slug]").forEach((card) => {
+    const anchor = document.createComment("card-anchor");
+    card.parentElement!.insertBefore(anchor, card);
+    origins.set(card, { parent: card.parentElement!, anchor });
   });
 
   let sortMode: "grouped" | "latest" = "grouped";
@@ -223,13 +480,9 @@ const structuredData = {
     sortLatest.classList.remove("chip--active");
     sortGrouped.classList.add("chip--active");
 
-    // Restore in REVERSE document order so each nextSibling is already back
-    // in its parent before we insertBefore it (forward order causes HierarchyRequestError
-    // because nextSibling is still in flatGrid when we try to use it as reference).
-    const entries = [...origins.entries()];
-    for (let i = entries.length - 1; i >= 0; i--) {
-      const [card, { parent, nextSibling }] = entries[i];
-      parent.insertBefore(card, nextSibling);
+    // Restore each card right after its persistent anchor comment
+    for (const [card, { parent, anchor }] of origins.entries()) {
+      parent.insertBefore(card, anchor.nextSibling);
     }
 
     flatGrid.classList.add("hidden");
@@ -238,7 +491,7 @@ const structuredData = {
     // Re-evaluate section visibility based on each card's current display state
     // (FilterBar already applied filters while cards were in flat-grid).
     document.querySelectorAll<HTMLElement>("[data-category-section]").forEach((section) => {
-      const hasVisible = [...section.querySelectorAll<HTMLElement>("[data-slug]")]
+      const hasVisible = [...section.querySelectorAll<HTMLElement>("article[data-slug]")]
         .some((c) => c.style.display !== "none");
       section.style.display = hasVisible ? "" : "none";
     });
@@ -268,4 +521,745 @@ const structuredData = {
     }
     importInput.value = "";
   });
+</script>
+
+<script>
+  import { isFavorite, toggleFavorite } from "@lib/favorites";
+
+  // ── Mode Switching ──────────────────────────────────────────────
+  type LibraryMode = "instant" | "discover" | "browse";
+  let currentMode: LibraryMode = "browse";
+
+  const modeContents: Record<LibraryMode, HTMLElement | null> = {
+    instant: document.getElementById("mode-instant-content"),
+    discover: document.getElementById("mode-discover-content"),
+    browse: document.getElementById("mode-browse-content"),
+  };
+
+  const modeButtons: Record<LibraryMode, HTMLElement | null> = {
+    instant: document.getElementById("mode-instant"),
+    discover: document.getElementById("mode-discover"),
+    browse: document.getElementById("mode-browse"),
+  };
+
+  const onModeChange: Array<(mode: LibraryMode) => void> = [];
+
+  function switchMode(mode: LibraryMode) {
+    if (mode === currentMode) return;
+    currentMode = mode;
+
+    for (const [key, el] of Object.entries(modeContents)) {
+      el?.classList.toggle("hidden", key !== mode);
+    }
+    for (const [key, btn] of Object.entries(modeButtons)) {
+      btn?.classList.toggle("chip--active", key === mode);
+    }
+
+    const url = new URL(window.location.href);
+    if (mode === "browse") {
+      url.searchParams.delete("mode");
+    } else {
+      url.searchParams.set("mode", mode);
+    }
+    history.replaceState({}, "", url.toString());
+
+    for (const cb of onModeChange) cb(mode);
+  }
+
+  for (const [mode, btn] of Object.entries(modeButtons)) {
+    btn?.addEventListener("click", () => switchMode(mode as LibraryMode));
+  }
+
+  // ── Graph Explorer ───────────────────────────────────────────────
+  import { ForceGraph, type GraphResource } from "@lib/graph-search";
+  import { DEBUG_MODE } from "@lib/constant";
+
+  const graphCanvas = document.getElementById("graph-canvas") as HTMLCanvasElement | null;
+  const graphSearchInput = document.getElementById("graph-search-input") as HTMLInputElement | null;
+  const graphMatchCount = document.getElementById("graph-match-count");
+  const graphContainer = document.getElementById("mode-instant-content");
+  const labBaseUrl = graphContainer?.dataset.labUrl ?? "";
+
+  const graphPreview = document.getElementById("graph-preview");
+  const graphPreviewTitle = document.getElementById("graph-preview-title");
+  const graphPreviewDesc = document.getElementById("graph-preview-desc");
+  const graphPreviewCategory = document.getElementById("graph-preview-category");
+  const graphPreviewDifficulty = document.getElementById("graph-preview-difficulty");
+  const graphPreviewTech = document.getElementById("graph-preview-tech");
+  const graphPreviewLink = document.getElementById("graph-preview-link") as HTMLAnchorElement | null;
+  const graphPreviewLab = document.getElementById("graph-preview-lab") as HTMLAnchorElement | null;
+  const graphPreviewIframeWrap = document.getElementById("graph-preview-iframe-wrap");
+  const graphPreviewIframe = document.getElementById("graph-preview-iframe") as HTMLIFrameElement | null;
+  const graphPreviewClose = document.getElementById("graph-preview-close");
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    "web-animations": "Web Animations",
+    "web-pages": "Web Pages",
+    "ui-components": "UI Components",
+    "patterns": "Patterns",
+    "components": "Components",
+    "pages": "Pages",
+    "prompts": "Prompts",
+    "plugins": "Plugins",
+    "architectures": "Architectures",
+    "boilerplates": "Boilerplates",
+    "remotion": "Remotion",
+    "database-schemas": "Database Schemas",
+    "ultra-high-definition-pages": "UHD Pages",
+    "design-styles": "Design Styles",
+    "music": "Music",
+    "3d-models": "3D Models",
+    "3d-interactions": "3D Interactions",
+  };
+
+  const DIFFICULTY_CLASSES: Record<string, string> = {
+    easy: "badge-easy",
+    med: "badge-med",
+    hard: "badge-hard",
+  };
+
+  let graph: ForceGraph | null = null;
+  let graphDataLoaded = false;
+
+  async function initGraph() {
+    if (!graphCanvas || graphDataLoaded) return;
+    graphDataLoaded = true;
+
+    graph = new ForceGraph(graphCanvas, DEBUG_MODE);
+
+    // Load search index
+    try {
+      const res = await fetch("/library-index.json", { headers: { Accept: "application/json" } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const resources: GraphResource[] = Array.isArray(data?.resources) ? data.resources : [];
+      graph.setData(resources);
+    } catch { return; }
+
+    // Node click → show preview
+    graph.onNodeClick = (r) => {
+      showGraphPreview(r);
+    };
+
+    // Match count + show fuzzy toggle
+    graph.onMatchChange = (count, matches) => {
+      if (graphMatchCount) {
+        graphMatchCount.textContent = count > 0 ? `${count} resource${count !== 1 ? "s" : ""} found` : "";
+      }
+      // Show fuzzy toggle only when there's a search query
+      const hasQuery = !!(graphSearchInput?.value.trim());
+      graphFuzzyLabel?.classList.toggle("hidden", !hasQuery);
+      if (!hasQuery) graphFuzzyLabel?.classList.remove("flex");
+      else graphFuzzyLabel?.classList.add("flex");
+    };
+  }
+
+  function showGraphPreview(r: GraphResource) {
+    if (!graphPreview) return;
+    graphPreview.classList.remove("hidden");
+
+    if (graphPreviewTitle) graphPreviewTitle.textContent = r.title;
+    if (graphPreviewDesc) graphPreviewDesc.textContent = r.description;
+    if (graphPreviewCategory) graphPreviewCategory.textContent = CATEGORY_LABELS[r.category] ?? r.category;
+    if (graphPreviewDifficulty) {
+      graphPreviewDifficulty.textContent = r.difficulty;
+      graphPreviewDifficulty.className = `badge text-xs ${DIFFICULTY_CLASSES[r.difficulty] ?? ""}`;
+    }
+    if (graphPreviewTech) {
+      graphPreviewTech.innerHTML = r.tech
+        .slice(0, 6)
+        .map((t) => `<span class="chip text-xs">${escapeHtml(t)}</span>`)
+        .join("");
+    }
+    if (graphPreviewLink) graphPreviewLink.href = `/r/${r.slug}`;
+
+    // Iframe: lab preview if available, otherwise detail page
+    if (graphPreviewIframe) {
+      if (r.labRoute && labBaseUrl) {
+        graphPreviewIframe.src = `${labBaseUrl}${r.labRoute}`;
+      } else {
+        graphPreviewIframe.src = `/r/${r.slug}`;
+      }
+    }
+
+    // Show/hide Lab button
+    if (r.labRoute && labBaseUrl && graphPreviewLab) {
+      graphPreviewLab.href = `${labBaseUrl}${r.labRoute}`;
+      graphPreviewLab.classList.remove("hidden");
+    } else if (graphPreviewLab) {
+      graphPreviewLab.classList.add("hidden");
+    }
+
+    // Scroll preview into view
+    requestAnimationFrame(() => {
+      graphPreview.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }
+
+  graphPreviewClose?.addEventListener("click", () => {
+    graphPreview?.classList.add("hidden");
+    if (graphPreviewIframe) graphPreviewIframe.removeAttribute("src");
+  });
+
+  // Search input → graph filter
+  const graphFuzzyToggle = document.getElementById("graph-fuzzy-toggle") as HTMLInputElement | null;
+  const graphFuzzyLabel = document.getElementById("graph-fuzzy-label");
+  let graphTimer: number | undefined;
+
+  function triggerGraphSearch() {
+    const q = graphSearchInput?.value ?? "";
+    const fuzzy = graphFuzzyToggle?.checked ?? false;
+    graph?.setSearch(q, fuzzy);
+  }
+
+  graphSearchInput?.addEventListener("input", () => {
+    if (graphTimer) window.clearTimeout(graphTimer);
+    graphTimer = window.setTimeout(triggerGraphSearch, 150);
+  });
+
+  graphFuzzyToggle?.addEventListener("change", () => {
+    triggerGraphSearch();
+  });
+
+  graphSearchInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      graphSearchInput.value = "";
+      triggerGraphSearch();
+      if (graphMatchCount) graphMatchCount.textContent = "";
+    }
+  });
+
+  // Zoom controls
+  document.getElementById("graph-zoom-in")?.addEventListener("click", () => graph?.zoomBy(1.3));
+  document.getElementById("graph-zoom-out")?.addEventListener("click", () => graph?.zoomBy(0.7));
+  document.getElementById("graph-reset-view")?.addEventListener("click", () => graph?.resetView());
+
+  // Lazy-init graph when mode switches to it
+  onModeChange.push((mode) => {
+    if (mode === "instant" && !graphDataLoaded) {
+      initGraph();
+    }
+  });
+
+
+  // ── Guided Discovery ────────────────────────────────────────────
+  interface WizardOption {
+    value: string;
+    label: string;
+    categories?: string[];
+    difficulties?: string[];
+    techs?: string[];
+  }
+
+  interface WizardQuestion {
+    id: string;
+    title: string;
+    options: WizardOption[];
+  }
+
+  const WIZARD_QUESTIONS: WizardQuestion[] = [
+    {
+      id: "building",
+      title: "What are you building?",
+      options: [
+        { value: "website", label: "Website / Landing", categories: ["web-pages", "pages", "web-animations", "ultra-high-definition-pages", "design-styles"] },
+        { value: "dashboard", label: "Dashboard / Admin", categories: ["ui-components", "components", "patterns", "pages"] },
+        { value: "mobile", label: "Mobile App", categories: ["ui-components", "components", "patterns"] },
+        { value: "video", label: "Video / Motion", categories: ["remotion", "music", "web-animations"] },
+        { value: "aidev", label: "AI / Dev Tool", categories: ["prompts", "plugins", "architectures", "boilerplates"] },
+        { value: "database", label: "Database / Schema", categories: ["database-schemas"] },
+      ],
+    },
+    {
+      id: "level",
+      title: "What's your experience level?",
+      options: [
+        { value: "easy", label: "Beginner", difficulties: ["easy"] },
+        { value: "med", label: "Intermediate", difficulties: ["easy", "med"] },
+        { value: "hard", label: "Advanced", difficulties: ["easy", "med", "hard"] },
+      ],
+    },
+    {
+      id: "tech",
+      title: "What tech do you prefer?",
+      options: [
+        { value: "react", label: "React", techs: ["react"] },
+        { value: "vue", label: "Vue", techs: ["vue"] },
+        { value: "svelte", label: "Svelte", techs: ["svelte"] },
+        { value: "vanilla", label: "Vanilla JS / HTML", techs: ["js", "html", "css"] },
+        { value: "astro", label: "Astro", techs: ["astro"] },
+        { value: "mobile", label: "React Native / Expo", techs: ["react-native", "expo"] },
+        { value: "sql", label: "SQL", techs: ["sql"] },
+      ],
+    },
+    {
+      id: "need",
+      title: "What do you need?",
+      options: [
+        { value: "animations", label: "Animations & Effects", categories: ["web-animations", "patterns"] },
+        { value: "pages", label: "Full Pages & Layouts", categories: ["web-pages", "pages", "ultra-high-definition-pages"] },
+        { value: "components", label: "UI Components", categories: ["ui-components", "components"] },
+        { value: "patterns", label: "Patterns & Interactions", categories: ["patterns", "design-styles"] },
+        { value: "prompts", label: "Prompts & Skills", categories: ["prompts", "plugins"] },
+        { value: "schemas", label: "Database Schemas", categories: ["database-schemas"] },
+      ],
+    },
+  ];
+
+  let wizardStep = 0;
+  // Multi-select: store selected options per question as a Set of values
+  const wizardSelections: Record<string, Set<string>> = {};
+  let discoverViewMode: "grid" | "preview" = "preview";
+
+  const discoverStepLabel = document.getElementById("discover-step-label");
+  const discoverProgress = document.getElementById("discover-progress");
+  const discoverQuestionTitle = document.getElementById("discover-question-title");
+  const discoverMultiHint = document.getElementById("discover-multi-hint");
+  const discoverOptions = document.getElementById("discover-options");
+  const discoverBack = document.getElementById("discover-back") as HTMLButtonElement | null;
+  const discoverRestart = document.getElementById("discover-restart") as HTMLButtonElement | null;
+  const discoverNext = document.getElementById("discover-next") as HTMLButtonElement | null;
+  const discoverSkip = document.getElementById("discover-skip") as HTMLButtonElement | null;
+  const discoverShowResults = document.getElementById("discover-show-results") as HTMLButtonElement | null;
+  const discoverQuestionContainer = document.getElementById("discover-question-container");
+  const discoverKeywordStep = document.getElementById("discover-keyword-step");
+  const discoverKeywordInput = document.getElementById("discover-keyword-input") as HTMLInputElement | null;
+  const discoverResults = document.getElementById("discover-results");
+  const discoverResultsGrid = document.getElementById("discover-results-grid");
+  const discoverResultsPreview = document.getElementById("discover-results-preview");
+  const discoverPreviewList = document.getElementById("discover-preview-list");
+  const discoverPreviewIframe = document.getElementById("discover-preview-iframe") as HTMLIFrameElement | null;
+  const discoverResultsCount = document.getElementById("discover-results-count");
+  const discoverEmpty = document.getElementById("discover-empty");
+  const discoverRestartResults = document.getElementById("discover-restart-results");
+  const discoverViewGrid = document.getElementById("discover-view-grid") as HTMLButtonElement | null;
+  const discoverViewPreview = document.getElementById("discover-view-preview") as HTMLButtonElement | null;
+  const discoverResultsSearch = document.getElementById("discover-results-search") as HTMLInputElement | null;
+
+  // Matched results stored for view toggle
+  let discoverMatchedCards: HTMLElement[] = [];
+
+  // Simple fuzzy match: checks if all characters of needle appear in haystack in order
+  function fuzzyMatch(needle: string, haystack: string): boolean {
+    const n = needle.toLowerCase();
+    const h = haystack.toLowerCase();
+    let ni = 0;
+    for (let hi = 0; hi < h.length && ni < n.length; hi++) {
+      if (h[hi] === n[ni]) ni++;
+    }
+    return ni === n.length;
+  }
+
+  // Fuzzy score: lower = better match. Returns -1 if no match.
+  function fuzzyScore(needle: string, haystack: string): number {
+    const n = needle.toLowerCase();
+    const h = haystack.toLowerCase();
+    let ni = 0;
+    let score = 0;
+    let lastMatch = -1;
+    for (let hi = 0; hi < h.length && ni < n.length; hi++) {
+      if (h[hi] === n[ni]) {
+        // Bonus for consecutive matches
+        score += (lastMatch === hi - 1) ? 0 : (hi - (lastMatch + 1));
+        lastMatch = hi;
+        ni++;
+      }
+    }
+    return ni === n.length ? score : -1;
+  }
+
+  function getStepSelections(questionId: string): Set<string> {
+    if (!wizardSelections[questionId]) wizardSelections[questionId] = new Set();
+    return wizardSelections[questionId];
+  }
+
+  function renderWizardStep(step: number) {
+    wizardStep = step;
+    const totalSteps = WIZARD_QUESTIONS.length;
+    const isLastQuestion = step >= totalSteps;
+
+    // Show question area, hide results
+    discoverQuestionContainer?.classList.toggle("hidden", isLastQuestion);
+    discoverKeywordStep?.classList.toggle("hidden", !isLastQuestion);
+    discoverResults?.classList.add("hidden");
+
+    // Progress
+    const progress = (step / (totalSteps + 1)) * 100;
+    if (discoverProgress) discoverProgress.style.width = `${progress}%`;
+
+    if (isLastQuestion) {
+      // Keyword step
+      if (discoverStepLabel) discoverStepLabel.textContent = `Step ${totalSteps + 1} of ${totalSteps + 1}`;
+      // Show "Show results" button, hide Next
+      discoverNext?.classList.add("hidden");
+      discoverSkip?.classList.add("hidden");
+      discoverShowResults?.classList.remove("hidden");
+      if (discoverBack) discoverBack.classList.remove("hidden");
+      if (discoverRestart) discoverRestart.classList.remove("hidden");
+      discoverKeywordInput?.focus();
+      return;
+    }
+
+    const question = WIZARD_QUESTIONS[step];
+    if (!question) return;
+
+    if (discoverStepLabel) discoverStepLabel.textContent = `Step ${step + 1} of ${totalSteps + 1}`;
+    if (discoverQuestionTitle) discoverQuestionTitle.textContent = question.title;
+    if (discoverMultiHint) discoverMultiHint.textContent = "Select one or more options";
+
+    const selected = getStepSelections(question.id);
+
+    // Render options as toggleable buttons
+    if (discoverOptions) {
+      discoverOptions.innerHTML = question.options
+        .map((opt) => {
+          const isSelected = selected.has(opt.value);
+          return `<button class="discover-option${isSelected ? " is-selected" : ""}" data-value="${opt.value}" type="button">${escapeHtml(opt.label)}</button>`;
+        })
+        .join("");
+
+      discoverOptions.querySelectorAll<HTMLButtonElement>(".discover-option").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const value = btn.dataset.value!;
+          if (selected.has(value)) {
+            selected.delete(value);
+            btn.classList.remove("is-selected");
+          } else {
+            selected.add(value);
+            btn.classList.add("is-selected");
+          }
+          updateNavButtons();
+        });
+      });
+    }
+
+    // Navigation visibility
+    if (discoverBack) discoverBack.classList.toggle("hidden", step === 0);
+    if (discoverRestart) discoverRestart.classList.toggle("hidden", step === 0);
+    discoverShowResults?.classList.add("hidden");
+    updateNavButtons();
+  }
+
+  function updateNavButtons() {
+    const question = WIZARD_QUESTIONS[wizardStep];
+    if (!question) return;
+    const selected = getStepSelections(question.id);
+    const hasSelection = selected.size > 0;
+
+    // Show Next if something selected, Skip always visible
+    discoverNext?.classList.toggle("hidden", !hasSelection);
+    discoverSkip?.classList.toggle("hidden", hasSelection);
+  }
+
+  function showWizardResults() {
+    // Update progress to 100%
+    if (discoverProgress) discoverProgress.style.width = "100%";
+    if (discoverStepLabel) discoverStepLabel.textContent = "Done!";
+
+    // Hide question + keyword, show results
+    discoverQuestionContainer?.classList.add("hidden");
+    discoverKeywordStep?.classList.add("hidden");
+    discoverResults?.classList.remove("hidden");
+    discoverNext?.classList.add("hidden");
+    discoverSkip?.classList.add("hidden");
+    discoverShowResults?.classList.add("hidden");
+
+    // Compute filter criteria from all multi-selections
+    const allowedCategories = new Set<string>();
+    const allowedDifficulties = new Set<string>();
+    const allowedTechs = new Set<string>();
+
+    // Merge categories from "building" and "need" selections
+    for (const questionId of ["building", "need"]) {
+      const selected = wizardSelections[questionId];
+      if (!selected || selected.size === 0) continue;
+      const question = WIZARD_QUESTIONS.find((q) => q.id === questionId);
+      if (!question) continue;
+      for (const val of selected) {
+        const opt = question.options.find((o) => o.value === val);
+        if (opt?.categories) {
+          for (const cat of opt.categories) allowedCategories.add(cat);
+        }
+      }
+    }
+
+    // Difficulty from "level" selections
+    const levelSelected = wizardSelections["level"];
+    if (levelSelected && levelSelected.size > 0) {
+      const levelQ = WIZARD_QUESTIONS.find((q) => q.id === "level");
+      if (levelQ) {
+        for (const val of levelSelected) {
+          const opt = levelQ.options.find((o) => o.value === val);
+          if (opt?.difficulties) {
+            for (const d of opt.difficulties) allowedDifficulties.add(d);
+          }
+        }
+      }
+    }
+
+    // Tech from "tech" selections
+    const techSelected = wizardSelections["tech"];
+    if (techSelected && techSelected.size > 0) {
+      const techQ = WIZARD_QUESTIONS.find((q) => q.id === "tech");
+      if (techQ) {
+        for (const val of techSelected) {
+          const opt = techQ.options.find((o) => o.value === val);
+          if (opt?.techs) {
+            for (const t of opt.techs) allowedTechs.add(t);
+          }
+        }
+      }
+    }
+
+    // Optional keyword filter (fuzzy)
+    const keyword = discoverKeywordInput?.value.trim() ?? "";
+
+    // Filter cards from the browse mode DOM
+    const allCards = document.querySelectorAll<HTMLElement>("#mode-browse-content article[data-slug]");
+    const scored: Array<{ card: HTMLElement; score: number }> = [];
+
+    allCards.forEach((card) => {
+      const cardCategory = card.dataset.category ?? "";
+      const cardDifficulty = card.dataset.difficulty ?? "";
+      const cardTech = (card.dataset.tech ?? "").split(",").filter(Boolean);
+
+      if (allowedCategories.size > 0 && !allowedCategories.has(cardCategory)) return;
+      if (allowedDifficulties.size > 0 && !allowedDifficulties.has(cardDifficulty)) return;
+      if (allowedTechs.size > 0 && !cardTech.some((t) => allowedTechs.has(t))) return;
+
+      // Fuzzy keyword match (against title, description, tags)
+      if (keyword) {
+        const title = card.querySelector("h2")?.textContent ?? "";
+        const desc = card.querySelector("p:nth-of-type(2)")?.textContent ?? "";
+        const tags = card.dataset.tags ?? "";
+        const combined = `${title} ${desc} ${tags}`;
+        // Try exact substring first, then fuzzy
+        if (combined.toLowerCase().includes(keyword.toLowerCase())) {
+          scored.push({ card, score: 0 });
+        } else {
+          const s = fuzzyScore(keyword, combined);
+          if (s >= 0) scored.push({ card, score: s + 100 }); // fuzzy matches ranked after exact
+        }
+        return;
+      }
+
+      scored.push({ card, score: 0 });
+    });
+
+    // Sort by relevance score (lower = better) and build matched array
+    scored.sort((a, b) => a.score - b.score);
+    discoverMatchedCards = scored.map((s) => s.card);
+
+    if (discoverResultsCount) {
+      discoverResultsCount.textContent = `${discoverMatchedCards.length} resource${discoverMatchedCards.length !== 1 ? "s" : ""}`;
+    }
+    discoverEmpty?.classList.toggle("hidden", discoverMatchedCards.length > 0);
+
+    // Clear results search when new wizard results load
+    if (discoverResultsSearch) discoverResultsSearch.value = "";
+
+    renderDiscoverResults();
+  }
+
+  function renderDiscoverResults() {
+    if (discoverViewMode === "grid") {
+      discoverResultsGrid?.classList.remove("hidden");
+      discoverResultsPreview?.classList.add("hidden");
+      renderDiscoverGrid();
+    } else {
+      discoverResultsGrid?.classList.add("hidden");
+      discoverResultsPreview?.classList.remove("hidden");
+      renderDiscoverPreviewList();
+    }
+  }
+
+  function renderDiscoverGrid() {
+    if (!discoverResultsGrid) return;
+    discoverResultsGrid.innerHTML = "";
+
+    for (const card of discoverMatchedCards) {
+      const clone = card.cloneNode(true) as HTMLElement;
+      clone.style.display = "";
+      discoverResultsGrid.appendChild(clone);
+    }
+
+    // Re-init favorite buttons on cloned cards
+    discoverResultsGrid.querySelectorAll<HTMLButtonElement>(".favorite-btn").forEach((btn) => {
+      const slug = btn.dataset.slug;
+      if (!slug) return;
+      if (isFavorite(slug)) {
+        btn.classList.add("is-favorite");
+        const svg = btn.querySelector("svg");
+        if (svg) svg.setAttribute("fill", "currentColor");
+      }
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const nowFav = toggleFavorite(slug);
+        btn.classList.toggle("is-favorite", nowFav);
+        const svg = btn.querySelector("svg");
+        if (svg) svg.setAttribute("fill", nowFav ? "currentColor" : "none");
+      });
+    });
+  }
+
+  function selectDiscoverPreviewItem(cards: HTMLElement[], idx: number) {
+    const card = cards[idx];
+    if (!card || !discoverPreviewList) return;
+
+    // Highlight in list
+    discoverPreviewList.querySelectorAll(".instant-result").forEach((el, j) => {
+      el.classList.toggle("is-selected", j === idx);
+    });
+
+    // Load iframe: lab preview if available, otherwise detail page /r/slug
+    const labRoute = card.dataset.labRoute;
+    const slug = card.dataset.slug ?? "";
+    if (discoverPreviewIframe) {
+      if (labRoute && labBaseUrl) {
+        discoverPreviewIframe.src = `${labBaseUrl}${labRoute}`;
+      } else {
+        discoverPreviewIframe.src = `/r/${slug}`;
+      }
+    }
+  }
+
+  function renderDiscoverPreviewList() {
+    if (!discoverPreviewList) return;
+    discoverPreviewList.innerHTML = "";
+
+    const allCards = discoverMatchedCards;
+
+    if (allCards.length === 0) {
+      if (discoverPreviewIframe) discoverPreviewIframe.removeAttribute("src");
+      return;
+    }
+
+    discoverPreviewList.innerHTML = allCards
+      .map((card, i) => {
+        const title = card.querySelector("h2")?.textContent ?? card.dataset.slug ?? "";
+        const category = card.dataset.category ?? "";
+        const hasLab = !!card.dataset.labRoute;
+        const slug = card.dataset.slug ?? "";
+        return `<button class="instant-result" data-discover-idx="${i}" type="button">
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <span class="text-xs text-slate-500">${CATEGORY_LABELS[category] ?? category}</span>
+              <p class="text-sm font-medium text-slate-200">${escapeHtml(title)}</p>
+            </div>
+            ${hasLab ? `<div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
+              <a href="${labBaseUrl}${card.dataset.labRoute}" target="_blank" rel="noopener" class="text-xs text-slate-500 hover:text-slate-300 px-1.5 py-0.5 rounded bg-white/4 border border-white/8 transition-colors" title="Open in Lab">Lab</a>
+              <a href="/r/${slug}" target="_blank" rel="noopener" class="text-xs text-slate-500 hover:text-slate-300 px-1.5 py-0.5 rounded bg-white/4 border border-white/8 transition-colors" title="Open information">Info</a>
+            </div>` : ""}
+          </div>
+        </button>`;
+      })
+      .join("");
+
+    // Click handlers
+    discoverPreviewList.querySelectorAll<HTMLButtonElement>(".instant-result").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.discoverIdx ?? "0", 10);
+        selectDiscoverPreviewItem(allCards, idx);
+      });
+    });
+
+    // Auto-select first result (all can preview now)
+    if (allCards.length > 0) {
+      selectDiscoverPreviewItem(allCards, 0);
+    }
+  }
+
+  // View toggle
+  discoverViewGrid?.addEventListener("click", () => {
+    if (discoverViewMode === "grid") return;
+    discoverViewMode = "grid";
+    discoverViewGrid.classList.add("chip--active");
+    discoverViewPreview?.classList.remove("chip--active");
+    renderDiscoverResults();
+  });
+
+  discoverViewPreview?.addEventListener("click", () => {
+    if (discoverViewMode === "preview") return;
+    discoverViewMode = "preview";
+    discoverViewPreview.classList.add("chip--active");
+    discoverViewGrid?.classList.remove("chip--active");
+    renderDiscoverResults();
+  });
+
+  // Results search — filter the list within the already-matched results
+  let discoverSearchTimer: number | undefined;
+  discoverResultsSearch?.addEventListener("input", () => {
+    if (discoverSearchTimer) window.clearTimeout(discoverSearchTimer);
+    discoverSearchTimer = window.setTimeout(() => {
+      filterDiscoverResultsList();
+    }, 150);
+  });
+
+  function filterDiscoverResultsList() {
+    const q = discoverResultsSearch?.value.trim() ?? "";
+    if (!discoverPreviewList) return;
+
+    const buttons = discoverPreviewList.querySelectorAll<HTMLButtonElement>(".instant-result");
+    let visibleCount = 0;
+
+    buttons.forEach((btn) => {
+      const title = btn.querySelector("p")?.textContent ?? "";
+      const category = btn.querySelector("span")?.textContent ?? "";
+      const text = `${title} ${category}`;
+
+      if (!q || text.toLowerCase().includes(q.toLowerCase()) || fuzzyMatch(q, text)) {
+        btn.style.display = "";
+        visibleCount++;
+      } else {
+        btn.style.display = "none";
+      }
+    });
+
+    // Update count
+    if (discoverResultsCount) {
+      discoverResultsCount.textContent = `${visibleCount} resource${visibleCount !== 1 ? "s" : ""}`;
+    }
+  }
+
+  function resetWizard() {
+    for (const key of Object.keys(wizardSelections)) delete wizardSelections[key];
+    if (discoverKeywordInput) discoverKeywordInput.value = "";
+    if (discoverResultsSearch) discoverResultsSearch.value = "";
+    discoverMatchedCards = [];
+    renderWizardStep(0);
+  }
+
+  discoverBack?.addEventListener("click", () => {
+    if (wizardStep > 0) renderWizardStep(wizardStep - 1);
+  });
+
+  discoverNext?.addEventListener("click", () => {
+    renderWizardStep(wizardStep + 1);
+  });
+
+  discoverSkip?.addEventListener("click", () => {
+    renderWizardStep(wizardStep + 1);
+  });
+
+  discoverShowResults?.addEventListener("click", () => {
+    showWizardResults();
+  });
+
+  discoverRestart?.addEventListener("click", resetWizard);
+  discoverRestartResults?.addEventListener("click", resetWizard);
+
+  // Init wizard
+  renderWizardStep(0);
+
+  // ── Utility ─────────────────────────────────────────────────────
+  function escapeHtml(str: string): string {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // ── Init mode from URL ─────────────────────────────────────────
+  const modeParam = new URLSearchParams(window.location.search).get("mode");
+  if (modeParam === "instant" || modeParam === "discover") {
+    currentMode = "browse";
+    switchMode(modeParam);
+  }
 </script>

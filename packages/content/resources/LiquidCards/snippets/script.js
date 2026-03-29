@@ -88,11 +88,7 @@ function transition() {
 }
 
 function animateMeter() {
-  gsap.fromTo(
-    fill,
-    { width: "0%" },
-    { width: "100%", duration: intervalMs / 1000, ease: "none" }
-  );
+  gsap.fromTo(fill, { width: "0%" }, { width: "100%", duration: intervalMs / 1000, ease: "none" });
 }
 
 setupBlobs();

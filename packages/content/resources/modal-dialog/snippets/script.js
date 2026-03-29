@@ -1,5 +1,6 @@
 (function () {
-  var FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+  var FOCUSABLE =
+    'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
 
   function openModal(backdrop) {
     backdrop.classList.add("is-open");
@@ -50,9 +51,15 @@
       if (e.key !== "Tab") return;
       var focusable = Array.from(backdrop.querySelectorAll(FOCUSABLE));
       if (!focusable.length) return;
-      var first = focusable[0], last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      var first = focusable[0],
+        last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     });
   });
-}());
+})();

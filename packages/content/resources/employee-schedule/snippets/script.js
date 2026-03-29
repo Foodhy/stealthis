@@ -2,69 +2,78 @@
   "use strict";
 
   /* ── Config ── */
-  const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const WEEK_START = new Date(2026, 0, 27); // Jan 27, 2026
 
   const SHIFT_CFG = {
-    morning:   { label: "Morning",   color: "#38bdf8", start: "06:00", end: "14:00", hours: 8 },
+    morning: { label: "Morning", color: "#38bdf8", start: "06:00", end: "14:00", hours: 8 },
     afternoon: { label: "Afternoon", color: "#fb923c", start: "14:00", end: "22:00", hours: 8 },
-    night:     { label: "Night",     color: "#a78bfa", start: "22:00", end: "06:00", hours: 8 },
-    off:       { label: "Off",       color: "#334155", start: "",      end: "",      hours: 0 },
+    night: { label: "Night", color: "#a78bfa", start: "22:00", end: "06:00", hours: 8 },
+    off: { label: "Off", color: "#334155", start: "", end: "", hours: 0 },
   };
 
-  const AVATAR_COLORS = ["#38bdf8","#a78bfa","#fb923c","#34d399","#f87171","#fbbf24","#38bdf8","#a78bfa"];
+  const AVATAR_COLORS = [
+    "#38bdf8",
+    "#a78bfa",
+    "#fb923c",
+    "#34d399",
+    "#f87171",
+    "#fbbf24",
+    "#38bdf8",
+    "#a78bfa",
+  ];
 
   const employees = [
-    { id: "e1", name: "Alice M.",  role: "Manager",   initials: "AM" },
-    { id: "e2", name: "Bob K.",    role: "Associate",  initials: "BK" },
-    { id: "e3", name: "Carol S.",  role: "Lead",       initials: "CS" },
-    { id: "e4", name: "David R.",  role: "Associate",  initials: "DR" },
-    { id: "e5", name: "Emma J.",   role: "Senior",     initials: "EJ" },
-    { id: "e6", name: "Frank L.",  role: "Intern",     initials: "FL" },
-    { id: "e7", name: "Grace H.",  role: "Associate",  initials: "GH" },
-    { id: "e8", name: "Henry W.",  role: "Senior",     initials: "HW" },
+    { id: "e1", name: "Alice M.", role: "Manager", initials: "AM" },
+    { id: "e2", name: "Bob K.", role: "Associate", initials: "BK" },
+    { id: "e3", name: "Carol S.", role: "Lead", initials: "CS" },
+    { id: "e4", name: "David R.", role: "Associate", initials: "DR" },
+    { id: "e5", name: "Emma J.", role: "Senior", initials: "EJ" },
+    { id: "e6", name: "Frank L.", role: "Intern", initials: "FL" },
+    { id: "e7", name: "Grace H.", role: "Associate", initials: "GH" },
+    { id: "e8", name: "Henry W.", role: "Senior", initials: "HW" },
   ];
 
   /* ── Schedule data: keyed by `${empId}:${dayIndex}` ── */
   let schedule = {
-    "e1:0": { type: "morning",   startTime: "06:00", endTime: "14:00" },
-    "e1:1": { type: "morning",   startTime: "06:00", endTime: "14:00" },
-    "e1:2": { type: "morning",   startTime: "06:00", endTime: "14:00" },
-    "e1:3": { type: "morning",   startTime: "06:00", endTime: "14:00" },
-    "e1:4": { type: "morning",   startTime: "06:00", endTime: "14:00" },
+    "e1:0": { type: "morning", startTime: "06:00", endTime: "14:00" },
+    "e1:1": { type: "morning", startTime: "06:00", endTime: "14:00" },
+    "e1:2": { type: "morning", startTime: "06:00", endTime: "14:00" },
+    "e1:3": { type: "morning", startTime: "06:00", endTime: "14:00" },
+    "e1:4": { type: "morning", startTime: "06:00", endTime: "14:00" },
     "e2:0": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
     "e2:1": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
     "e2:2": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
     "e2:3": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
-    "e2:4": { type: "off",       startTime: "",       endTime: "" },
-    "e3:0": { type: "morning",   startTime: "08:00", endTime: "16:00" },
-    "e3:1": { type: "morning",   startTime: "08:00", endTime: "16:00" },
-    "e3:2": { type: "morning",   startTime: "08:00", endTime: "16:00" },
-    "e3:3": { type: "morning",   startTime: "08:00", endTime: "16:00" },
-    "e3:4": { type: "morning",   startTime: "08:00", endTime: "16:00" },
+    "e2:4": { type: "off", startTime: "", endTime: "" },
+    "e3:0": { type: "morning", startTime: "08:00", endTime: "16:00" },
+    "e3:1": { type: "morning", startTime: "08:00", endTime: "16:00" },
+    "e3:2": { type: "morning", startTime: "08:00", endTime: "16:00" },
+    "e3:3": { type: "morning", startTime: "08:00", endTime: "16:00" },
+    "e3:4": { type: "morning", startTime: "08:00", endTime: "16:00" },
     "e4:1": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
     "e4:2": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
     "e4:3": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
-    "e4:5": { type: "morning",   startTime: "09:00", endTime: "17:00" },
-    "e4:6": { type: "morning",   startTime: "09:00", endTime: "17:00" },
-    "e5:0": { type: "night",     startTime: "22:00", endTime: "06:00" },
-    "e5:1": { type: "night",     startTime: "22:00", endTime: "06:00" },
-    "e5:2": { type: "night",     startTime: "22:00", endTime: "06:00" },
+    "e4:5": { type: "morning", startTime: "09:00", endTime: "17:00" },
+    "e4:6": { type: "morning", startTime: "09:00", endTime: "17:00" },
+    "e5:0": { type: "night", startTime: "22:00", endTime: "06:00" },
+    "e5:1": { type: "night", startTime: "22:00", endTime: "06:00" },
+    "e5:2": { type: "night", startTime: "22:00", endTime: "06:00" },
     "e5:4": { type: "afternoon", startTime: "12:00", endTime: "20:00" },
-    "e6:0": { type: "morning",   startTime: "09:00", endTime: "13:00" },
-    "e6:1": { type: "morning",   startTime: "09:00", endTime: "13:00" },
-    "e6:2": { type: "morning",   startTime: "09:00", endTime: "13:00" },
-    "e6:3": { type: "morning",   startTime: "09:00", endTime: "13:00" },
-    "e6:4": { type: "morning",   startTime: "09:00", endTime: "13:00" },
+    "e6:0": { type: "morning", startTime: "09:00", endTime: "13:00" },
+    "e6:1": { type: "morning", startTime: "09:00", endTime: "13:00" },
+    "e6:2": { type: "morning", startTime: "09:00", endTime: "13:00" },
+    "e6:3": { type: "morning", startTime: "09:00", endTime: "13:00" },
+    "e6:4": { type: "morning", startTime: "09:00", endTime: "13:00" },
     "e7:0": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
     "e7:2": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
     "e7:4": { type: "afternoon", startTime: "14:00", endTime: "22:00" },
-    "e7:5": { type: "morning",   startTime: "09:00", endTime: "17:00" },
-    "e8:1": { type: "morning",   startTime: "07:00", endTime: "15:00" },
-    "e8:2": { type: "morning",   startTime: "07:00", endTime: "15:00" },
-    "e8:3": { type: "morning",   startTime: "07:00", endTime: "15:00" },
-    "e8:4": { type: "morning",   startTime: "07:00", endTime: "15:00" },
-    "e8:6": { type: "night",     startTime: "20:00", endTime: "04:00" },
+    "e7:5": { type: "morning", startTime: "09:00", endTime: "17:00" },
+    "e8:1": { type: "morning", startTime: "07:00", endTime: "15:00" },
+    "e8:2": { type: "morning", startTime: "07:00", endTime: "15:00" },
+    "e8:3": { type: "morning", startTime: "07:00", endTime: "15:00" },
+    "e8:4": { type: "morning", startTime: "07:00", endTime: "15:00" },
+    "e8:6": { type: "night", startTime: "20:00", endTime: "04:00" },
   };
 
   let weekOffset = 0;
@@ -81,7 +90,20 @@
 
   function formatWeekLabel() {
     const ws = getWeekStart();
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     if (currentView === "day") {
       const d = new Date(ws);
       d.setDate(ws.getDate() + dayViewIndex);
@@ -94,9 +116,9 @@
     if (!start || !end) return 0;
     const [sh, sm] = start.split(":").map(Number);
     const [eh, em] = end.split(":").map(Number);
-    let diff = (eh * 60 + em) - (sh * 60 + sm);
+    let diff = eh * 60 + em - (sh * 60 + sm);
     if (diff < 0) diff += 24 * 60;
-    return Math.round(diff / 60 * 10) / 10;
+    return Math.round((diff / 60) * 10) / 10;
   }
 
   function getTotalHours(empId) {
@@ -181,7 +203,7 @@
 
     const indices = currentView === "day" ? [dayViewIndex] : DAYS.map((_, i) => i);
 
-    indices.forEach(idx => {
+    indices.forEach((idx) => {
       const cell = document.createElement("div");
       cell.className = "es-day-header-cell";
       if (isToday(idx)) cell.classList.add("today");
@@ -213,7 +235,7 @@
       const row = document.createElement("div");
       row.className = "es-row";
 
-      indices.forEach(dayIdx => {
+      indices.forEach((dayIdx) => {
         const key = `${emp.id}:${dayIdx}`;
         const shift = schedule[key];
         const cell = document.createElement("div");
@@ -236,7 +258,10 @@
 
           block.appendChild(typeEl);
           block.appendChild(timeEl);
-          block.addEventListener("click", e => { e.stopPropagation(); openPopup(key, shift); });
+          block.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openPopup(key, shift);
+          });
           cell.appendChild(block);
         } else if (shift && shift.type === "off") {
           const block = document.createElement("div");
@@ -245,7 +270,10 @@
           block.style.color = "#64748b";
           block.style.fontSize = "0.7rem";
           block.textContent = "OFF";
-          block.addEventListener("click", e => { e.stopPropagation(); openPopup(key, shift); });
+          block.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openPopup(key, shift);
+          });
           cell.appendChild(block);
         } else {
           const empty = document.createElement("div");
@@ -268,11 +296,12 @@
 
     const indices = currentView === "day" ? [dayViewIndex] : DAYS.map((_, i) => i);
 
-    indices.forEach(dayIdx => {
+    indices.forEach((dayIdx) => {
       const cell = document.createElement("div");
       cell.className = "es-summary-cell";
-      let count = 0, totalH = 0;
-      employees.forEach(emp => {
+      let count = 0,
+        totalH = 0;
+      employees.forEach((emp) => {
         const shift = schedule[`${emp.id}:${dayIdx}`];
         if (shift && shift.type !== "off") {
           count++;
@@ -316,7 +345,10 @@
 
   shiftType.addEventListener("change", () => {
     const cfg = SHIFT_CFG[shiftType.value];
-    if (cfg && cfg.start) { shiftStart.value = cfg.start; shiftEnd.value = cfg.end; }
+    if (cfg && cfg.start) {
+      shiftStart.value = cfg.start;
+      shiftEnd.value = cfg.end;
+    }
   });
 
   function openPopup(key, shift) {
@@ -325,8 +357,8 @@
     shiftDelete.style.display = shift ? "block" : "none";
     shiftType.value = shift ? shift.type : "morning";
     const cfg = SHIFT_CFG[shiftType.value];
-    shiftStart.value = shift ? (shift.startTime || cfg.start) : cfg.start;
-    shiftEnd.value   = shift ? (shift.endTime   || cfg.end)   : cfg.end;
+    shiftStart.value = shift ? shift.startTime || cfg.start : cfg.start;
+    shiftEnd.value = shift ? shift.endTime || cfg.end : cfg.end;
     popup.classList.add("open");
     overlay.classList.add("visible");
   }
@@ -343,7 +375,11 @@
 
   document.getElementById("shift-save").addEventListener("click", () => {
     if (!editingKey) return;
-    schedule[editingKey] = { type: shiftType.value, startTime: shiftStart.value, endTime: shiftEnd.value };
+    schedule[editingKey] = {
+      type: shiftType.value,
+      startTime: shiftStart.value,
+      endTime: shiftEnd.value,
+    };
     closePopup();
     render();
   });
@@ -359,7 +395,10 @@
   document.getElementById("es-prev").addEventListener("click", () => {
     if (currentView === "day") {
       dayViewIndex--;
-      if (dayViewIndex < 0) { dayViewIndex = 6; weekOffset--; }
+      if (dayViewIndex < 0) {
+        dayViewIndex = 6;
+        weekOffset--;
+      }
     } else {
       weekOffset--;
     }
@@ -369,7 +408,10 @@
   document.getElementById("es-next").addEventListener("click", () => {
     if (currentView === "day") {
       dayViewIndex++;
-      if (dayViewIndex > 6) { dayViewIndex = 0; weekOffset++; }
+      if (dayViewIndex > 6) {
+        dayViewIndex = 0;
+        weekOffset++;
+      }
     } else {
       weekOffset++;
     }
@@ -383,9 +425,9 @@
   });
 
   /* ── View toggle ── */
-  document.querySelectorAll(".view-btn").forEach(btn => {
+  document.querySelectorAll(".view-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".view-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       currentView = btn.dataset.view;
       render();

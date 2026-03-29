@@ -7,9 +7,10 @@ import { marked } from "marked";
 interface Props {
   slug: string;
   targets: string[];
+  htmlSrcdoc?: string;
 }
 
-const { slug, targets } = Astro.props;
+const { slug, targets, htmlSrcdoc } = Astro.props;
 const normalizedTargets = targets.map((target) => target.toLowerCase());
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -18,7 +19,10 @@ const LANG_MAP: Record<string, string> = {
   html: "html",
   style: "css",
   script: "js",
+  sql: "sql",
   react: "tsx",
+  "react-native": "tsx",
+  expo: "tsx",
   next: "tsx",
   vue: "vue",
   svelte: "svelte",
@@ -31,7 +35,10 @@ const LANG_MAP: Record<string, string> = {
 };
 
 const EXT_MAP: Record<string, string> = {
+  sql: "sql",
   react: "tsx",
+  "react-native": "tsx",
+  expo: "tsx",
   next: "tsx",
   vue: "vue",
   svelte: "svelte",
@@ -41,10 +48,15 @@ const EXT_MAP: Record<string, string> = {
   markdown: "md",
   yaml: "yaml",
   json: "json",
+  mermaid: "mmd",
+  dbml: "dbml",
 };
 
 const LABEL_MAP: Record<string, string> = {
+  sql: "SQL",
   react: "React",
+  "react-native": "React Native",
+  expo: "Expo",
   next: "Next.js",
   vue: "Vue",
   svelte: "Svelte",
@@ -54,6 +66,8 @@ const LABEL_MAP: Record<string, string> = {
   markdown: "Markdown",
   yaml: "YAML",
   json: "JSON",
+  mermaid: "Mermaid",
+  dbml: "DBML",
 };
 
 interface Tab {
@@ -65,31 +79,103 @@ interface Tab {
   mermaidSources?: string[];
   isMarkdownPreview?: boolean;
   markdownHtml?: string;
+  isHtmlPreview?: boolean;
+  htmlSrcdocContent?: string;
 }
 
 const tabs: Tab[] = [];
+
+// Inline HTML preview tab (rendered iframe)
+if (htmlSrcdoc) {
+  tabs.push({
+    id: "preview",
+    label: "Preview",
+    code: "",
+    lang: "text",
+    isHtmlPreview: true,
+    htmlSrcdocContent: htmlSrcdoc,
+  });
+}
 
 // HTML target: combine css + js + html as separate tabs
 if (normalizedTargets.includes("html")) {
   const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
   const htmlPath = path.join(snippetsDir, "html.html");
-  const cssPath  = path.join(snippetsDir, "style.css");
-  const jsPath   = path.join(snippetsDir, "script.js");
+  const cssPath = path.join(snippetsDir, "style.css");
+  const jsPath = path.join(snippetsDir, "script.js");
 
   if (existsSync(cssPath)) {
-    tabs.push({ id: "css",  label: "CSS",  code: readFileSync(cssPath,  "utf-8").trim(), lang: "css"        });
+    tabs.push({
+      id: "css",
+      label: "CSS",
+      code: readFileSync(cssPath, "utf-8").trim(),
+      lang: "css",
+    });
   }
   if (existsSync(jsPath)) {
-    tabs.push({ id: "js",   label: "JS",   code: readFileSync(jsPath,   "utf-8").trim(), lang: "javascript" });
+    tabs.push({
+      id: "js",
+      label: "JS",
+      code: readFileSync(jsPath, "utf-8").trim(),
+      lang: "javascript",
+    });
   }
   if (existsSync(htmlPath)) {
-    tabs.push({ id: "html", label: "HTML", code: readFileSync(htmlPath, "utf-8").trim(), lang: "html"       });
+    tabs.push({
+      id: "html",
+      label: "HTML",
+      code: readFileSync(htmlPath, "utf-8").trim(),
+      lang: "html",
+    });
   }
 }
 
 // All other targets
 for (const target of normalizedTargets.filter((t) => t !== "html")) {
-  const ext      = EXT_MAP[target] ?? target;
+  if (target === "sql") {
+    const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
+    const sqlFiles = [
+      { id: "schema-sql", label: "Schema SQL", file: "schema.sql" },
+      { id: "seed-sql", label: "Seed SQL", file: "seed.sql" },
+      { id: "queries-sql", label: "Queries SQL", file: "queries.sql" },
+      { id: "migrations-sql", label: "Migrations SQL", file: "migrations.sql" },
+    ];
+
+    for (const sqlFile of sqlFiles) {
+      const filePath = path.join(snippetsDir, sqlFile.file);
+      if (!existsSync(filePath)) continue;
+      const code = readFileSync(filePath, "utf-8").trim();
+      tabs.push({ id: sqlFile.id, label: sqlFile.label, code, lang: "sql" });
+    }
+    continue;
+  }
+
+  if (target === "mermaid") {
+    const diagramPath = path.join(CONTENT_DIR, `resources/${slug}/snippets/diagram.mmd`);
+    if (!existsSync(diagramPath)) continue;
+
+    const code = readFileSync(diagramPath, "utf-8").trim();
+    tabs.push({
+      id: "diagram-preview",
+      label: "Diagram Preview",
+      code,
+      lang: "text",
+      isMermaidPreview: true,
+      mermaidSources: [code],
+    });
+    tabs.push({ id: "diagram-mermaid", label: "Mermaid", code, lang: "markdown" });
+    continue;
+  }
+
+  if (target === "dbml") {
+    const dbmlPath = path.join(CONTENT_DIR, `resources/${slug}/snippets/schema.dbml`);
+    if (!existsSync(dbmlPath)) continue;
+    const code = readFileSync(dbmlPath, "utf-8").trim();
+    tabs.push({ id: "schema-dbml", label: "DBML", code, lang: "text" });
+    continue;
+  }
+
+  const ext = EXT_MAP[target] ?? target;
   const filePath = path.join(CONTENT_DIR, `resources/${slug}/snippets/${target}.${ext}`);
   if (!existsSync(filePath)) continue;
 
@@ -133,7 +219,7 @@ for (const target of normalizedTargets.filter((t) => t !== "html")) {
     continue;
   }
 
-  const label = LABEL_MAP[target] ?? (target.charAt(0).toUpperCase() + target.slice(1));
+  const label = LABEL_MAP[target] ?? target.charAt(0).toUpperCase() + target.slice(1);
   tabs.push({ id: target, label, code, lang: LANG_MAP[target] ?? "text" });
 }
 ---
@@ -166,7 +252,24 @@ for (const target of normalizedTargets.filter((t) => t !== "html")) {
 
     <!-- Panels -->
     {tabs.map((tab, i) => (
-      tab.isMermaidPreview ? (
+      tab.isHtmlPreview ? (
+        <div
+          class:list={["tab-panel", i !== 0 ? "hidden" : ""]}
+          data-panel={tab.id}
+          data-code={tab.htmlSrcdocContent}
+        >
+          <div class="rounded-b-xl border border-white/8 border-t-0 bg-surface-900 overflow-hidden">
+            <iframe
+              srcdoc={tab.htmlSrcdocContent}
+              class="w-full border-0"
+              style="height:680px; background:#0a0a0f;"
+              loading="lazy"
+              sandbox="allow-scripts"
+              title="Preview"
+            ></iframe>
+          </div>
+        </div>
+      ) : tab.isMermaidPreview ? (
         <div
           class:list={["tab-panel", i !== 0 ? "hidden" : ""]}
           data-panel={tab.id}

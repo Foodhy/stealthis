@@ -76,7 +76,20 @@ const MCP_TOOLS = [
       properties: {
         category: {
           type: "string",
-          enum: ["web-animations", "web-pages", "ui-components", "patterns"],
+          enum: [
+            "web-animations",
+            "web-pages",
+            "ui-components",
+            "patterns",
+            "components",
+            "pages",
+            "prompts",
+            "plugins",
+            "architectures",
+            "boilerplates",
+            "remotion",
+            "database-schemas",
+          ],
           description: "Filter by resource category.",
         },
         difficulty: {
@@ -120,7 +133,21 @@ const MCP_TOOLS = [
         },
         target: {
           type: "string",
-          enum: ["html", "css", "js", "react", "next", "vue", "svelte", "astro"],
+          enum: [
+            "html",
+            "css",
+            "js",
+            "react",
+            "next",
+            "vue",
+            "svelte",
+            "astro",
+            "schema-sql",
+            "seed-sql",
+            "queries-sql",
+            "diagram-mmd",
+            "schema-dbml",
+          ],
           description: "Code target.",
         },
       },
@@ -177,6 +204,7 @@ function handleListResources(args: Record<string, string>) {
     tech: r.tech,
     tags: r.tags,
     labRoute: r.labRoute,
+    hasCodepenExamples: Array.isArray(r.codepenExamples) && r.codepenExamples.length > 0,
     resourceUrl: `https://stealthis.dev/r/${r.slug}`,
   }));
 

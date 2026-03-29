@@ -63,7 +63,7 @@ const palette = [
   new THREE.Color("#7fd8ff"),
   new THREE.Color("#efe8c4"),
   new THREE.Color("#b483ff"),
-  new THREE.Color("#f45dd5")
+  new THREE.Color("#f45dd5"),
 ];
 
 for (let i = 0; i < particles; i += 1) {
@@ -91,7 +91,7 @@ const material = new THREE.PointsMaterial({
   opacity: 0.9,
   vertexColors: true,
   blending: THREE.AdditiveBlending,
-  depthWrite: false
+  depthWrite: false,
 });
 
 const cloud = new THREE.Points(geometry, material);

@@ -43,7 +43,7 @@ const state = {
   reduced: window.MotionPreference.prefersReducedMotion(),
   lenis: null,
   rafId: 0,
-  animations: []
+  animations: [],
 };
 
 function setLabel() {
@@ -105,7 +105,7 @@ function setupLenis() {
   state.lenis = new window.Lenis({
     lerp: 0.085,
     smoothWheel: true,
-    wheelMultiplier: 1
+    wheelMultiplier: 1,
   });
 
   state.lenis.on("scroll", (e) => {
@@ -136,7 +136,7 @@ function setupGsap() {
         opacity: 1,
         duration: 0.8,
         ease: "power3.out",
-        stagger: 0.08
+        stagger: 0.08,
       }
     )
   );
@@ -157,8 +157,8 @@ function setupGsap() {
             trigger: section,
             start: "top 78%",
             end: "top 38%",
-            scrub: 0.8
-          }
+            scrub: 0.8,
+          },
         }
       )
     );
@@ -174,24 +174,25 @@ function setupGsap() {
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
-        duration: 3.2 + i * 0.7
+        duration: 3.2 + i * 0.7,
       })
     );
   });
 
   register(
-    window.gsap.timeline({
-      scrollTrigger: {
-        trigger: ".stage",
-        start: "top top",
-        end: "+=130%",
-        scrub: 1,
-        pin: true
-      }
-    })
-    .to(".card-one", { xPercent: -35, rotation: -8, scale: 0.9 }, 0)
-    .to(".card-two", { yPercent: -35, scale: 0.94 }, 0)
-    .to(".card-three", { xPercent: 35, rotation: 8, scale: 0.9 }, 0)
+    window.gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: ".stage",
+          start: "top top",
+          end: "+=130%",
+          scrub: 1,
+          pin: true,
+        },
+      })
+      .to(".card-one", { xPercent: -35, rotation: -8, scale: 0.9 }, 0)
+      .to(".card-two", { yPercent: -35, scale: 0.94 }, 0)
+      .to(".card-three", { xPercent: 35, rotation: 8, scale: 0.9 }, 0)
   );
 }
 
@@ -215,9 +216,13 @@ toggle.addEventListener("click", () => {
   applyMode();
 });
 
-window.addEventListener("scroll", () => {
-  if (!state.lenis) updateWindowProgress();
-}, { passive: true });
+window.addEventListener(
+  "scroll",
+  () => {
+    if (!state.lenis) updateWindowProgress();
+  },
+  { passive: true }
+);
 
 window.addEventListener("resize", () => {
   if (window.ScrollTrigger) window.ScrollTrigger.refresh();

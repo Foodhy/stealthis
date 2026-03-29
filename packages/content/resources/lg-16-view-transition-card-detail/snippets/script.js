@@ -48,15 +48,15 @@ const items = [
     goals: [
       "Preserve visual identity from card to detail hero.",
       "Maintain readable content during transition.",
-      "Keep fallback as instant but coherent state swap."
+      "Keep fallback as instant but coherent state swap.",
     ],
     steps: [
       "Assign stable view-transition-name to shared media region.",
       "Trigger state swap with document.startViewTransition.",
-      "Render metadata, implementation notes, and testing checklist."
+      "Render metadata, implementation notes, and testing checklist.",
     ],
     perf: "Only one shared element animates; other content fades with default transition behavior.",
-    a11y: "Fallback path is immediate and keeps same document reading order."
+    a11y: "Fallback path is immediate and keeps same document reading order.",
   },
   {
     id: "b",
@@ -70,15 +70,15 @@ const items = [
     goals: [
       "Use one source of truth for grid and detail data.",
       "Avoid duplicate templates for project information.",
-      "Support future route-level transitions."
+      "Support future route-level transitions.",
     ],
     steps: [
       "Store card and detail data in one JS object.",
       "Map data to grid cards and detail panels.",
-      "Use same view-transition-name token for matching elements."
+      "Use same view-transition-name token for matching elements.",
     ],
     perf: "Small DOM updates and template cloning keep transitions responsive.",
-    a11y: "Back action restores previous list context with low cognitive load."
+    a11y: "Back action restores previous list context with low cognitive load.",
   },
   {
     id: "c",
@@ -92,15 +92,15 @@ const items = [
     goals: [
       "Attach business metadata to each card.",
       "Surface transition strategy and technical tradeoffs.",
-      "Keep design clean under dense information."
+      "Keep design clean under dense information.",
     ],
     steps: [
       "Render badges for category, difficulty, and support mode.",
       "Show implementation lists in two-column detail layout.",
-      "Use lightweight styles to keep visual hierarchy clear."
+      "Use lightweight styles to keep visual hierarchy clear.",
     ],
     perf: "No canvas/WebGL here, so this demo isolates route transition behavior.",
-    a11y: "Avoids motion-dependent meaning by keeping complete text in both states."
+    a11y: "Avoids motion-dependent meaning by keeping complete text in both states.",
   },
   {
     id: "d",
@@ -114,16 +114,16 @@ const items = [
     goals: [
       "Demonstrate safe fallback on unsupported browsers.",
       "Keep interactions simple for codebase adoption.",
-      "Provide a reusable base for advanced cases (Demo 17-20)."
+      "Provide a reusable base for advanced cases (Demo 17-20).",
     ],
     steps: [
       "Detect API support at runtime.",
       "If unsupported, execute direct update without animation.",
-      "If supported, animate shared region and swap content." 
+      "If supported, animate shared region and swap content.",
     ],
     perf: "Transition cost scales mostly with changing DOM surface area.",
-    a11y: "Works with keyboard navigation and visible back control."
-  }
+    a11y: "Works with keyboard navigation and visible back control.",
+  },
 ];
 
 const app = document.getElementById("app");
@@ -131,8 +131,14 @@ const backBtn = document.getElementById("backBtn");
 
 function supportMessage() {
   return document.startViewTransition
-    ? { text: "View Transitions API detected: animated shared-element transitions are enabled.", cls: "ok" }
-    : { text: "View Transitions API not detected: demo uses immediate fallback updates.", cls: "warn" };
+    ? {
+        text: "View Transitions API detected: animated shared-element transitions are enabled.",
+        cls: "ok",
+      }
+    : {
+        text: "View Transitions API not detected: demo uses immediate fallback updates.",
+        cls: "warn",
+      };
 }
 
 function badge(text) {
@@ -166,7 +172,10 @@ function renderGrid() {
         ${badge(item.support)}
       </div>
       <p class="summary">${item.summary}</p>
-      <div class="meta-row">${item.stack.slice(0, 2).map((x) => badge(x)).join("")}</div>
+      <div class="meta-row">${item.stack
+        .slice(0, 2)
+        .map((x) => badge(x))
+        .join("")}</div>
     `;
 
     card.addEventListener("click", () => openDetail(item.id));

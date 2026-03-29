@@ -148,7 +148,9 @@ const AuthorBlock: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) =
           color: "#000000",
         }}
       >
-        {AUTHOR_NAME.split(" ").map((n) => n[0]).join("")}
+        {AUTHOR_NAME.split(" ")
+          .map((n) => n[0])
+          .join("")}
       </div>
 
       {/* Name + role */}

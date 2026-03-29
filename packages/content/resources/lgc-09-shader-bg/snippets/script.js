@@ -43,25 +43,25 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 // ── Demo shell ──
 initDemoShell({
-  title: 'Shader Background',
-  category: '3d',
-  tech: ['three.js', 'glsl', 'simplex-noise'],
+  title: "Shader Background",
+  category: "3d",
+  tech: ["three.js", "glsl", "simplex-noise"],
 });
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
 });
 
 // ── Mouse ──
 const mouse = { x: 0.5, y: 0.5, smoothX: 0.5, smoothY: 0.5 };
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   mouse.x = e.clientX / window.innerWidth;
   mouse.y = 1.0 - e.clientY / window.innerHeight;
 });
@@ -179,7 +179,7 @@ void main() {
 `;
 
 // ── Scene setup ──
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -225,13 +225,13 @@ function animate() {
 animate();
 
 // ── Resize ──
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
 });
 
 // ── Cleanup ──
-window.addEventListener('beforeunload', () => {
+window.addEventListener("beforeunload", () => {
   geometry.dispose();
   material.dispose();
   renderer.dispose();

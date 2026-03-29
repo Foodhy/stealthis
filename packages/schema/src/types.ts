@@ -5,11 +5,15 @@ export type ResourceCategoryPhase2 =
   | "components"
   | "pages"
   | "prompts"
-  | "skills"
-  | "mcp-servers"
   | "architectures"
   | "boilerplates"
-  | "remotion";
+  | "remotion"
+  | "database-schemas"
+  | "ultra-high-definition-pages"
+  | "music"
+  | "3d-models"
+  | "3d-interactions"
+  | "plugins";
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 
@@ -22,7 +26,8 @@ export type ResourceType =
   | "skill"
   | "mcp-server"
   | "architecture"
-  | "boilerplate";
+  | "boilerplate"
+  | "schema";
 
 export type ResourceDifficulty = "easy" | "med" | "hard";
 
@@ -33,17 +38,40 @@ export type ResourceTarget =
   | "vue"
   | "svelte"
   | "astro"
+  | "react-native"
+  | "expo"
   | "typescript"
   | "python"
   | "markdown"
   | "yaml"
-  | "json";
+  | "json"
+  | "sql"
+  | "mermaid"
+  | "dbml";
 
-export type ResourceCollection = "saas" | "motion" | "hero" | "cards" | "dashboard" | "remotion";
+export type ResourceCollection =
+  | "saas"
+  | "motion"
+  | "hero"
+  | "cards"
+  | "dashboard"
+  | "remotion"
+  | "effects"
+  | "mobile-nav"
+  | "charts";
 
 export interface ResourceAuthor {
   name: string;
   src: string;
+}
+
+export interface CodePenExample {
+  id: string;
+  title: string;
+  penUrl: string;
+  description?: string;
+  height?: number;
+  defaultTab?: "result" | "html,result" | "css,result" | "js,result";
 }
 
 export interface ResourceMeta {
@@ -61,6 +89,7 @@ export interface ResourceMeta {
   labRoute?: string;
   license: string;
   author?: ResourceAuthor;
+  codepenExamples?: CodePenExample[];
   createdAt: string;
   updatedAt: string;
 }

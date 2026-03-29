@@ -65,7 +65,14 @@ function loop() {
   const radius = 40 + brightness * 220;
 
   ctx.globalCompositeOperation = "screen";
-  const g = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, radius);
+  const g = ctx.createRadialGradient(
+    canvas.width / 2,
+    canvas.height / 2,
+    0,
+    canvas.width / 2,
+    canvas.height / 2,
+    radius
+  );
   g.addColorStop(0, "rgba(130,220,255,0.8)");
   g.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = g;

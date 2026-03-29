@@ -3,20 +3,20 @@
 
   // Output elements for the demo
   const outputBilling = document.getElementById("output-billing");
-  const outputSize    = document.getElementById("output-size");
+  const outputSize = document.getElementById("output-size");
 
   const outputs = [outputBilling, outputSize];
 
   document.querySelectorAll("[data-sc]").forEach(function (sc, scIndex) {
     const indicator = sc.querySelector(".sc-indicator");
-    const items     = Array.from(sc.querySelectorAll(".sc-item"));
+    const items = Array.from(sc.querySelectorAll(".sc-item"));
 
     function updateIndicator(activeItem) {
-      const scRect   = sc.getBoundingClientRect();
+      const scRect = sc.getBoundingClientRect();
       const itemRect = activeItem.getBoundingClientRect();
-      const offset   = itemRect.left - scRect.left - 3; // 3px = padding offset
+      const offset = itemRect.left - scRect.left - 3; // 3px = padding offset
       indicator.style.setProperty("--offset", offset + "px");
-      indicator.style.setProperty("--width",  itemRect.width + "px");
+      indicator.style.setProperty("--width", itemRect.width + "px");
     }
 
     function selectItem(item) {
@@ -54,10 +54,22 @@
       if (currentIndex === -1) return;
 
       let nextIndex = currentIndex;
-      if (e.key === "ArrowRight") { e.preventDefault(); nextIndex = (currentIndex + 1) % items.length; }
-      if (e.key === "ArrowLeft")  { e.preventDefault(); nextIndex = (currentIndex - 1 + items.length) % items.length; }
-      if (e.key === "Home")       { e.preventDefault(); nextIndex = 0; }
-      if (e.key === "End")        { e.preventDefault(); nextIndex = items.length - 1; }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        nextIndex = (currentIndex + 1) % items.length;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        nextIndex = (currentIndex - 1 + items.length) % items.length;
+      }
+      if (e.key === "Home") {
+        e.preventDefault();
+        nextIndex = 0;
+      }
+      if (e.key === "End") {
+        e.preventDefault();
+        nextIndex = items.length - 1;
+      }
 
       if (nextIndex !== currentIndex) {
         selectItem(items[nextIndex]);
@@ -83,10 +95,10 @@
       const active = sc.querySelector(".sc-item--active");
       const indicator = sc.querySelector(".sc-indicator");
       if (!active || !indicator) return;
-      const scRect   = sc.getBoundingClientRect();
+      const scRect = sc.getBoundingClientRect();
       const itemRect = active.getBoundingClientRect();
-      indicator.style.setProperty("--offset", (itemRect.left - scRect.left - 3) + "px");
-      indicator.style.setProperty("--width",  itemRect.width + "px");
+      indicator.style.setProperty("--offset", itemRect.left - scRect.left - 3 + "px");
+      indicator.style.setProperty("--width", itemRect.width + "px");
     });
   });
 })();

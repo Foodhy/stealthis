@@ -4,7 +4,7 @@ export const BUILDER_PROJECT_VERSION = "1.0";
 
 export const BuilderStackSchema = z.enum(["astro-tailwind", "next-tailwind"]);
 export const BuilderBaasSchema = z.enum(["none", "supabase", "firebase"]);
-export const BuilderProviderSchema = z.enum(["none", "openai", "anthropic"]);
+export const BuilderProviderSchema = z.enum(["none", "openai", "anthropic", "google"]);
 export const BuilderOverwriteStrategySchema = z.enum(["ask", "skip", "replace"]);
 
 export const BuilderNodeKindSchema = z.enum([

@@ -1,10 +1,10 @@
 (function () {
   "use strict";
 
-  const area    = document.getElementById("demo-area");
-  const menu    = document.getElementById("context-menu");
-  let isOpen    = false;
-  let focusIdx  = -1;
+  const area = document.getElementById("demo-area");
+  const menu = document.getElementById("context-menu");
+  let isOpen = false;
+  let focusIdx = -1;
 
   // ── Show ────────────────────────────────────────────────────────────────────
 
@@ -17,11 +17,11 @@
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     menu.style.left = "0";
-    menu.style.top  = "0";
+    menu.style.top = "0";
     const mw = menu.offsetWidth;
     const mh = menu.offsetHeight;
     menu.style.left = Math.min(x, vw - mw - 8) + "px";
-    menu.style.top  = Math.min(y, vh - mh - 8) + "px";
+    menu.style.top = Math.min(y, vh - mh - 8) + "px";
 
     // Update aria-expanded on sub-menu triggers
     getItems().forEach(function (el) {
@@ -54,14 +54,30 @@
 
   // Long-press for mobile
   let longPressTimer = null;
-  area.addEventListener("touchstart", function (e) {
-    const t = e.touches[0];
-    longPressTimer = setTimeout(function () {
-      show(t.clientX, t.clientY);
-    }, 500);
-  }, { passive: true });
-  area.addEventListener("touchend", function () { clearTimeout(longPressTimer); }, { passive: true });
-  area.addEventListener("touchmove", function () { clearTimeout(longPressTimer); }, { passive: true });
+  area.addEventListener(
+    "touchstart",
+    function (e) {
+      const t = e.touches[0];
+      longPressTimer = setTimeout(function () {
+        show(t.clientX, t.clientY);
+      }, 500);
+    },
+    { passive: true }
+  );
+  area.addEventListener(
+    "touchend",
+    function () {
+      clearTimeout(longPressTimer);
+    },
+    { passive: true }
+  );
+  area.addEventListener(
+    "touchmove",
+    function () {
+      clearTimeout(longPressTimer);
+    },
+    { passive: true }
+  );
 
   document.addEventListener("click", function (e) {
     if (!menu.contains(e.target)) hide();
@@ -177,6 +193,8 @@
     });
     el.textContent = msg;
     document.body.appendChild(el);
-    setTimeout(function () { el.remove(); }, 2000);
+    setTimeout(function () {
+      el.remove();
+    }, 2000);
   }
 })();

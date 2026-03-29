@@ -1,22 +1,134 @@
 ---
-import { type Locale, useTranslations } from "@i18n/index";
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  LOCALE_LABELS,
+  LOCALE_STORAGE_KEY,
+  getLocalePrefix,
+  type Locale,
+  useTranslations,
+} from "@i18n/index";
 import { SITE_URLS } from "@lib/urls";
+import { SHOW_BUILD_BUTTON, SHOW_STYLEFORGE_STUDIO, SHOW_DBVIZ } from "@lib/constant";
 
 const { locale } = Astro.props as { locale: Locale };
 const t = useTranslations(locale);
-const prefix = locale === "es" ? "/es" : "";
+const prefix = getLocalePrefix(locale);
+const localeFlags: Record<Locale, string> = {
+  en: "🇺🇸",
+  es: "🇪🇸",
+  fr: "🇫🇷",
+  ar: "🇦🇪",
+  ja: "🇯🇵",
+  ms: "🇲🇾",
+  hi: "🇮🇳",
+  ko: "🇰🇷",
+  nl: "🇳🇱",
+  de: "🇩🇪",
+  "pt-br": "🇧🇷",
+  "zh-hk": "🇭🇰",
+  "zh-cn": "🇨🇳",
+  it: "🇮🇹",
+  pl: "🇵🇱",
+  uk: "🇺🇦",
+};
+const localeOptionLabels: Record<Locale, string> = {
+  en: t("lang.option.en"),
+  es: t("lang.option.es"),
+  fr: t("lang.option.fr"),
+  ar: LOCALE_LABELS.ar,
+  ja: t("lang.option.ja"),
+  ms: t("lang.option.ms"),
+  hi: t("lang.option.hi"),
+  ko: t("lang.option.ko"),
+  nl: t("lang.option.nl"),
+  de: t("lang.option.de"),
+  "pt-br": t("lang.option.pt-br"),
+  "zh-hk": t("lang.option.zh-hk"),
+  "zh-cn": t("lang.option.zh-cn"),
+  it: t("lang.option.it"),
+  pl: t("lang.option.pl"),
+  uk: t("lang.option.uk"),
+};
+const localeOptionDisplay: Record<Locale, string> = Object.fromEntries(
+  LOCALES.map((optionLocale) => {
+    const nativeLabel = LOCALE_LABELS[optionLocale];
+    const localizedLabel = localeOptionLabels[optionLocale];
+    const combinedLabel =
+      nativeLabel === localizedLabel ? nativeLabel : `${nativeLabel} · ${localizedLabel}`;
+    return [optionLocale, combinedLabel];
+  })
+) as Record<Locale, string>;
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
+const normalizePath = (path: string) => path.replace(/\/$/, "") || "/";
+const isNavLinkActive = (href: string, external: boolean) => {
+  if (external) return false;
+  const normalizedHref = normalizePath(href);
+  return currentPath === normalizedHref || currentPath.startsWith(`${normalizedHref}/`);
+};
 
 const navLinks = [
-  { key: "library", href: `${prefix}/library`, label: t("nav.library"), external: false, badge: "" },
-  { key: "showcase", href: `${prefix}/showcase`, label: t("nav.showcase"), external: false, badge: "New" },
+  {
+    key: "library",
+    href: `${prefix}/library`,
+    label: t("nav.library"),
+    external: false,
+    badge: "New!",
+  },
+  {
+    key: "showcase",
+    href: `${prefix}/showcase`,
+    label: t("nav.showcase"),
+    external: false,
+  },
   { key: "docs", href: SITE_URLS.docs, label: t("nav.docs"), external: true, badge: "" },
   { key: "lab", href: SITE_URLS.lab, label: t("nav.lab"), external: true, badge: "" },
   { key: "build", href: SITE_URLS.build, label: t("nav.build"), external: true, badge: "" },
+  {
+    key: "styleforge",
+    href: SITE_URLS.styleforge,
+    label: t("nav.styleforge"),
+    external: true,
+    badge: "",
+  },
+  {
+    key: "dbviz",
+    href: SITE_URLS.dbviz,
+    label: "DbViz",
+    external: true,
+    badge: "",
+  },
 ];
 
-const menuOpenLabel = locale === "es" ? "Abrir menu" : "Open menu";
-const menuCloseLabel = locale === "es" ? "Cerrar menu" : "Close menu";
-const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
+const visibleNavLinks = navLinks.filter(
+  (link) =>
+    (link.key !== "styleforge" || SHOW_STYLEFORGE_STUDIO) &&
+    (link.key !== "build" || SHOW_BUILD_BUTTON) &&
+    (link.key !== "dbviz" || SHOW_DBVIZ)
+);
+
+const menuLabels: Record<Locale, { open: string; close: string; title: string }> = {
+  en: { open: "Open menu", close: "Close menu", title: "Navigation" },
+  es: { open: "Abrir menu", close: "Cerrar menu", title: "Navegacion" },
+  fr: { open: "Ouvrir le menu", close: "Fermer le menu", title: "Navigation" },
+  ar: { open: "افتح القائمة", close: "أغلق القائمة", title: "التنقل" },
+  ja: { open: "メニューを開く", close: "メニューを閉じる", title: "ナビゲーション" },
+  ms: { open: "Buka menu", close: "Tutup menu", title: "Navigasi" },
+  hi: { open: "मेनू खोलें", close: "मेनू बंद करें", title: "नेविगेशन" },
+  ko: { open: "메뉴 열기", close: "메뉴 닫기", title: "내비게이션" },
+  nl: { open: "Menu openen", close: "Menu sluiten", title: "Navigatie" },
+  de: { open: "Menü öffnen", close: "Menü schließen", title: "Navigation" },
+  "pt-br": { open: "Abrir menu", close: "Fechar menu", title: "Navegação" },
+  "zh-hk": { open: "開啟選單", close: "關閉選單", title: "導覽" },
+  "zh-cn": { open: "打开菜单", close: "关闭菜单", title: "导航" },
+  it: { open: "Apri menu", close: "Chiudi menu", title: "Navigazione" },
+  pl: { open: "Otwórz menu", close: "Zamknij menu", title: "Nawigacja" },
+  uk: { open: "Відкрити меню", close: "Закрити меню", title: "Навігація" },
+};
+
+const menuOpenLabel = menuLabels[locale].open;
+const menuCloseLabel = menuLabels[locale].close;
+const menuTitle = menuLabels[locale].title;
 ---
 
 <header class="sticky top-0 z-50 border-b border-white/6 bg-surface-950/80 backdrop-blur-xl">
@@ -28,12 +140,13 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
     </a>
 
     <nav class="hidden sm:flex items-center gap-1" aria-label="Main navigation">
-      {navLinks.map((link) => (
+      {visibleNavLinks.map((link) => (
         <a
           href={link.href}
-          class="nav-link"
+          class={`nav-link ${isNavLinkActive(link.href, link.external) ? "is-active" : ""}`}
           target={link.external ? "_blank" : undefined}
           rel={link.external ? "noopener" : undefined}
+          {...(link.key === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
         >
           {link.label}
           {link.badge && <span class="nav-badge">{link.badge}</span>}
@@ -42,27 +155,31 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
     </nav>
 
     <div class="flex items-center gap-2">
-      <button
-        class="hidden sm:inline-flex text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors px-2 py-1 rounded-md hover:bg-white/6"
-        aria-label="Toggle language"
-        data-locale={locale}
-        data-lang-toggle
+      <label class="sr-only" for="desktop-language-select">{t("lang.label")}</label>
+      <select
+        id="desktop-language-select"
+        class="hidden sm:inline-block lang-select"
+        aria-label={t("lang.label")}
+        data-language-select
+        data-current-locale={locale}
       >
-        {t("lang.toggle")}
-      </button>
-
-      <a
-        href="https://github.com/Foodhy/stealthis"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-white/6 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-        aria-label="GitHub"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path>
-        </svg>
-        GitHub
-      </a>
+        {LOCALES.map((optionLocale) => (
+          <option value={optionLocale}>{`${localeFlags[optionLocale]} ${localeOptionDisplay[optionLocale]}`}</option>
+        ))}
+      </select>
+      <div id="nav-auth" class="hidden sm:flex items-center">
+        <a
+          href="/api/auth/github"
+          class="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-white/6 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+          aria-label={t("nav.loginWithGitHub")}
+          data-auth-login
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path>
+          </svg>
+          {t("nav.loginWithGitHub")}
+        </a>
+      </div>
 
       <button
         type="button"
@@ -104,13 +221,14 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
     </div>
 
     <nav class="mobile-drawer__nav" aria-label={menuTitle}>
-      {navLinks.map((link) => (
+      {visibleNavLinks.map((link) => (
         <a
           href={link.href}
-          class="mobile-drawer__link"
+          class={`mobile-drawer__link ${isNavLinkActive(link.href, link.external) ? "is-active" : ""}`}
           target={link.external ? "_blank" : undefined}
           rel={link.external ? "noopener" : undefined}
           data-mobile-close
+          {...(link.key === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
         >
           <span class="mobile-drawer__link-main">
             <span class="mobile-drawer__icon" aria-hidden="true">
@@ -138,11 +256,33 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
                   <path d="M8 21h8M12 17v4"></path>
                 </svg>
               )}
+              {link.key === "changelog" && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              )}
               {link.key === "build" && (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="3" width="8" height="8" rx="1.5"></rect>
                   <rect x="13" y="3" width="8" height="8" rx="1.5"></rect>
                   <rect x="8" y="13" width="8" height="8" rx="1.5"></rect>
+                </svg>
+              )}
+              {link.key === "styleforge" && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"></path>
+                </svg>
+              )}
+              {link.key === "dbviz" && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                  <path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"></path>
+                  <path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"></path>
                 </svg>
               )}
             </span>
@@ -153,11 +293,10 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
         </a>
       ))}
       <a
-        href="https://github.com/Foodhy/stealthis"
-        target="_blank"
-        rel="noopener noreferrer"
+        href="/api/auth/github"
         class="mobile-drawer__link"
         data-mobile-close
+        aria-label={t("nav.loginWithGitHub")}
       >
         <span class="mobile-drawer__link-main">
           <span class="mobile-drawer__icon" aria-hidden="true">
@@ -165,23 +304,89 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path>
             </svg>
           </span>
-          <span>GitHub</span>
+          <span>{t("nav.loginWithGitHub")}</span>
         </span>
         <span aria-hidden="true">↗</span>
       </a>
     </nav>
 
-    <button
-      type="button"
+    <label class="sr-only" for="mobile-language-select">{t("lang.label")}</label>
+    <select
+      id="mobile-language-select"
       class="mobile-drawer__lang"
-      aria-label="Toggle language"
-      data-locale={locale}
-      data-lang-toggle
-      data-mobile-close
+      aria-label={t("lang.label")}
+      data-language-select
+      data-current-locale={locale}
     >
-      {t("lang.toggle")}
-    </button>
+      {LOCALES.map((optionLocale) => (
+        <option value={optionLocale}>{`${localeFlags[optionLocale]} ${localeOptionDisplay[optionLocale]}`}</option>
+      ))}
+    </select>
   </aside>
+</div>
+
+<!-- DbViz intro modal -->
+<div id="dbviz-modal" class="dbviz-modal" aria-modal="true" role="dialog" aria-label="Introducing DbViz" hidden>
+  <div class="dbviz-modal__backdrop" id="dbviz-backdrop"></div>
+  <div class="dbviz-modal__panel">
+    <!-- Header -->
+    <div class="dbviz-modal__header">
+      <div class="dbviz-modal__icon-wrap" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+          <path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"></path>
+          <path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"></path>
+        </svg>
+      </div>
+      <div>
+        <p class="dbviz-modal__eyebrow">New tool</p>
+        <h2 class="dbviz-modal__title">Introducing DbViz</h2>
+        <p class="dbviz-modal__subtitle">Visual database schema explorer — paste SQL, get a live ER diagram.</p>
+      </div>
+      <button class="dbviz-modal__close" id="dbviz-close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Steps -->
+    <ol class="dbviz-modal__steps">
+      <li class="dbviz-modal__step" style="--i:0">
+        <span class="dbviz-modal__step-num">1</span>
+        <div>
+          <p class="dbviz-modal__step-title">Paste your SQL schema</p>
+          <p class="dbviz-modal__step-desc">Drop in a CREATE TABLE statement — PostgreSQL, MySQL, or SQLite.</p>
+        </div>
+      </li>
+      <li class="dbviz-modal__step" style="--i:1">
+        <span class="dbviz-modal__step-num">2</span>
+        <div>
+          <p class="dbviz-modal__step-title">Visualize relationships instantly</p>
+          <p class="dbviz-modal__step-desc">Foreign keys become arrows. Tables become nodes. Layout is automatic.</p>
+        </div>
+      </li>
+      <li class="dbviz-modal__step" style="--i:2">
+        <span class="dbviz-modal__step-num">3</span>
+        <div>
+          <p class="dbviz-modal__step-title">Export or share your diagram</p>
+          <p class="dbviz-modal__step-desc">Download as PNG or copy a shareable link — no account needed.</p>
+        </div>
+      </li>
+    </ol>
+
+    <!-- Actions -->
+    <div class="dbviz-modal__actions">
+      <a id="dbviz-open-link" href={SITE_URLS.dbviz} target="_blank" rel="noopener noreferrer" class="dbviz-modal__cta">
+        Open DbViz
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7"></path>
+        </svg>
+      </a>
+      <button class="dbviz-modal__skip" id="dbviz-skip">Maybe later</button>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -190,6 +395,39 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
     display: inline-flex;
     align-items: center;
     gap: 4px;
+  }
+
+  .nav-link.is-active {
+    color: rgb(241 245 249);
+    border: 1px solid rgba(103, 183, 255, 0.38);
+    background: linear-gradient(90deg, rgba(74, 146, 255, 0.2), rgba(120, 110, 255, 0.16));
+    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
+  }
+
+  .lang-select {
+    width: 10rem;
+    max-width: 10rem;
+    min-width: 0;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgb(226 232 240);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.38rem 0.6rem;
+    transition: border-color 160ms ease, background 160ms ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lang-select:hover {
+    border-color: rgba(147, 197, 253, 0.4);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .lang-select:focus-visible {
+    outline: 2px solid rgba(103, 183, 255, 0.55);
+    outline-offset: 1px;
   }
 
   .nav-badge {
@@ -328,6 +566,19 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
     border-color: rgba(112, 164, 255, 0.52);
   }
 
+  .mobile-drawer__link.is-active {
+    color: rgb(255 255 255);
+    border-color: rgba(120, 182, 255, 0.62);
+    background: linear-gradient(90deg, rgba(96, 155, 255, 0.3), rgba(133, 98, 255, 0.24));
+    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.25);
+  }
+
+  .mobile-drawer__link.is-active .mobile-drawer__icon {
+    color: rgb(230 243 255);
+    border-color: rgba(120, 182, 255, 0.74);
+    background: linear-gradient(135deg, rgba(99, 167, 255, 0.32), rgba(149, 117, 255, 0.3));
+  }
+
   .mobile-drawer__lang {
     margin-top: auto;
     width: 100%;
@@ -338,7 +589,8 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
     font-size: 0.84rem;
     font-weight: 600;
     padding: 0.72rem 0.9rem;
-    text-align: center;
+    text-align: left;
+    appearance: none;
   }
 
   .mobile-drawer.is-open .mobile-drawer__backdrop {
@@ -352,26 +604,419 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
   :global(body.mobile-nav-open) {
     overflow: hidden;
   }
+
+  /* ── DbViz intro modal ────────────────────────────────────── */
+  @keyframes dbviz-backdrop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes dbviz-panel-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes dbviz-step-in {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes dbviz-icon-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(99, 167, 255, 0.45); }
+    50%       { box-shadow: 0 0 0 10px rgba(99, 167, 255, 0); }
+  }
+
+  .dbviz-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .dbviz-modal[hidden] {
+    display: none;
+  }
+
+  .dbviz-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.78);
+    backdrop-filter: blur(4px);
+    animation: dbviz-backdrop-in 200ms ease forwards;
+  }
+
+  .dbviz-modal__panel {
+    position: relative;
+    width: 100%;
+    max-width: 26rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(103, 183, 255, 0.28);
+    background:
+      radial-gradient(circle at 20% 10%, rgba(99, 167, 255, 0.18), transparent 55%),
+      radial-gradient(circle at 85% 90%, rgba(149, 117, 255, 0.18), transparent 55%),
+      rgba(10, 16, 38, 0.98);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: dbviz-panel-in 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    box-shadow:
+      0 0 0 1px rgba(56, 189, 248, 0.12),
+      0 24px 64px rgba(0, 0, 0, 0.6);
+  }
+
+  .dbviz-modal__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+  }
+
+  .dbviz-modal__icon-wrap {
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(147 210 255);
+    border: 1px solid rgba(103, 183, 255, 0.45);
+    background: linear-gradient(135deg, rgba(70, 140, 255, 0.28), rgba(120, 90, 255, 0.22));
+    animation: dbviz-icon-pulse 2.4s ease-in-out 0.4s infinite;
+  }
+
+  .dbviz-modal__eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(99 167 255);
+    margin: 0 0 0.2rem;
+  }
+
+  .dbviz-modal__title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: rgb(241 245 249);
+    margin: 0 0 0.25rem;
+    line-height: 1.2;
+  }
+
+  .dbviz-modal__subtitle {
+    font-size: 0.8rem;
+    color: rgb(148 163 184);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .dbviz-modal__close {
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgb(148 163 184);
+    cursor: pointer;
+    transition: background 160ms, color 160ms;
+  }
+
+  .dbviz-modal__close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgb(226 232 240);
+  }
+
+  .dbviz-modal__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .dbviz-modal__step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(103, 183, 255, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0;
+    animation: dbviz-step-in 320ms cubic-bezier(0.22, 1, 0.36, 1) calc(0.18s + var(--i) * 0.12s) forwards;
+  }
+
+  .dbviz-modal__step-num {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: rgb(147 210 255);
+    border: 1px solid rgba(103, 183, 255, 0.5);
+    background: rgba(70, 140, 255, 0.18);
+    margin-top: 1px;
+  }
+
+  .dbviz-modal__step-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgb(226 232 240);
+    margin: 0 0 0.2rem;
+  }
+
+  .dbviz-modal__step-desc {
+    font-size: 0.75rem;
+    color: rgb(100 116 139);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .dbviz-modal__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .dbviz-modal__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 0.625rem;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: rgb(255 255 255);
+    background: linear-gradient(135deg, rgb(59 130 246), rgb(99 102 241));
+    border: 1px solid rgba(147, 197, 253, 0.3);
+    text-decoration: none;
+    transition: filter 160ms, transform 120ms;
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.35);
+  }
+
+  .dbviz-modal__cta:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+  }
+
+  .dbviz-modal__skip {
+    font-size: 0.78rem;
+    color: rgb(100 116 139);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    transition: color 160ms;
+  }
+
+  .dbviz-modal__skip:hover {
+    color: rgb(148 163 184);
+  }
+
+  :global(body.dbviz-modal-open) {
+    overflow: hidden;
+  }
 </style>
 
-<script>
-  const toggleLanguage = (locale) => {
-    const path = window.location.pathname;
+<script define:vars={{ localePrefix: prefix }}>
+  const NAV_REQUEST_TIMEOUT_MS = 10000;
+  const navInFlightRequests = new Map();
 
-    if (locale === "en") {
-      localStorage.setItem("stealthis:locale", "es");
-      window.location.href = `/es${path}`;
-      return;
+  async function fetchWithTimeout(url, init = {}, timeoutMs = NAV_REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  function fetchOnce(key, requestFactory) {
+    const pending = navInFlightRequests.get(key);
+    if (pending) return pending;
+
+    const request = requestFactory().finally(() => {
+      navInFlightRequests.delete(key);
+    });
+    navInFlightRequests.set(key, request);
+    return request;
+  }
+
+  async function initAuthMenu() {
+    const container = document.getElementById("nav-auth");
+    if (!container) return;
+
+    try {
+      const res = await fetchOnce("auth:me", () =>
+        fetchWithTimeout("/api/auth/me", { credentials: "include" })
+      );
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (!data.authenticated) return;
+
+      const user = data.user ?? {};
+      const displayName = user.name ?? user.login ?? "User";
+      const login = user.login ?? "";
+      const avatarUrl = user.avatarUrl ?? null;
+      const buttonLabel = login ? `@${login}` : displayName;
+      const avatarHtml =
+        avatarUrl
+          ? `<img
+              src="${avatarUrl}"
+              alt="${buttonLabel}"
+              class="w-5 h-5 rounded-full object-cover ring-1 ring-white/10 bg-white/5"
+            />`
+          : `<span
+              class="w-5 h-5 rounded-full ring-1 ring-white/10 bg-white/5 flex items-center justify-center text-[10px] font-bold text-slate-300"
+            >@</span>`;
+
+      container.innerHTML = `
+        <div class="relative" data-auth-wrapper>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-white/6 border border-white/10 text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            data-auth-toggle
+          >
+            ${avatarHtml}
+            <span class="truncate max-w-[140px]" title="${displayName}">${buttonLabel}</span>
+            <svg
+              data-auth-chevron
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="transition-transform duration-150 ease-out"
+            >
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </button>
+          <div
+            class="absolute right-0 mt-2 w-40 rounded-lg border border-white/10 bg-surface-950/95 shadow-lg backdrop-blur-xl text-xs text-slate-200 z-50 opacity-0 scale-95 pointer-events-none transition-all duration-150 ease-out"
+            data-auth-panel
+          >
+            <a href="/dashboard" class="block px-3 py-2 hover:bg-white/10">Dashboard</a>
+            <a href="/settings" class="block px-3 py-2 hover:bg-white/10">Settings</a>
+            <button
+              type="button"
+              class="w-full text-left px-3 py-2 text-red-300 hover:bg-red-500/10"
+              data-auth-logout
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      `;
+
+      if (container.dataset.authMenuBound === "1") return;
+      container.dataset.authMenuBound = "1";
+
+      const logoutBtn = container.querySelector("[data-auth-logout]");
+      logoutBtn?.addEventListener("click", () => {
+        window.location.href = "/api/auth/logout";
+      });
+
+      const wrapper = container.querySelector("[data-auth-wrapper]");
+      const toggleBtn = container.querySelector("[data-auth-toggle]");
+      const panel = container.querySelector("[data-auth-panel]");
+      const chevron = container.querySelector("[data-auth-chevron]");
+
+      let isOpen = false;
+      const setOpen = (nextOpen) => {
+        isOpen = nextOpen;
+        if (toggleBtn) toggleBtn.setAttribute("aria-expanded", String(isOpen));
+        if (!panel) return;
+
+        panel.classList.toggle("opacity-100", isOpen);
+        panel.classList.toggle("scale-100", isOpen);
+        panel.classList.toggle("pointer-events-auto", isOpen);
+
+        panel.classList.toggle("opacity-0", !isOpen);
+        panel.classList.toggle("scale-95", !isOpen);
+        panel.classList.toggle("pointer-events-none", !isOpen);
+
+        if (chevron) chevron.classList.toggle("rotate-180", isOpen);
+      };
+
+      toggleBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setOpen(!isOpen);
+      });
+
+      document.addEventListener("click", () => setOpen(false));
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setOpen(false);
+      });
+
+      panel?.querySelectorAll("a, button")?.forEach((el) => {
+        el.addEventListener("click", () => setOpen(false));
+      });
+    } catch (error) {
+      console.error("Error initializing auth menu", error);
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    initAuthMenu();
+  }
+</script>
+
+<script define:vars={{ locales: LOCALES, defaultLocale: DEFAULT_LOCALE, localeStorageKey: LOCALE_STORAGE_KEY }}>
+  const splitLocaleFromPath = (pathname) => {
+    const parts = pathname.split("/");
+    const maybeLocale = parts[1];
+
+    if (locales.includes(maybeLocale) && maybeLocale !== defaultLocale) {
+      const barePath = `/${parts.slice(2).join("/")}` || "/";
+      return {
+        barePath: barePath === "/" ? "/" : barePath.replace(/\/$/, ""),
+      };
     }
 
-    localStorage.setItem("stealthis:locale", "en");
-    window.location.href = path.replace(/^\/es(?=\/|$)/, "") || "/";
+    return { barePath: pathname || "/" };
   };
 
-  document.querySelectorAll("[data-lang-toggle]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const locale = btn.dataset.locale === "en" ? "en" : "es";
-      toggleLanguage(locale);
+  const toLocalizedPath = (locale, barePath) => {
+    if (locale === defaultLocale) return barePath;
+    if (barePath === "/") return `/${locale}/`;
+    return `/${locale}${barePath}`;
+  };
+
+  const switchLocale = (targetLocale) => {
+    if (!locales.includes(targetLocale)) return;
+    localStorage.setItem(localeStorageKey, targetLocale);
+    try {
+      // Cookie for SSR so pages can pick the locale without relying on `/[locale]/...` URLs.
+      document.cookie = `${localeStorageKey}=${targetLocale}; Path=/; Max-Age=31536000; SameSite=Lax;`;
+    } catch {}
+
+    window.location.reload();
+  };
+
+  document.querySelectorAll("[data-language-select]").forEach((selectEl) => {
+    if (!(selectEl instanceof HTMLSelectElement)) return;
+    const currentLocale = selectEl.dataset.currentLocale;
+    if (currentLocale && locales.includes(currentLocale)) {
+      selectEl.value = currentLocale;
+    }
+
+    selectEl.addEventListener("change", () => {
+      switchLocale(selectEl.value);
     });
   });
 
@@ -434,5 +1079,66 @@ const menuTitle = locale === "es" ? "Navegacion" : "Navigation";
 
   mq.addEventListener("change", (event) => {
     if (event.matches) closeMenu(true);
+  });
+</script>
+
+<script>
+  const DBVIZ_SEEN_KEY = "stealthis:dbviz-intro-seen";
+  const modal = document.getElementById("dbviz-modal") as HTMLElement | null;
+  const backdrop = document.getElementById("dbviz-backdrop");
+  const closeBtn = document.getElementById("dbviz-close");
+  const skipBtn = document.getElementById("dbviz-skip");
+  const openLink = document.getElementById("dbviz-open-link") as HTMLAnchorElement | null;
+
+  function openModal() {
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.classList.add("dbviz-modal-open");
+    (closeBtn as HTMLElement | null)?.focus();
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove("dbviz-modal-open");
+  }
+
+  function markSeen() {
+    try { localStorage.setItem(DBVIZ_SEEN_KEY, "1"); } catch {}
+  }
+
+  function hasSeen() {
+    try { return !!localStorage.getItem(DBVIZ_SEEN_KEY); } catch { return false; }
+  }
+
+  document.querySelectorAll<HTMLAnchorElement>("[data-dbviz-trigger]").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      if (!hasSeen()) {
+        e.preventDefault();
+        openModal();
+      }
+    });
+  });
+
+  openLink?.addEventListener("click", () => {
+    markSeen();
+    closeModal();
+  });
+
+  skipBtn?.addEventListener("click", () => {
+    markSeen();
+    closeModal();
+  });
+
+  closeBtn?.addEventListener("click", () => {
+    closeModal();
+  });
+
+  backdrop?.addEventListener("click", () => {
+    closeModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal && !modal.hidden) closeModal();
   });
 </script>

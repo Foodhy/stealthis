@@ -38,11 +38,15 @@ if (!window.MotionPreference) {
 if (!window.MotionPreference.prefersReducedMotion() && window.gsap && window.ScrollTrigger) {
   window.gsap.registerPlugin(window.ScrollTrigger);
   window.gsap.utils.toArray(".scroll-reveal-section").forEach((panel) => {
-    window.gsap.fromTo(panel, { y: 80, opacity: 0.15 }, {
-      y: 0,
-      opacity: 1,
-      ease: "power2.out",
-      scrollTrigger: { trigger: panel, start: "top 82%", end: "top 35%", scrub: 1 }
-    });
+    window.gsap.fromTo(
+      panel,
+      { y: 80, opacity: 0.15 },
+      {
+        y: 0,
+        opacity: 1,
+        ease: "power2.out",
+        scrollTrigger: { trigger: panel, start: "top 82%", end: "top 35%", scrub: 1 },
+      }
+    );
   });
 }

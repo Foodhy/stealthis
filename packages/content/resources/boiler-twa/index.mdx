@@ -1,0 +1,105 @@
+---
+slug: boiler-twa
+title: TWA — Trusted Web Activity (PWA to Play Store)
+description: Wrap any PWA as a native Android app using Trusted Web Activities and Bubblewrap CLI. Publish to Google Play Store without writing Java/Kotlin.
+category: boilerplates
+type: boilerplate
+tags: [twa, android, pwa, play-store, bubblewrap, mobile]
+tech: [android, pwa]
+difficulty: med
+targets: [html]
+labRoute: /boilerplates/boiler-twa
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+Trusted Web Activities let you publish any PWA to the Google Play Store as a native Android app. No Java, no Kotlin -- just your existing web app wrapped in a Chrome Custom Tab without the browser UI.
+
+## What is a TWA?
+
+A Trusted Web Activity is an Android activity that launches a full-screen Chrome Custom Tab. When Digital Asset Links verification passes, the browser chrome (address bar, toolbar) is completely hidden, making it look and feel like a native app.
+
+**Requirements:**
+- A PWA with a valid web app manifest
+- HTTPS hosting
+- Android SDK (for building the APK/AAB)
+
+## Setup with Bubblewrap CLI
+
+Bubblewrap (2.9k stars) is Google Chrome Labs' CLI that generates a complete Android project from your PWA manifest.
+
+### 1. Install Bubblewrap
+
+```bash
+npm i -g @bubblewrap/cli
+```
+
+### 2. Initialize from your PWA manifest
+
+```bash
+bubblewrap init --manifest=https://your-pwa.com/manifest.webmanifest
+```
+
+This prompts for your signing key, package name, and launcher icon, then generates a full Android project.
+
+### 3. Build the APK
+
+```bash
+bubblewrap build
+```
+
+Outputs `app-release-signed.apk` and `app-release-bundle.aab` (for Play Store upload).
+
+## Generated Project Structure
+
+```
+app/
+  src/main/
+    AndroidManifest.xml
+    res/
+      mipmap-*/        # Launcher icons (auto-generated)
+      values/
+        strings.xml
+gradle/
+build.gradle
+twa-manifest.json      # Bubblewrap config (re-run init to update)
+```
+
+## Digital Asset Links
+
+For the browser chrome to disappear, you must prove you own the domain. Place this file at `https://your-pwa.com/.well-known/assetlinks.json`:
+
+```json
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.your.package",
+    "sha256_cert_fingerprints": ["AA:BB:CC:..."]
+  }
+}]
+```
+
+Get your signing key fingerprint with:
+
+```bash
+keytool -list -v -keystore your-keystore.jks
+```
+
+## The Full Flow
+
+1. **Build your PWA** -- manifest, service worker, HTTPS
+2. **`bubblewrap init`** -- generate Android project from manifest
+3. **`bubblewrap build`** -- produce signed APK/AAB
+4. **Deploy `assetlinks.json`** -- verify domain ownership
+5. **Upload to Play Store** -- publish the AAB via Google Play Console
+
+## References
+
+- [TWA Documentation](https://developer.android.com/develop/ui/views/layout/webapps/guide-trusted-web-activities-version2)
+- [Bubblewrap CLI](https://github.com/GoogleChromeLabs/bubblewrap) (2.9k stars)
+- [Digital Asset Links](https://developers.google.com/digital-asset-links)

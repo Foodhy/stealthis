@@ -51,11 +51,7 @@ function animateToNext() {
 }
 
 function startMeter() {
-  gsap.fromTo(
-    fill,
-    { width: "0%" },
-    { width: "100%", duration: intervalMs / 1000, ease: "none" }
-  );
+  gsap.fromTo(fill, { width: "0%" }, { width: "100%", duration: intervalMs / 1000, ease: "none" });
 }
 
 function cycle() {
@@ -66,4 +62,3 @@ function cycle() {
 layoutCards();
 startMeter();
 setInterval(cycle, intervalMs);
-

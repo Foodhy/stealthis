@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Astro Project Architecture</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(59,130,246,0.04) 100%);
+    }
+
+    .card-header .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.12);
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      margin-bottom: 12px;
+    }
+
+    .card-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .card-header p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .card-body { padding: 0; }
+
+    .section {
+      padding: 24px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #22d3ee;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: #22d3ee;
+      border-radius: 2px;
+    }
+
+    .tree {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+    }
+
+    .tree .dir { color: #3b82f6; font-weight: 500; }
+    .tree .file { color: #e2e8f0; }
+    .tree .comment { color: #64748b; font-style: italic; }
+    .tree .special { color: #22d3ee; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      body { padding: 16px; }
+      .section { padding: 20px 20px; }
+      .card-header { padding: 20px 20px 16px; }
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .info-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .info-card p {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .info-card .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #3b82f6;
+      background: rgba(59,130,246,0.1);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+
+    .key-files {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .key-file {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .key-file code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .key-file span {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .links a {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: none;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 8px;
+      padding: 8px 14px;
+      transition: all 0.2s;
+    }
+
+    .links a:hover {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.3);
+      color: #60a5fa;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge">Architecture</span>
+    <h1>Astro Project</h1>
+    <p>Content-driven framework with island architecture, content collections, and file-based routing</p>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Folder Tree -->
+    <div class="section">
+      <div class="section-title">Folder Structure</div>
+      <div class="tree"><span class="special">&#9500;&#9472;&#9472; astro.config.mjs</span>      <span class="comment">(Integrations, adapters)</span>
+<span class="file">&#9500;&#9472;&#9472; tsconfig.json</span>
+<span class="dir">&#9500;&#9472;&#9472; public/</span>               <span class="comment">(Static assets)</span>
+<span class="dir">&#9492;&#9472;&#9472; src/</span>
+<span class="dir">    &#9500;&#9472;&#9472; pages/</span>            <span class="comment">(File-based routing)</span>
+<span class="file">    &#9474;   &#9500;&#9472;&#9472; index.astro</span>
+<span class="file">    &#9474;   &#9492;&#9472;&#9472; blog/[slug].astro</span>
+<span class="dir">    &#9500;&#9472;&#9472; layouts/</span>          <span class="comment">(Page shells)</span>
+<span class="file">    &#9474;   &#9492;&#9472;&#9472; Base.astro</span>
+<span class="dir">    &#9500;&#9472;&#9472; components/</span>       <span class="comment">(Astro + React/Vue/Svelte islands)</span>
+<span class="dir">    &#9500;&#9472;&#9472; content/</span>          <span class="comment">(Content collections)</span>
+<span class="special">    &#9474;   &#9500;&#9472;&#9472; config.ts</span>     <span class="comment">(Schema definitions)</span>
+<span class="dir">    &#9474;   &#9492;&#9472;&#9472; blog/</span>
+<span class="dir">    &#9500;&#9472;&#9472; styles/</span>           <span class="comment">(Global CSS)</span>
+<span class="dir">    &#9492;&#9472;&#9472; i18n/</span>             <span class="comment">(Translations)</span></div>
+    </div>
+
+    <!-- Island Architecture & Content Collections -->
+    <div class="section">
+      <div class="section-title">Island Architecture</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Zero JS by Default</h4>
+          <p>All pages render to static HTML at build time. No JavaScript is shipped unless you explicitly add interactive islands.</p>
+          <span class="tag">Static HTML</span>
+        </div>
+        <div class="info-card">
+          <h4>Selective Hydration</h4>
+          <p>Interactive components hydrate independently using directives: client:load, client:idle, client:visible, or client:media.</p>
+          <span class="tag">Islands</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Content Collections</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Type-Safe Querying</h4>
+          <p>Define Zod schemas in config.ts. Astro validates frontmatter at build time and provides fully typed query results.</p>
+          <span class="tag">content/config.ts</span>
+        </div>
+        <div class="info-card">
+          <h4>Markdown &amp; MDX</h4>
+          <p>Write content in Markdown or MDX with full frontmatter support. Content is queried with getCollection() and getEntry().</p>
+          <span class="tag">.md / .mdx</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Integrations & SSG/SSR -->
+    <div class="section">
+      <div class="section-title">Integrations &amp; Rendering</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Integrations</h4>
+          <p>Add React, Vue, Svelte, Tailwind, MDX, or Sitemap with one-line integrations. Each framework works as island components.</p>
+          <span class="tag">@astrojs/*</span>
+        </div>
+        <div class="info-card">
+          <h4>SSG vs SSR</h4>
+          <p>Defaults to static generation. Enable SSR per-page with prerender = false or globally with an adapter (Node, Cloudflare, Vercel).</p>
+          <span class="tag">Hybrid rendering</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="section">
+      <div class="section-title">Official Links</div>
+      <div class="links">
+        <a href="https://docs.astro.build/en/basics/project-structure/" target="_blank" rel="noopener">Project Structure</a>
+        <a href="https://docs.astro.build/en/concepts/islands/" target="_blank" rel="noopener">Island Architecture</a>
+        <a href="https://docs.astro.build/en/guides/content-collections/" target="_blank" rel="noopener">Content Collections</a>
+        <a href="https://docs.astro.build/en/guides/integrations-guide/" target="_blank" rel="noopener">Integrations</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

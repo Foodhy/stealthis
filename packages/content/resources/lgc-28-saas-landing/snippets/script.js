@@ -43,46 +43,46 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import Lenis from 'lenis';
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 initDemoShell({
-  title: 'SaaS Landing Page',
-  category: 'pages',
-  tech: ['gsap', 'lenis', 'scrolltrigger', 'splittext'],
+  title: "SaaS Landing Page",
+  category: "pages",
+  tech: ["gsap", "lenis", "scrolltrigger", "splittext"],
 });
 
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
-const dur = (d) => reduced ? 0 : d;
+const dur = (d) => (reduced ? 0 : d);
 
 // ═══════════════════════════════════════════════════════════════════════
 // HERO ENTRANCE
 // ═══════════════════════════════════════════════════════════════════════
 
-const heroTitle = document.querySelector('.hero-title');
-const heroSubtitle = document.querySelector('.hero-subtitle');
-const heroButtons = document.querySelectorAll('.hero-buttons .btn');
-const heroVisual = document.querySelector('.hero-visual');
+const heroTitle = document.querySelector(".hero-title");
+const heroSubtitle = document.querySelector(".hero-subtitle");
+const heroButtons = document.querySelectorAll(".hero-buttons .btn");
+const heroVisual = document.querySelector(".hero-visual");
 
 // SplitText word-by-word reveal for headline
-const titleSplit = new SplitText(heroTitle, { type: 'words', wordsClass: 'word' });
+const titleSplit = new SplitText(heroTitle, { type: "words", wordsClass: "word" });
 gsap.set(titleSplit.words, {
   opacity: 0,
   y: reduced ? 0 : 30,
@@ -95,41 +95,54 @@ heroTl
     opacity: 1,
     y: 0,
     duration: dur(0.7),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: 0.06 },
   })
-  .to(heroSubtitle, {
-    opacity: 1,
-    y: 0,
-    duration: dur(0.6),
-    ease: 'expo.out',
-  }, '-=0.3')
-  .to(heroButtons, {
-    opacity: 1,
-    y: 0,
-    duration: dur(0.5),
-    ease: 'back.out(1.7)',
-    stagger: { each: 0.1 },
-  }, '-=0.3')
-  .fromTo(heroVisual, {
-    opacity: 0,
-    y: reduced ? 0 : 40,
-    scale: reduced ? 1 : 0.95,
-  }, {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    duration: dur(0.8),
-    ease: 'expo.out',
-  }, '-=0.4');
+  .to(
+    heroSubtitle,
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(0.6),
+      ease: "expo.out",
+    },
+    "-=0.3"
+  )
+  .to(
+    heroButtons,
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(0.5),
+      ease: "back.out(1.7)",
+      stagger: { each: 0.1 },
+    },
+    "-=0.3"
+  )
+  .fromTo(
+    heroVisual,
+    {
+      opacity: 0,
+      y: reduced ? 0 : 40,
+      scale: reduced ? 1 : 0.95,
+    },
+    {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: dur(0.8),
+      ease: "expo.out",
+    },
+    "-=0.4"
+  );
 
 // ═══════════════════════════════════════════════════════════════════════
 // FEATURES: Pinned section with content + device swap
 // ═══════════════════════════════════════════════════════════════════════
 
-const featureCards = document.querySelectorAll('.feature-card');
-const featureDevices = document.querySelectorAll('.feature-device');
-const stepDots = document.querySelectorAll('.step-dot');
+const featureCards = document.querySelectorAll(".feature-card");
+const featureDevices = document.querySelectorAll(".feature-device");
+const stepDots = document.querySelectorAll(".step-dot");
 
 let activeFeature = 0;
 
@@ -139,24 +152,24 @@ function setActiveFeature(index) {
   if (index === activeFeature) return;
 
   // Cards
-  featureCards.forEach((c) => c.classList.remove('active'));
-  featureCards[index].classList.add('active');
+  featureCards.forEach((c) => c.classList.remove("active"));
+  featureCards[index].classList.add("active");
 
   // Devices
-  featureDevices.forEach((d) => d.classList.remove('active'));
-  featureDevices[index].classList.add('active');
+  featureDevices.forEach((d) => d.classList.remove("active"));
+  featureDevices[index].classList.add("active");
 
   // Dots
-  stepDots.forEach((d) => d.classList.remove('active'));
-  stepDots[index].classList.add('active');
+  stepDots.forEach((d) => d.classList.remove("active"));
+  stepDots[index].classList.add("active");
 
   activeFeature = index;
 }
 
 ScrollTrigger.create({
-  trigger: '.feature-track',
-  start: 'top top',
-  end: 'bottom bottom',
+  trigger: ".feature-track",
+  start: "top top",
+  end: "bottom bottom",
   scrub: 0,
   onUpdate: (self) => {
     const p = self.progress;
@@ -170,26 +183,26 @@ ScrollTrigger.create({
 // PRICING: Heading + card stagger
 // ═══════════════════════════════════════════════════════════════════════
 
-const pricingHeading = document.querySelector('.pricing-heading');
+const pricingHeading = document.querySelector(".pricing-heading");
 if (pricingHeading) {
-  const pricingSplit = new SplitText(pricingHeading, { type: 'words', wordsClass: 'word' });
+  const pricingSplit = new SplitText(pricingHeading, { type: "words", wordsClass: "word" });
   gsap.set(pricingSplit.words, { opacity: 0, y: reduced ? 0 : 25 });
 
   gsap.to(pricingSplit.words, {
     opacity: 1,
     y: 0,
     duration: dur(0.5),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: 0.04 },
     scrollTrigger: {
-      trigger: '.pricing-section',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".pricing-section",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
-const pricingCards = document.querySelectorAll('.pricing-card');
+const pricingCards = document.querySelectorAll(".pricing-card");
 gsap.set(pricingCards, {
   opacity: 0,
   y: reduced ? 0 : 40,
@@ -199,19 +212,19 @@ gsap.to(pricingCards, {
   opacity: 1,
   y: 0,
   duration: dur(0.6),
-  ease: 'expo.out',
+  ease: "expo.out",
   stagger: {
     each: 0.1,
-    from: 'center',
+    from: "center",
   },
   scrollTrigger: {
-    trigger: '.pricing-grid',
-    start: 'top 80%',
-    toggleActions: 'play none none reverse',
+    trigger: ".pricing-grid",
+    start: "top 80%",
+    toggleActions: "play none none reverse",
   },
   onComplete: () => {
     // Ensure popular card retains its scale after animation
-    const popular = document.querySelector('.pricing-card.popular');
+    const popular = document.querySelector(".pricing-card.popular");
     if (popular) {
       gsap.set(popular, { scale: 1.02 });
     }
@@ -222,26 +235,29 @@ gsap.to(pricingCards, {
 // TESTIMONIALS: Heading + card stagger with depth
 // ═══════════════════════════════════════════════════════════════════════
 
-const testimonialsHeading = document.querySelector('.testimonials-heading');
+const testimonialsHeading = document.querySelector(".testimonials-heading");
 if (testimonialsHeading) {
-  const testimonialsSplit = new SplitText(testimonialsHeading, { type: 'words', wordsClass: 'word' });
+  const testimonialsSplit = new SplitText(testimonialsHeading, {
+    type: "words",
+    wordsClass: "word",
+  });
   gsap.set(testimonialsSplit.words, { opacity: 0, y: reduced ? 0 : 25 });
 
   gsap.to(testimonialsSplit.words, {
     opacity: 1,
     y: 0,
     duration: dur(0.5),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: 0.04 },
     scrollTrigger: {
-      trigger: '.testimonials-section',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".testimonials-section",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
-const testimonialCards = document.querySelectorAll('.testimonial-card');
+const testimonialCards = document.querySelectorAll(".testimonial-card");
 gsap.set(testimonialCards, {
   opacity: 0,
   y: reduced ? 0 : 30,
@@ -253,12 +269,12 @@ gsap.to(testimonialCards, {
   y: 0,
   rotateX: 0,
   duration: dur(0.6),
-  ease: 'expo.out',
+  ease: "expo.out",
   stagger: { each: 0.12 },
   scrollTrigger: {
-    trigger: '.testimonials-grid',
-    start: 'top 80%',
-    toggleActions: 'play none none reverse',
+    trigger: ".testimonials-grid",
+    start: "top 80%",
+    toggleActions: "play none none reverse",
   },
 });
 
@@ -266,12 +282,12 @@ gsap.to(testimonialCards, {
 // CTA: Char-by-char SplitText + subtitle + button
 // ═══════════════════════════════════════════════════════════════════════
 
-const ctaTitle = document.querySelector('.cta-title');
-const ctaSubtitle = document.querySelector('.cta-subtitle');
-const ctaBtn = document.querySelector('.cta-section .btn');
+const ctaTitle = document.querySelector(".cta-title");
+const ctaSubtitle = document.querySelector(".cta-subtitle");
+const ctaBtn = document.querySelector(".cta-section .btn");
 
 if (ctaTitle) {
-  const ctaSplit = new SplitText(ctaTitle, { type: 'chars', charsClass: 'char' });
+  const ctaSplit = new SplitText(ctaTitle, { type: "chars", charsClass: "char" });
   gsap.set(ctaSplit.chars, {
     opacity: 0,
     y: reduced ? 0 : 20,
@@ -279,9 +295,9 @@ if (ctaTitle) {
 
   const ctaTl = gsap.timeline({
     scrollTrigger: {
-      trigger: '.cta-section',
-      start: 'top 65%',
-      toggleActions: 'play none none reverse',
+      trigger: ".cta-section",
+      start: "top 65%",
+      toggleActions: "play none none reverse",
     },
   });
 
@@ -290,19 +306,27 @@ if (ctaTitle) {
       opacity: 1,
       y: 0,
       duration: dur(0.4),
-      ease: 'expo.out',
+      ease: "expo.out",
       stagger: { each: 0.02 },
     })
-    .to(ctaSubtitle, {
-      opacity: 1,
-      y: 0,
-      duration: dur(0.6),
-      ease: 'expo.out',
-    }, '-=0.2')
-    .to(ctaBtn, {
-      opacity: 1,
-      y: 0,
-      duration: dur(0.5),
-      ease: 'back.out(1.7)',
-    }, '-=0.3');
+    .to(
+      ctaSubtitle,
+      {
+        opacity: 1,
+        y: 0,
+        duration: dur(0.6),
+        ease: "expo.out",
+      },
+      "-=0.2"
+    )
+    .to(
+      ctaBtn,
+      {
+        opacity: 1,
+        y: 0,
+        duration: dur(0.5),
+        ease: "back.out(1.7)",
+      },
+      "-=0.3"
+    );
 }

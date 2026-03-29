@@ -11,9 +11,9 @@
   function resize() {
     W = window.innerWidth;
     H = window.innerHeight;
-    canvas.width  = W * DPR;
+    canvas.width = W * DPR;
     canvas.height = H * DPR;
-    canvas.style.width  = W + "px";
+    canvas.style.width = W + "px";
     canvas.style.height = H + "px";
     ctx.scale(DPR, DPR);
   }
@@ -23,20 +23,20 @@
   // ── Particle ──────────────────────────────────────────────────
   class Particle {
     constructor(x, y) {
-      this.x  = x;
-      this.y  = y;
+      this.x = x;
+      this.y = y;
       this.vx = (Math.random() - 0.5) * 1.5;
       this.vy = (Math.random() - 0.5) * 1.5 - 0.5;
       this.radius = Math.random() * 4 + 2;
-      this.alpha  = 1;
-      this.hue    = Math.random() * 60 + 180; // 180–240: cyan/blue/indigo
+      this.alpha = 1;
+      this.hue = Math.random() * 60 + 180; // 180–240: cyan/blue/indigo
     }
 
     update() {
       this.x += this.vx;
       this.y += this.vy;
       this.radius *= 0.96;
-      this.alpha  -= 0.018;
+      this.alpha -= 0.018;
     }
 
     draw() {
@@ -49,11 +49,14 @@
       ctx.fill();
     }
 
-    isDead() { return this.alpha <= 0 || this.radius <= 0.3; }
+    isDead() {
+      return this.alpha <= 0 || this.radius <= 0.3;
+    }
   }
 
   let particles = [];
-  let mx = W / 2, my = H / 2;
+  let mx = W / 2,
+    my = H / 2;
 
   document.addEventListener("mousemove", (e) => {
     mx = e.clientX;
@@ -64,12 +67,16 @@
   });
 
   // Touch support
-  document.addEventListener("touchmove", (e) => {
-    const t = e.touches[0];
-    for (let i = 0; i < 4; i++) {
-      particles.push(new Particle(t.clientX, t.clientY));
-    }
-  }, { passive: true });
+  document.addEventListener(
+    "touchmove",
+    (e) => {
+      const t = e.touches[0];
+      for (let i = 0; i < 4; i++) {
+        particles.push(new Particle(t.clientX, t.clientY));
+      }
+    },
+    { passive: true }
+  );
 
   function loop() {
     // Semi-transparent clear — creates trail persistence

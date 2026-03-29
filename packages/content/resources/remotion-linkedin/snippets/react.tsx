@@ -57,7 +57,9 @@ const Avatar: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) => {
           color: "#ffffff",
         }}
       >
-        {AUTHOR_NAME.split(" ").map((n) => n[0]).join("")}
+        {AUTHOR_NAME.split(" ")
+          .map((n) => n[0])
+          .join("")}
       </div>
     </div>
   );

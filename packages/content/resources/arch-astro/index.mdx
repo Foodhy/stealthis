@@ -1,0 +1,70 @@
+---
+slug: arch-astro
+title: Astro Project Architecture
+description: Astro project structure with content collections, island architecture, file-based routing, and integration patterns.
+category: architectures
+type: architecture
+tags: [astro, architecture, islands, content-collections, ssg]
+tech: [astro, typescript]
+difficulty: easy
+targets: [html]
+labRoute: /architectures/arch-astro
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## Astro Project Architecture
+
+Astro is a web framework designed for content-driven websites. It pioneered the **island architecture** pattern — shipping zero JavaScript by default and selectively hydrating interactive components only where needed.
+
+### Island Architecture
+
+Astro renders all pages to static HTML at build time. Interactive UI components (React, Vue, Svelte, etc.) are embedded as isolated **islands** that hydrate independently. This means a complex page can have a static header, a React chart island, and a Svelte form island — each loading only the JS it needs.
+
+Hydration directives control when an island loads:
+
+- `client:load` — hydrate immediately on page load
+- `client:idle` — hydrate when the browser is idle
+- `client:visible` — hydrate when scrolled into view
+- `client:media="(max-width: 768px)"` — hydrate on media query match
+
+### Content Collections
+
+Content Collections provide type-safe querying of local Markdown/MDX content. Define schemas in `src/content/config.ts` with Zod, and Astro validates frontmatter at build time.
+
+```ts
+const blog = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    date: z.date(),
+    draft: z.boolean().default(false),
+  }),
+});
+```
+
+### File-Based Routing
+
+Files in `src/pages/` map directly to routes. Dynamic params use brackets: `blog/[slug].astro`. Rest params use spread: `[...path].astro`. Static output generates one HTML file per route.
+
+### Integrations
+
+Astro integrations add framework support, adapters, and tooling:
+
+- **Frameworks:** `@astrojs/react`, `@astrojs/vue`, `@astrojs/svelte`
+- **Adapters:** `@astrojs/cloudflare`, `@astrojs/node`, `@astrojs/vercel`
+- **Tooling:** `@astrojs/tailwind`, `@astrojs/mdx`, `@astrojs/sitemap`
+
+### SSG vs SSR
+
+Astro defaults to static site generation (SSG). Enable SSR per-page with `export const prerender = false` or globally with an adapter. Hybrid rendering lets you mix static and server-rendered pages.
+
+### Official Docs
+
+- [Project Structure](https://docs.astro.build/en/basics/project-structure/)
+- [Island Architecture](https://docs.astro.build/en/concepts/islands/)
+- [Content Collections](https://docs.astro.build/en/guides/content-collections/)
+- [Integrations](https://docs.astro.build/en/guides/integrations-guide/)

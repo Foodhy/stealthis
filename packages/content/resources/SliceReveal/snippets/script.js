@@ -54,11 +54,7 @@ function animateTransition() {
     { yPercent: 110, rotation: -6 },
     { yPercent: 0, rotation: 0, stagger: 0.06 },
     0
-  ).to(
-    currentSlices,
-    { yPercent: -110, rotation: 6, stagger: 0.05 },
-    0
-  );
+  ).to(currentSlices, { yPercent: -110, rotation: 6, stagger: 0.05 }, 0);
 }
 
 function animateProgress() {
@@ -78,4 +74,3 @@ buildSlices();
 setInitialState();
 animateProgress();
 setInterval(cycle, intervalMs);
-

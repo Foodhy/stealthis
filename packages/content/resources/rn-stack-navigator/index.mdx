@@ -1,0 +1,57 @@
+---
+slug: rn-stack-navigator
+title: React Native Stack Navigator
+description: A stack navigation component for React Native with push/pop transitions, custom header, back button, and shared element support using Animated API.
+category: components
+type: component
+tags: [navigation, stack, screen, transition, react-native, router]
+tech: [react-native, typescript]
+difficulty: med
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Stack Navigator
+
+A lightweight stack navigation system built entirely with React Native's Animated API. No third-party routing libraries required — just pure push/pop screen transitions with a custom header bar, back button, and smooth slide-from-right animations.
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `initialScreen` | `string` | — | Name of the first screen to display |
+| `screens` | `Record<string, ScreenComponent>` | — | Map of screen names to their components |
+| `headerStyle` | `ViewStyle` | `{}` | Custom styles for the header bar |
+| `headerTintColor` | `string` | `"#fff"` | Color for the back arrow and header title |
+| `animationDuration` | `number` | `350` | Duration of push/pop transitions in ms |
+
+### Usage
+
+Wrap your app in `StackNavigator`, pass a map of named screens, and use the `NavigationContext` inside any screen to call `push`, `pop`, or `navigate`.
+
+```tsx
+<StackNavigator
+  initialScreen="Home"
+  screens={{ Home: HomeScreen, Detail: DetailScreen }}
+/>
+```
+
+Inside a screen component, access navigation actions via context:
+
+```tsx
+const { push, pop } = useContext(NavigationContext);
+push("Detail", { itemId: 42 });
+```
+
+### How it works
+
+1. The navigator maintains an internal stack array of `{ name, params, animValue }` entries.
+2. On `push`, a new entry is appended and its `Animated.Value` drives a slide-in from the right edge of the screen.
+3. On `pop`, the top entry's animation reverses (slides out to the right) and is removed from the stack once the animation completes.
+4. A custom header bar renders automatically with a back arrow when the stack depth is greater than one, a centered title, and an optional right-side action slot.
+5. `NavigationContext` exposes `push(screenName, params)`, `pop()`, and `navigate(screenName)` (which resets the stack to the target screen) to all descendant components.

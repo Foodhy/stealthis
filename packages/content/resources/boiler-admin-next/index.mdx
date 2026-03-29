@@ -1,0 +1,87 @@
+---
+slug: boiler-admin-next
+title: Next.js Admin Dashboard Starter
+description: Next.js admin dashboard with App Router, shadcn/ui, server components, route groups for auth/dashboard layouts, and Vercel-ready deployment.
+category: boilerplates
+type: boilerplate
+tags: [admin, dashboard, nextjs, shadcn-ui, app-router, vercel]
+tech: [nextjs, react, typescript, tailwindcss]
+difficulty: med
+targets: [html]
+labRoute: /boilerplates/boiler-admin-next
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+A Next.js admin dashboard leveraging the App Router's layout system, server components for data loading, and route groups to cleanly separate auth and dashboard concerns.
+
+## Quick Start
+
+**Option A: Vercel template (one-click deploy)**
+
+Deploy the official Vercel admin template directly from the dashboard, then clone the generated repo locally.
+
+Reference: [Vercel Admin Dashboard Template](https://vercel.com/templates/next.js/admin-dashboard)
+
+**Option B: Community starter (6.2k stars)**
+
+```bash
+git clone https://github.com/Kiranism/next-shadcn-dashboard-starter.git
+cd next-shadcn-dashboard-starter
+npm install && npm run dev
+```
+
+## App Router Layout Groups
+
+The key architectural pattern is using route groups to apply different layouts without affecting the URL structure:
+
+```
+app/
+  (auth)/
+    login/page.tsx        # /login
+    register/page.tsx     # /register
+    layout.tsx            # Centered card layout, no sidebar
+  (dashboard)/
+    page.tsx              # / (dashboard home)
+    analytics/page.tsx    # /analytics
+    users/page.tsx        # /users
+    settings/page.tsx     # /settings
+    layout.tsx            # Sidebar + header layout
+  layout.tsx              # Root layout (providers, fonts)
+```
+
+- `(auth)/layout.tsx` renders a minimal centered layout for login/register flows.
+- `(dashboard)/layout.tsx` renders the sidebar, header, and breadcrumb navigation.
+- Neither group name appears in the URL.
+
+## Server Components for Data Loading
+
+Server components let you fetch data directly in the component without client-side state management:
+
+```tsx
+// app/(dashboard)/users/page.tsx — runs on the server
+export default async function UsersPage() {
+  const users = await db.user.findMany();
+  return <DataTable columns={columns} data={users} />;
+}
+```
+
+No loading spinners, no `useEffect`, no client-side fetch. The HTML streams to the browser with data already rendered.
+
+## Key Patterns
+
+- **Route Groups** for separate auth/dashboard layouts
+- **Server Components** for zero-waterfall data loading
+- **Parallel Routes** for modal overlays (`@modal` slot)
+- **Middleware** for auth redirects before rendering
+- **shadcn/ui** for consistent, accessible components
+
+## References
+
+- [Vercel Admin Template](https://vercel.com/templates/next.js/admin-dashboard)
+- [Kiranism/next-shadcn-dashboard-starter](https://github.com/Kiranism/next-shadcn-dashboard-starter) (6.2k stars)
+- [Next.js Route Groups Docs](https://nextjs.org/docs/app/building-your-application/routing/route-groups)

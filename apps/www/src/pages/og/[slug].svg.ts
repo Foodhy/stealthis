@@ -18,9 +18,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   prompts: "Prompts",
   skills: "Skills",
   "mcp-servers": "MCP Servers",
+  plugins: "Plugins",
   architectures: "Architectures",
   boilerplates: "Boilerplates",
   remotion: "Remotion",
+  "database-schemas": "Database Schemas",
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -33,9 +35,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   prompts: "#67d3ff",
   skills: "#77b4ff",
   "mcp-servers": "#6f94ff",
+  plugins: "#6f94ff",
   architectures: "#8f84ff",
   boilerplates: "#52c0ff",
   remotion: "#53a5ff",
+  "database-schemas": "#22d3ee",
 };
 
 const escapeXml = (value: string) =>

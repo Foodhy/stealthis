@@ -1,0 +1,45 @@
+erDiagram
+  users ||--o{ tickets : opens
+  users ||--o{ tickets : assigned_to
+  sla_policies ||--o{ tickets : governs
+  tickets ||--o{ ticket_comments : contains
+  users ||--o{ ticket_comments : writes
+  tickets ||--o{ ticket_status_history : tracks
+  users ||--o{ ticket_status_history : changes
+
+  users {
+    bigint id PK
+    text email
+    text role
+  }
+
+  sla_policies {
+    bigint id PK
+    text name
+    int first_response_minutes
+    int resolution_minutes
+  }
+
+  tickets {
+    bigint id PK
+    bigint customer_id FK
+    bigint assignee_id FK
+    bigint sla_policy_id FK
+    text priority
+    text status
+  }
+
+  ticket_comments {
+    bigint id PK
+    bigint ticket_id FK
+    bigint author_id FK
+    bool is_internal
+  }
+
+  ticket_status_history {
+    bigint id PK
+    bigint ticket_id FK
+    bigint changed_by FK
+    text old_status
+    text new_status
+  }

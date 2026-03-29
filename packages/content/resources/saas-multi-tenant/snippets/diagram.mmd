@@ -1,0 +1,50 @@
+erDiagram
+  users ||--o{ organization_members : belongs_to
+  organizations ||--o{ organization_members : has
+  organizations ||--o{ roles : defines
+  organization_members ||--o{ member_roles : maps
+  roles ||--o{ member_roles : grants
+  organizations ||--|| subscriptions : billed_with
+  subscriptions ||--o{ invoices : emits
+
+  users {
+    bigint id PK
+    text email
+  }
+
+  organizations {
+    bigint id PK
+    text slug
+    text name
+    text plan
+  }
+
+  organization_members {
+    bigint id PK
+    bigint organization_id FK
+    bigint user_id FK
+  }
+
+  roles {
+    bigint id PK
+    bigint organization_id FK
+    text key
+  }
+
+  member_roles {
+    bigint member_id PK,FK
+    bigint role_id PK,FK
+  }
+
+  subscriptions {
+    bigint id PK
+    bigint organization_id FK
+    text status
+  }
+
+  invoices {
+    bigint id PK
+    bigint subscription_id FK
+    int amount_cents
+    text status
+  }

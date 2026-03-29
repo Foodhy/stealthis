@@ -8,7 +8,7 @@
 
   items.forEach((item) => {
     const trigger = item.querySelector(".accordion-trigger");
-    const panel   = item.querySelector(".accordion-panel");
+    const panel = item.querySelector(".accordion-panel");
 
     trigger.addEventListener("click", () => {
       const isOpen = item.classList.contains("open");
@@ -25,7 +25,7 @@
 
   function openItem(item) {
     const trigger = item.querySelector(".accordion-trigger");
-    const panel   = item.querySelector(".accordion-panel");
+    const panel = item.querySelector(".accordion-panel");
     item.classList.add("open");
     trigger.setAttribute("aria-expanded", "true");
     panel.setAttribute("aria-hidden", "false");
@@ -33,7 +33,7 @@
 
   function closeItem(item) {
     const trigger = item.querySelector(".accordion-trigger");
-    const panel   = item.querySelector(".accordion-panel");
+    const panel = item.querySelector(".accordion-panel");
     item.classList.remove("open");
     trigger.setAttribute("aria-expanded", "false");
     panel.setAttribute("aria-hidden", "true");

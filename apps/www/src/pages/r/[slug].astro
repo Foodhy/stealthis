@@ -3,12 +3,23 @@ import Base from "@layouts/Base.astro";
 import CodeTabs from "@components/CodeTabs.astro";
 import ActionMenu from "@components/ActionMenu.astro";
 import RemotionPreview from "@components/RemotionPreview";
-import { existsSync } from "node:fs";
+import ExpoSnackEmbed from "@components/ExpoSnackEmbed.astro";
+import CodePenExamples from "@components/CodePenExamples.astro";
+import TechIcon from "@components/TechIcon.astro";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { getCollection, render } from "astro:content";
-import { useTranslations, getLocaleFromUrl } from "@i18n/index";
+import {
+  getAlternateLinks,
+  getLocaleFromUrl,
+  getLocalePrefix,
+  getLocalizedPath,
+  useTranslations,
+} from "@i18n/index";
+import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 import { SITE_URLS } from "@lib/urls";
 import { findResourcePreview, normalizePreviewPath } from "@lib/resource-preview";
+import { SHOW_PROMPT_DESIGNER } from "@lib/constant";
 
 export async function getStaticPaths() {
   const resources = await getCollection("resources");
@@ -22,19 +33,52 @@ const { resource } = Astro.props;
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
-const prefix = locale === "es" ? "/es" : "";
-const { slug, title, description, category, type, tags, tech, difficulty, targets, preview, labRoute, license, author, createdAt, updatedAt } = resource.data;
+const prefix = getLocalePrefix(locale);
+const {
+  slug,
+  title,
+  description,
+  category,
+  type,
+  tags,
+  tech,
+  difficulty,
+  targets,
+  preview,
+  labRoute,
+  license,
+  author,
+  codepenExamples,
+  createdAt,
+  updatedAt,
+} = resource.data;
 const authorName = author?.name;
 
 const { Content } = await render(resource);
 
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
-const difficultyKey = `resource.difficulty.${difficulty}` as "resource.difficulty.easy" | "resource.difficulty.med" | "resource.difficulty.hard";
+const difficultyKey = `resource.difficulty.${difficulty}` as
+  | "resource.difficulty.easy"
+  | "resource.difficulty.med"
+  | "resource.difficulty.hard";
 const difficultyLabel = t(difficultyKey);
 const categoryKey = `category.${category}` as
-  | "category.web-animations" | "category.web-pages" | "category.ui-components" | "category.patterns"
-  | "category.components" | "category.pages" | "category.prompts" | "category.skills"
-  | "category.mcp-servers" | "category.architectures" | "category.boilerplates" | "category.remotion";
+  | "category.web-animations"
+  | "category.web-pages"
+  | "category.ui-components"
+  | "category.patterns"
+  | "category.components"
+  | "category.pages"
+  | "category.prompts"
+  | "category.skills"
+  | "category.mcp-servers"
+  | "category.architectures"
+  | "category.boilerplates"
+  | "category.remotion"
+  | "category.database-schemas"
+  | "category.ultra-high-definition-pages"
+  | "category.music"
+  | "category.plugins";
 const categoryLabel = t(categoryKey);
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -45,15 +89,49 @@ const hasTS =
   existsSync(path.join(snippetsDir, "next.tsx")) ||
   existsSync(path.join(snippetsDir, "typescript.ts")) ||
   existsSync(path.join(snippetsDir, "typescript.tsx"));
+const hasPromptSnippet =
+  category === "prompts" && existsSync(path.join(snippetsDir, "markdown.md"));
+const promptSnippetContent = hasPromptSnippet
+  ? readFileSync(path.join(snippetsDir, "markdown.md"), "utf-8").trim()
+  : "";
+const promptDesignerPayload = hasPromptSnippet
+  ? JSON.stringify({
+      title,
+      description: description ?? "",
+      content: promptSnippetContent,
+      source: slug,
+    })
+  : "";
 
-const languageBadges = [
-  ...(hasTS ? ["TS"] : []),
-  ...(hasJS ? ["JS"] : []),
-];
+const hasReactNative =
+  existsSync(path.join(snippetsDir, "react-native.tsx")) ||
+  existsSync(path.join(snippetsDir, "expo.tsx"));
+
+const htmlSnippetPath = path.join(snippetsDir, "html.html");
+const hasHtmlPreview = labRoute && existsSync(htmlSnippetPath);
+let htmlSrcdoc = "";
+if (hasHtmlPreview) {
+  let rawHtml = readFileSync(htmlSnippetPath, "utf-8");
+  const cssPath = path.join(snippetsDir, "style.css");
+  const jsPath = path.join(snippetsDir, "script.js");
+  if (existsSync(cssPath)) {
+    const css = readFileSync(cssPath, "utf-8");
+    rawHtml = rawHtml.replace("</head>", `<style>${css}</style></head>`);
+  }
+  if (existsSync(jsPath)) {
+    const js = readFileSync(jsPath, "utf-8");
+    rawHtml = rawHtml.replace("</body>", `<script>${js}<\/script></body>`);
+  }
+  htmlSrcdoc = rawHtml;
+}
+
+const languageBadges = [...(hasTS ? ["TS"] : []), ...(hasJS ? ["JS"] : [])];
 
 const TARGET_LABELS: Record<string, string> = {
   html: "HTML",
   react: "React",
+  "react-native": "React Native",
+  expo: "Expo",
   next: "Next.js",
   vue: "Vue",
   svelte: "Svelte",
@@ -62,21 +140,38 @@ const TARGET_LABELS: Record<string, string> = {
   yaml: "YAML",
   json: "JSON",
   python: "Python",
+  sql: "SQL",
+  mermaid: "Mermaid",
+  dbml: "DBML",
 };
 
 const targetLabels = targets.map((target) => TARGET_LABELS[target] ?? target);
 const allBadges = [...languageBadges, ...targetLabels];
-const canonicalPath = `/r/${slug}`;
 const frontmatterPreview = normalizePreviewPath(preview);
 const detectedPreview = findResourcePreview(slug)?.publicPath;
 const imagePath = frontmatterPreview ?? detectedPreview ?? `/og/${slug}.svg`;
 const ogImageUrl = new URL(imagePath, "https://stealthis.dev").toString();
+const baseResourcePath = `/r/${slug}`;
+const canonicalPath = getLocalizedPath(baseResourcePath, locale);
 const resourceUrl = `https://stealthis.dev${canonicalPath}`;
-const alternateLinks = [
-  { hreflang: "en", href: resourceUrl },
-  { hreflang: "es", href: `https://stealthis.dev/es/r/${slug}` },
-  { hreflang: "x-default", href: resourceUrl },
-];
+const alternateLinks = getAlternateLinks(baseResourcePath);
+const resourceKeywords = mergeKeywords(
+  BRAND_ALIASES,
+  [
+    BRAND_NAME,
+    title,
+    slug,
+    slug.replaceAll("-", " "),
+    `${title} example`,
+    `${title} code snippet`,
+    category,
+    type,
+    difficulty,
+  ],
+  tags,
+  tech,
+  targets
+);
 const structuredData = [
   {
     "@context": "https://schema.org",
@@ -90,16 +185,24 @@ const structuredData = [
     datePublished: new Date(createdAt).toISOString(),
     dateModified: new Date(updatedAt).toISOString(),
     license,
-    keywords: [...new Set([...tags, ...tech])],
+    keywords: resourceKeywords,
     about: { "@type": "Thing", name: category },
     author: {
       "@type": "Organization",
-      name: "StealThis.dev",
+      name: BRAND_NAME,
+      alternateName: BRAND_ALIASES,
+      url: "https://stealthis.dev/",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: BRAND_NAME,
+      alternateName: BRAND_ALIASES,
       url: "https://stealthis.dev/",
     },
     isPartOf: {
       "@type": "WebSite",
-      name: "StealThis.dev",
+      name: BRAND_NAME,
+      alternateName: BRAND_ALIASES,
       url: "https://stealthis.dev/",
     },
   },
@@ -110,14 +213,14 @@ const structuredData = [
       {
         "@type": "ListItem",
         position: 1,
-        name: "Home",
-        item: "https://stealthis.dev/",
+        name: t("resource.breadcrumb.home"),
+        item: `https://stealthis.dev${prefix || "/"}`,
       },
       {
         "@type": "ListItem",
         position: 2,
-        name: "Library",
-        item: "https://stealthis.dev/library/",
+        name: t("resource.breadcrumb.library"),
+        item: `https://stealthis.dev${prefix}/library/`,
       },
       {
         "@type": "ListItem",
@@ -136,25 +239,26 @@ const structuredData = [
   image={imagePath}
   imageAlt={`${title} preview card`}
   canonicalPath={canonicalPath}
+  keywords={resourceKeywords}
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >
   <article class="container-md py-12" data-pagefind-body>
     <!-- Breadcrumb -->
     <nav class="text-sm text-slate-500 mb-8 flex items-center gap-2" aria-label="Breadcrumb">
-      <a href="/" class="hover:text-slate-300 transition-colors">Home</a>
+      <a href={`${prefix || "/"}`} class="hover:text-slate-300 transition-colors">{t("resource.breadcrumb.home")}</a>
       <span>/</span>
-      <a href="/library" class="hover:text-slate-300 transition-colors">Library</a>
+      <a href={`${prefix}/library`} class="hover:text-slate-300 transition-colors">{t("resource.breadcrumb.library")}</a>
       <span>/</span>
       <span class="text-slate-300">{title}</span>
     </nav>
 
     <!-- Header -->
     <header class="mb-10">
-      <div class="flex items-start justify-between gap-4 flex-wrap">
-        <div class="flex-1 min-w-0">
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div class="w-full min-w-0 md:flex-1">
           <div class="flex flex-wrap items-center gap-2 mb-3">
-            <a href={`/library?category=${category}`} class="chip hover:text-slate-200">
+            <a href={`${prefix}/library?category=${category}`} class="chip hover:text-slate-200">
               {categoryLabel}
             </a>
             <span class={`badge ${difficultyClass}`}>{difficultyLabel}</span>
@@ -167,7 +271,20 @@ const structuredData = [
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-2">
+        <div class="flex w-full flex-wrap items-center gap-2 md:w-auto md:flex-nowrap md:justify-end md:self-start">
+          <button
+            type="button"
+            class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/6 transition-colors resource-favorite-btn"
+            data-slug={slug}
+            data-label-save={t("resource.favorite")}
+            data-label-saved={t("resource.unfavorite")}
+            title={t("resource.favorite")}
+            aria-label={t("resource.favorite")}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
           {category === "remotion" && (
             <a
               href={SITE_URLS.remotion}
@@ -194,6 +311,18 @@ const structuredData = [
               {t("resource.openLab")}
             </a>
           )}
+          {SHOW_PROMPT_DESIGNER && hasPromptSnippet && (
+            <button
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/15 border border-violet-400/30 text-sm font-medium text-violet-300 hover:bg-violet-500/25 hover:text-violet-100 transition-colors"
+              data-open-prompt-designer
+              data-prompt-payload={promptDesignerPayload}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              {t("resource.openPromptDesigner")}
+            </button>
+          )}
           <ActionMenu resource={resource} locale={locale} resourceUrl={resourceUrl} />
         </div>
       </div>
@@ -202,7 +331,10 @@ const structuredData = [
       {tech.length > 0 && (
         <div class="flex flex-wrap gap-2 mt-5">
           {tech.map((item) => (
-            <span class="chip">{item}</span>
+            <span class="chip inline-flex items-center gap-1.5">
+              <TechIcon name={item} />
+              {item}
+            </span>
           ))}
         </div>
       )}
@@ -210,7 +342,7 @@ const structuredData = [
       <!-- Targets -->
       {targets.length > 0 && (
         <div class="flex flex-wrap items-center gap-2 mt-3">
-          <span class="text-xs text-slate-600">Targets:</span>
+          <span class="text-xs text-slate-600">{t("resource.targets")}:</span>
           {allBadges.map((label) => (
             <span class="text-xs font-mono px-2 py-0.5 rounded-md bg-white/4 border border-white/8 text-slate-400">
               {label}
@@ -222,18 +354,36 @@ const structuredData = [
 
     {category === "remotion" && (
       <section class="mb-12">
-        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Preview</h2>
+        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{t("resource.section.preview")}</h2>
         <div class="rounded-2xl border border-white/8 bg-surface-900/60 p-4">
           <RemotionPreview client:only="react" slug={slug} />
         </div>
       </section>
     )}
 
+    {hasReactNative && (
+      <section class="mb-12">
+        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Expo Snack</h2>
+        <ExpoSnackEmbed slug={slug} title={title} tech={tech} />
+      </section>
+    )}
+
     <!-- Code tabs -->
     <section class="mb-12">
-      <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Code</h2>
-      <CodeTabs slug={slug} targets={targets} />
+      <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{t("resource.section.code")}</h2>
+      <CodeTabs slug={slug} targets={targets} htmlSrcdoc={htmlSrcdoc} />
     </section>
+
+    <!-- CodePen examples -->
+    {codepenExamples && codepenExamples.length > 0 && (
+      <CodePenExamples
+        examples={codepenExamples}
+        sectionTitle={t("resource.codepenExamples")}
+        previewLabel={t("resource.codepenLivePreview")}
+        resource={resource}
+        locale={locale}
+      />
+    )}
 
     <!-- Prose documentation -->
     <section class="mb-12">
@@ -253,8 +403,8 @@ const structuredData = [
     <!-- Metadata footer -->
     <footer class="border-t border-white/8 pt-8 flex flex-wrap items-center justify-between gap-4 text-sm text-slate-500">
       <div class="flex items-center gap-4 flex-wrap">
-        <span>License: <span class="text-slate-300">{license}</span></span>
-        <span>Added: <span class="text-slate-300">{new Date(createdAt).toLocaleDateString()}</span></span>
+        <span>{t("resource.meta.license")}: <span class="text-slate-300">{license}</span></span>
+        <span>{t("resource.meta.added")}: <span class="text-slate-300">{new Date(createdAt).toLocaleDateString()}</span></span>
         {author && authorName && (
           <span class="flex items-center gap-2">
             <span>{t("resource.author")}:</span>
@@ -290,7 +440,71 @@ const structuredData = [
   </article>
 </Base>
 
+<script>
+  import { isFavorite, toggleFavorite } from "@lib/favorites";
+
+  function updateFavoriteButton(button: HTMLButtonElement, favorite: boolean) {
+    const saveLabel = button.dataset.labelSave ?? "Save";
+    const savedLabel = button.dataset.labelSaved ?? "Saved";
+    const label = favorite ? savedLabel : saveLabel;
+
+    button.classList.toggle("is-favorite", favorite);
+    button.setAttribute("title", label);
+    button.setAttribute("aria-label", label);
+  }
+
+  function initResourceFavoriteButtons() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>(".resource-favorite-btn");
+
+    for (const button of buttons) {
+      const slug = button.dataset.slug;
+      if (!slug) continue;
+
+      updateFavoriteButton(button, isFavorite(slug));
+
+      if (button.dataset.favoriteInit === "true") continue;
+      button.dataset.favoriteInit = "true";
+
+      button.addEventListener("click", () => {
+        const nextFavorite = toggleFavorite(slug);
+        updateFavoriteButton(button, nextFavorite);
+      });
+
+      window.addEventListener("stealthis:favorites-changed", (event) => {
+        if (!(event instanceof CustomEvent)) return;
+        const detail = event.detail as { slug?: string } | undefined;
+        if (detail?.slug && detail.slug !== slug) return;
+        updateFavoriteButton(button, isFavorite(slug));
+      });
+    }
+  }
+
+  function initPromptDesignerButtons() {
+    document.querySelectorAll<HTMLButtonElement>("[data-open-prompt-designer]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const payload = btn.dataset.promptPayload;
+        if (!payload) return;
+        const encoded = btoa(unescape(encodeURIComponent(payload)));
+        const isDev = window.location.hostname === "localhost";
+        const baseUrl = isDev ? "http://localhost:4328" : "https://prompt-designer.stealthis.dev";
+        window.open(`${baseUrl}/prompts/new?pd=${encodeURIComponent(encoded)}`, "_blank");
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initResourceFavoriteButtons);
+  document.addEventListener("DOMContentLoaded", initPromptDesignerButtons);
+</script>
+
 <style is:global>
+  .resource-favorite-btn.is-favorite {
+    @apply text-rose-400 border-rose-400/40 bg-rose-500/10;
+  }
+
+  .resource-favorite-btn.is-favorite svg {
+    fill: currentColor;
+  }
+
   /* Tailwind Typography plugin not included, manual prose styles */
   .prose h2 { @apply text-2xl font-bold text-white mt-10 mb-4; }
   .prose h3 { @apply text-lg font-semibold text-slate-200 mt-8 mb-3; }

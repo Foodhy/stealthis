@@ -4,6 +4,7 @@ REST API + MCP server for the StealThis.dev resource library.
 
 - **Production:** `https://mcp.stealthis.dev`
 - **Local:** `http://localhost:8787`
+- **Guia de funcionamiento:** `./COMO_FUNCIONA.md`
 
 ---
 

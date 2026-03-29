@@ -10,11 +10,16 @@ export const ResourceCategorySchema = z.enum([
   "components",
   "pages",
   "prompts",
-  "skills",
-  "mcp-servers",
   "architectures",
   "boilerplates",
   "remotion",
+  "database-schemas",
+  "ultra-high-definition-pages",
+  "design-styles",
+  "music",
+  "3d-models",
+  "3d-interactions",
+  "plugins",
 ]);
 
 export const ResourceTypeSchema = z.enum([
@@ -29,6 +34,7 @@ export const ResourceTypeSchema = z.enum([
   "mcp-server",
   "architecture",
   "boilerplate",
+  "schema",
 ]);
 
 export const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
@@ -41,12 +47,17 @@ export const ResourceTargetSchema = z.enum([
   "vue",
   "svelte",
   "astro",
+  "react-native",
+  "expo",
   "typescript",
   "python",
   // Content targets
   "markdown",
   "yaml",
   "json",
+  "sql",
+  "mermaid",
+  "dbml",
 ]);
 
 export const ResourceCollectionSchema = z.enum([
@@ -56,7 +67,19 @@ export const ResourceCollectionSchema = z.enum([
   "cards",
   "dashboard",
   "remotion",
+  "effects",
+  "mobile-nav",
+  "charts",
 ]);
+
+export const CodePenExampleSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  penUrl: z.string().url(),
+  description: z.string().optional(),
+  height: z.number().int().positive().default(520),
+  defaultTab: z.enum(["result", "html,result", "css,result", "js,result"]).default("result"),
+});
 
 export const ResourceMetaSchema = z.object({
   slug: z.string().min(1),
@@ -78,6 +101,7 @@ export const ResourceMetaSchema = z.object({
       src: z.string(),
     })
     .optional(),
+  codepenExamples: z.array(CodePenExampleSchema).optional(),
   createdAt: z
     .union([z.string(), z.date()])
     .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),

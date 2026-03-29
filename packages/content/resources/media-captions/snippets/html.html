@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accessible Media Captions</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="page-title">Accessible Media Captions</h1>
+    <p class="page-desc">Keyboard shortcuts: <kbd>Space</kbd>/<kbd>K</kbd> Play/Pause &middot; <kbd>M</kbd> Mute &middot; <kbd>&larr;</kbd><kbd>&rarr;</kbd> Seek &middot; <kbd>F</kbd> Fullscreen &middot; <kbd>C</kbd> Captions</p>
+
+    <!-- Player -->
+    <div class="player" id="player" tabindex="0" role="region" aria-label="Video player">
+      <!-- Simulated video area -->
+      <div class="player__viewport">
+        <canvas class="player__canvas" id="canvas" width="800" height="450"></canvas>
+
+        <!-- Caption overlay -->
+        <div class="player__captions" id="captions" aria-live="polite" aria-atomic="true">
+          <span class="caption-text" id="caption-text"></span>
+        </div>
+
+        <!-- Play overlay -->
+        <button class="player__play-overlay" id="play-overlay" aria-label="Play">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="31" stroke="currentColor" stroke-width="2" opacity="0.4"/>
+            <polygon points="26,20 26,44 46,32" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Controls bar -->
+      <div class="player__controls">
+        <!-- Progress -->
+        <div class="progress-bar" id="progress-bar" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="progress-bar__fill" id="progress-fill"></div>
+        </div>
+
+        <div class="controls-row">
+          <!-- Left controls -->
+          <div class="controls-left">
+            <button class="ctrl-btn" id="btn-play" aria-label="Play" title="Play (K)">
+              <svg class="icon-play" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <polygon points="5,3 5,17 17,10" fill="currentColor"/>
+              </svg>
+              <svg class="icon-pause" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none">
+                <rect x="4" y="3" width="4" height="14" rx="1" fill="currentColor"/>
+                <rect x="12" y="3" width="4" height="14" rx="1" fill="currentColor"/>
+              </svg>
+            </button>
+
+            <button class="ctrl-btn" id="btn-mute" aria-label="Mute" title="Mute (M)">
+              <svg class="icon-volume" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 7h3l4-4v14l-4-4H3V7z" fill="currentColor"/>
+                <path d="M14 6.5c1 1 1 5 0 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M16 4.5c2 2.5 2 8 0 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <svg class="icon-muted" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none">
+                <path d="M3 7h3l4-4v14l-4-4H3V7z" fill="currentColor"/>
+                <line x1="14" y1="7" x2="19" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="19" y1="7" x2="14" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+
+            <div class="volume-slider">
+              <input type="range" id="volume" class="volume-range" min="0" max="100" value="75" aria-label="Volume" />
+            </div>
+
+            <span class="time-display" id="time-display">0:00 / 2:30</span>
+          </div>
+
+          <!-- Right controls -->
+          <div class="controls-right">
+            <button class="ctrl-btn" id="btn-captions" aria-label="Toggle captions" aria-pressed="true" title="Captions (C)">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect x="1" y="4" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <text x="5" y="13" font-size="8" font-weight="bold" fill="currentColor">CC</text>
+              </svg>
+            </button>
+
+            <button class="ctrl-btn" id="btn-settings" aria-label="Caption settings" title="Settings">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M10 1v3M10 16v3M1 10h3M16 10h3M3.5 3.5l2 2M14.5 14.5l2 2M3.5 16.5l2-2M14.5 5.5l2-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Caption settings panel -->
+      <div class="settings-panel" id="settings-panel" hidden>
+        <h3 class="settings-panel__title">Caption Settings</h3>
+
+        <div class="setting">
+          <label class="setting__label" for="cap-font-size">Font Size</label>
+          <div class="setting__row">
+            <input type="range" id="cap-font-size" class="setting__range" min="12" max="36" value="18" />
+            <span class="setting__value" id="cap-font-size-val">18px</span>
+          </div>
+        </div>
+
+        <div class="setting">
+          <label class="setting__label" for="cap-color">Text Color</label>
+          <div class="setting__colors">
+            <button class="cap-color active" data-color="#ffffff" style="background:#fff" title="White"></button>
+            <button class="cap-color" data-color="#fde68a" style="background:#fde68a" title="Yellow"></button>
+            <button class="cap-color" data-color="#6ee7b7" style="background:#6ee7b7" title="Green"></button>
+            <button class="cap-color" data-color="#93c5fd" style="background:#93c5fd" title="Blue"></button>
+          </div>
+        </div>
+
+        <div class="setting">
+          <label class="setting__label" for="cap-bg-opacity">Background Opacity</label>
+          <div class="setting__row">
+            <input type="range" id="cap-bg-opacity" class="setting__range" min="0" max="100" value="70" />
+            <span class="setting__value" id="cap-bg-opacity-val">70%</span>
+          </div>
+        </div>
+
+        <div class="setting">
+          <label class="setting__label">Position</label>
+          <div class="setting__positions">
+            <button class="pos-btn" data-pos="top" title="Top">Top</button>
+            <button class="pos-btn active" data-pos="bottom" title="Bottom">Bottom</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

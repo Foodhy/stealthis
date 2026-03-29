@@ -1,0 +1,251 @@
+---
+import Base from "@layouts/Base.astro";
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, getLocaleFromUrl, isLocale, useTranslations } from "@i18n/index";
+export const prerender = false;
+
+let locale = getLocaleFromUrl(Astro.url);
+if (locale === DEFAULT_LOCALE) {
+  const cookieLocale = Astro.cookies.get(LOCALE_STORAGE_KEY)?.value;
+  if (isLocale(cookieLocale)) locale = cookieLocale;
+}
+const t = useTranslations(locale);
+const title = t("settings.title");
+---
+
+<Base title={title}>
+  <main class="min-h-[60vh] container-xl py-10">
+    <section class="max-w-3xl">
+      <p class="text-xs uppercase tracking-[0.25em] text-slate-500 mb-2">{t("settings.account")}</p>
+      <h1 class="text-3xl font-semibold text-white mb-8">{title}</h1>
+
+      <div id="settings-unauth" class="hidden rounded-2xl border border-white/10 bg-white/5 p-6">
+        <p class="text-slate-300 mb-4">{t("settings.unauth.message")}</p>
+        <a
+          href="/api/auth/github"
+          class="inline-flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-xl border border-white/10 bg-white/6 hover:bg-white/10 hover:text-white transition-colors"
+        >
+          {t("settings.unauth.cta")}
+        </a>
+      </div>
+
+      <div
+        id="settings-auth"
+        class="rounded-2xl border border-white/10 bg-white/5 p-6"
+      >
+        <div class="flex items-start gap-4 mb-6">
+          <div class="relative shrink-0">
+            <img
+              id="settings-avatar"
+              src=""
+              alt="Profile avatar"
+              class="w-12 h-12 rounded-full object-cover ring-1 ring-white/10 bg-white/5"
+            />
+          </div>
+
+          <div class="min-w-0">
+            <div class="flex items-center gap-3 flex-wrap">
+              <p id="settings-login" class="text-base font-semibold text-white"></p>
+              <p id="settings-email" class="text-slate-400 text-sm truncate"></p>
+            </div>
+            <p class="text-slate-500 text-sm mt-2">{t("settings.profileSettings")}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-200 mb-2" for="settings-displayName"
+              >{t("settings.displayName")}</label
+            >
+            <input
+              id="settings-displayName"
+              name="displayName"
+              type="text"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus-visible:outline-brand-400 focus-visible:outline-2"
+              autocomplete="name"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-200 mb-2" for="settings-bio">{t("settings.bio")}</label>
+            <textarea
+              id="settings-bio"
+              name="bio"
+              rows="4"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus-visible:outline-brand-400 focus-visible:outline-2"
+              placeholder={t("settings.bio.placeholder")}
+            ></textarea>
+            <p class="text-xs text-slate-500 mt-2">
+              {t("settings.bio.tip")}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 mt-6">
+          <button
+            id="settings-save"
+            type="button"
+            class="inline-flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-xl border border-white/10 bg-white/6 hover:bg-white/10 hover:text-white transition-colors"
+          >
+            {t("settings.save")}
+          </button>
+          <p id="settings-save-status" class="text-sm text-slate-400"></p>
+        </div>
+      </div>
+
+      <div class="mt-8 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-6">
+        <h2 class="text-base font-semibold text-rose-300 mb-2">{t("settings.dangerZone.title")}</h2>
+        <p class="text-sm text-rose-200/90 mb-4">
+          {t("settings.dangerZone.description")}
+        </p>
+
+        <button
+          id="settings-delete-account"
+          type="button"
+          class="inline-flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 transition-colors"
+        >
+          {t("settings.dangerZone.deleteButton")}
+        </button>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<script
+  define:vars={{
+    saveLabel: t("settings.save"),
+    savingLabel: t("settings.saving"),
+    savedLabel: t("settings.saved"),
+    saveErrorLabel: t("settings.saveError"),
+    confirmDeleteText: t("settings.dangerZone.confirm"),
+    userFallback: t("settings.userFallback"),
+  }}
+>
+  const unauthEl = document.getElementById("settings-unauth");
+  const authEl = document.getElementById("settings-auth");
+
+  const avatarImg = document.getElementById("settings-avatar");
+  const loginEl = document.getElementById("settings-login");
+  const emailEl = document.getElementById("settings-email");
+
+  const displayNameInput = document.getElementById("settings-displayName");
+  const bioInput = document.getElementById("settings-bio");
+
+  const saveBtn = document.getElementById("settings-save");
+  const statusEl = document.getElementById("settings-save-status");
+
+  const deleteBtn = document.getElementById("settings-delete-account");
+  const SETTINGS_REQUEST_TIMEOUT_MS = 10000;
+  let isSavingSettings = false;
+  let loadMePromise = null;
+
+  async function fetchWithTimeout(url, init = {}, timeoutMs = SETTINGS_REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  const setUnauth = () => {
+    if (unauthEl) unauthEl.classList.remove("hidden");
+    if (authEl) authEl.classList.add("hidden");
+  };
+
+  const setAuth = () => {
+    if (unauthEl) unauthEl.classList.add("hidden");
+    if (authEl) authEl.classList.remove("hidden");
+  };
+
+  async function loadMe() {
+    if (loadMePromise) return loadMePromise;
+
+    loadMePromise = (async () => {
+      const res = await fetchWithTimeout("/api/auth/me", { credentials: "include" });
+      if (!res.ok) {
+        setUnauth();
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.authenticated) {
+        setUnauth();
+        return;
+      }
+
+      setAuth();
+      const user = data.user ?? {};
+
+      const login = user.login ? `@${user.login}` : "";
+      const email = user.email ?? "";
+
+      if (avatarImg && user.avatarUrl) avatarImg.src = user.avatarUrl;
+      if (loginEl) loginEl.textContent = login || userFallback;
+      if (emailEl) emailEl.textContent = email ?? "";
+
+      if (displayNameInput) displayNameInput.value = user.name ?? user.login ?? "";
+      if (bioInput) bioInput.value = user.bio ?? "";
+    })().finally(() => {
+      loadMePromise = null;
+    });
+
+    return loadMePromise;
+  }
+
+  async function saveSettings() {
+    if (!saveBtn) return;
+    if (isSavingSettings) return;
+    isSavingSettings = true;
+    if (statusEl) statusEl.textContent = "";
+
+    const displayName = displayNameInput ? displayNameInput.value : "";
+    const bio = bioInput ? bioInput.value : "";
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = savingLabel;
+
+    try {
+      const res = await fetchWithTimeout("/api/auth/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ displayName, bio }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save");
+      const result = await res.json();
+      if (result?.ok) {
+        if (statusEl) statusEl.textContent = savedLabel;
+      } else {
+        if (statusEl) statusEl.textContent = saveErrorLabel;
+      }
+    } catch {
+      if (statusEl) statusEl.textContent = saveErrorLabel;
+    } finally {
+      isSavingSettings = false;
+      saveBtn.disabled = false;
+      saveBtn.textContent = saveLabel;
+    }
+  }
+
+  async function init() {
+    await loadMe();
+    if (saveBtn) saveBtn.addEventListener("click", saveSettings);
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", () => {
+        const ok = window.confirm(
+          confirmDeleteText
+        );
+        if (!ok) return;
+        window.location.href = "/api/auth/delete";
+      });
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    init();
+  }
+</script>
+

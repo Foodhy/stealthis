@@ -5,21 +5,131 @@
   const today = new Date();
   let viewYear = 2026;
   let viewMonth = 1; // February — where the demo events are
-  let viewDay = 15;  // mid-month
-  let currentView = 'month';
+  let viewDay = 15; // mid-month
+  let currentView = "month";
 
   let events = [
-    { id: "e1", title: "Team Standup", date: "2026-02-02", endDate: "2026-02-02", startTime: "09:00", endTime: "09:30", category: "meeting", color: "#38bdf8", notes: "Daily sync" },
-    { id: "e2", title: "Team Standup", date: "2026-02-03", endDate: "2026-02-03", startTime: "09:00", endTime: "09:30", category: "meeting", color: "#38bdf8", notes: "Daily sync" },
-    { id: "e3", title: "Team Standup", date: "2026-02-04", endDate: "2026-02-04", startTime: "09:00", endTime: "09:30", category: "meeting", color: "#38bdf8", notes: "Daily sync" },
-    { id: "e4", title: "Team Standup", date: "2026-02-05", endDate: "2026-02-05", startTime: "09:00", endTime: "09:30", category: "meeting", color: "#38bdf8", notes: "Daily sync" },
-    { id: "e5", title: "Team Standup", date: "2026-02-06", endDate: "2026-02-06", startTime: "09:00", endTime: "09:30", category: "meeting", color: "#38bdf8", notes: "Daily sync" },
-    { id: "e6", title: "Product Review", date: "2026-02-04", endDate: "2026-02-04", startTime: "14:00", endTime: "15:30", category: "meeting", color: "#a78bfa", notes: "Q1 product review with stakeholders" },
-    { id: "e7", title: "Design Sprint", date: "2026-02-10", endDate: "2026-02-12", startTime: "09:00", endTime: "17:00", category: "event", color: "#fb923c", notes: "3-day design sprint for new onboarding flow" },
-    { id: "e8", title: "Q1 Planning", date: "2026-02-18", endDate: "2026-02-18", startTime: "10:00", endTime: "12:00", category: "meeting", color: "#f87171", notes: "Quarterly planning session" },
-    { id: "e9", title: "All Hands", date: "2026-02-25", endDate: "2026-02-25", startTime: "11:00", endTime: "12:00", category: "meeting", color: "#34d399", notes: "Company all-hands meeting" },
-    { id: "e10", title: "Team Standup", date: "2026-02-09", endDate: "2026-02-09", startTime: "09:00", endTime: "09:30", category: "meeting", color: "#38bdf8", notes: "Daily sync" },
-    { id: "e11", title: "Team Standup", date: "2026-02-11", endDate: "2026-02-11", startTime: "09:00", endTime: "09:30", category: "meeting", color: "#38bdf8", notes: "Daily sync" },
+    {
+      id: "e1",
+      title: "Team Standup",
+      date: "2026-02-02",
+      endDate: "2026-02-02",
+      startTime: "09:00",
+      endTime: "09:30",
+      category: "meeting",
+      color: "#38bdf8",
+      notes: "Daily sync",
+    },
+    {
+      id: "e2",
+      title: "Team Standup",
+      date: "2026-02-03",
+      endDate: "2026-02-03",
+      startTime: "09:00",
+      endTime: "09:30",
+      category: "meeting",
+      color: "#38bdf8",
+      notes: "Daily sync",
+    },
+    {
+      id: "e3",
+      title: "Team Standup",
+      date: "2026-02-04",
+      endDate: "2026-02-04",
+      startTime: "09:00",
+      endTime: "09:30",
+      category: "meeting",
+      color: "#38bdf8",
+      notes: "Daily sync",
+    },
+    {
+      id: "e4",
+      title: "Team Standup",
+      date: "2026-02-05",
+      endDate: "2026-02-05",
+      startTime: "09:00",
+      endTime: "09:30",
+      category: "meeting",
+      color: "#38bdf8",
+      notes: "Daily sync",
+    },
+    {
+      id: "e5",
+      title: "Team Standup",
+      date: "2026-02-06",
+      endDate: "2026-02-06",
+      startTime: "09:00",
+      endTime: "09:30",
+      category: "meeting",
+      color: "#38bdf8",
+      notes: "Daily sync",
+    },
+    {
+      id: "e6",
+      title: "Product Review",
+      date: "2026-02-04",
+      endDate: "2026-02-04",
+      startTime: "14:00",
+      endTime: "15:30",
+      category: "meeting",
+      color: "#a78bfa",
+      notes: "Q1 product review with stakeholders",
+    },
+    {
+      id: "e7",
+      title: "Design Sprint",
+      date: "2026-02-10",
+      endDate: "2026-02-12",
+      startTime: "09:00",
+      endTime: "17:00",
+      category: "event",
+      color: "#fb923c",
+      notes: "3-day design sprint for new onboarding flow",
+    },
+    {
+      id: "e8",
+      title: "Q1 Planning",
+      date: "2026-02-18",
+      endDate: "2026-02-18",
+      startTime: "10:00",
+      endTime: "12:00",
+      category: "meeting",
+      color: "#f87171",
+      notes: "Quarterly planning session",
+    },
+    {
+      id: "e9",
+      title: "All Hands",
+      date: "2026-02-25",
+      endDate: "2026-02-25",
+      startTime: "11:00",
+      endTime: "12:00",
+      category: "meeting",
+      color: "#34d399",
+      notes: "Company all-hands meeting",
+    },
+    {
+      id: "e10",
+      title: "Team Standup",
+      date: "2026-02-09",
+      endDate: "2026-02-09",
+      startTime: "09:00",
+      endTime: "09:30",
+      category: "meeting",
+      color: "#38bdf8",
+      notes: "Daily sync",
+    },
+    {
+      id: "e11",
+      title: "Team Standup",
+      date: "2026-02-11",
+      endDate: "2026-02-11",
+      startTime: "09:00",
+      endTime: "09:30",
+      category: "meeting",
+      color: "#38bdf8",
+      notes: "Daily sync",
+    },
   ];
 
   let nextId = 20;
@@ -54,7 +164,7 @@
         times.push({ val: `${hh}:${mm}`, label: `${displayH}:${mm} ${ampm}` });
       }
     }
-    times.forEach(t => {
+    times.forEach((t) => {
       const o1 = new Option(t.label, t.val);
       const o2 = new Option(t.label, t.val);
       eventStartTime.appendChild(o1);
@@ -66,7 +176,7 @@
 
   /* ── Month/Week navigation ── */
   document.getElementById("cal-prev").addEventListener("click", () => {
-    if (currentView === 'week') {
+    if (currentView === "week") {
       const ws = getWeekStart(viewYear, viewMonth, viewDay || 1);
       ws.setDate(ws.getDate() - 7);
       viewYear = ws.getFullYear();
@@ -74,13 +184,16 @@
       viewDay = ws.getDate() + 3; // middle of week
     } else {
       viewMonth--;
-      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      if (viewMonth < 0) {
+        viewMonth = 11;
+        viewYear--;
+      }
     }
     renderView();
   });
 
   document.getElementById("cal-next").addEventListener("click", () => {
-    if (currentView === 'week') {
+    if (currentView === "week") {
       const ws = getWeekStart(viewYear, viewMonth, viewDay || 1);
       ws.setDate(ws.getDate() + 7);
       viewYear = ws.getFullYear();
@@ -88,7 +201,10 @@
       viewDay = ws.getDate() + 3;
     } else {
       viewMonth++;
-      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      if (viewMonth > 11) {
+        viewMonth = 0;
+        viewYear++;
+      }
     }
     renderView();
   });
@@ -101,9 +217,9 @@
   });
 
   /* ── View toggle ── */
-  document.querySelectorAll(".view-btn").forEach(btn => {
+  document.querySelectorAll(".view-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".view-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       currentView = btn.dataset.view; // get 'month' or 'week' from data-view attribute
       renderView();
@@ -114,10 +230,10 @@
   document.getElementById("cal-new-event").addEventListener("click", () => openModal(null));
 
   /* ── Color swatches ── */
-  colorSwatches.addEventListener("click", e => {
+  colorSwatches.addEventListener("click", (e) => {
     const swatch = e.target.closest(".swatch");
     if (!swatch) return;
-    colorSwatches.querySelectorAll(".swatch").forEach(s => s.classList.remove("active"));
+    colorSwatches.querySelectorAll(".swatch").forEach((s) => s.classList.remove("active"));
     swatch.classList.add("active");
     selectedColor = swatch.dataset.color;
   });
@@ -125,19 +241,21 @@
   /* ── Modal controls ── */
   document.getElementById("modal-close").addEventListener("click", closeModal);
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
-  backdrop.addEventListener("click", e => { if (e.target === backdrop) closeModal(); });
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) closeModal();
+  });
 
   document.getElementById("modal-save").addEventListener("click", saveEvent);
   modalDelete.addEventListener("click", deleteEvent);
 
   /* ── Keyboard ── */
-  document.addEventListener("keydown", e => {
+  document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
 
   /* ── renderView dispatcher ── */
   function renderView() {
-    if (currentView === 'week') {
+    if (currentView === "week") {
       renderWeekView();
     } else {
       renderCalendar();
@@ -147,12 +265,24 @@
   /* ── Render calendar (month view) ── */
   function renderCalendar() {
     // Hide week grid if it exists, show month grid
-    const weekGrid = document.getElementById('week-grid');
-    if (weekGrid) weekGrid.style.display = 'none';
-    grid.style.display = 'grid';
+    const weekGrid = document.getElementById("week-grid");
+    if (weekGrid) weekGrid.style.display = "none";
+    grid.style.display = "grid";
 
-    const MONTHS = ["January","February","March","April","May","June",
-                    "July","August","September","October","November","December"];
+    const MONTHS = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
     monthLabel.textContent = `${MONTHS[viewMonth]} ${viewYear}`;
     grid.innerHTML = "";
 
@@ -196,7 +326,7 @@
       // Events for this cell
       const cellEvents = getEventsForDate(cellDate);
       const maxVisible = 2;
-      cellEvents.slice(0, maxVisible).forEach(ev => {
+      cellEvents.slice(0, maxVisible).forEach((ev) => {
         const pill = createEventPill(ev, cellDate);
         cell.appendChild(pill);
       });
@@ -208,7 +338,7 @@
       }
 
       // Click cell to add event
-      cell.addEventListener("click", e => {
+      cell.addEventListener("click", (e) => {
         if (e.target.closest(".cal-event-pill")) return;
         openModal(null, dateStr);
       });
@@ -219,7 +349,20 @@
 
   /* ── Render week view ── */
   function renderWeekView() {
-    const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const MONTHS_SHORT = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
 
     const startOfWeek = getWeekStart(viewYear, viewMonth, viewDay || 1);
 
@@ -229,47 +372,50 @@
     monthLabel.textContent = `${MONTHS_SHORT[startOfWeek.getMonth()]} ${startOfWeek.getDate()} \u2013 ${MONTHS_SHORT[endOfWeek.getMonth()]} ${endOfWeek.getDate()}, ${endOfWeek.getFullYear()}`;
 
     // Hide month grid, show week grid
-    grid.style.display = 'none';
+    grid.style.display = "none";
 
-    let weekGrid = document.getElementById('week-grid');
+    let weekGrid = document.getElementById("week-grid");
     if (!weekGrid) {
-      weekGrid = document.createElement('div');
-      weekGrid.id = 'week-grid';
-      weekGrid.className = 'week-grid';
+      weekGrid = document.createElement("div");
+      weekGrid.id = "week-grid";
+      weekGrid.className = "week-grid";
       grid.parentNode.insertBefore(weekGrid, grid.nextSibling);
     }
-    weekGrid.style.display = 'grid';
-    weekGrid.innerHTML = '';
+    weekGrid.style.display = "grid";
+    weekGrid.innerHTML = "";
 
-    const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     for (let d = 0; d < 7; d++) {
       const dayDate = new Date(startOfWeek);
       dayDate.setDate(startOfWeek.getDate() + d);
       const isToday = isSameDay(dayDate, today);
 
-      const col = document.createElement('div');
-      col.className = `week-col${isToday ? ' week-col--today' : ''}`;
+      const col = document.createElement("div");
+      col.className = `week-col${isToday ? " week-col--today" : ""}`;
 
       // Day header
-      const header = document.createElement('div');
-      header.className = 'week-day-header';
-      header.innerHTML = `<span class="week-day-name">${DAY_NAMES[dayDate.getDay()]}</span><span class="week-day-num${isToday ? ' today-num' : ''}">${dayDate.getDate()}</span>`;
+      const header = document.createElement("div");
+      header.className = "week-day-header";
+      header.innerHTML = `<span class="week-day-name">${DAY_NAMES[dayDate.getDay()]}</span><span class="week-day-num${isToday ? " today-num" : ""}">${dayDate.getDate()}</span>`;
       col.appendChild(header);
 
       // Click column to add event
-      col.addEventListener('click', e => {
-        if (e.target.closest('.week-event-pill')) return;
+      col.addEventListener("click", (e) => {
+        if (e.target.closest(".week-event-pill")) return;
         openModal(null, formatDate(dayDate));
       });
 
       // Events for this day
       const dayEvents = getEventsForDate(dayDate);
-      dayEvents.forEach(ev => {
-        const pill = document.createElement('button');
-        pill.className = 'week-event-pill';
+      dayEvents.forEach((ev) => {
+        const pill = document.createElement("button");
+        pill.className = "week-event-pill";
         pill.style.background = ev.color;
         pill.innerHTML = `<span class="week-event-time">${ev.startTime}</span><span class="week-event-title">${ev.title}</span>`;
-        pill.addEventListener('click', e => { e.stopPropagation(); openModal(ev.id); });
+        pill.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openModal(ev.id);
+        });
         col.appendChild(pill);
       });
 
@@ -310,7 +456,7 @@
 
     pill.style.background = ev.color;
     pill.title = `${ev.title} — ${ev.startTime}`;
-    pill.addEventListener("click", e => {
+    pill.addEventListener("click", (e) => {
       e.stopPropagation();
       openModal(ev.id);
     });
@@ -319,11 +465,13 @@
 
   function getEventsForDate(date) {
     const dateStr = formatDate(date);
-    return events.filter(ev => {
-      const start = ev.date;
-      const end = ev.endDate || ev.date;
-      return dateStr >= start && dateStr <= end;
-    }).sort((a, b) => a.startTime.localeCompare(b.startTime));
+    return events
+      .filter((ev) => {
+        const start = ev.date;
+        const end = ev.endDate || ev.date;
+        return dateStr >= start && dateStr <= end;
+      })
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }
 
   /* ── Modal ── */
@@ -332,7 +480,7 @@
     selectedColor = "#38bdf8";
 
     if (id) {
-      const ev = events.find(e => e.id === id);
+      const ev = events.find((e) => e.id === id);
       if (!ev) return;
       modalTitle.textContent = "Edit Event";
       eventId.value = ev.id;
@@ -359,7 +507,7 @@
     }
 
     // Sync swatch selection
-    colorSwatches.querySelectorAll(".swatch").forEach(s => {
+    colorSwatches.querySelectorAll(".swatch").forEach((s) => {
       s.classList.toggle("active", s.dataset.color === selectedColor);
     });
 
@@ -376,7 +524,10 @@
 
   function saveEvent() {
     const title = eventTitle.value.trim();
-    if (!title) { eventTitle.focus(); return; }
+    if (!title) {
+      eventTitle.focus();
+      return;
+    }
 
     const ev = {
       id: editingEventId || `e${nextId++}`,
@@ -391,7 +542,7 @@
     };
 
     if (editingEventId) {
-      const idx = events.findIndex(e => e.id === editingEventId);
+      const idx = events.findIndex((e) => e.id === editingEventId);
       if (idx > -1) events[idx] = ev;
     } else {
       events.push(ev);
@@ -403,7 +554,7 @@
 
   function deleteEvent() {
     if (!editingEventId) return;
-    events = events.filter(e => e.id !== editingEventId);
+    events = events.filter((e) => e.id !== editingEventId);
     closeModal();
     renderView();
   }
@@ -422,9 +573,11 @@
   }
 
   function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-           a.getMonth() === b.getMonth() &&
-           a.getDate() === b.getDate();
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
   }
 
   /* ── Init ── */

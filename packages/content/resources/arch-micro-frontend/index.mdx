@@ -1,0 +1,89 @@
+---
+slug: arch-micro-frontend
+title: "Micro-Frontend Architecture (Module Federation)"
+description: Micro-frontend pattern using Webpack Module Federation with independent host/remote applications sharing dependencies at runtime.
+category: architectures
+type: architecture
+tags: [micro-frontend, module-federation, webpack, architecture, distributed]
+tech: [webpack, react, typescript]
+difficulty: hard
+targets: [html]
+labRoute: /architectures/arch-micro-frontend
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## Micro-Frontend Architecture (Module Federation)
+
+Module Federation is a Webpack 5 feature that allows multiple independently built and deployed applications to share code at runtime. It enables true micro-frontend architecture where teams own, build, and deploy their pieces of a larger application independently.
+
+### How It Works
+
+The architecture has two roles:
+
+- **Host (Shell)** — the container application that loads remote modules at runtime. It defines which remotes are available and lazily loads their exposed components.
+- **Remote** — a standalone application that exposes specific modules (components, utilities, stores) for the host or other remotes to consume.
+
+At build time, each application is bundled independently. At runtime, the host fetches a `remoteEntry.js` manifest from each remote and dynamically loads the requested modules.
+
+### Webpack Configuration
+
+The host declares remotes it wants to consume:
+
+```js
+// host webpack.config.js
+new ModuleFederationPlugin({
+  name: "host",
+  remotes: {
+    dashboard: "dashboard@http://localhost:3001/remoteEntry.js",
+    settings: "settings@http://localhost:3002/remoteEntry.js",
+  },
+  shared: ["react", "react-dom"],
+})
+```
+
+Each remote exposes modules:
+
+```js
+// remote webpack.config.js
+new ModuleFederationPlugin({
+  name: "dashboard",
+  filename: "remoteEntry.js",
+  exposes: {
+    "./Dashboard": "./src/Dashboard",
+  },
+  shared: ["react", "react-dom"],
+})
+```
+
+### Shared Dependencies
+
+The `shared` configuration prevents duplicate copies of libraries. When both host and remote declare `react` as shared, Module Federation negotiates and loads only one copy at runtime, using semver rules to pick the best version.
+
+### Async Boundary
+
+Each application needs an async bootstrap boundary. Instead of directly rendering in `index.tsx`, a `bootstrap.tsx` file handles the async import to ensure federated modules are loaded before React mounts.
+
+### Independent Deployment
+
+Each micro-app has its own CI/CD pipeline, repository (or monorepo package), and deployment. Updating the dashboard remote does not require rebuilding or redeploying the host — the host simply loads the latest `remoteEntry.js` on the next page load.
+
+### When to Use
+
+Module Federation shines when:
+- Multiple teams need to ship independently
+- The application is large enough to justify the operational overhead
+- You need runtime integration (not just build-time composition)
+- Different parts of the app may use different framework versions
+
+Avoid it for small teams or simple applications where the coordination cost outweighs the benefits.
+
+### Official Docs
+
+- [Module Federation](https://module-federation.io/)
+- [Webpack Module Federation](https://webpack.js.org/concepts/module-federation/)
+- [Practical Module Federation](https://module-federation.io/guide/start/quick-start.html)

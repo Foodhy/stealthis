@@ -3,22 +3,22 @@
 
   // ── Commands dataset ───────────────────────────────────────────
   const COMMANDS = [
-    { group: "Navigation", icon: "🏠", name: "Go to Home",        meta: "",       shortcut: "G H" },
-    { group: "Navigation", icon: "📚", name: "Open Library",      meta: "",       shortcut: "G L" },
-    { group: "Navigation", icon: "⚙️",  name: "Settings",          meta: "",       shortcut: "G S" },
-    { group: "Navigation", icon: "📖", name: "Documentation",     meta: "",       shortcut: ""    },
-    { group: "Actions",    icon: "✨", name: "New Resource",      meta: "Create", shortcut: "⌘N"  },
-    { group: "Actions",    icon: "🔍", name: "Search Everything", meta: "Find",   shortcut: "⌘F"  },
-    { group: "Actions",    icon: "📋", name: "Copy Page URL",     meta: "Share",  shortcut: "⌘U"  },
-    { group: "Actions",    icon: "🌙", name: "Toggle Dark Mode",  meta: "Theme",  shortcut: "⌘D"  },
-    { group: "Help",       icon: "❓", name: "Keyboard Shortcuts","meta": "",      shortcut: "?"   },
-    { group: "Help",       icon: "💬", name: "Open Feedback",     meta: "",       shortcut: ""    },
+    { group: "Navigation", icon: "🏠", name: "Go to Home", meta: "", shortcut: "G H" },
+    { group: "Navigation", icon: "📚", name: "Open Library", meta: "", shortcut: "G L" },
+    { group: "Navigation", icon: "⚙️", name: "Settings", meta: "", shortcut: "G S" },
+    { group: "Navigation", icon: "📖", name: "Documentation", meta: "", shortcut: "" },
+    { group: "Actions", icon: "✨", name: "New Resource", meta: "Create", shortcut: "⌘N" },
+    { group: "Actions", icon: "🔍", name: "Search Everything", meta: "Find", shortcut: "⌘F" },
+    { group: "Actions", icon: "📋", name: "Copy Page URL", meta: "Share", shortcut: "⌘U" },
+    { group: "Actions", icon: "🌙", name: "Toggle Dark Mode", meta: "Theme", shortcut: "⌘D" },
+    { group: "Help", icon: "❓", name: "Keyboard Shortcuts", meta: "", shortcut: "?" },
+    { group: "Help", icon: "💬", name: "Open Feedback", meta: "", shortcut: "" },
   ];
 
   // ── Elements ───────────────────────────────────────────────────
-  const overlay  = document.getElementById("cp-overlay");
-  const input    = document.getElementById("cp-input");
-  const list     = document.getElementById("cp-list");
+  const overlay = document.getElementById("cp-overlay");
+  const input = document.getElementById("cp-input");
+  const list = document.getElementById("cp-list");
 
   let activeIndex = -1;
 
@@ -79,7 +79,10 @@
   function filter(query) {
     const q = query.toLowerCase().trim();
     activeIndex = -1;
-    if (!q) { render(COMMANDS); return; }
+    if (!q) {
+      render(COMMANDS);
+      return;
+    }
     const filtered = COMMANDS.filter(
       (c) => c.name.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
     );
@@ -122,9 +125,17 @@
 
   // Keyboard navigation inside palette
   input.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown")  { e.preventDefault(); moveActive(1); }
-    if (e.key === "ArrowUp")    { e.preventDefault(); moveActive(-1); }
-    if (e.key === "Escape")     { close(); }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      moveActive(1);
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      moveActive(-1);
+    }
+    if (e.key === "Escape") {
+      close();
+    }
     if (e.key === "Enter") {
       const items = list.querySelectorAll(".cp-item");
       if (activeIndex >= 0 && items[activeIndex]) {

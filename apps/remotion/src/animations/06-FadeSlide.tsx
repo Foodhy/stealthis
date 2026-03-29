@@ -34,16 +34,16 @@ import {
   useVideoConfig,
 } from "remotion";
 
-const DURATION_SEC = 2;    // How long each element's enter animation lasts
-const STAGGER = 12;        // Frames between each row starting
+const DURATION_SEC = 2; // How long each element's enter animation lasts
+const STAGGER = 12; // Frames between each row starting
 
 const ROWS = [
-  { label: "linear",             easing: Easing.linear,               color: "#94a3b8" },
-  { label: "out(quad)",          easing: Easing.out(Easing.quad),     color: "#818cf8" },
-  { label: "in(quad)",           easing: Easing.in(Easing.quad),      color: "#34d399" },
-  { label: "inOut(quad)",        easing: Easing.inOut(Easing.quad),   color: "#f472b6" },
-  { label: "inOut(exp)",         easing: Easing.inOut(Easing.exp),    color: "#fb923c" },
-  { label: "bezier(custom)",     easing: Easing.bezier(0.4, 0, 0.2, 1), color: "#e879f9" },
+  { label: "linear", easing: Easing.linear, color: "#94a3b8" },
+  { label: "out(quad)", easing: Easing.out(Easing.quad), color: "#818cf8" },
+  { label: "in(quad)", easing: Easing.in(Easing.quad), color: "#34d399" },
+  { label: "inOut(quad)", easing: Easing.inOut(Easing.quad), color: "#f472b6" },
+  { label: "inOut(exp)", easing: Easing.inOut(Easing.exp), color: "#fb923c" },
+  { label: "bezier(custom)", easing: Easing.bezier(0.4, 0, 0.2, 1), color: "#e879f9" },
 ] as const;
 
 // --- Single row: a colored bar that slides in using a particular easing ---
@@ -56,20 +56,14 @@ const EasingRow: React.FC<{
   color: string;
   maxWidth: number;
 }> = ({ frame, fps, index, label, easing, color, maxWidth }) => {
-
   const delay = index * STAGGER;
 
   // interpolate maps frame → 0..1 with the given easing curve applied
-  const progress = interpolate(
-    frame - delay,
-    [0, DURATION_SEC * fps],
-    [0, 1],
-    {
-      easing,
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-    },
-  );
+  const progress = interpolate(frame - delay, [0, DURATION_SEC * fps], [0, 1], {
+    easing,
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   const barWidth = progress * maxWidth;
 

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bun + Hono API Starter</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: linear-gradient(135deg, rgba(34,211,238,0.04) 0%, rgba(59,130,246,0.04) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+    .header { display: flex; align-items: center; gap: 1rem; }
+    .icon-box {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700; color: #0a0a0f;
+    }
+    .header h1 { font-size: 1.35rem; font-weight: 700; color: #f1f5f9; }
+    .header p { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+    .badge-easy {
+      display: inline-block;
+      background: rgba(16,185,129,0.15);
+      color: #34d399;
+      border: 1px solid rgba(16,185,129,0.25);
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #22d3ee;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Quick Start */
+    .cmd-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.82rem;
+      color: #22d3ee;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .cmd-prompt { color: #475569; user-select: none; }
+
+    /* Tree */
+    .tree {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.75rem;
+      line-height: 1.7;
+      color: #94a3b8;
+    }
+    .tree .file { color: #e2e8f0; }
+    .tree .dir { color: #3b82f6; }
+    .tree .highlight { color: #22d3ee; font-weight: 600; }
+
+    /* Code Block */
+    .code-block {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.73rem;
+      line-height: 1.65;
+      color: #cbd5e1;
+      overflow-x: auto;
+    }
+    .code-block .kw { color: #c084fc; }
+    .code-block .str { color: #34d399; }
+    .code-block .fn { color: #60a5fa; }
+    .code-block .cm { color: #475569; }
+    .code-block .var { color: #22d3ee; }
+
+    /* Performance */
+    .perf { display: flex; flex-direction: column; gap: 0.6rem; }
+    .perf-row { display: flex; align-items: center; gap: 0.75rem; }
+    .perf-label {
+      width: 70px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      flex-shrink: 0;
+    }
+    .perf-bar-bg {
+      flex: 1;
+      height: 22px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .perf-bar {
+      height: 100%;
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 0.5rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #0a0a0f;
+      transition: width 0.6s ease;
+    }
+    .perf-bar.bun {
+      width: 95%;
+      background: linear-gradient(90deg, #22d3ee, #3b82f6);
+    }
+    .perf-bar.node {
+      width: 38%;
+      background: rgba(148,163,184,0.5);
+      color: #e2e8f0;
+    }
+    .perf-note {
+      font-size: 0.65rem;
+      color: #64748b;
+      text-align: right;
+    }
+
+    /* Extend */
+    .extend-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .extend-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      text-align: center;
+    }
+    .extend-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .extend-desc {
+      font-size: 0.65rem;
+      color: #64748b;
+      margin-top: 0.15rem;
+    }
+
+    /* Links */
+    .links { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .link {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .link:hover { border-color: #22d3ee; color: #e2e8f0; }
+    .link svg { width: 13px; height: 13px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="icon-box">B+H</div>
+      <div>
+        <h1>Bun + Hono API <span class="badge-easy">Easy</span></h1>
+        <p>Blazing fast TypeScript API &mdash; zero config, Web Standards</p>
+      </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div>
+      <div class="section-title">Quick Start</div>
+      <div class="cmd-box">
+        <span class="cmd-prompt">$</span> bun create hono@latest -- --template bun
+      </div>
+    </div>
+
+    <!-- Generated Tree -->
+    <div>
+      <div class="section-title">Generated Structure</div>
+      <div class="tree">
+        <span class="dir">src/</span><br />
+        &nbsp;&nbsp;<span class="highlight">index.ts</span> &mdash; app entry &amp; routes<br />
+        &nbsp;&nbsp;<span class="dir">routes/</span> &mdash; route modules<br />
+        &nbsp;&nbsp;<span class="dir">middleware/</span> &mdash; logger, cors, auth<br />
+        <span class="file">package.json</span><br />
+        <span class="file">tsconfig.json</span><br />
+        <span class="file">.gitignore</span>
+      </div>
+    </div>
+
+    <!-- Key File -->
+    <div>
+      <div class="section-title">Key File &mdash; src/index.ts</div>
+      <div class="code-block">
+        <span class="kw">import</span> { <span class="var">Hono</span> } <span class="kw">from</span> <span class="str">"hono"</span>;<br />
+        <span class="kw">import</span> { <span class="var">logger</span> } <span class="kw">from</span> <span class="str">"hono/logger"</span>;<br />
+        <span class="kw">import</span> { <span class="var">cors</span> } <span class="kw">from</span> <span class="str">"hono/cors"</span>;<br />
+        <br />
+        <span class="kw">const</span> <span class="var">app</span> = <span class="kw">new</span> <span class="fn">Hono</span>();<br />
+        <br />
+        <span class="var">app</span>.<span class="fn">use</span>(<span class="str">"*"</span>, <span class="fn">logger</span>());<br />
+        <span class="var">app</span>.<span class="fn">use</span>(<span class="str">"/api/*"</span>, <span class="fn">cors</span>());<br />
+        <br />
+        <span class="var">app</span>.<span class="fn">get</span>(<span class="str">"/"</span>, (c) =&gt; c.<span class="fn">json</span>({ <span class="var">message</span>: <span class="str">"Hello Hono!"</span> }));<br />
+        <span class="var">app</span>.<span class="fn">get</span>(<span class="str">"/api/health"</span>, (c) =&gt; c.<span class="fn">json</span>({ <span class="var">status</span>: <span class="str">"ok"</span> }));<br />
+        <br />
+        <span class="kw">export default</span> <span class="var">app</span>;
+      </div>
+    </div>
+
+    <!-- Performance -->
+    <div>
+      <div class="section-title">Performance &mdash; HTTP Requests/sec</div>
+      <div class="perf">
+        <div class="perf-row">
+          <span class="perf-label">Bun</span>
+          <div class="perf-bar-bg">
+            <div class="perf-bar bun">~105k rps</div>
+          </div>
+        </div>
+        <div class="perf-row">
+          <span class="perf-label">Node.js</span>
+          <div class="perf-bar-bg">
+            <div class="perf-bar node">~42k rps</div>
+          </div>
+        </div>
+        <div class="perf-note">Approximate &mdash; simple JSON response benchmark</div>
+      </div>
+    </div>
+
+    <!-- Extend With -->
+    <div>
+      <div class="section-title">Extend With</div>
+      <div class="extend-grid">
+        <div class="extend-item">
+          <div class="extend-name">Drizzle</div>
+          <div class="extend-desc">Type-safe SQL</div>
+        </div>
+        <div class="extend-item">
+          <div class="extend-name">Zod</div>
+          <div class="extend-desc">Validation</div>
+        </div>
+        <div class="extend-item">
+          <div class="extend-name">OpenAPI</div>
+          <div class="extend-desc">Auto docs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Source Links -->
+    <div>
+      <div class="section-title">Sources</div>
+      <div class="links">
+        <a class="link" href="https://hono.dev/docs/getting-started/bun" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Hono + Bun Docs
+        </a>
+        <a class="link" href="https://bun.com/docs/quickstart" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Bun Quickstart
+        </a>
+        <a class="link" href="https://github.com/w3cj/hono-open-api-starter" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          w3cj/hono-open-api-starter
+        </a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

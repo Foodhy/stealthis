@@ -22,7 +22,7 @@
   // ── Factory ──────────────────────────────────────────────────────────────
 
   function initCarousel(opts) {
-    const root  = document.getElementById("carousel-" + opts.id);
+    const root = document.getElementById("carousel-" + opts.id);
     const track = document.getElementById("track-" + opts.id);
     const dotsEl = document.getElementById("dots-" + opts.id);
     const prevBtn = document.getElementById("prev-" + opts.id);
@@ -31,7 +31,7 @@
     if (!root || !track) return;
 
     const slides = Array.from(track.children);
-    const total  = slides.length;
+    const total = slides.length;
     const visible = opts.visibleCount || 1;
     const maxIndex = Math.max(0, total - visible);
 
@@ -61,7 +61,7 @@
       if (opts.mode === "multi") {
         // Calculate offset: each card width + gap
         const cardW = track.firstElementChild.offsetWidth;
-        const gap   = 16; // 1rem
+        const gap = 16; // 1rem
         track.style.transform = "translateX(-" + current * (cardW + gap) + "px)";
       } else {
         track.style.transform = "translateX(-" + current * 100 + "%)";
@@ -80,28 +80,46 @@
       if (nextBtn) nextBtn.disabled = current === maxIndex;
     }
 
-    function prev() { goTo(current - 1); }
-    function next() { goTo(current + 1); }
+    function prev() {
+      goTo(current - 1);
+    }
+    function next() {
+      goTo(current + 1);
+    }
 
     if (prevBtn) prevBtn.addEventListener("click", prev);
     if (nextBtn) nextBtn.addEventListener("click", next);
 
     // Keyboard
     root.addEventListener("keydown", function (e) {
-      if (e.key === "ArrowLeft")  { e.preventDefault(); prev(); }
-      if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prev();
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        next();
+      }
     });
 
     // Touch swipe
     let touchStartX = 0;
-    root.addEventListener("touchstart", function (e) {
-      touchStartX = e.touches[0].clientX;
-    }, { passive: true });
+    root.addEventListener(
+      "touchstart",
+      function (e) {
+        touchStartX = e.touches[0].clientX;
+      },
+      { passive: true }
+    );
 
-    root.addEventListener("touchend", function (e) {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      if (Math.abs(dx) > 50) dx < 0 ? next() : prev();
-    }, { passive: true });
+    root.addEventListener(
+      "touchend",
+      function (e) {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) > 50) dx < 0 ? next() : prev();
+      },
+      { passive: true }
+    );
 
     // Auto-play
     if (opts.autoPlay) {
@@ -117,8 +135,8 @@
 
       root.addEventListener("mouseenter", stopAuto);
       root.addEventListener("mouseleave", startAuto);
-      root.addEventListener("focusin",    stopAuto);
-      root.addEventListener("focusout",   startAuto);
+      root.addEventListener("focusin", stopAuto);
+      root.addEventListener("focusout", startAuto);
       startAuto();
     }
 

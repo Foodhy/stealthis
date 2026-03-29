@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Turborepo Monorepo Architecture</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .card {
+    max-width: 780px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(34,211,238,0.04), rgba(59,130,246,0.04));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    overflow: hidden;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(34,211,238,0.12);
+    color: #22d3ee;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, #22d3ee, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #22d3ee;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(34,211,238,0.15);
+  }
+  .tree {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+  }
+  .tree .file { color: #e2e8f0; }
+  .tree .comment { color: #64748b; }
+  .tree .dir { color: #22d3ee; }
+  .tree .accent { color: #3b82f6; }
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .pipeline-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .pipeline-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: #93c5fd;
+    font-family: 'SF Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+  }
+  .pipeline-node.parallel {
+    background: rgba(34,211,238,0.1);
+    border-color: rgba(34,211,238,0.25);
+    color: #22d3ee;
+  }
+  .pipeline-node.cache {
+    background: rgba(168,85,247,0.1);
+    border-color: rgba(168,85,247,0.25);
+    color: #c084fc;
+  }
+  .arrow {
+    color: #475569;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .parallel-group {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px dashed rgba(34,211,238,0.2);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .parallel-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    align-self: center;
+    margin-right: 0.25rem;
+  }
+  .cache-section {
+    background: rgba(168,85,247,0.06);
+    border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .cache-section h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #c084fc;
+    margin-bottom: 0.5rem;
+  }
+  .cache-flow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.78rem;
+    font-family: 'SF Mono', monospace;
+    color: #94a3b8;
+  }
+  .cache-flow .step {
+    background: rgba(168,85,247,0.12);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    color: #c084fc;
+  }
+  .source {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .source a {
+    color: #64748b;
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .source a:hover { color: #22d3ee; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Architecture</div>
+  <h1>Turborepo Monorepo</h1>
+  <p class="subtitle">Task pipelines, content-aware caching, and parallel execution for multi-app monorepos.</p>
+
+  <div class="section-title">Project Structure</div>
+  <div class="tree">
+<span class="file">turbo.json</span>            <span class="comment">(Pipeline config)</span>
+<span class="file">package.json</span>          <span class="comment">(Workspace root)</span>
+<span class="dir">apps/</span>
+<span class="accent">  ├── web/</span>              <span class="comment">(Next.js app)</span>
+<span class="file">  │   └── package.json</span>
+<span class="accent">  ├── docs/</span>             <span class="comment">(Docs site)</span>
+<span class="file">  │   └── package.json</span>
+<span class="accent">  └── api/</span>              <span class="comment">(API server)</span>
+<span class="file">      └── package.json</span>
+<span class="dir">packages/</span>
+<span class="accent">  ├── ui/</span>               <span class="comment">(Shared components)</span>
+<span class="accent">  ├── config/</span>           <span class="comment">(ESLint, TS configs)</span>
+<span class="accent">  ├── db/</span>               <span class="comment">(Database client)</span>
+<span class="accent">  └── utils/</span>            <span class="comment">(Shared utilities)</span>
+<span class="dir">.github/workflows/</span>    <span class="comment">(CI with remote cache)</span>
+  </div>
+
+  <div class="section-title">Task Pipeline</div>
+  <div class="pipeline">
+    <div class="pipeline-row">
+      <div class="parallel-group">
+        <span class="parallel-label">parallel</span>
+        <div class="pipeline-node parallel">lint</div>
+        <div class="pipeline-node parallel">typecheck</div>
+      </div>
+    </div>
+    <div class="pipeline-row">
+      <span class="arrow">&#8595;</span>
+    </div>
+    <div class="pipeline-row">
+      <div class="pipeline-node">^build</div>
+      <span class="arrow">&#8594;</span>
+      <div class="pipeline-node">build</div>
+      <span class="arrow">&#8594;</span>
+      <div class="pipeline-node">test</div>
+    </div>
+    <div class="pipeline-row">
+      <span class="arrow">&#8595;</span>
+    </div>
+    <div class="pipeline-row">
+      <div class="pipeline-node cache">deploy</div>
+    </div>
+  </div>
+
+  <div class="cache-section">
+    <h3>Remote Caching</h3>
+    <div class="cache-flow">
+      <span class="step">Hash inputs</span>
+      <span class="arrow">&#8594;</span>
+      <span>Check cache</span>
+      <span class="arrow">&#8594;</span>
+      <span class="step">Hit? Replay</span>
+      <span class="arrow">&#8594;</span>
+      <span>Miss? Execute &amp; store</span>
+    </div>
+  </div>
+
+  <div class="source">
+    <a href="https://turborepo.dev/docs" target="_blank" rel="noopener">Source: Turborepo Docs</a>
+    <a href="https://turborepo.dev/docs/crafting-your-repository/configuring-tasks" target="_blank" rel="noopener">Pipeline Config</a>
+    <a href="https://turborepo.dev/docs/crafting-your-repository/caching" target="_blank" rel="noopener">Remote Caching</a>
+  </div>
+</div>
+</body>
+</html>

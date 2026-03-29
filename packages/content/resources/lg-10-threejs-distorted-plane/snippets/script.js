@@ -52,7 +52,7 @@ host.appendChild(renderer.domElement);
 
 const uniforms = {
   uTime: { value: 0 },
-  uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+  uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
 };
 
 const material = new THREE.ShaderMaterial({
@@ -93,7 +93,7 @@ const material = new THREE.ShaderMaterial({
 
       gl_FragColor = vec4(col, 1.0);
     }
-  `
+  `,
 });
 
 const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);

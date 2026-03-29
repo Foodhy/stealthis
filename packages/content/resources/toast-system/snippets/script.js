@@ -5,16 +5,16 @@
 
   const ICONS = {
     success: "✓",
-    error:   "✕",
+    error: "✕",
     warning: "⚠",
-    info:    "ℹ",
+    info: "ℹ",
   };
 
   const TITLES = {
     success: "Success",
-    error:   "Error",
+    error: "Error",
     warning: "Warning",
-    info:    "Info",
+    info: "Info",
   };
 
   /**

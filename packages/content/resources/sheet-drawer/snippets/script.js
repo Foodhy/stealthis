@@ -42,7 +42,8 @@
 
   // ── Focus trap ──────────────────────────────────────────────────────────────
 
-  const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const FOCUSABLE =
+    'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
   let prevFocused = null;
 
   function trapFocus(el) {
@@ -53,13 +54,22 @@
     el._trapHandler = function (e) {
       if (e.key !== "Tab") return;
       const items = Array.from(el.querySelectorAll(FOCUSABLE));
-      if (!items.length) { e.preventDefault(); return; }
+      if (!items.length) {
+        e.preventDefault();
+        return;
+      }
       const first = items[0];
-      const last  = items[items.length - 1];
+      const last = items[items.length - 1];
       if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
       } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     document.addEventListener("keydown", el._trapHandler);

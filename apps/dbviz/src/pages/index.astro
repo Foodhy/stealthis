@@ -1,0 +1,174 @@
+---
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+// biome-ignore lint/correctness/noUnusedImports: Used in Astro component markup.
+import DbVizStudio, { type DbVizExample, type DbVizRuntimeConfig } from "../components/DbVizStudio";
+import {
+  CONTENT_DIR,
+  DBVIZ_DESCRIPTION,
+  DBVIZ_KEYWORDS,
+  DBVIZ_NAME,
+  DBVIZ_SITE,
+  DBVIZ_SOCIAL_IMAGE_ALT,
+  DBVIZ_SOCIAL_IMAGE_PATH,
+  DBVIZ_TITLE,
+  STEALTHIS_SITE,
+  loadDbResources,
+} from "../lib/site";
+import "../styles/global.css";
+
+function readDbSnippet(slug: string, fileName: string): string {
+  const snippetPath = path.join(CONTENT_DIR, "resources", slug, "snippets", fileName);
+  return existsSync(snippetPath) ? readFileSync(snippetPath, "utf-8") : "";
+}
+
+const resources = await loadDbResources();
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro component props.
+const dbExamples: DbVizExample[] = resources
+  .map((resource) => ({
+    slug: resource.slug,
+    title: resource.title,
+    description: resource.description,
+    schemaSql: readDbSnippet(resource.slug, "schema.sql"),
+    seedSql: readDbSnippet(resource.slug, "seed.sql"),
+    queriesSql: readDbSnippet(resource.slug, "queries.sql"),
+    diagramMmd: readDbSnippet(resource.slug, "diagram.mmd"),
+    migrationsSql: readDbSnippet(resource.slug, "migrations.sql"),
+  }))
+  .sort((a, b) => a.title.localeCompare(b.title, "en"));
+
+const runtimeProvider =
+  process.env.DBVIZ_SCHEMA_PROVIDER?.trim().toLowerCase() === "supabase" ? "supabase" : "local";
+const runtimeLocalEngine =
+  process.env.DBVIZ_LOCAL_ENGINE?.trim().toLowerCase() === "pglite" ? "pglite" : "docker";
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro component props.
+const runtimeConfig: DbVizRuntimeConfig = {
+  provider: runtimeProvider,
+  localEngine: runtimeLocalEngine,
+  supabaseConfigured: Boolean(process.env.DBVIZ_SUPABASE_DB_URL?.trim()),
+  supabaseProjectUrl: process.env.DBVIZ_SUPABASE_PROJECT_URL?.trim() ?? "",
+};
+
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro template href.
+const homeUrl = import.meta.env.DEV ? "http://localhost:4321" : STEALTHIS_SITE;
+const description = DBVIZ_DESCRIPTION;
+const canonicalURL = new URL("/", Astro.site ?? DBVIZ_SITE).toString();
+const ogImageURL = new URL(DBVIZ_SOCIAL_IMAGE_PATH, Astro.site ?? DBVIZ_SITE).toString();
+const llmsURL = new URL("/llms.txt", Astro.site ?? DBVIZ_SITE).toString();
+const aiIndexURL = new URL("/ai-index.json", Astro.site ?? DBVIZ_SITE).toString();
+const sitemapURL = new URL("/sitemap.xml", Astro.site ?? DBVIZ_SITE).toString();
+const robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+const keywords = DBVIZ_KEYWORDS.join(", ");
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro template head.
+const pageTitle = DBVIZ_TITLE;
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro template head.
+const socialImageAlt = DBVIZ_SOCIAL_IMAGE_ALT;
+
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro JSON-LD script.
+const structuredData = JSON.stringify([
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: DBVIZ_NAME,
+    alternateName: "StealThis DBViz",
+    description,
+    url: canonicalURL,
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Web",
+    browserRequirements: "Requires JavaScript and a modern browser.",
+    inLanguage: "es",
+    image: ogImageURL,
+    isAccessibleForFree: true,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    featureList: [
+      "SQL schema editor",
+      "ERD diagram visualization",
+      "Sample relational databases",
+      "Seed data and query examples",
+      "Local database execution",
+    ],
+    isPartOf: {
+      "@type": "WebSite",
+      name: "StealThis.dev",
+      url: `${STEALTHIS_SITE}/`,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "StealThis.dev",
+      url: `${STEALTHIS_SITE}/`,
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "StealThis.dev",
+        item: `${STEALTHIS_SITE}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: DBVIZ_NAME,
+        item: canonicalURL,
+      },
+    ],
+  },
+]);
+---
+
+<!doctype html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="application-name" content={DBVIZ_NAME} />
+  <meta name="apple-mobile-web-app-title" content={DBVIZ_NAME} />
+  <meta name="author" content="StealThis.dev" />
+  <meta name="creator" content="StealThis.dev" />
+  <meta name="publisher" content="StealThis.dev" />
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords} />
+  <meta name="theme-color" content="#020617" />
+  <meta name="robots" content={robots} />
+  <meta name="googlebot" content={robots} />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <link rel="canonical" href={canonicalURL} />
+  <link rel="alternate" type="text/plain" title="DBViz llms.txt" href={llmsURL} />
+  <link rel="alternate" type="application/json" title="DBViz AI index" href={aiIndexURL} />
+  <link rel="alternate" type="application/xml" title="DBViz sitemap" href={sitemapURL} />
+  <meta property="og:title" content={`${pageTitle} — StealThis.dev`} />
+  <meta property="og:description" content={description} />
+  <meta property="og:site_name" content="StealThis.dev" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:image" content={ogImageURL} />
+  <meta property="og:image:width" content="1536" />
+  <meta property="og:image:height" content="874" />
+  <meta property="og:image:alt" content={socialImageAlt} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={`${pageTitle} — StealThis.dev`} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImageURL} />
+  <meta name="twitter:image:alt" content={socialImageAlt} />
+  <script type="application/ld+json" set:html={structuredData} />
+  <title>{pageTitle} — StealThis.dev</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="h-screen overflow-hidden bg-slate-950 px-4 py-3 text-slate-100 md:px-5">
+  <header class="mb-3 flex items-center gap-3">
+    <a href={homeUrl} class="text-xs text-slate-500 transition-colors hover:text-slate-300">stealthis.dev</a>
+    <span class="text-slate-800">/</span>
+    <p class="text-sm font-semibold text-slate-200">DBViz 1.0</p>
+  </header>
+
+  <DbVizStudio client:only="react" examples={dbExamples} runtimeConfig={runtimeConfig} />
+</body>
+</html>

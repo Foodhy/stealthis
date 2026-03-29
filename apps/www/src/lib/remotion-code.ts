@@ -21,6 +21,26 @@ import remotionChartCode from "@remotion-app/animations/remotion-chart.tsx?raw";
 import remotionCounterCode from "@remotion-app/animations/remotion-counter.tsx?raw";
 import remotionTimelineCode from "@remotion-app/animations/remotion-timeline.tsx?raw";
 
+import remotionKineticTextCode from "@remotion-app/animations/remotion-kinetic-text.tsx?raw";
+import remotionPodcastAudiogramCode from "@remotion-app/animations/remotion-podcast-audiogram.tsx?raw";
+import remotionProductShowcaseCode from "@remotion-app/animations/remotion-product-showcase.tsx?raw";
+import remotionCodeWalkthroughCode from "@remotion-app/animations/remotion-code-walkthrough.tsx?raw";
+import remotionCountdownCode from "@remotion-app/animations/remotion-countdown.tsx?raw";
+import remotionSplitScreenCode from "@remotion-app/animations/remotion-split-screen.tsx?raw";
+import remotionNewsTickerCode from "@remotion-app/animations/remotion-news-ticker.tsx?raw";
+import remotionProgressRingCode from "@remotion-app/animations/remotion-progress-ring.tsx?raw";
+
+import remotionTextRevealCode from "@remotion-app/animations/remotion-text-reveal.tsx?raw";
+import remotionSocialProofCode from "@remotion-app/animations/remotion-social-proof.tsx?raw";
+import remotionLogoGridCode from "@remotion-app/animations/remotion-logo-grid.tsx?raw";
+import remotionPricingTableCode from "@remotion-app/animations/remotion-pricing-table.tsx?raw";
+import remotionNotificationCode from "@remotion-app/animations/remotion-notification.tsx?raw";
+import remotionMapPinsCode from "@remotion-app/animations/remotion-map-pins.tsx?raw";
+import remotionPhotoCollageCode from "@remotion-app/animations/remotion-photo-collage.tsx?raw";
+import remotionQuoteCardCode from "@remotion-app/animations/remotion-quote-card.tsx?raw";
+import remotionStepProcessCode from "@remotion-app/animations/remotion-step-process.tsx?raw";
+import remotionGradientWaveCode from "@remotion-app/animations/remotion-gradient-wave.tsx?raw";
+
 export const remotionCodeById = {
   "01-Typewriter": { file: "01-Typewriter.tsx", code: typewriterCode },
   "02-SpringBounce": { file: "02-SpringBounce.tsx", code: springBounceCode },
@@ -43,4 +63,31 @@ export const remotionCodeById = {
   "remotion-chart": { file: "remotion-chart.tsx", code: remotionChartCode },
   "remotion-counter": { file: "remotion-counter.tsx", code: remotionCounterCode },
   "remotion-timeline": { file: "remotion-timeline.tsx", code: remotionTimelineCode },
+  "remotion-kinetic-text": { file: "remotion-kinetic-text.tsx", code: remotionKineticTextCode },
+  "remotion-podcast-audiogram": {
+    file: "remotion-podcast-audiogram.tsx",
+    code: remotionPodcastAudiogramCode,
+  },
+  "remotion-product-showcase": {
+    file: "remotion-product-showcase.tsx",
+    code: remotionProductShowcaseCode,
+  },
+  "remotion-code-walkthrough": {
+    file: "remotion-code-walkthrough.tsx",
+    code: remotionCodeWalkthroughCode,
+  },
+  "remotion-countdown": { file: "remotion-countdown.tsx", code: remotionCountdownCode },
+  "remotion-split-screen": { file: "remotion-split-screen.tsx", code: remotionSplitScreenCode },
+  "remotion-news-ticker": { file: "remotion-news-ticker.tsx", code: remotionNewsTickerCode },
+  "remotion-progress-ring": { file: "remotion-progress-ring.tsx", code: remotionProgressRingCode },
+  "remotion-text-reveal": { file: "remotion-text-reveal.tsx", code: remotionTextRevealCode },
+  "remotion-social-proof": { file: "remotion-social-proof.tsx", code: remotionSocialProofCode },
+  "remotion-logo-grid": { file: "remotion-logo-grid.tsx", code: remotionLogoGridCode },
+  "remotion-pricing-table": { file: "remotion-pricing-table.tsx", code: remotionPricingTableCode },
+  "remotion-notification": { file: "remotion-notification.tsx", code: remotionNotificationCode },
+  "remotion-map-pins": { file: "remotion-map-pins.tsx", code: remotionMapPinsCode },
+  "remotion-photo-collage": { file: "remotion-photo-collage.tsx", code: remotionPhotoCollageCode },
+  "remotion-quote-card": { file: "remotion-quote-card.tsx", code: remotionQuoteCardCode },
+  "remotion-step-process": { file: "remotion-step-process.tsx", code: remotionStepProcessCode },
+  "remotion-gradient-wave": { file: "remotion-gradient-wave.tsx", code: remotionGradientWaveCode },
 } as const;

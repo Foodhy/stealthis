@@ -23,10 +23,14 @@
     ticking = false;
   }
 
-  window.addEventListener("scroll", () => {
-    if (!ticking) {
-      requestAnimationFrame(updateLayers);
-      ticking = true;
-    }
-  }, { passive: true });
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        requestAnimationFrame(updateLayers);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
 })();

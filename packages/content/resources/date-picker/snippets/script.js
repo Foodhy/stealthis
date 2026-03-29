@@ -3,8 +3,18 @@
 
   const DAYS_OF_WEEK = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const MONTHS = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -25,7 +35,7 @@
   function isBetween(d, start, end) {
     if (!start || !end) return false;
     const lo = isBefore(start, end) ? start : end;
-    const hi = isBefore(start, end) ? end   : start;
+    const hi = isBefore(start, end) ? end : start;
     return d > lo && d < hi;
   }
 
@@ -44,11 +54,11 @@
     // opts: { year, month, selected, rangeStart, rangeEnd, hoverDate, onSelect, onHover, disablePast }
     calEl.innerHTML = "";
 
-    const year  = opts.year;
+    const year = opts.year;
     const month = opts.month;
     const firstDay = new Date(year, month, 1).getDay(); // 0 = Sunday
     const totalDays = daysInMonth(year, month);
-    const now   = today();
+    const now = today();
 
     // Header
     const header = el("div", "cal-header");
@@ -124,7 +134,12 @@
 
       // Range: end
       const effectiveEnd = opts.rangeEnd || opts.hoverDate;
-      if (opts.rangeStart && effectiveEnd && sameDay(date, effectiveEnd) && !sameDay(date, opts.rangeStart)) {
+      if (
+        opts.rangeStart &&
+        effectiveEnd &&
+        sameDay(date, effectiveEnd) &&
+        !sameDay(date, opts.rangeStart)
+      ) {
         btn.classList.add("cal-day--selected-end");
       }
 
@@ -167,23 +182,30 @@
   // ── Demo 1: Single date picker ───────────────────────────────────────────────
 
   (function () {
-    const input  = document.getElementById("single-input");
-    const calEl  = document.getElementById("cal-single");
-    const wrap   = document.getElementById("dp-single");
-    let open     = false;
+    const input = document.getElementById("single-input");
+    const calEl = document.getElementById("cal-single");
+    const wrap = document.getElementById("dp-single");
+    let open = false;
     let selected = null;
     let viewYear = today().getFullYear();
     let viewMonth = today().getMonth();
 
     function render() {
       buildCalendar(calEl, {
-        year: viewYear, month: viewMonth,
+        year: viewYear,
+        month: viewMonth,
         selected: selected,
         disablePast: false,
         onMonthChange: function (d) {
           viewMonth += d;
-          if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-          if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+          if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear++;
+          }
+          if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear--;
+          }
           render();
         },
         onSelect: function (date) {
@@ -207,9 +229,14 @@
       input.setAttribute("aria-expanded", "false");
     }
 
-    input.addEventListener("click", function () { open ? close() : open_(); });
+    input.addEventListener("click", function () {
+      open ? close() : open_();
+    });
     input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open ? close() : open_(); }
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        open ? close() : open_();
+      }
       if (e.key === "Escape") close();
     });
 
@@ -222,49 +249,56 @@
 
   (function () {
     const startInput = document.getElementById("range-start");
-    const endInput   = document.getElementById("range-end");
-    const calEl      = document.getElementById("cal-range");
-    const wrap       = document.getElementById("dp-range");
+    const endInput = document.getElementById("range-end");
+    const calEl = document.getElementById("cal-range");
+    const wrap = document.getElementById("dp-range");
 
-    let open      = false;
+    let open = false;
     let rangeStart = null;
-    let rangeEnd   = null;
-    let hoverDate  = null;
-    let picking    = "start"; // "start" | "end"
-    let viewYear   = today().getFullYear();
-    let viewMonth  = today().getMonth();
+    let rangeEnd = null;
+    let hoverDate = null;
+    let picking = "start"; // "start" | "end"
+    let viewYear = today().getFullYear();
+    let viewMonth = today().getMonth();
 
     function render() {
       buildCalendar(calEl, {
-        year: viewYear, month: viewMonth,
+        year: viewYear,
+        month: viewMonth,
         rangeStart: rangeStart,
         rangeEnd: rangeEnd,
         hoverDate: hoverDate,
         disablePast: false,
         onMonthChange: function (d) {
           viewMonth += d;
-          if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-          if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+          if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear++;
+          }
+          if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear--;
+          }
           render();
         },
         onSelect: function (date) {
           if (picking === "start") {
             rangeStart = date;
-            rangeEnd   = null;
-            picking    = "end";
+            rangeEnd = null;
+            picking = "end";
             startInput.value = formatDate(date);
-            endInput.value   = "";
+            endInput.value = "";
           } else {
             // If end before start, swap
             if (date < rangeStart) {
-              rangeEnd   = rangeStart;
+              rangeEnd = rangeStart;
               rangeStart = date;
             } else {
               rangeEnd = date;
             }
             picking = "start";
             startInput.value = formatDate(rangeStart);
-            endInput.value   = formatDate(rangeEnd);
+            endInput.value = formatDate(rangeEnd);
             close();
           }
           render();
@@ -290,7 +324,9 @@
     }
 
     [startInput, endInput].forEach(function (inp) {
-      inp.addEventListener("click", function () { open ? close() : open_(); });
+      inp.addEventListener("click", function () {
+        open ? close() : open_();
+      });
     });
 
     document.addEventListener("click", function (e) {
@@ -301,21 +337,28 @@
   // ── Demo 3: Inline calendar ──────────────────────────────────────────────────
 
   (function () {
-    const calEl   = document.getElementById("cal-inline");
+    const calEl = document.getElementById("cal-inline");
     const valueEl = document.getElementById("inline-value");
-    let selected  = null;
-    let viewYear  = today().getFullYear();
+    let selected = null;
+    let viewYear = today().getFullYear();
     let viewMonth = today().getMonth();
 
     function render() {
       buildCalendar(calEl, {
-        year: viewYear, month: viewMonth,
+        year: viewYear,
+        month: viewMonth,
         selected: selected,
         disablePast: false,
         onMonthChange: function (d) {
           viewMonth += d;
-          if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-          if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+          if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear++;
+          }
+          if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear--;
+          }
           render();
         },
         onSelect: function (date) {
@@ -328,5 +371,4 @@
 
     render();
   })();
-
 })();

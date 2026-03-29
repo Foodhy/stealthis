@@ -1,21 +1,21 @@
 (function () {
   "use strict";
 
-  const form       = document.getElementById("tor-form");
+  const form = document.getElementById("tor-form");
   const startInput = document.getElementById("start-date");
-  const endInput   = document.getElementById("end-date");
-  const daysWrap   = document.getElementById("days-display");
-  const daysText   = document.getElementById("days-text");
-  const errorEl    = document.getElementById("tor-error");
-  const submitBtn  = document.getElementById("tor-submit");
-  const list       = document.getElementById("tor-list");
+  const endInput = document.getElementById("end-date");
+  const daysWrap = document.getElementById("days-display");
+  const daysText = document.getElementById("days-text");
+  const errorEl = document.getElementById("tor-error");
+  const submitBtn = document.getElementById("tor-submit");
+  const list = document.getElementById("tor-list");
 
   if (!form) return;
 
   /* ── Day calculation ─────────────────────────────────── */
   function calcDays() {
     const start = startInput.value;
-    const end   = endInput.value;
+    const end = endInput.value;
 
     if (!start || !end) {
       daysText.textContent = "Select dates to calculate duration";
@@ -24,8 +24,8 @@
     }
 
     const startDate = new Date(start + "T00:00:00");
-    const endDate   = new Date(end   + "T00:00:00");
-    const diff      = Math.round((endDate - startDate) / 86_400_000);
+    const endDate = new Date(end + "T00:00:00");
+    const diff = Math.round((endDate - startDate) / 86_400_000);
 
     if (diff < 0) {
       daysText.textContent = "End date must be after start date";
@@ -51,7 +51,7 @@
   /* ── Build a range label ─────────────────────────────── */
   function buildRange(start, end) {
     const s = new Date(start + "T00:00:00");
-    const e = new Date(end   + "T00:00:00");
+    const e = new Date(end + "T00:00:00");
 
     const sLabel = s.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
@@ -69,10 +69,10 @@
 
   /* ── Map select value → display label ───────────────── */
   const typeLabels = {
-    vacation:    "Vacation",
-    sick:        "Sick Leave",
-    personal:    "Personal",
-    parental:    "Parental Leave",
+    vacation: "Vacation",
+    sick: "Sick Leave",
+    personal: "Personal",
+    parental: "Parental Leave",
     bereavement: "Bereavement",
   };
 
@@ -117,9 +117,9 @@
     clearError();
 
     const leaveTypeEl = document.getElementById("leave-type");
-    const leaveType   = leaveTypeEl.value;
-    const start       = startInput.value;
-    const end         = endInput.value;
+    const leaveType = leaveTypeEl.value;
+    const start = startInput.value;
+    const end = endInput.value;
 
     // Validation
     if (!leaveType) {
@@ -147,7 +147,7 @@
     submitBtn.classList.add("success");
 
     // Add to list
-    const range     = buildRange(start, end);
+    const range = buildRange(start, end);
     const typeLabel = typeLabels[leaveType] || leaveType;
     prependRequest(range, typeLabel);
 

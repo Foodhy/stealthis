@@ -1,14 +1,11 @@
 ---
-import Base from "@layouts/Base.astro";
-import ShowcaseCard from "@components/ShowcaseCard.astro";
-import { getCollection } from "astro:content";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { getCollection } from "astro:content";
+import ShowcaseCard from "@components/ShowcaseCard.astro";
 import { getLocaleFromUrl } from "@i18n/index";
-import { SITE_URLS } from "@lib/urls";
-
+import Base from "@layouts/Base.astro";
 const locale = getLocaleFromUrl(Astro.url);
-const labUrl = SITE_URLS.lab;
 
 const allResources = await getCollection("resources");
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -39,9 +36,7 @@ const showcaseItems = allResources
         (_match, before, after) => {
           const attrs = `${before ?? ""} ${after ?? ""}`;
           const isModule = /\btype\s*=\s*["']module["']/i.test(attrs);
-          return isModule
-            ? `<script type="module">${js}</script>`
-            : `<script>${js}</script>`;
+          return isModule ? `<script type="module">${js}</script>` : `<script>${js}</script>`;
         }
       );
     }
@@ -49,24 +44,29 @@ const showcaseItems = allResources
     // Hide scrollbars inside the iframe while keeping scroll functional
     srcdoc = srcdoc.replace(
       /<\/head>/i,
-      `<style>::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}</style></head>`
-    );
-
-    // Rewrite absolute /vendor/ paths to the lab origin so gsap/three load correctly
-    srcdoc = srcdoc.replaceAll('"/vendor/', `"${labUrl}/vendor/`);
-    // lenis.mjs is not present in the lab vendor dir — swap to CDN
-    srcdoc = srcdoc.replaceAll(
-      `"${labUrl}/vendor/lenis/dist/lenis.mjs"`,
-      '"https://cdn.jsdelivr.net/npm/lenis@1.3.17/dist/lenis.mjs"'
+      "<style>::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}</style></head>"
     );
 
     return { resource, srcdoc };
   })
   .filter((item) => item.srcdoc.length > 0);
 
-const categories = [
-  ...new Set(showcaseItems.map((item) => item.resource.data.category)),
-].sort();
+const categories = [...new Set(showcaseItems.map((item) => item.resource.data.category))].sort();
+const difficultyOrder = ["easy", "med", "hard"] as const;
+const difficultyLabels: Record<(typeof difficultyOrder)[number], string> = {
+  easy: "Easy",
+  med: "Medium",
+  hard: "Hard",
+};
+const difficultyCounts = difficultyOrder.reduce<Record<(typeof difficultyOrder)[number], number>>(
+  (counts, difficulty) => {
+    counts[difficulty] = showcaseItems.filter(
+      (item) => item.resource.data.difficulty === difficulty
+    ).length;
+    return counts;
+  },
+  { easy: 0, med: 0, hard: 0 }
+);
 
 const showcaseDescription = `Interactive wall with ${showcaseItems.length} live previews from the StealThis library. Scroll, explore, and jump to code in one click.`;
 const alternateLinks = [
@@ -102,10 +102,48 @@ const categoryLabels: Record<string, string> = {
   prompts: "Prompts",
   skills: "Skills",
   "mcp-servers": "MCP Servers",
+  plugins: "Plugins",
   architectures: "Architectures",
   boilerplates: "Boilerplates",
   remotion: "Remotion",
+  "database-schemas": "Database Schemas",
+  "ultra-high-definition-pages": "Ultra High Definition Pages",
+  "design-styles": "Design Styles",
 };
+
+const collectionLabels: Record<string, string> = {
+  saas: "SaaS",
+  motion: "Motion",
+  hero: "Hero Sections",
+  cards: "Cards",
+  dashboard: "Dashboard",
+  remotion: "Remotion",
+  effects: "Effects",
+};
+
+// Compute collection groups for the "Group by: Collection" mode
+const collectionGroups = new Map<string, { label: string; count: number; slugs: string[] }>();
+for (const item of showcaseItems) {
+  const colls = item.resource.data.collections ?? [];
+  for (const c of colls) {
+    if (!collectionGroups.has(c)) {
+      collectionGroups.set(c, { label: collectionLabels[c] ?? c, count: 0, slugs: [] });
+    }
+    const group = collectionGroups.get(c)!;
+    group.count++;
+    group.slugs.push(item.resource.data.slug);
+  }
+}
+
+// Compute category groups for "Group by: Category" mode
+const categoryGroups = new Map<string, { label: string; count: number }>();
+for (const item of showcaseItems) {
+  const cat = item.resource.data.category;
+  if (!categoryGroups.has(cat)) {
+    categoryGroups.set(cat, { label: categoryLabels[cat] ?? cat, count: 0 });
+  }
+  categoryGroups.get(cat)!.count++;
+}
 ---
 
 <Base
@@ -128,32 +166,123 @@ const categoryLabels: Record<string, string> = {
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2 mb-8">
-      <div
-        class="flex flex-wrap gap-2"
-        id="showcase-filters"
-        role="group"
-        aria-label="Filter by category"
-      >
-        <button class="chip chip--active" data-filter="all" type="button">
-          All <span class="chip-count">{showcaseItems.length}</span>
-        </button>
-        <button class="chip chip--fav" data-filter="favorites" type="button">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="flex-shrink:0">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    <div class="showcase-controls mb-8">
+      <div class="showcase-controls-top">
+        <div class="control-block control-block--grow">
+          <p class="control-label">Categories</p>
+          <div
+            class="flex flex-wrap gap-2"
+            id="showcase-filters"
+            role="group"
+            aria-label="Filter by category"
+          >
+            <button class="chip chip--active" data-filter="all" type="button">
+              All <span class="chip-count">{showcaseItems.length}</span>
+            </button>
+            <button class="chip chip--fav" data-filter="favorites" type="button">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="flex-shrink:0">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              Saved <span class="chip-count" id="fav-chip-count">0</span>
+            </button>
+            {
+              categories.map((cat) => {
+                const count = showcaseItems.filter((i) => i.resource.data.category === cat).length;
+                return (
+                  <button class="chip" data-filter={cat} type="button">
+                    {categoryLabels[cat] ?? cat} <span class="chip-count">{count}</span>
+                  </button>
+                );
+              })
+            }
+          </div>
+        </div>
+
+        <button
+          class="showcase-advanced-btn"
+          id="showcase-advanced-toggle"
+          type="button"
+          aria-controls="showcase-advanced-panel"
+          aria-expanded="false"
+        >
+          Advanced filters
+          <svg class="showcase-advanced-btn__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 4.5 6 7.5 9 4.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Saved <span class="chip-count" id="fav-chip-count">0</span>
         </button>
-        {
-          categories.map((cat) => {
-            const count = showcaseItems.filter(i => i.resource.data.category === cat).length;
-            return (
-              <button class="chip" data-filter={cat} type="button">
-                {categoryLabels[cat] ?? cat} <span class="chip-count">{count}</span>
-              </button>
-            );
-          })
-        }
+      </div>
+
+      <div class="showcase-advanced-panel" id="showcase-advanced-panel" hidden role="region" aria-label="Advanced filters">
+        <div class="showcase-advanced-group">
+          <p class="control-label">Difficulty</p>
+          <div
+            class="showcase-advanced-chips"
+            id="showcase-difficulty-filters"
+            role="group"
+            aria-label="Filter by difficulty"
+          >
+            <button class="chip chip--active" data-difficulty-filter="all" type="button">
+              All levels <span class="chip-count">{showcaseItems.length}</span>
+            </button>
+            {
+              difficultyOrder.map((difficulty) => (
+                <button class="chip" data-difficulty-filter={difficulty} type="button">
+                  {difficultyLabels[difficulty]} <span class="chip-count">{difficultyCounts[difficulty]}</span>
+                </button>
+              ))
+            }
+          </div>
+        </div>
+        <div class="showcase-advanced-group">
+          <p class="control-label">View</p>
+          <div class="showcase-advanced-chips" id="showcase-view-controls" role="group" aria-label="View mode">
+            <button class="chip chip--active" data-view="masonry" type="button">Masonry</button>
+            <button class="chip" data-view="grid" type="button">Grid</button>
+            <button class="chip" data-view="list" type="button">List</button>
+          </div>
+        </div>
+        <div class="showcase-advanced-group">
+          <p class="control-label">Size</p>
+          <div class="showcase-advanced-chips" id="showcase-size-controls" role="group" aria-label="Card size">
+            <button class="chip" data-size="sm" type="button">Small</button>
+            <button class="chip chip--active" data-size="md" type="button">Medium</button>
+            <button class="chip" data-size="lg" type="button">Large</button>
+          </div>
+        </div>
+        <div class="showcase-advanced-group">
+          <p class="control-label">Sort</p>
+          <div class="showcase-advanced-chips" id="showcase-sort-controls" role="group" aria-label="Sort order">
+            <button class="chip chip--active" data-sort="newest" type="button">Newest</button>
+            <button class="chip" data-sort="oldest" type="button">Oldest</button>
+            <button class="chip" data-sort="name-asc" type="button">Name A–Z</button>
+            <button class="chip" data-sort="name-desc" type="button">Name Z–A</button>
+          </div>
+        </div>
+        <div class="showcase-advanced-group">
+          <p class="control-label">Group by</p>
+          <div class="showcase-advanced-chips" id="showcase-group-controls" role="group" aria-label="Group mode">
+            <button class="chip chip--active" data-group="none" type="button">None</button>
+            <button class="chip" data-group="category" type="button">Category</button>
+            <button class="chip" data-group="collection" type="button">
+              Collection <span class="chip-count">{collectionGroups.size}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Serialized label data for JS grouping -->
+    <script id="showcase-category-labels-data" type="application/json" set:html={JSON.stringify(categoryLabels)} />
+    <script id="showcase-collection-labels-data" type="application/json" set:html={JSON.stringify(collectionLabels)} />
+
+    <!-- Collection comparison bar (hidden by default) -->
+    <div class="showcase-compare-bar hidden" id="showcase-compare-bar">
+      <div class="showcase-compare-bar__inner">
+        <span class="showcase-compare-bar__label">Compare collections:</span>
+        <span class="showcase-compare-bar__slot" id="compare-slot-a">Select first</span>
+        <span class="showcase-compare-bar__vs">vs</span>
+        <span class="showcase-compare-bar__slot" id="compare-slot-b">Select second</span>
+        <button type="button" class="chip" id="compare-clear-btn">Clear</button>
       </div>
     </div>
 
@@ -161,10 +290,24 @@ const categoryLabels: Record<string, string> = {
       No components match this filter.
     </p>
 
-    <div class="masonry" id="showcase-grid">
-      {showcaseItems.map(({ resource, srcdoc }) => (
-        <ShowcaseCard resource={resource} srcdoc={srcdoc} locale={locale} />
-      ))}
+    <div class="showcase-grid-wrap" id="showcase-grid-wrap">
+      <div class="showcase-skeleton masonry" aria-hidden="true" aria-busy="true">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <div class="showcase-skeleton__card">
+            <div class="showcase-skeleton__preview" />
+            <div class="showcase-skeleton__footer">
+              <div class="showcase-skeleton__line showcase-skeleton__line--short" />
+              <div class="showcase-skeleton__line showcase-skeleton__line--title" />
+              <div class="showcase-skeleton__line showcase-skeleton__line--med" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="masonry showcase-grid-content" id="showcase-grid" data-view="masonry" data-size="md">
+        {showcaseItems.map(({ resource, srcdoc }) => (
+          <ShowcaseCard resource={resource} srcdoc={srcdoc} locale={locale} />
+        ))}
+      </div>
     </div>
   </div>
 
@@ -202,6 +345,132 @@ const categoryLabels: Record<string, string> = {
 
   @media (min-width: 1536px) {
     .showcase-wrap { padding-left: 5rem; padding-right: 5rem; }
+  }
+
+  .showcase-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .showcase-controls-top {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .control-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .control-block--grow {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .showcase-advanced-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    border-radius: 0.9rem;
+    padding: 0.6rem 1rem;
+    color: rgb(239, 68, 68);
+    background: rgba(251, 113, 133, 0.16);
+    border: 1px dashed rgba(239, 68, 68, 0.65);
+    transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+  }
+
+  .showcase-advanced-btn__chevron {
+    flex-shrink: 0;
+    transition: transform 200ms ease;
+  }
+
+  .showcase-advanced-btn[aria-expanded="true"] .showcase-advanced-btn__chevron {
+    transform: rotate(180deg);
+  }
+
+  .showcase-advanced-btn:hover {
+    color: rgb(248, 113, 113);
+    border-color: rgba(248, 113, 113, 0.9);
+    background: rgba(251, 113, 133, 0.22);
+  }
+
+  .showcase-advanced-btn[aria-expanded="true"] {
+    color: rgb(250, 204, 21);
+    border-color: rgba(250, 204, 21, 0.85);
+    background: rgba(250, 204, 21, 0.12);
+  }
+
+  .showcase-advanced-panel {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.42);
+    padding: 0.9rem;
+  }
+
+  .showcase-advanced-panel[hidden] {
+    display: none;
+  }
+
+  .showcase-advanced-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.65rem;
+  }
+
+  .showcase-advanced-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .control-group-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .control-label {
+    margin: 0;
+    color: rgb(100, 116, 139);
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @media (min-width: 1024px) {
+    .showcase-controls-top {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .showcase-advanced-btn {
+      align-self: flex-end;
+      min-width: 14rem;
+      justify-content: center;
+      display: inline-flex;
+    }
+
+    .showcase-advanced-panel {
+      gap: 1.25rem 2.5rem;
+    }
   }
 
   /* Chip count badge */
@@ -249,31 +518,335 @@ const categoryLabels: Record<string, string> = {
     color: rgb(251, 113, 133);
   }
 
-  /* Masonry grid */
+  /* Skeleton loader */
+  .showcase-grid-wrap {
+    position: relative;
+    min-height: 50vh;
+  }
+
+  .showcase-skeleton {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .showcase-grid-wrap.loaded .showcase-skeleton {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .showcase-grid-content {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .showcase-grid-wrap.loaded .showcase-grid-content {
+    opacity: 1;
+  }
+
+  .showcase-skeleton__card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .showcase-skeleton__preview {
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(
+      110deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+    background-size: 200% 100%;
+    animation: showcase-skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+
+  .showcase-skeleton__footer {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .showcase-skeleton__line {
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background: linear-gradient(
+      110deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: showcase-skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+
+  .showcase-skeleton__line--short {
+    width: 40%;
+    animation-delay: 0.1s;
+  }
+
+  .showcase-skeleton__line--title {
+    width: 85%;
+    height: 0.65rem;
+    animation-delay: 0.2s;
+  }
+
+  .showcase-skeleton__line--med {
+    width: 70%;
+    animation-delay: 0.3s;
+  }
+
+  @keyframes showcase-skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Grid and view controls */
   .masonry {
-    columns: 1;
-    column-gap: 1.5rem;
+    --showcase-row: 18rem;
+    --showcase-gap: 1.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--showcase-gap);
+    grid-auto-flow: dense;
+    grid-auto-rows: var(--showcase-row);
+  }
+
+  .masonry[data-size="sm"] {
+    --showcase-row: 14rem;
+    --showcase-gap: 1rem;
+  }
+
+  .masonry[data-size="md"] {
+    --showcase-row: 18rem;
+    --showcase-gap: 1.5rem;
+  }
+
+  .masonry[data-size="lg"] {
+    --showcase-row: 22rem;
+    --showcase-gap: 1.75rem;
   }
 
   @media (min-width: 640px) {
-    .masonry { columns: 2; }
+    .masonry { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   @media (min-width: 1024px) {
-    .masonry { columns: 3; }
+    .masonry { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 
   @media (min-width: 1280px) {
-    .masonry { columns: 4; }
+    .masonry { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   @media (min-width: 1536px) {
-    .masonry { columns: 5; }
+    .masonry { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   }
 
   :global(.masonry-item) {
-    break-inside: avoid;
-    margin-bottom: 1.5rem;
+    min-height: 0;
+    margin: 0;
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .masonry[data-view="masonry"] :global(.masonry-item[data-difficulty="med"]) {
+    grid-row: span 2;
+  }
+
+  .masonry[data-view="masonry"] :global(.masonry-item[data-difficulty="hard"]) {
+    grid-row: span 4;
+  }
+
+  @media (min-width: 640px) {
+    .masonry[data-view="masonry"] :global(.masonry-item[data-difficulty="med"]) {
+      grid-column: span 1;
+      grid-row: span 2;
+    }
+
+    .masonry[data-view="masonry"] :global(.masonry-item[data-difficulty="hard"]) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+  .masonry[data-view="grid"] {
+    grid-auto-flow: row;
+  }
+
+  .masonry[data-view="grid"] :global(.masonry-item) {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .masonry[data-view="list"] {
+    grid-auto-flow: row;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+  }
+
+  .masonry[data-view="list"] :global(.masonry-item) {
+    grid-column: 1 / -1;
+    grid-row: span 1;
+  }
+
+  .masonry[data-view="list"] :global(.showcase-card) {
+    min-height: 0;
+  }
+
+  @media (min-width: 960px) {
+    .masonry[data-view="list"] :global(.showcase-card) {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      min-height: 18rem;
+    }
+
+    .masonry[data-view="list"][data-size="sm"] :global(.showcase-card) {
+      min-height: 14rem;
+    }
+
+    .masonry[data-view="list"][data-size="md"] :global(.showcase-card) {
+      min-height: 18rem;
+    }
+
+    .masonry[data-view="list"][data-size="lg"] :global(.showcase-card) {
+      min-height: 22rem;
+    }
+
+    .masonry[data-view="list"] :global(.showcase-preview) {
+      border-bottom: 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  /* ── Group headers ── */
+  :global(.showcase-group-header) {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 0.25rem;
+  }
+
+  :global(.showcase-group-header__chevron) {
+    flex-shrink: 0;
+    transition: transform 200ms ease;
+    color: rgb(100, 116, 139);
+  }
+
+  :global(.showcase-group-header.is-collapsed .showcase-group-header__chevron) {
+    transform: rotate(-90deg);
+  }
+
+  :global(.showcase-group-header__title) {
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgb(226, 232, 240);
+    letter-spacing: -0.01em;
+  }
+
+  :global(.showcase-group-header__count) {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgb(100, 116, 139);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.15em 0.5em;
+    border-radius: 9999px;
+  }
+
+  :global(.showcase-group-header__compare-btn) {
+    margin-left: auto;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.5rem;
+    background: rgba(99, 183, 255, 0.08);
+    border: 1px solid rgba(99, 183, 255, 0.2);
+    color: rgb(147, 210, 255);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 150ms ease, background 150ms ease;
+  }
+
+  :global(.showcase-group-header:hover .showcase-group-header__compare-btn) {
+    opacity: 1;
+  }
+
+  :global(.showcase-group-header__compare-btn:hover) {
+    background: rgba(99, 183, 255, 0.18);
+  }
+
+  :global(.showcase-group-header__compare-btn.is-selected) {
+    opacity: 1;
+    background: rgba(99, 183, 255, 0.2);
+    border-color: rgba(99, 183, 255, 0.5);
+  }
+
+  /* ── Compare bar ── */
+  .showcase-compare-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    margin-bottom: 1rem;
+  }
+
+  .showcase-compare-bar__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(99, 183, 255, 0.25);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .showcase-compare-bar__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgb(147, 210, 255);
+    white-space: nowrap;
+  }
+
+  .showcase-compare-bar__slot {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(148, 163, 184);
+    padding: 0.3rem 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    min-width: 5rem;
+    text-align: center;
+    transition: border-color 150ms ease, color 150ms ease;
+  }
+
+  .showcase-compare-bar__slot.is-filled {
+    border-style: solid;
+    border-color: rgba(99, 183, 255, 0.4);
+    color: rgb(226, 232, 240);
+  }
+
+  .showcase-compare-bar__vs {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: rgb(100, 116, 139);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
   }
 
   /* ── Back-to-top button ── */
@@ -367,6 +940,22 @@ const categoryLabels: Record<string, string> = {
 
 <script>
   const STORAGE_KEY = "stealthis:favorites";
+  const VIEW_STORAGE_KEY = "stealthis:showcase:view";
+  const SIZE_STORAGE_KEY = "stealthis:showcase:size";
+  const SORT_STORAGE_KEY = "stealthis:showcase:sort";
+  const DEFAULT_VIEW = "masonry";
+  const DEFAULT_SIZE = "md";
+  const DEFAULT_SORT = "newest";
+  const VALID_VIEWS = new Set(["masonry", "grid", "list"]);
+  const VALID_SIZES = new Set(["sm", "md", "lg"]);
+  const VALID_SORTS = new Set(["newest", "oldest", "name-asc", "name-desc"]);
+  const SKELETON_MIN_DELAY_MS = 600;
+
+  (function revealGridAfterDelay() {
+    const wrap = document.getElementById("showcase-grid-wrap");
+    if (!wrap) return;
+    setTimeout(() => wrap.classList.add("loaded"), SKELETON_MIN_DELAY_MS);
+  })();
 
   function getFavs(): string[] {
     try {
@@ -376,63 +965,459 @@ const categoryLabels: Record<string, string> = {
     }
   }
 
+  function safeGetItem(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function safeSetItem(key: string, value: string) {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Ignore storage errors (private mode, blocked storage)
+    }
+  }
+
+  function normalizeView(value: string | null): string {
+    return value && VALID_VIEWS.has(value) ? value : DEFAULT_VIEW;
+  }
+
+  function normalizeSize(value: string | null): string {
+    return value && VALID_SIZES.has(value) ? value : DEFAULT_SIZE;
+  }
+
+  function normalizeSort(value: string | null): string {
+    return value && VALID_SORTS.has(value) ? value : DEFAULT_SORT;
+  }
+
   const filterBtns = document.querySelectorAll<HTMLButtonElement>(
     "#showcase-filters [data-filter]"
   );
+  const difficultyBtns = document.querySelectorAll<HTMLButtonElement>(
+    "#showcase-difficulty-filters [data-difficulty-filter]"
+  );
+  const viewBtns = document.querySelectorAll<HTMLButtonElement>(
+    "#showcase-view-controls [data-view]"
+  );
+  const sizeBtns = document.querySelectorAll<HTMLButtonElement>(
+    "#showcase-size-controls [data-size]"
+  );
+  const sortBtns = document.querySelectorAll<HTMLButtonElement>(
+    "#showcase-sort-controls [data-sort]"
+  );
+  const advancedPanel = document.getElementById("showcase-advanced-panel");
+  const advancedToggleBtn = document.getElementById("showcase-advanced-toggle");
   const cards = document.querySelectorAll<HTMLElement>("[data-slug][data-category]");
+  const grid = document.getElementById("showcase-grid");
   const emptyState = document.getElementById("showcase-empty");
   const countText = document.getElementById("showcase-count-text");
   const favChipCount = document.getElementById("fav-chip-count");
   const totalCount = cards.length;
-  let currentFilter = "all";
+  let currentCategoryFilter = "all";
+  let currentDifficultyFilter = "all";
 
   function updateFavCount() {
     if (favChipCount) favChipCount.textContent = String(getFavs().length);
   }
 
-  function applyFilter(value: string) {
-    currentFilter = value;
-    filterBtns.forEach((btn) => {
-      btn.classList.toggle("chip--active", btn.dataset.filter === value);
+  function setAdvancedOpen(isOpen: boolean) {
+    if (advancedPanel) {
+      advancedPanel.hidden = !isOpen;
+    }
+
+    if (advancedToggleBtn instanceof HTMLButtonElement) {
+      advancedToggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+  }
+
+  function applyView(value: string) {
+    const nextView = normalizeView(value);
+    if (grid) grid.dataset.view = nextView;
+    viewBtns.forEach((btn) => {
+      btn.classList.toggle("chip--active", btn.dataset.view === nextView);
+    });
+    safeSetItem(VIEW_STORAGE_KEY, nextView);
+  }
+
+  function applySize(value: string) {
+    const nextSize = normalizeSize(value);
+    if (grid) grid.dataset.size = nextSize;
+    sizeBtns.forEach((btn) => {
+      btn.classList.toggle("chip--active", btn.dataset.size === nextSize);
+    });
+    safeSetItem(SIZE_STORAGE_KEY, nextSize);
+  }
+
+  function applySort(value: string) {
+    const nextSort = normalizeSort(value);
+    sortBtns.forEach((btn) => {
+      btn.classList.toggle("chip--active", btn.dataset.sort === nextSort);
+    });
+    safeSetItem(SORT_STORAGE_KEY, nextSort);
+
+    if (!grid) return;
+    const nodes = Array.from(grid.children) as HTMLElement[];
+    const dateKey = "data-created-at";
+    const titleKey = "data-title";
+
+    nodes.sort((a, b) => {
+      if (nextSort === "newest") {
+        const da = a.getAttribute(dateKey) ?? "";
+        const db = b.getAttribute(dateKey) ?? "";
+        return db.localeCompare(da);
+      }
+      if (nextSort === "oldest") {
+        const da = a.getAttribute(dateKey) ?? "";
+        const db = b.getAttribute(dateKey) ?? "";
+        return da.localeCompare(db);
+      }
+      if (nextSort === "name-asc") {
+        const ta = a.getAttribute(titleKey) ?? "";
+        const tb = b.getAttribute(titleKey) ?? "";
+        return ta.localeCompare(tb);
+      }
+      if (nextSort === "name-desc") {
+        const ta = a.getAttribute(titleKey) ?? "";
+        const tb = b.getAttribute(titleKey) ?? "";
+        return tb.localeCompare(ta);
+      }
+      return 0;
     });
 
-    const favs = value === "favorites" ? getFavs() : [];
+    nodes.forEach((node) => grid!.appendChild(node));
+  }
+
+  function updateCountText(visibleCount: number) {
+    if (!countText) return;
+    countText.textContent =
+      visibleCount === totalCount && currentCategoryFilter === "all" && currentDifficultyFilter === "all"
+        ? `${totalCount} live previews`
+        : `${visibleCount} of ${totalCount} previews`;
+  }
+
+  function applyFilters() {
+    filterBtns.forEach((btn) => {
+      btn.classList.toggle("chip--active", btn.dataset.filter === currentCategoryFilter);
+    });
+    difficultyBtns.forEach((btn) => {
+      btn.classList.toggle(
+        "chip--active",
+        btn.dataset.difficultyFilter === currentDifficultyFilter
+      );
+    });
+
+    const favs = currentCategoryFilter === "favorites" ? getFavs() : [];
     let visibleCount = 0;
     cards.forEach((card) => {
-      const match =
-        value === "all"
+      const matchesCategory =
+        currentCategoryFilter === "all"
           ? true
-          : value === "favorites"
+          : currentCategoryFilter === "favorites"
             ? favs.includes(card.dataset.slug ?? "")
-            : card.dataset.category === value;
-      (card as HTMLElement).style.display = match ? "" : "none";
-      if (match) visibleCount++;
+            : card.dataset.category === currentCategoryFilter;
+      const matchesDifficulty =
+        currentDifficultyFilter === "all" || card.dataset.difficulty === currentDifficultyFilter;
+      const isVisible = matchesCategory && matchesDifficulty;
+      (card as HTMLElement).style.display = isVisible ? "" : "none";
+      if (isVisible) visibleCount++;
     });
 
     if (emptyState) {
       emptyState.classList.toggle("hidden", visibleCount > 0);
     }
 
-    if (countText) {
-      countText.textContent = value === "all"
-        ? `${totalCount} live previews`
-        : `${visibleCount} of ${totalCount} previews`;
-    }
+    updateCountText(visibleCount);
   }
 
   filterBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
-      applyFilter(btn.dataset.filter ?? "all");
+      currentCategoryFilter = btn.dataset.filter ?? "all";
+      applyFilters();
     });
+  });
+
+  difficultyBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentDifficultyFilter = btn.dataset.difficultyFilter ?? "all";
+      applyFilters();
+    });
+  });
+
+  viewBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applyView(btn.dataset.view ?? DEFAULT_VIEW);
+    });
+  });
+
+  sizeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applySize(btn.dataset.size ?? DEFAULT_SIZE);
+    });
+  });
+
+  sortBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applySort(btn.dataset.sort ?? DEFAULT_SORT);
+    });
+  });
+
+  if (advancedToggleBtn instanceof HTMLButtonElement) {
+    advancedToggleBtn.addEventListener("click", () => {
+      const isOpen = advancedToggleBtn.getAttribute("aria-expanded") === "true";
+      setAdvancedOpen(!isOpen);
+    });
+  }
+
+  // ── Group by ──
+  const groupBtns = document.querySelectorAll<HTMLButtonElement>(
+    "#showcase-group-controls [data-group]"
+  );
+  const compareBar = document.getElementById("showcase-compare-bar");
+  const compareSlotA = document.getElementById("compare-slot-a");
+  const compareSlotB = document.getElementById("compare-slot-b");
+  const compareClearBtn = document.getElementById("compare-clear-btn");
+  let currentGroupMode = "none";
+  let compareSelections: string[] = [];
+
+  const categoryLabelsMap: Record<string, string> = JSON.parse(
+    document.getElementById("showcase-category-labels-data")?.textContent ?? "{}"
+  );
+  const collectionLabelsMap: Record<string, string> = JSON.parse(
+    document.getElementById("showcase-collection-labels-data")?.textContent ?? "{}"
+  );
+
+  function clearGroupHeaders() {
+    grid?.querySelectorAll(".showcase-group-header").forEach((el) => el.remove());
+  }
+
+  function createGroupHeader(
+    id: string,
+    label: string,
+    count: number,
+    groupMode: string,
+  ): HTMLElement {
+    const header = document.createElement("div");
+    header.className = "showcase-group-header";
+    header.dataset.groupId = id;
+    header.dataset.groupMode = groupMode;
+
+    header.innerHTML = `
+      <svg class="showcase-group-header__chevron" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 2 8 6 4 10" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="showcase-group-header__title">${label}</span>
+      <span class="showcase-group-header__count">${count}</span>
+      <button type="button" class="showcase-group-header__compare-btn" data-compare-group="${id}">Compare</button>
+    `;
+
+    // Expand/collapse toggle
+    header.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).closest(".showcase-group-header__compare-btn")) return;
+      header.classList.toggle("is-collapsed");
+      const isCollapsed = header.classList.contains("is-collapsed");
+      let sibling = header.nextElementSibling;
+      while (sibling && !sibling.classList.contains("showcase-group-header")) {
+        (sibling as HTMLElement).style.display = isCollapsed ? "none" : "";
+        sibling = sibling.nextElementSibling;
+      }
+    });
+
+    // Compare button
+    const compareBtn = header.querySelector<HTMLButtonElement>(".showcase-group-header__compare-btn");
+    compareBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleCompareSelection(id, label);
+    });
+
+    return header;
+  }
+
+  function applyGrouping(mode: string) {
+    currentGroupMode = mode;
+    clearGroupHeaders();
+    compareSelections = [];
+    updateCompareBar();
+
+    groupBtns.forEach((btn) => {
+      btn.classList.toggle("chip--active", btn.dataset.group === mode);
+    });
+
+    if (mode === "none" || !grid) return;
+
+    const allCards = Array.from(grid.querySelectorAll<HTMLElement>("[data-slug]"));
+
+    if (mode === "category") {
+      // Group by category
+      const groups = new Map<string, HTMLElement[]>();
+      for (const card of allCards) {
+        const cat = card.dataset.category ?? "other";
+        if (!groups.has(cat)) groups.set(cat, []);
+        groups.get(cat)!.push(card);
+      }
+
+      // Sort groups by count desc
+      const sorted = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
+
+      // Clear grid and re-insert with headers
+      for (const card of allCards) card.remove();
+      for (const [cat, groupCards] of sorted) {
+        const label = categoryLabelsMap[cat] ?? cat;
+        const header = createGroupHeader(cat, label, groupCards.length, "category");
+        grid.appendChild(header);
+        for (const card of groupCards) grid.appendChild(card);
+      }
+    } else if (mode === "collection") {
+      // Group by explicit collections field
+      const grouped = new Map<string, HTMLElement[]>();
+      const ungrouped: HTMLElement[] = [];
+
+      for (const card of allCards) {
+        const colls = (card.dataset.collections ?? "").split(",").filter(Boolean);
+        if (colls.length === 0) {
+          ungrouped.push(card);
+        } else {
+          for (const c of colls) {
+            if (!grouped.has(c)) grouped.set(c, []);
+            grouped.get(c)!.push(card);
+          }
+        }
+      }
+
+      const sorted = [...grouped.entries()].sort((a, b) => b[1].length - a[1].length);
+
+      for (const card of allCards) card.remove();
+      for (const [coll, groupCards] of sorted) {
+        const label = collectionLabelsMap[coll] ?? coll;
+        const header = createGroupHeader(coll, label, groupCards.length, "collection");
+        grid.appendChild(header);
+        for (const card of groupCards) grid.appendChild(card);
+      }
+
+      if (ungrouped.length > 0) {
+        const header = createGroupHeader("_ungrouped", "Uncategorized", ungrouped.length, "collection");
+        grid.appendChild(header);
+        for (const card of ungrouped) grid.appendChild(card);
+      }
+    }
+  }
+
+  function toggleCompareSelection(groupId: string, _label: string) {
+    const idx = compareSelections.indexOf(groupId);
+    if (idx !== -1) {
+      compareSelections.splice(idx, 1);
+    } else if (compareSelections.length < 2) {
+      compareSelections.push(groupId);
+    } else {
+      // Replace the oldest selection
+      compareSelections.shift();
+      compareSelections.push(groupId);
+    }
+    updateCompareBar();
+    updateCompareButtons();
+    highlightComparedGroups();
+  }
+
+  function updateCompareBar() {
+    if (!compareBar || !compareSlotA || !compareSlotB) return;
+    const show = compareSelections.length > 0;
+    compareBar.classList.toggle("hidden", !show);
+
+    if (compareSelections[0]) {
+      const label = getGroupLabel(compareSelections[0]);
+      compareSlotA.textContent = label;
+      compareSlotA.classList.add("is-filled");
+    } else {
+      compareSlotA.textContent = "Select first";
+      compareSlotA.classList.remove("is-filled");
+    }
+
+    if (compareSelections[1]) {
+      const label = getGroupLabel(compareSelections[1]);
+      compareSlotB.textContent = label;
+      compareSlotB.classList.add("is-filled");
+    } else {
+      compareSlotB.textContent = "Select second";
+      compareSlotB.classList.remove("is-filled");
+    }
+  }
+
+  function getGroupLabel(groupId: string): string {
+    if (currentGroupMode === "category") return categoryLabelsMap[groupId] ?? groupId;
+    if (currentGroupMode === "collection") return collectionLabelsMap[groupId] ?? groupId;
+    return groupId;
+  }
+
+  function updateCompareButtons() {
+    grid?.querySelectorAll<HTMLButtonElement>(".showcase-group-header__compare-btn").forEach((btn) => {
+      const id = btn.dataset.compareGroup ?? "";
+      btn.classList.toggle("is-selected", compareSelections.includes(id));
+      btn.textContent = compareSelections.includes(id) ? "Selected" : "Compare";
+    });
+  }
+
+  function highlightComparedGroups() {
+    if (!grid) return;
+    if (compareSelections.length < 2) {
+      // Show all cards
+      grid.querySelectorAll<HTMLElement>("[data-slug]").forEach((card) => {
+        card.style.opacity = "";
+      });
+      return;
+    }
+
+    // Dim cards not in either compared group
+    const selectedGroupIds = new Set(compareSelections);
+    const headers = grid.querySelectorAll<HTMLElement>(".showcase-group-header");
+    const groupsToShow = new Set<string>();
+
+    headers.forEach((header) => {
+      const groupId = header.dataset.groupId ?? "";
+      if (selectedGroupIds.has(groupId)) {
+        groupsToShow.add(groupId);
+      }
+    });
+
+    grid.querySelectorAll<HTMLElement>("[data-slug]").forEach((card) => {
+      let belongs = false;
+      if (currentGroupMode === "category") {
+        belongs = groupsToShow.has(card.dataset.category ?? "");
+      } else if (currentGroupMode === "collection") {
+        const colls = (card.dataset.collections ?? "").split(",").filter(Boolean);
+        belongs = colls.some((c) => groupsToShow.has(c));
+        if (groupsToShow.has("_ungrouped") && colls.length === 0) belongs = true;
+      }
+      card.style.opacity = belongs ? "" : "0.25";
+    });
+  }
+
+  groupBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applyGrouping(btn.dataset.group ?? "none");
+    });
+  });
+
+  compareClearBtn?.addEventListener("click", () => {
+    compareSelections = [];
+    updateCompareBar();
+    updateCompareButtons();
+    highlightComparedGroups();
   });
 
   // Keep favorites count badge and filter in sync
   window.addEventListener("stealthis:favorites-changed", () => {
     updateFavCount();
-    if (currentFilter === "favorites") applyFilter("favorites");
+    if (currentCategoryFilter === "favorites") applyFilters();
   });
 
+  applyView(normalizeView(safeGetItem(VIEW_STORAGE_KEY)));
+  applySize(normalizeSize(safeGetItem(SIZE_STORAGE_KEY)));
+  applySort(DEFAULT_SORT);
+  setAdvancedOpen(false);
   updateFavCount();
+  applyFilters();
 
   // Lazy-load iframes as cards scroll into view — prevents spawning
   // all WebGL contexts at once (browser limit ~8-16 simultaneous)

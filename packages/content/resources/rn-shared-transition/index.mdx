@@ -1,0 +1,59 @@
+---
+slug: rn-shared-transition
+title: React Native Shared Element Transition
+description: A shared element transition effect for React Native that animates position and size of an element between two views using measure and Animated API.
+category: components
+type: component
+tags: [shared-element, transition, animation, hero, react-native, morph]
+tech: [react-native, typescript]
+difficulty: hard
+targets: [react-native]
+license: MIT
+createdAt: 2026-03-16
+updatedAt: 2026-03-16
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## React Native Shared Element Transition
+
+A smooth shared element transition system that animates an element's position and size between two views. Tap an item in a list or grid and watch it morph seamlessly into a detail view, then reverse the animation on dismiss. Built entirely with React Native's `Animated` API and `ref.measure()` — no external dependencies required.
+
+### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | `string` | Yes | Unique identifier used to match shared elements across source and destination views. Elements with the same `id` will animate between each other. |
+| `children` | `ReactNode` | Yes | The content to render inside the shared element wrapper. |
+
+The `SharedTransitionProvider` must wrap your app or the portion of the tree that participates in transitions. It manages measuring, cloning, and animating elements between views.
+
+### Usage
+
+```tsx
+import { SharedTransitionProvider, SharedTransition } from './SharedTransition';
+
+// Wrap your app
+<SharedTransitionProvider>
+  <App />
+</SharedTransitionProvider>
+
+// Source view (e.g., grid thumbnail)
+<SharedTransition id={`image-${item.id}`}>
+  <Image source={{ uri: item.thumb }} style={styles.thumbnail} />
+</SharedTransition>
+
+// Destination view (e.g., detail screen)
+<SharedTransition id={`image-${item.id}`}>
+  <Image source={{ uri: item.full }} style={styles.hero} />
+</SharedTransition>
+```
+
+### How it works
+
+1. **Measure phase** — When a transition is triggered, `ref.measure()` captures the absolute position (`pageX`, `pageY`) and dimensions (`width`, `height`) of the source element on screen.
+2. **Clone phase** — An overlay clone is rendered at the exact source position using `Animated.View` with absolute positioning.
+3. **Animate phase** — The clone's `top`, `left`, `width`, and `height` are driven by a spring animation toward the destination element's measured layout. A simultaneous opacity crossfade hides the source and reveals the destination content.
+4. **Settle phase** — Once the animation completes, the overlay clone is removed and the destination element becomes fully visible in place.
+5. **Reverse** — Dismissing the detail view runs the same sequence in reverse, animating the element back to its original grid position.

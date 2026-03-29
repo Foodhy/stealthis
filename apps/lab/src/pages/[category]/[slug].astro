@@ -1,12 +1,406 @@
 ---
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
+import { compile as compileSvelte } from "svelte/compiler";
 import { SITE_URLS } from "../../lib/urls";
 import "../../styles/global.css";
 
 export async function getStaticPaths() {
+  function buildReactSrcdoc(tsxCode: string): string | null {
+    const scriptTagOpen = "<" + "script";
+    const scriptTagClose = "</" + "script>";
+    const directDefaultMatch = tsxCode.match(/export\s+default\s+function\s+([A-Za-z_$][\w$]*)/);
+    const namedDefaultMatch = tsxCode.match(/export\s+default\s+([A-Za-z_$][\w$]*)\s*;?/);
+    const componentName = directDefaultMatch?.[1] ?? namedDefaultMatch?.[1] ?? null;
+
+    if (!componentName) return null;
+
+    let code = tsxCode.trim();
+
+    code = code.replace(/^\s*import[\s\S]*?from\s+["'][^"']+["'];?\s*$/gm, "");
+    code = code.replace(/^\s*import\s+["'][^"']+["'];?\s*$/gm, "");
+    code = code.replace(
+      new RegExp(`export\\s+default\\s+function\\s+${componentName}\\b`),
+      `function ${componentName}`
+    );
+    code = code.replace(
+      new RegExp(`^\\s*export\\s+default\\s+${componentName}\\s*;?\\s*$`, "gm"),
+      ""
+    );
+    code = code.replace(/^\s*export\s+(?=(const|function|class|let|var|type|interface)\b)/gm, "");
+
+    const safeCode = code.trim().replace(/<\/script>/gi, "<\\/script>");
+
+    return `<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+${scriptTagOpen} src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js">${scriptTagClose}
+${scriptTagOpen} src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js">${scriptTagClose}
+${scriptTagOpen} src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js">${scriptTagClose}
+${scriptTagOpen} src="https://cdn.tailwindcss.com">${scriptTagClose}
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; background: #020617; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+${scriptTagOpen}>
+const rootNode = document.getElementById("root");
+const renderError = (error) => {
+  if (!rootNode) return;
+  const message = error instanceof Error ? \`\${error.name}: \${error.message}\` : String(error);
+  rootNode.innerHTML = "";
+  const pre = document.createElement("pre");
+  pre.textContent = message;
+  pre.style.cssText =
+    "margin:24px;padding:16px;border-radius:12px;border:1px solid rgba(248,113,113,.28);background:#190b0f;color:#fecaca;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;";
+  rootNode.append(pre);
+};
+
+window.addEventListener("error", (event) => {
+  renderError(event.error ?? event.message);
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  renderError(event.reason);
+});
+
+const source = ${JSON.stringify(`const {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  useReducer,
+  useContext,
+  createContext,
+  Fragment,
+  forwardRef,
+  memo,
+  useId,
+  useDeferredValue,
+  useTransition,
+  useImperativeHandle,
+  startTransition,
+} = React;
+
+${safeCode}
+
+if (!document.getElementById("root")) {
+  throw new Error("Missing #root mount node");
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(${componentName}));`)};;
+
+try {
+  const compiled = Babel.transform(source, {
+    filename: "demo.tsx",
+    sourceType: "script",
+    presets: [
+      ["typescript", { isTSX: true, allExtensions: true }],
+      ["react", { runtime: "classic" }],
+    ],
+  }).code;
+  new Function("React", "ReactDOM", compiled)(React, ReactDOM);
+} catch (error) {
+  renderError(error);
+}
+${scriptTagClose}
+</body>
+</html>`;
+  }
+
+  function buildVueSrcdoc(sfc: string): string {
+    const scriptTagOpen = "<" + "script";
+    const scriptTagClose = "</" + "script>";
+
+    // Extract <script setup> or <script> block
+    const scriptMatch = sfc.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+    const scriptContent = scriptMatch?.[1]?.trim() ?? "";
+
+    // Extract <template> block (greedy to handle nested <template v-if/v-for>)
+    const templateMatch = sfc.match(/<template>([\s\S]*)<\/template>/);
+    const templateContent = templateMatch?.[1]?.trim() ?? "";
+
+    // Extract all <style> blocks (with or without scoped) and concatenate
+    const styleContent = [...sfc.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+      .map((m) => m[1].trim())
+      .filter(Boolean)
+      .join("\n");
+
+    // Clean script: remove vue imports, handle defineProps/withDefaults macros
+    let cleanScript = scriptContent
+      .replace(/^\s*import\s+\{[^}]*\}\s+from\s+['"]vue['"];?\s*$/gm, "")
+      .replace(/^\s*import\s+.*from\s+['"][^'"]+['"];?\s*$/gm, "")
+      .trim();
+
+    // Track the props variable name so we can spread its refs into the setup return
+    let propsVarName = "";
+
+    // Handle withDefaults(defineProps<...>(), { defaults }) using bracket counting
+    // Find the withDefaults call and extract the defaults object
+    const wdMatch = cleanScript.match(/const\s+(\w+)\s*=\s*withDefaults\s*\(/);
+    if (wdMatch) {
+      const varName = wdMatch[1];
+      propsVarName = varName;
+      const wdStart = cleanScript.indexOf(wdMatch[0]);
+      // Find the matching closing paren of withDefaults(...)
+      let depth = 0;
+      let wdEnd = wdStart + wdMatch[0].length;
+      for (let i = wdEnd - 1; i < cleanScript.length; i++) {
+        if (cleanScript[i] === "(") depth++;
+        else if (cleanScript[i] === ")") {
+          depth--;
+          if (depth === 0) {
+            wdEnd = i + 1;
+            break;
+          }
+        }
+      }
+      const fullCall = cleanScript.slice(wdStart, wdEnd);
+
+      // Extract the defaults object: second arg to withDefaults
+      // Find defineProps<...>() first, then get the comma after it
+      const dpEnd = fullCall.indexOf("(),");
+      if (dpEnd !== -1) {
+        const afterDp = fullCall.slice(dpEnd + 3).trim(); // skip "(),"
+        // afterDp should be like "{ events: () => [...], radius: 250, ... })"
+        // Remove the trailing ")"
+        const defaultsStr = afterDp.replace(/\)\s*$/, "").trim();
+        // Resolve factory functions: key: () => value → key: value
+        // Use a self-invoking pattern: wrap in a function that resolves factories
+        cleanScript =
+          cleanScript.slice(0, wdStart) +
+          `const ${varName} = reactive((() => { const _d = ${defaultsStr}; const _r = {}; for (const [k,v] of Object.entries(_d)) _r[k] = typeof v === 'function' ? v() : v; return _r; })())` +
+          cleanScript.slice(wdEnd);
+      } else {
+        cleanScript =
+          cleanScript.slice(0, wdStart) +
+          `const ${varName} = reactive({})` +
+          cleanScript.slice(wdEnd);
+      }
+    }
+
+    // Handle standalone defineProps<...>() (without withDefaults)
+    const dpMatch = cleanScript.match(/const\s+(\w+)\s*=\s*defineProps<[\s\S]*?>\s*\(\s*\)/);
+    if (dpMatch) {
+      cleanScript = cleanScript.replace(dpMatch[0], `const ${dpMatch[1]} = reactive({})`);
+    }
+
+    // Remove bare defineProps (TypeScript generic style)
+    cleanScript = cleanScript.replace(/defineProps<[\s\S]*?>\s*\(\s*\)/g, "reactive({})");
+
+    // Handle defineProps({ key: { type, default }, ... }) — runtime object syntax
+    // Uses bracket counting to find the full defineProps({...}) call
+    const dpObjMatch = cleanScript.match(/const\s+(\w+)\s*=\s*defineProps\s*\(/);
+    if (dpObjMatch) {
+      const dpVarName = dpObjMatch[1];
+      propsVarName = dpVarName;
+      const dpStart = cleanScript.indexOf(dpObjMatch[0]);
+      let dpDepth = 0;
+      let dpEndPos = dpStart + dpObjMatch[0].length;
+      for (let i = dpEndPos - 1; i < cleanScript.length; i++) {
+        if (cleanScript[i] === "(") dpDepth++;
+        else if (cleanScript[i] === ")") {
+          dpDepth--;
+          if (dpDepth === 0) {
+            dpEndPos = i + 1;
+            break;
+          }
+        }
+      }
+      // Extract the object argument: everything between defineProps( and the final )
+      const innerContent = cleanScript.slice(dpStart + dpObjMatch[0].length, dpEndPos - 1).trim();
+      // Convert props definition to reactive with defaults extracted
+      cleanScript =
+        cleanScript.slice(0, dpStart) +
+        `const ${dpVarName} = reactive((() => { const _d = ${innerContent}; const _r = {}; for (const [k,v] of Object.entries(_d)) _r[k] = v && typeof v === 'object' && 'default' in v ? (typeof v.default === 'function' ? v.default() : v.default) : undefined; return _r; })())` +
+        cleanScript.slice(dpEndPos);
+    }
+
+    // Handle defineEmits — replace with a no-op function for standalone demos
+    cleanScript = cleanScript.replace(
+      /const\s+(\w+)\s*=\s*defineEmits\s*\([^)]*\)\s*;?/g,
+      "const $1 = (...args) => {};"
+    );
+    cleanScript = cleanScript.replace(/defineEmits\s*\([^)]*\)\s*;?/g, "");
+
+    // Strip TypeScript generics from function calls: ref<Type>(val) → ref(val)
+    cleanScript = cleanScript.replace(/(\w+)<[^>]+>\(/g, "$1(");
+    // Strip interface/type declarations
+    cleanScript = cleanScript.replace(/^\s*(?:interface|type)\s+\w[\s\S]*?(?:\n\}|;)\s*$/gm, "");
+
+    // Extract all top-level const/let/function names to auto-return them
+    const names = new Set<string>();
+    for (const m of cleanScript.matchAll(/^(?:const|let|var)\s+(\w+)/gm)) names.add(m[1]);
+    for (const m of cleanScript.matchAll(/^function\s+(\w+)/gm)) names.add(m[1]);
+    // Also catch destructured: const { a, b } = ...
+    for (const m of cleanScript.matchAll(/^(?:const|let|var)\s+\{\s*([^}]+)\}/gm)) {
+      for (const name of m[1].split(",").map((s) => s.trim().split(/\s/)[0])) {
+        if (name) names.add(name);
+      }
+    }
+
+    // Detect custom directives (vXxx naming from <script setup>) and hoist them
+    // out of setup(), since auto-registration only works in <script setup>
+    const directiveNames = [...names].filter((n) => /^v[A-Z]/.test(n));
+    let hoistedDirectives = "";
+    let directiveRegistrations = "";
+    for (const dirName of directiveNames) {
+      const re = new RegExp(`(const|let|var)\\s+${dirName}\\s*=\\s*\\{`);
+      const m = cleanScript.match(re);
+      if (m && m.index !== undefined) {
+        const start = m.index;
+        let depth = 0;
+        let end = start;
+        for (let i = start + m[0].length - 1; i < cleanScript.length; i++) {
+          if (cleanScript[i] === "{") depth++;
+          else if (cleanScript[i] === "}") {
+            depth--;
+            if (depth === 0) {
+              end = i + 1;
+              break;
+            }
+          }
+        }
+        hoistedDirectives += cleanScript.slice(start, end) + "\n";
+        cleanScript = cleanScript.slice(0, start) + cleanScript.slice(end);
+        names.delete(dirName);
+        const kebab = dirName
+          .slice(1)
+          .replace(/[A-Z]/g, (c) => "-" + c.toLowerCase())
+          .replace(/^-/, "");
+        directiveRegistrations += `  app.directive('${kebab}', ${dirName});\n`;
+      }
+    }
+
+    const returnStatement =
+      names.size > 0
+        ? `return { ${propsVarName ? `...toRefs(${propsVarName}), ` : ""}${[...names].join(", ")} };`
+        : propsVarName
+          ? `return { ...toRefs(${propsVarName}) };`
+          : "return {};";
+
+    const safeScript = cleanScript.replace(/<\/script>/gi, "<\\/script>");
+    const safeTemplate = templateContent.replace(/<\/script>/gi, "<\\/script>");
+
+    return `<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+${scriptTagOpen} src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js">${scriptTagClose}
+${scriptTagOpen} src="https://cdn.tailwindcss.com">${scriptTagClose}
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; background: #020617; }
+  ${styleContent}
+</style>
+</head>
+<body>
+<div id="app"></div>
+${scriptTagOpen}>
+try {
+  const { createApp, ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick, reactive, toRef, toRefs, provide, inject, defineComponent } = Vue;
+
+  ${hoistedDirectives}
+
+  const app = createApp({
+    setup() {
+      ${safeScript}
+
+      ${returnStatement}
+    },
+    template: ${JSON.stringify(safeTemplate)},
+  });
+
+${directiveRegistrations}  app.mount('#app');
+} catch (error) {
+  const root = document.getElementById('app');
+  if (root) {
+    const pre = document.createElement('pre');
+    pre.textContent = error instanceof Error ? error.name + ': ' + error.message + '\\n\\n' + (error.stack || '') : String(error);
+    pre.style.cssText = 'margin:24px;padding:16px;border-radius:12px;border:1px solid rgba(248,113,113,.28);background:#190b0f;color:#fecaca;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;';
+    root.append(pre);
+  }
+}
+${scriptTagClose}
+</body>
+</html>`;
+  }
+
+  function buildSvelteSrcdoc(sfc: string): string | null {
+    const scriptTagOpen = "<" + "script";
+    const scriptTagClose = "</" + "script>";
+
+    // Compile Svelte at build time (server-side)
+    let compiled: { js: { code: string }; css: { code: string | null } };
+    try {
+      compiled = compileSvelte(sfc, {
+        generate: "dom",
+        css: "injected",
+        hydratable: false,
+        name: "App",
+      });
+    } catch {
+      return null;
+    }
+
+    // Rewrite svelte/internal imports to use CDN and remove export default
+    let jsCode = compiled.js.code
+      .replace(
+        /from\s+["']svelte\/internal\/disclose-version["']/g,
+        'from "https://esm.sh/svelte@4/internal/disclose-version"'
+      )
+      .replace(/from\s+["']svelte\/internal["']/g, 'from "https://esm.sh/svelte@4/internal"')
+      .replace(/from\s+["']svelte["']/g, 'from "https://esm.sh/svelte@4"')
+      .replace(
+        /^\s*import\s+["']svelte\/internal\/disclose-version["'];?\s*$/gm,
+        'import "https://esm.sh/svelte@4/internal/disclose-version";'
+      )
+      .replace(/^\s*export\s+default\s+App\s*;?\s*$/gm, "");
+
+    const safeJs = jsCode.replace(/<\/script>/gi, "<\\/script>");
+
+    return `<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+${scriptTagOpen} src="https://cdn.tailwindcss.com">${scriptTagClose}
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; background: #020617; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+${scriptTagOpen} type="module">
+${safeJs}
+
+new App({ target: document.getElementById("app") });
+${scriptTagClose}
+${scriptTagOpen}>
+window.addEventListener("error", (e) => {
+  const root = document.getElementById("app");
+  if (root && !root.hasChildNodes()) {
+    const pre = document.createElement("pre");
+    pre.textContent = e.message || String(e.error);
+    pre.style.cssText = "margin:24px;padding:16px;border-radius:12px;border:1px solid rgba(248,113,113,.28);background:#190b0f;color:#fecaca;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;";
+    root.append(pre);
+  }
+});
+${scriptTagClose}
+</body>
+</html>`;
+  }
+
   const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
   const files = await fg(path.join(CONTENT_DIR, "resources/*/index.mdx"));
 
@@ -24,56 +418,213 @@ export async function getStaticPaths() {
 
     const [category, slug] = parts;
 
-    // Read snippets
     const snippetsDir = path.join(CONTENT_DIR, `resources/${data.slug}/snippets`);
     const htmlPath = path.join(snippetsDir, "html.html");
     const cssPath = path.join(snippetsDir, "style.css");
     const jsPath = path.join(snippetsDir, "script.js");
+    const schemaSqlPath = path.join(snippetsDir, "schema.sql");
+    const seedSqlPath = path.join(snippetsDir, "seed.sql");
+    const queriesSqlPath = path.join(snippetsDir, "queries.sql");
+    const diagramMmdPath = path.join(snippetsDir, "diagram.mmd");
+    const schemaDbmlPath = path.join(snippetsDir, "schema.dbml");
 
     const html = existsSync(htmlPath) ? readFileSync(htmlPath, "utf-8") : null;
     const css = existsSync(cssPath) ? readFileSync(cssPath, "utf-8") : null;
     const js = existsSync(jsPath) ? readFileSync(jsPath, "utf-8") : null;
+    const schemaSql = existsSync(schemaSqlPath) ? readFileSync(schemaSqlPath, "utf-8") : null;
+    const seedSql = existsSync(seedSqlPath) ? readFileSync(seedSqlPath, "utf-8") : null;
+    const queriesSql = existsSync(queriesSqlPath) ? readFileSync(queriesSqlPath, "utf-8") : null;
+    const diagramMmd = existsSync(diagramMmdPath) ? readFileSync(diagramMmdPath, "utf-8") : null;
+    const schemaDbml = existsSync(schemaDbmlPath) ? readFileSync(schemaDbmlPath, "utf-8") : null;
+
+    const reactPath = path.join(snippetsDir, "react.tsx");
+    const reactTsx = existsSync(reactPath) ? readFileSync(reactPath, "utf-8") : null;
+    const reactSrcdoc = reactTsx ? buildReactSrcdoc(reactTsx) : null;
+
+    const vuePath = path.join(snippetsDir, "vue.vue");
+    const vueCode = existsSync(vuePath) ? readFileSync(vuePath, "utf-8") : null;
+    const vueSrcdoc = vueCode ? buildVueSrcdoc(vueCode) : null;
+
+    const sveltePath = path.join(snippetsDir, "svelte.svelte");
+    const svelteCode = existsSync(sveltePath) ? readFileSync(sveltePath, "utf-8") : null;
+    const svelteSrcdoc = svelteCode ? buildSvelteSrcdoc(svelteCode) : null;
 
     paths.push({
       params: { category, slug },
-      props: { meta: data, html, css, js },
+      props: {
+        meta: data,
+        html,
+        css,
+        js,
+        schemaSql,
+        seedSql,
+        queriesSql,
+        diagramMmd,
+        schemaDbml,
+        reactSrcdoc,
+        vueSrcdoc,
+        svelteSrcdoc,
+      },
     });
   }
 
   return paths;
 }
 
-const { meta, html, css, js } = Astro.props;
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro template markup.
+const {
+  meta,
+  html,
+  css,
+  js,
+  schemaSql,
+  seedSql,
+  queriesSql,
+  diagramMmd,
+  schemaDbml,
+  reactSrcdoc,
+  vueSrcdoc,
+  svelteSrcdoc,
+} = Astro.props;
 
-// Build the srcdoc — inline CSS and JS into the HTML
+const isDatabaseSchema = meta.category === "database-schemas";
+const scriptTagOpen = "<" + "script";
+const scriptTagClose = "</" + "script>";
+
+type ParsedSchemaColumn = {
+  name: string;
+  type: string;
+  isPrimaryKey: boolean;
+  isForeignKey: boolean;
+  references: string | null;
+};
+
+type ParsedSchemaTable = {
+  name: string;
+  columns: ParsedSchemaColumn[];
+};
+
+function normalizeIdentifier(raw: string): string {
+  return raw.trim().replace(/^"|"$/g, "");
+}
+
+function normalizeQualifiedIdentifier(raw: string): string {
+  return raw
+    .split(".")
+    .map((part) => normalizeIdentifier(part))
+    .filter(Boolean)
+    .join(".");
+}
+
+function extractColumnType(columnName: string, definition: string): string {
+  const source = `${columnName} ${definition}`.trim();
+  const match = source.match(
+    /^"?(?:[A-Za-z_][\w$]*)"?\s+(.+?)(?=\s+(?:constraint\b|primary\s+key\b|references\b|not\s+null\b|null\b|default\b|check\b|unique\b|generated\b|collate\b)|$)/i
+  );
+
+  return match?.[1]?.trim() ?? "unknown";
+}
+
+function parseSchemaTables(source: string | null | undefined): ParsedSchemaTable[] {
+  if (!source?.trim()) return [];
+
+  const tables: ParsedSchemaTable[] = [];
+  const tableRegex =
+    /create\s+table\s+(?:if\s+not\s+exists\s+)?((?:"[^"]+"|[A-Za-z_][\w$]*)(?:\.(?:"[^"]+"|[A-Za-z_][\w$]*))?)\s*\(([\s\S]*?)\)\s*;/gi;
+
+  for (const match of source.matchAll(tableRegex)) {
+    const rawTableName = match[1] ?? "";
+    const tableBody = match[2] ?? "";
+    const tableName = normalizeQualifiedIdentifier(rawTableName).split(".").at(-1) ?? rawTableName;
+    const columns: ParsedSchemaColumn[] = [];
+
+    for (const line of tableBody.split(/\r?\n/)) {
+      const normalizedLine = line.trim().replace(/,$/, "");
+      if (!normalizedLine || normalizedLine.startsWith("--")) continue;
+      if (/^(constraint|primary\s+key|foreign\s+key|unique|check)\b/i.test(normalizedLine))
+        continue;
+
+      const columnMatch = normalizedLine.match(/^("?[A-Za-z_][\w$]*"?)\s+(.+)$/);
+      if (!columnMatch) continue;
+
+      const columnName = normalizeIdentifier(columnMatch[1] ?? "");
+      const columnDefinition = columnMatch[2] ?? "";
+
+      const referenceMatch = columnDefinition.match(
+        /\breferences\s+((?:"[^"]+"|[A-Za-z_][\w$]*)(?:\.(?:"[^"]+"|[A-Za-z_][\w$]*))?)\s*\(([^)]+)\)/i
+      );
+
+      const referenceTable = referenceMatch?.[1]
+        ? normalizeQualifiedIdentifier(referenceMatch[1]).split(".").at(-1)
+        : null;
+      const referenceColumn = referenceMatch?.[2]
+        ? normalizeIdentifier(referenceMatch[2].split(",")[0] ?? "")
+        : null;
+      const references =
+        referenceTable && referenceColumn ? `${referenceTable}.${referenceColumn}` : null;
+
+      columns.push({
+        name: columnName,
+        type: extractColumnType(columnName, columnDefinition),
+        isPrimaryKey: /\bprimary\s+key\b/i.test(columnDefinition),
+        isForeignKey: /\breferences\b/i.test(columnDefinition),
+        references,
+      });
+    }
+
+    if (columns.length > 0) {
+      tables.push({ name: tableName, columns });
+    }
+  }
+
+  return tables;
+}
+
+const schemaTables = parseSchemaTables(schemaSql);
+
 let srcdoc = html ?? "";
 
-if (css && srcdoc) {
+if (!isDatabaseSchema && css && srcdoc) {
   srcdoc = srcdoc.replace(
     /<link[^>]*href=["'](?:\.\/)?style\.css["'][^>]*>/i,
     `<style>${css}</style>`
   );
 }
 
-if (js && srcdoc) {
-  // Preserve module semantics for demos that rely on ESM imports.
+if (!isDatabaseSchema && js && srcdoc) {
   srcdoc = srcdoc.replace(
     /<script([^>]*)src=["'](?:\.\/)?script\.js["']([^>]*)><\/script>/i,
     (_match, before, after) => {
       const attrs = `${before ?? ""} ${after ?? ""}`;
       const isModule = /\btype\s*=\s*["']module["']/i.test(attrs);
-      return isModule ? `<script type="module">${js}</script>` : `<script>${js}</script>`;
+      return isModule
+        ? `${scriptTagOpen} type="module">${js}${scriptTagClose}`
+        : `${scriptTagOpen}>${js}${scriptTagClose}`;
     }
   );
 }
 
+const demoVariants = [
+  ...(srcdoc ? [{ id: "vanilla", label: "Vanilla", srcdoc }] : []),
+  ...(reactSrcdoc ? [{ id: "react", label: "React", srcdoc: reactSrcdoc }] : []),
+  ...(vueSrcdoc ? [{ id: "vue", label: "Vue", srcdoc: vueSrcdoc }] : []),
+  ...(svelteSrcdoc ? [{ id: "svelte", label: "Svelte", srcdoc: svelteSrcdoc }] : []),
+];
+const defaultSrcdoc = demoVariants[0]?.srcdoc ?? "";
+const hasVariants = demoVariants.length > 1;
+
 const wwwUrl = `${SITE_URLS.www}/r/${meta.slug}`;
-const description = meta.description ?? "Runnable lab demo from StealThis.dev resources.";
-const socialImageURL = new URL("/og/lab.webp", Astro.site ?? "https://lab.stealthis.dev").toString();
+const description = isDatabaseSchema
+  ? (meta.description ?? "Relational schema viewer with SQL and ERD preview.")
+  : (meta.description ?? "Runnable lab demo from StealThis.dev resources.");
+const socialImageURL = new URL(
+  "/og/lab.webp",
+  Astro.site ?? "https://lab.stealthis.dev"
+).toString();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class:list={[isDatabaseSchema && "db-mode"]}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -95,55 +646,1185 @@ const socialImageURL = new URL("/og/lab.webp", Astro.site ?? "https://lab.stealt
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #0f172a; }
-    .lab-overlay {
-      position: fixed; top: 1rem; right: 1rem; z-index: 100;
-      display: flex; align-items: center; gap: 0.5rem;
-      opacity: 0.3; transition: opacity 0.2s ease;
+
+    html.db-mode,
+    html.db-mode body {
+      overflow: auto;
+      height: auto;
+      min-height: 100%;
+      color: #e2e8f0;
+      font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(34, 211, 238, 0.18), transparent 50%),
+        radial-gradient(circle at 86% 12%, rgba(56, 189, 248, 0.15), transparent 45%),
+        #020617;
     }
+
+    .lab-overlay {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.3;
+      transition: opacity 0.2s ease;
+    }
+
     .lab-overlay:hover { opacity: 1; }
+
     .lab-btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-size: 0.75rem; font-weight: 600; font-family: system-ui, sans-serif;
-      padding: 0.5rem 0.875rem; border-radius: 0.625rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: system-ui, sans-serif;
+      padding: 0.5rem 0.875rem;
+      border-radius: 0.625rem;
       border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(15,23,42,0.85); backdrop-filter: blur(12px);
-      color: #94a3b8; cursor: pointer; text-decoration: none;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(12px);
+      color: #94a3b8;
+      cursor: pointer;
+      text-decoration: none;
       transition: color 0.2s ease, background 0.2s ease;
     }
-    .lab-btn:hover { color: #f1f5f9; background: rgba(30,41,59,0.95); }
-    iframe { width: 100vw; height: 100vh; border: none; display: block; }
+
+    .lab-btn:hover {
+      color: #f1f5f9;
+      background: rgba(30,41,59,0.95);
+    }
+
+    .lab-btn.active {
+      color: #7dd3fc;
+      background: rgba(56,189,248,0.12);
+      border-color: rgba(56,189,248,0.35);
+    }
+
+    .demo-frame {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      display: block;
+    }
+
+    .db-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.25rem;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 1rem;
+    }
+
+    .db-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 0.9rem;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+    }
+
+    .db-toolbar p {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .db-toolbar small {
+      display: block;
+      margin-top: 0.125rem;
+      color: #94a3b8;
+      font-size: 0.72rem;
+    }
+
+    .db-toolbar-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .db-toolbar-actions a {
+      text-decoration: none;
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid rgba(148, 163, 184, 0.26);
+      border-radius: 0.65rem;
+      padding: 0.45rem 0.75rem;
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .db-main {
+      display: grid;
+      grid-template-columns: minmax(360px, 1fr) minmax(380px, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .db-panel {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 0.95rem;
+      background: rgba(15, 23, 42, 0.66);
+      overflow: hidden;
+      min-height: 32rem;
+    }
+
+    .db-panel h2 {
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      padding: 0.8rem 0.95rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(2, 6, 23, 0.5);
+    }
+
+    .db-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      padding: 0.8rem 0.95rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(2, 6, 23, 0.5);
+    }
+
+    .db-panel-head h2 {
+      padding: 0;
+      border-bottom: none;
+      background: none;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .db-view-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.18rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: rgba(15, 23, 42, 0.72);
+    }
+
+    .db-view-btn {
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #94a3b8;
+      padding: 0.35rem 0.68rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .db-view-btn:hover {
+      color: #e2e8f0;
+    }
+
+    .db-view-btn.active {
+      color: #ecfeff;
+      background: rgba(34, 211, 238, 0.2);
+    }
+
+    .db-diagram-panel[hidden] {
+      display: none;
+    }
+
+    .db-diagram-wrap {
+      padding: 1rem;
+      overflow: auto;
+      min-height: 30rem;
+    }
+
+    .db-diagram-wrap .mermaid {
+      min-width: 28rem;
+    }
+
+    /* ─── Interactive Diagram ─────────────────────── */
+    .db-interactive-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.75rem;
+    }
+
+    .db-interactive-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .db-interactive-hint {
+      font-size: 0.7rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .db-interactive-btns {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .db-interactive-btn {
+      border: 1px solid rgba(148,163,184,0.24);
+      border-radius: 0.5rem;
+      background: rgba(15,23,42,0.7);
+      color: #94a3b8;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .db-interactive-btn:hover {
+      color: #e2e8f0;
+      border-color: rgba(148,163,184,0.45);
+    }
+
+    .db-interactive-btn.active {
+      color: #93c5fd;
+      background: rgba(59,130,246,0.12);
+      border-color: rgba(59,130,246,0.35);
+      box-shadow: 0 0 8px rgba(59,130,246,0.12);
+    }
+
+    .db-interactive-canvas-wrap {
+      overflow: auto;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(148,163,184,0.15);
+      background: #020617;
+      min-height: 26rem;
+      position: relative;
+      cursor: default;
+    }
+
+    .db-interactive-canvas-wrap svg {
+      display: block;
+    }
+
+    .db-interactive-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      font-size: 0.67rem;
+      color: #475569;
+      align-items: center;
+    }
+
+    .db-interactive-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .db-interactive-legend-pk { color: #e3b341; font-weight: 700; font-family: monospace; }
+    .db-interactive-legend-fk { color: #bc8cff; font-weight: 700; font-family: monospace; }
+    .db-interactive-legend-line-dashed {
+      display: inline-block; width: 1.5rem; height: 0;
+      border-top: 2px dashed #334155;
+    }
+    .db-interactive-legend-line-active {
+      display: inline-block; width: 1.5rem; height: 0;
+      border-top: 2px solid #3b82f6;
+    }
+    .db-interactive-stats {
+      margin-left: auto;
+      font-size: 0.65rem;
+      color: #334155;
+    }
+
+    .db-interactive-error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 20rem;
+      padding: 2rem;
+      text-align: center;
+      color: #fbbf24;
+      font-size: 0.78rem;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    @keyframes db-dash { to { stroke-dashoffset: -18; } }
+    .db-animate-dash { animation: db-dash 0.8s linear infinite; }
+
+    .db-diagram-wrap pre,
+    .db-sql-group pre {
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.77rem;
+      line-height: 1.45;
+      color: #dbeafe;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 0.7rem;
+      background: rgba(2, 6, 23, 0.75);
+      padding: 0.8rem;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    .db-schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(15.75rem, 1fr));
+      gap: 0.75rem;
+      align-items: start;
+    }
+
+    .db-schema-table {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      background: rgba(2, 6, 23, 0.5);
+    }
+
+    .db-schema-table-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.55rem 0.7rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .db-schema-table-head strong {
+      font-size: 0.76rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #e2e8f0;
+    }
+
+    .db-schema-table-head span {
+      color: #67e8f9;
+      font-size: 0.66rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .db-schema-columns {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .db-schema-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.48rem 0.65rem;
+      border-top: 1px solid rgba(148, 163, 184, 0.08);
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+    }
+
+    .db-schema-row:first-child {
+      border-top: 0;
+    }
+
+    .db-schema-badges {
+      display: inline-flex;
+      gap: 0.25rem;
+      min-width: 2.2rem;
+    }
+
+    .db-schema-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.15rem;
+      padding: 0.1rem 0.2rem;
+      border-radius: 0.25rem;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      line-height: 1;
+      border: 1px solid transparent;
+    }
+
+    .db-schema-badge.pk {
+      color: #fde68a;
+      border-color: rgba(250, 204, 21, 0.4);
+      background: rgba(146, 64, 14, 0.35);
+    }
+
+    .db-schema-badge.fk {
+      color: #ddd6fe;
+      border-color: rgba(196, 181, 253, 0.44);
+      background: rgba(76, 29, 149, 0.35);
+    }
+
+    .db-schema-name {
+      color: #e2e8f0;
+    }
+
+    .db-schema-type {
+      color: #67e8f9;
+      font-size: 0.66rem;
+      text-transform: lowercase;
+    }
+
+    .db-schema-ref {
+      border-top: 1px dashed rgba(148, 163, 184, 0.14);
+      padding: 0.42rem 0.65rem 0.5rem 2.85rem;
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.66rem;
+      color: #7dd3fc;
+      background: rgba(2, 132, 199, 0.08);
+    }
+
+    .db-sql-wrap {
+      display: grid;
+      gap: 0.7rem;
+      padding: 0.75rem;
+    }
+
+    .db-sql-group {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 0.75rem;
+      background: rgba(2, 6, 23, 0.55);
+      overflow: hidden;
+    }
+
+    .db-sql-group summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(15, 23, 42, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .db-empty {
+      padding: 1rem;
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    .db-copy-btn {
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 0.5rem;
+      background: rgba(15, 23, 42, 0.75);
+      color: #cbd5e1;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .db-copy-btn:hover {
+      background: rgba(8, 47, 73, 0.9);
+      border-color: rgba(34, 211, 238, 0.5);
+      color: #ecfeff;
+    }
+
+    @media (max-width: 1040px) {
+      .db-main {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Overlay controls -->
-  <div class="lab-overlay">
-    <span style="color:#475569;font-size:0.7rem;font-family:system-ui">
-      {meta.title}
-    </span>
-    <a href={wwwUrl} target="_blank" rel="noopener" class="lab-btn">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      View Code
-    </a>
-    <a href="/" class="lab-btn">
-      ← Lab
-    </a>
-  </div>
+  {isDatabaseSchema ? (
+    <div class="db-shell">
+      <header class="db-toolbar">
+        <div>
+          <p>{meta.title}</p>
+          <small>{meta.category} · SQL + ERD viewer</small>
+        </div>
+        <div class="db-toolbar-actions">
+          <a href={wwwUrl} target="_blank" rel="noopener">View Resource</a>
+          <a href="/">Back to Lab</a>
+        </div>
+      </header>
 
-  <!-- Demo in sandboxed iframe -->
-  {srcdoc ? (
-    <iframe
-      srcdoc={srcdoc}
-      title={`${meta.title} demo`}
-      sandbox="allow-scripts allow-same-origin"
-      loading="lazy"
-    />
-  ) : (
-    <div style="display:grid;place-items:center;height:100vh;color:#475569;font-family:system-ui">
-      No HTML demo available for this resource.
+      <main class="db-main">
+        <section class="db-panel">
+          <div class="db-panel-head">
+            <h2>Diagram Views</h2>
+            <div class="db-view-switch" role="tablist" aria-label="Database diagram views">
+              <button
+                type="button"
+                class="db-view-btn"
+                data-db-view="erd"
+                aria-pressed="false"
+              >
+                ERD
+              </button>
+              <button
+                type="button"
+                class="db-view-btn"
+                data-db-view="schema"
+                aria-pressed="false"
+              >
+                Schema
+              </button>
+              <button
+                type="button"
+                class="db-view-btn active"
+                data-db-view="interactive"
+                aria-pressed="true"
+              >
+                ✦ Interactive
+              </button>
+            </div>
+          </div>
+
+          <div class="db-diagram-panel" data-db-diagram-panel="erd">
+            <div class="db-diagram-wrap">
+              {diagramMmd ? (
+                <div class="mermaid" id="lab-dbviz-mermaid">{diagramMmd}</div>
+              ) : schemaDbml ? (
+                <>
+                  <p class="db-empty">No Mermaid diagram found. Showing DBML source.</p>
+                  <pre>{schemaDbml}</pre>
+                </>
+              ) : (
+                <p class="db-empty">No diagram snippet found. Add <code>diagram.mmd</code> or <code>schema.dbml</code>.</p>
+              )}
+            </div>
+          </div>
+
+          <div class="db-diagram-panel" data-db-diagram-panel="schema" hidden>
+            <div class="db-diagram-wrap">
+              {schemaTables.length > 0 ? (
+                <div class="db-schema-grid">
+                  {schemaTables.map((table) => (
+                    <article class="db-schema-table">
+                      <header class="db-schema-table-head">
+                        <strong>{table.name}</strong>
+                        <span>{table.columns.length} cols</span>
+                      </header>
+                      <ul class="db-schema-columns">
+                        {table.columns.map((column) => (
+                          <>
+                            <li class="db-schema-row">
+                              <span class="db-schema-badges">
+                                {column.isPrimaryKey ? <span class="db-schema-badge pk">PK</span> : null}
+                                {column.isForeignKey ? <span class="db-schema-badge fk">FK</span> : null}
+                              </span>
+                              <span class="db-schema-name">{column.name}</span>
+                              <span class="db-schema-type">{column.type}</span>
+                            </li>
+                            {column.references ? <li class="db-schema-ref">→ {column.references}</li> : null}
+                          </>
+                        ))}
+                      </ul>
+                    </article>
+                  ))}
+                </div>
+              ) : schemaDbml ? (
+                <>
+                  <p class="db-empty">Could not parse <code>schema.sql</code>. Showing <code>schema.dbml</code>.</p>
+                  <pre>{schemaDbml}</pre>
+                </>
+              ) : schemaSql ? (
+                <>
+                  <p class="db-empty">Could not parse <code>schema.sql</code> into table cards. Showing raw SQL.</p>
+                  <pre>{schemaSql}</pre>
+                </>
+              ) : (
+                <p class="db-empty">Missing <code>schema.sql</code> for Schema Diagram view.</p>
+              )}
+            </div>
+          </div>
+
+          <div class="db-diagram-panel" data-db-diagram-panel="interactive" hidden>
+            <div class="db-interactive-wrap">
+              <div class="db-interactive-toolbar">
+                <span class="db-interactive-hint">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                  </svg>
+                  Drag tables to reposition
+                </span>
+                <div class="db-interactive-btns">
+                  <button type="button" id="db-anim-toggle" class="db-interactive-btn active">✦ Animated</button>
+                  <button type="button" id="db-reset-btn" class="db-interactive-btn">Reset</button>
+                </div>
+              </div>
+              <div class="db-interactive-canvas-wrap" id="db-interactive-diagram"></div>
+              <div class="db-interactive-legend">
+                <span class="db-interactive-legend-item"><span class="db-interactive-legend-pk">PK</span> Primary key</span>
+                <span class="db-interactive-legend-item"><span class="db-interactive-legend-fk">FK</span> Foreign key</span>
+                <span class="db-interactive-legend-item"><span class="db-interactive-legend-line-dashed"></span> Relation</span>
+                <span class="db-interactive-legend-item"><span class="db-interactive-legend-line-active"></span> Active relation</span>
+                <span class="db-interactive-stats" id="db-diagram-stats"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="db-panel">
+          <h2>SQL Snippets</h2>
+          <div class="db-sql-wrap">
+            <details class="db-sql-group" open>
+              <summary>
+                <span>schema.sql</span>
+                {schemaSql ? (
+                  <button type="button" class="db-copy-btn" data-copy-target="db-schema-sql">Copy</button>
+                ) : null}
+              </summary>
+              {schemaSql ? <pre id="db-schema-sql">{schemaSql}</pre> : <p class="db-empty">Missing schema.sql</p>}
+            </details>
+
+            <details class="db-sql-group" open>
+              <summary>
+                <span>seed.sql</span>
+                {seedSql ? (
+                  <button type="button" class="db-copy-btn" data-copy-target="db-seed-sql">Copy</button>
+                ) : null}
+              </summary>
+              {seedSql ? <pre id="db-seed-sql">{seedSql}</pre> : <p class="db-empty">Missing seed.sql</p>}
+            </details>
+
+            <details class="db-sql-group" open>
+              <summary>
+                <span>queries.sql</span>
+                {queriesSql ? (
+                  <button type="button" class="db-copy-btn" data-copy-target="db-queries-sql">Copy</button>
+                ) : null}
+              </summary>
+              {queriesSql ? <pre id="db-queries-sql">{queriesSql}</pre> : <p class="db-empty">Missing queries.sql</p>}
+            </details>
+          </div>
+        </section>
+      </main>
     </div>
+  ) : (
+    <>
+      <div class="lab-overlay">
+        {hasVariants && (
+          <>
+            {demoVariants.map((variant, index) => (
+              <button
+                type="button"
+                class:list={["lab-btn", index === 0 && "active"]}
+                data-demo-variant={variant.id}
+                aria-pressed={index === 0 ? "true" : "false"}
+              >
+                {variant.label}
+              </button>
+            ))}
+          </>
+        )}
+        <span style="color:#475569;font-size:0.7rem;font-family:system-ui">
+          {meta.title}
+        </span>
+        <a href={wwwUrl} target="_blank" rel="noopener" class="lab-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          View Code
+        </a>
+        <a href="/" class="lab-btn">
+          ← Lab
+        </a>
+      </div>
+
+      {defaultSrcdoc ? (
+        <iframe
+          id="demo-frame"
+          class="demo-frame"
+          srcdoc={defaultSrcdoc}
+          title={`${meta.title} demo`}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          allow="autoplay; midi"
+          loading="lazy"
+        />
+      ) : (
+        <div style="display:grid;place-items:center;height:100vh;color:#475569;font-family:system-ui">
+          No demo available for this resource.
+        </div>
+      )}
+
+      {hasVariants && (
+        <script is:inline define:vars={{ demoVariants }}>
+          const frame = document.getElementById("demo-frame");
+          const buttons = Array.from(document.querySelectorAll("[data-demo-variant]"));
+          const variants = new Map(demoVariants.map((variant) => [variant.id, variant.srcdoc]));
+          const defaultVariantId = demoVariants[0]?.id ?? null;
+
+          if (frame && defaultVariantId) {
+            const syncButtons = (activeVariant) => {
+              for (const button of buttons) {
+                const isActive = button.dataset.demoVariant === activeVariant;
+                button.classList.toggle("active", isActive);
+                button.setAttribute("aria-pressed", String(isActive));
+              }
+            };
+
+            const setVariant = (variantId, updateUrl = true) => {
+              const nextSrcdoc = variants.get(variantId);
+              if (!nextSrcdoc) return;
+
+              frame.srcdoc = nextSrcdoc;
+              syncButtons(variantId);
+
+              if (!updateUrl) return;
+
+              const params = new URLSearchParams(window.location.search);
+              if (variantId === defaultVariantId) {
+                params.delete("implementation");
+                params.delete("impl");
+              } else {
+                params.set("implementation", variantId);
+                params.delete("impl");
+              }
+
+              const search = params.toString();
+              const nextUrl = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
+              window.history.replaceState({}, "", nextUrl);
+            };
+
+            const initialParams = new URLSearchParams(window.location.search);
+            const requestedVariant =
+              initialParams.get("implementation") ?? initialParams.get("impl") ?? defaultVariantId;
+            setVariant(variants.has(requestedVariant) ? requestedVariant : defaultVariantId, false);
+
+            for (const button of buttons) {
+              button.addEventListener("click", () => {
+                const variantId = button.dataset.demoVariant;
+                if (variantId) setVariant(variantId);
+              });
+            }
+          }
+        </script>
+      )}
+    </>
+  )}
+
+  {isDatabaseSchema && diagramMmd && (
+    <script type="module" is:inline>
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+      mermaid.initialize({
+        startOnLoad: true,
+        securityLevel: "loose",
+        theme: "dark",
+      });
+
+      mermaid.run({ querySelector: "#lab-dbviz-mermaid" });
+    </script>
+  )}
+
+  {isDatabaseSchema && diagramMmd && (
+    <script is:inline define:vars={{ diagramMmd }}>
+    (function () {
+      /* ── Constants ─────────────────────────────── */
+      const TABLE_W   = 220;
+      const ROW_H     = 28;
+      const HEADER_H  = 38;
+      const PAD       = 60;
+      const COL_GAP   = 80;
+      const ROW_GAP   = 60;
+      const COLORS    = [
+        "#58a6ff","#7ee787","#e3b341","#bc8cff","#ff7b72",
+        "#39d353","#f78166","#a5d6ff","#d2a8ff","#ffa657",
+      ];
+      const SVG_NS    = "http://www.w3.org/2000/svg";
+
+      /* ── State ─────────────────────────────────── */
+      let tables    = [];
+      let relations = [];
+      let selected  = null;
+      let animated  = true;
+      let initialPositions = [];
+
+      /* ── Parser ────────────────────────────────── */
+      function parseMermaidER(src) {
+        const tbls = [], rels = [];
+        let inTable = null, cols = [];
+        for (const rawLine of src.split("\n")) {
+          const line = rawLine.trim();
+          if (!line || /^erDiagram/i.test(line)) continue;
+          const tStart = line.match(/^(\w+)\s*\{/);
+          if (tStart) { inTable = tStart[1]; cols = []; continue; }
+          if (line === "}") {
+            if (inTable) { tbls.push({ id: inTable, name: inTable, columns: cols }); inTable = null; cols = []; }
+            continue;
+          }
+          if (inTable) {
+            const m = line.match(/^(\S+)\s+(\S+)(.*)/);
+            if (m) {
+              const up = m[3].toUpperCase();
+              cols.push({ name: m[2], type: m[1], pk: up.includes("PK"), fk: up.includes("FK"), nullable: !up.includes("PK") && !up.includes("NOT NULL") });
+            }
+            continue;
+          }
+          const r = line.match(/^(\w+)\s+([|o}{]{2,3}--[|o}{]{2,3})\s+(\w+)\s*(?::\s*(.*))?$/);
+          if (r) rels.push({ from: r[1], to: r[3], label: (r[4] || "").replace(/["']/g, "").trim() });
+        }
+        return { tables: tbls, relations: rels };
+      }
+
+      /* ── Layout ────────────────────────────────── */
+      function layout(rawTables) {
+        const cols_ = Math.ceil(Math.sqrt(rawTables.length));
+        return rawTables.map((t, i) => {
+          const col = i % cols_, row = Math.floor(i / cols_);
+          const h = HEADER_H + t.columns.length * ROW_H;
+          return { ...t, color: COLORS[i % COLORS.length],
+            x: PAD + col * (TABLE_W + COL_GAP),
+            y: PAD + row * (h + ROW_GAP + 40) };
+        });
+      }
+
+      /* ── Geometry ──────────────────────────────── */
+      function tH(t) { return HEADER_H + t.columns.length * ROW_H; }
+
+      function edgePoints(ft, tt) {
+        const fCx = ft.x + TABLE_W / 2, tCx = tt.x + TABLE_W / 2;
+        return {
+          ax: fCx < tCx ? ft.x + TABLE_W : ft.x,
+          ay: ft.y + tH(ft) / 2,
+          bx: fCx < tCx ? tt.x : tt.x + TABLE_W,
+          by: tt.y + tH(tt) / 2,
+        };
+      }
+
+      function bezier(ax, ay, bx, by) {
+        const dx = Math.abs(bx - ax), cx = Math.min(60, dx * 0.5);
+        const ax2 = ax < bx ? ax + cx : ax - cx;
+        const bx2 = ax < bx ? bx - cx : bx + cx;
+        return `M ${ax} ${ay} C ${ax2} ${ay}, ${bx2} ${by}, ${bx} ${by}`;
+      }
+
+      /* ── SVG helpers ───────────────────────────── */
+      function el(tag, attrs = {}, children = []) {
+        const e = document.createElementNS(SVG_NS, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        for (const c of children) if (c) e.appendChild(c);
+        return e;
+      }
+      function txt(tag, attrs, text) {
+        const e = el(tag, attrs);
+        e.textContent = text;
+        return e;
+      }
+
+      /* ── Render ────────────────────────────────── */
+      function render() {
+        const host = document.getElementById("db-interactive-diagram");
+        if (!host) return;
+
+        const canvasW = Math.max(700, ...tables.map(t => t.x + TABLE_W + PAD));
+        const canvasH = Math.max(460, ...tables.map(t => t.y + tH(t) + PAD));
+
+        const svg = el("svg", { width: canvasW, height: canvasH });
+
+        /* Grid */
+        const defs = el("defs");
+        const pat = el("pattern", { id: "db-ig-grid", width: 24, height: 24, patternUnits: "userSpaceOnUse" });
+        pat.appendChild(el("path", { d: "M 24 0 L 0 0 0 24", fill: "none", stroke: "#1e293b", "stroke-width": "0.5" }));
+        defs.appendChild(pat);
+        svg.appendChild(defs);
+        svg.appendChild(el("rect", { width: "100%", height: "100%", fill: "url(#db-ig-grid)" }));
+
+        /* Relations */
+        for (const rel of relations) {
+          const ft = tables.find(t => t.id === rel.from);
+          const tt = tables.find(t => t.id === rel.to);
+          if (!ft || !tt) continue;
+          const isActive = selected === rel.from || selected === rel.to;
+          const { ax, ay, bx, by } = edgePoints(ft, tt);
+          const stroke = isActive ? "#3b82f6" : "#334155";
+          const path = el("path", {
+            d: bezier(ax, ay, bx, by),
+            fill: "none", stroke, "stroke-width": isActive ? 2 : 1.5,
+            opacity: isActive ? 1 : 0.7,
+            ...(animated ? { "stroke-dasharray": "6 3", class: "db-animate-dash" } : {}),
+          });
+          svg.appendChild(el("circle", { cx: ax, cy: ay, r: 3, fill: isActive ? "#3b82f6" : "#475569" }));
+          svg.appendChild(el("circle", { cx: bx, cy: by, r: 3, fill: isActive ? "#3b82f6" : "#475569" }));
+          svg.appendChild(path);
+          if (rel.label) {
+            const lx = (ax + bx) / 2, ly = (ay + by) / 2;
+            svg.appendChild(txt("text", {
+              x: lx, y: ly - 7,
+              fill: isActive ? "#93c5fd" : "#64748b",
+              "font-size": 10, "text-anchor": "middle", "font-family": "monospace"
+            }, rel.label));
+          }
+        }
+
+        /* Tables */
+        for (const t of tables) {
+          const g = el("g", { transform: `translate(${t.x},${t.y})`, style: "cursor:grab;user-select:none" });
+          const h = tH(t);
+
+          /* shadow */
+          g.appendChild(el("rect", { x: 4, y: 4, width: TABLE_W, height: h, rx: 10, fill: "rgba(0,0,0,0.55)", style: "filter:blur(3px)" }));
+
+          /* body */
+          const isSelected = selected === t.id;
+          g.appendChild(el("rect", { width: TABLE_W, height: h, rx: 10, fill: "#0a0f1e", stroke: isSelected ? t.color : "#1e293b", "stroke-width": isSelected ? 2 : 1 }));
+
+          /* header */
+          g.appendChild(el("rect", { width: TABLE_W, height: HEADER_H, rx: 10, fill: t.color + "22" }));
+          g.appendChild(el("rect", { y: HEADER_H - 10, width: TABLE_W, height: 10, fill: t.color + "22" }));
+          g.appendChild(el("rect", { y: HEADER_H - 1, width: TABLE_W, height: 1, fill: isSelected ? t.color : t.color + "44" }));
+          /* left accent */
+          g.appendChild(el("rect", { width: 3, height: h, rx: 10, fill: t.color, opacity: isSelected ? 1 : 0.6 }));
+          g.appendChild(el("rect", { y: HEADER_H, width: 3, height: h - HEADER_H, fill: t.color, opacity: isSelected ? 0.8 : 0.3 }));
+
+          /* table name */
+          g.appendChild(txt("text", {
+            x: TABLE_W / 2, y: HEADER_H / 2 + 6,
+            "text-anchor": "middle", fill: t.color,
+            "font-size": 13, "font-weight": "bold", "font-family": "monospace",
+          }, t.name));
+
+          /* columns */
+          t.columns.forEach((col, i) => {
+            const cy = HEADER_H + i * ROW_H;
+            if (i % 2 === 1) g.appendChild(el("rect", { y: cy, width: TABLE_W, height: ROW_H, fill: "rgba(255,255,255,0.025)" }));
+            if (col.pk || col.fk) g.appendChild(txt("text", {
+              x: 12, y: cy + ROW_H / 2 + 4,
+              fill: col.pk ? "#e3b341" : "#bc8cff",
+              "font-size": 9, "font-weight": "bold", "font-family": "monospace"
+            }, col.pk ? "PK" : "FK"));
+            g.appendChild(txt("text", {
+              x: (col.pk || col.fk) ? 36 : 12, y: cy + ROW_H / 2 + 4,
+              fill: col.nullable && !col.pk ? "#94a3b8" : "#e2e8f0",
+              "font-size": 11, "font-family": "monospace"
+            }, col.name));
+            g.appendChild(txt("text", {
+              x: TABLE_W - 10, y: cy + ROW_H / 2 + 4,
+              "text-anchor": "end", fill: "#475569",
+              "font-size": 10, "font-family": "monospace"
+            }, col.type));
+          });
+
+          /* drag + click */
+          let dragStart = null, moved = false;
+          g.addEventListener("mousedown", e => {
+            e.stopPropagation();
+            dragStart = { x: e.clientX, y: e.clientY }; moved = false;
+            const onMove = me => {
+              if (!dragStart) return;
+              const dx = me.clientX - dragStart.x, dy = me.clientY - dragStart.y;
+              if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
+              t.x += dx; t.y += dy;
+              dragStart = { x: me.clientX, y: me.clientY };
+              render();
+            };
+            const onUp = () => {
+              if (!moved) { selected = selected === t.id ? null : t.id; render(); }
+              dragStart = null;
+              window.removeEventListener("mousemove", onMove);
+              window.removeEventListener("mouseup", onUp);
+            };
+            window.addEventListener("mousemove", onMove);
+            window.addEventListener("mouseup", onUp);
+          });
+          /* touch */
+          g.addEventListener("touchstart", e => {
+            e.stopPropagation();
+            const touch = e.touches[0]; if (!touch) return;
+            dragStart = { x: touch.clientX, y: touch.clientY }; moved = false;
+            const onMove = te => {
+              const t2 = te.touches[0]; if (!t2 || !dragStart) return;
+              const dx = t2.clientX - dragStart.x, dy = t2.clientY - dragStart.y;
+              moved = true; t.x += dx; t.y += dy;
+              dragStart = { x: t2.clientX, y: t2.clientY }; render();
+            };
+            const onEnd = () => {
+              if (!moved) { selected = selected === t.id ? null : t.id; render(); }
+              dragStart = null;
+              window.removeEventListener("touchmove", onMove);
+              window.removeEventListener("touchend", onEnd);
+            };
+            window.addEventListener("touchmove", onMove, { passive: true });
+            window.addEventListener("touchend", onEnd);
+          }, { passive: true });
+
+          svg.appendChild(g);
+        }
+
+        /* deselect on canvas click */
+        svg.addEventListener("click", e => {
+          if (e.target === svg) { selected = null; render(); }
+        });
+
+        /* swap svg */
+        host.innerHTML = "";
+        host.appendChild(svg);
+
+        /* stats */
+        const stats = document.getElementById("db-diagram-stats");
+        if (stats) stats.textContent = `${tables.length} table${tables.length !== 1 ? "s" : ""} · ${relations.length} relation${relations.length !== 1 ? "s" : ""}`;
+      }
+
+      /* ── Init ──────────────────────────────────── */
+      function init() {
+        try {
+          const parsed = parseMermaidER(diagramMmd);
+          if (!parsed.tables.length) {
+            const host = document.getElementById("db-interactive-diagram");
+            if (host) host.innerHTML = '<div class="db-interactive-error">No tables detected in diagram source.<br><small>Ensure diagram.mmd uses erDiagram format.</small></div>';
+            return;
+          }
+          tables = layout(parsed.tables);
+          initialPositions = tables.map(t => ({ id: t.id, x: t.x, y: t.y }));
+          relations = parsed.relations;
+          render();
+        } catch(e) {
+          const host = document.getElementById("db-interactive-diagram");
+          if (host) host.innerHTML = `<div class="db-interactive-error">Error parsing diagram: ${e.message}</div>`;
+        }
+      }
+
+      /* ── Controls ──────────────────────────────── */
+      document.addEventListener("DOMContentLoaded", () => {
+        init();
+
+        const animBtn = document.getElementById("db-anim-toggle");
+        if (animBtn) animBtn.addEventListener("click", () => {
+          animated = !animated;
+          animBtn.textContent = animated ? "✦ Animated" : "Static";
+          animBtn.classList.toggle("active", animated);
+          render();
+        });
+
+        const resetBtn = document.getElementById("db-reset-btn");
+        if (resetBtn) resetBtn.addEventListener("click", () => {
+          tables = layout(tables.map(({ id, name, columns, color }) => ({ id, name, columns, color })));
+          selected = null;
+          render();
+        });
+      });
+    })();
+    </script>
+  )}
+
+  {isDatabaseSchema && (
+    <script is:inline>
+      const viewButtons = Array.from(document.querySelectorAll("[data-db-view]"));
+      const diagramPanels = Array.from(document.querySelectorAll("[data-db-diagram-panel]"));
+      const defaultDiagramView = "interactive";
+
+      const syncDiagramView = (nextView, updateUrl = true) => {
+        for (const panel of diagramPanels) {
+          const panelView = panel.getAttribute("data-db-diagram-panel");
+          panel.hidden = panelView !== nextView;
+        }
+
+        for (const button of viewButtons) {
+          const buttonView = button.getAttribute("data-db-view");
+          const isActive = buttonView === nextView;
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-pressed", String(isActive));
+        }
+
+        if (!updateUrl) return;
+
+        const params = new URLSearchParams(window.location.search);
+        if (nextView === defaultDiagramView) {
+          params.delete("diagram");
+          params.delete("view");
+        } else {
+          params.set("diagram", nextView);
+          params.delete("view");
+        }
+
+        const search = params.toString();
+        const nextUrl = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
+        window.history.replaceState({}, "", nextUrl);
+      };
+
+      const availableViews = new Set(
+        diagramPanels
+          .map((panel) => panel.getAttribute("data-db-diagram-panel"))
+          .filter(Boolean)
+      );
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedView =
+        (urlParams.get("diagram") ?? urlParams.get("view") ?? defaultDiagramView).toLowerCase();
+
+      syncDiagramView(availableViews.has(requestedView) ? requestedView : defaultDiagramView, false);
+
+      for (const button of viewButtons) {
+        button.addEventListener("click", () => {
+          const nextView = button.getAttribute("data-db-view");
+          if (!nextView) return;
+          syncDiagramView(nextView);
+        });
+      }
+
+      const copyButtons = document.querySelectorAll(".db-copy-btn");
+
+      const copyFromTarget = async (button) => {
+        const targetId = button.getAttribute("data-copy-target");
+        if (!targetId) return;
+
+        const source = document.getElementById(targetId);
+        if (!source) return;
+
+        const content = source.textContent ?? "";
+        if (!content.trim()) return;
+
+        try {
+          await navigator.clipboard.writeText(content);
+        } catch {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(source);
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+          document.execCommand("copy");
+          selection?.removeAllRanges();
+        }
+
+        const original = button.textContent;
+        button.textContent = "Copied";
+        window.setTimeout(() => {
+          button.textContent = original;
+        }, 1600);
+      };
+
+      for (const button of copyButtons) {
+        button.addEventListener("click", async (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          await copyFromTarget(button);
+        });
+      }
+    </script>
   )}
 </body>
 </html>

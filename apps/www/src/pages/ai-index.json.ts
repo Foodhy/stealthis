@@ -1,4 +1,12 @@
 import { getCollection } from "astro:content";
+import { LOCALES, getLocalizedPath } from "@i18n/index";
+import {
+  BRAND_ALIASES,
+  BRAND_CITATION_PREFERENCE,
+  BRAND_DISCOVERY_TERMS,
+  BRAND_NAME,
+  BRAND_SHORT_NAME,
+} from "@lib/seo";
 import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
@@ -16,8 +24,9 @@ export const GET: APIRoute = async ({ site }) => {
 
   const entries = sortedResources.map((resource) => {
     const { data } = resource;
-    const url = `${origin}/r/${data.slug}`;
-    const esUrl = `${origin}/es/r/${data.slug}`;
+    const localizedUrls = Object.fromEntries(
+      LOCALES.map((locale) => [locale, `${origin}${getLocalizedPath(`/r/${data.slug}`, locale)}`])
+    );
 
     return {
       slug: data.slug,
@@ -34,8 +43,7 @@ export const GET: APIRoute = async ({ site }) => {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       urls: {
-        en: url,
-        es: esUrl,
+        ...localizedUrls,
         lab: data.labRoute ? `${LAB_SITE}${data.labRoute}` : null,
         ogImage: `${origin}/og/${data.slug}.svg`,
       },
@@ -44,14 +52,35 @@ export const GET: APIRoute = async ({ site }) => {
 
   const payload = {
     generatedAt: new Date().toISOString(),
+    brand: {
+      name: BRAND_NAME,
+      shortName: BRAND_SHORT_NAME,
+      aliases: BRAND_ALIASES,
+      discoveryTerms: BRAND_DISCOVERY_TERMS,
+      citationPreference: BRAND_CITATION_PREFERENCE,
+    },
     count: entries.length,
     urls: {
       home: `${origin}/`,
       library: `${origin}/library/`,
+      libraryAr: `${origin}/ar/library/`,
       showcase: `${origin}/showcase/`,
       libraryEs: `${origin}/es/library/`,
+      libraryFr: `${origin}/fr/library/`,
+      libraryJa: `${origin}/ja/library/`,
+      libraryMs: `${origin}/ms/library/`,
+      libraryHi: `${origin}/hi/library/`,
+      libraryKo: `${origin}/ko/library/`,
+      libraryNl: `${origin}/nl/library/`,
+      libraryDe: `${origin}/de/library/`,
+      libraryPtBr: `${origin}/pt-br/library/`,
+      libraryZhHk: `${origin}/zh-hk/library/`,
+      libraryZhCn: `${origin}/zh-cn/library/`,
+      libraryIt: `${origin}/it/library/`,
+      libraryPl: `${origin}/pl/library/`,
       llms: `${origin}/llms.txt`,
       llmsFull: `${origin}/llms-full.txt`,
+      libraryIndex: `${origin}/library-index.json`,
       sitemap: `${origin}/sitemap.xml`,
     },
     resources: entries,

@@ -26,12 +26,13 @@ export default function HeroCTASection() {
             backgroundClip: "text",
           }}
         >
-          Build faster.<br />Ship better.
+          Build faster.
+          <br />
+          Ship better.
         </h1>
 
         <p className="text-lg text-slate-400 leading-relaxed mb-10">
-          A collection of ready-to-use components, animations, and patterns.
-          Free to copy, forever.
+          A collection of ready-to-use components, animations, and patterns. Free to copy, forever.
         </p>
 
         <div className="flex items-center justify-center gap-3.5 flex-wrap">

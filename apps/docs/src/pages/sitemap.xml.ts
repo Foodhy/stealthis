@@ -13,6 +13,15 @@ const DOC_PATHS = [
   "/skills/",
   "/a2a/",
   "/llms.txt",
+  "/raw/index",
+  "/raw/getting-started",
+  "/raw/integrate",
+  "/raw/resource-format",
+  "/raw/llm",
+  "/raw/agents",
+  "/raw/mcp-server",
+  "/raw/skills",
+  "/raw/a2a",
 ];
 
 export const GET: APIRoute = ({ site }) => {

@@ -7,9 +7,13 @@
       requestAnimationFrame(function () {
         alert.classList.add("alert--dismissing");
       });
-      alert.addEventListener("transitionend", function () {
-        alert.remove();
-      }, { once: true });
+      alert.addEventListener(
+        "transitionend",
+        function () {
+          alert.remove();
+        },
+        { once: true }
+      );
     });
   });
-}());
+})();

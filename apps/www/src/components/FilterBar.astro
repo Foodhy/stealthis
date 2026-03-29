@@ -1,5 +1,5 @@
 ---
-import { type Locale, useTranslations } from "@i18n/index";
+import { getLocalePrefix, type Locale, useTranslations } from "@i18n/index";
 
 interface Props {
   locale?: Locale;
@@ -10,9 +10,31 @@ interface Props {
 
 const { locale = "en", categories, techs, authors } = Astro.props;
 const t = useTranslations(locale);
-const libPath = locale === "es" ? "/es/library" : "/library";
+const libPath = `${getLocalePrefix(locale)}/library`;
 
 const difficulties = ["easy", "med", "hard"] as const;
+const TECH_LABELS: Record<string, string> = {
+  js: "JS",
+  css: "CSS",
+  html: "HTML",
+  react: "React",
+  "react-native": "React Native",
+  expo: "Expo",
+  next: "Next.js",
+  vue: "Vue",
+  svelte: "Svelte",
+  astro: "Astro",
+  typescript: "TypeScript",
+  markdown: "Markdown",
+  yaml: "YAML",
+  json: "JSON",
+  python: "Python",
+  sql: "SQL",
+  mermaid: "Mermaid",
+  dbml: "DBML",
+};
+
+const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 ---
 
 <div class="filter-bar flex flex-col gap-4" id="filter-bar">
@@ -27,7 +49,7 @@ const difficulties = ["easy", "med", "hard"] as const;
     <input
       id="search-input"
       type="search"
-      placeholder="Search resources…"
+      placeholder={t("library.search.placeholder")}
       class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-900 border border-white/8 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-brand-500/50 focus:ring-1 focus:ring-brand-500/30 transition-colors"
     />
   </div>
@@ -52,7 +74,11 @@ const difficulties = ["easy", "med", "hard"] as const;
         const key = `category.${cat}` as
           | "category.web-animations" | "category.web-pages" | "category.ui-components" | "category.patterns"
           | "category.components" | "category.pages" | "category.prompts" | "category.skills"
-          | "category.mcp-servers" | "category.architectures" | "category.boilerplates" | "category.remotion";
+          | "category.mcp-servers" | "category.architectures" | "category.boilerplates" | "category.remotion"
+          | "category.database-schemas"
+          | "category.ultra-high-definition-pages"
+          | "category.design-styles"
+          | "category.music";
         return (
           <button class="chip" data-filter="category" data-value={cat}>{t(key)}</button>
         );
@@ -80,7 +106,7 @@ const difficulties = ["easy", "med", "hard"] as const;
     <div class="flex flex-wrap gap-1.5" id="tech-chips">
       <button class="chip chip--active" data-filter="tech" data-value="all">{t("library.filter.all")}</button>
       {techs.slice(0, 20).map((tech) => (
-        <button class="chip" data-filter="tech" data-value={tech}>{tech}</button>
+        <button class="chip" data-filter="tech" data-value={tech}>{formatTechLabel(tech)}</button>
       ))}
     </div>
   </div>
@@ -128,66 +154,61 @@ const difficulties = ["easy", "med", "hard"] as const;
     author: "all",
     favoritesOnly: false,
     search: "",
-    pagefindResults: null as Set<string> | null,
+    indexedResults: null as Set<string> | null,
   };
 
-  const cards = document.querySelectorAll<HTMLElement>("[data-slug]");
+  const cards = document.querySelectorAll<HTMLElement>("article[data-slug]");
   const resultsCount = document.getElementById("results-count");
   const searchInput = document.getElementById("search-input") as HTMLInputElement | null;
   let searchTimer: number | undefined;
-  let pagefindModule: any = null;
-  let pagefindLoading: Promise<any> | null = null;
+  let searchIndexPromise: Promise<Map<string, string> | null> | null = null;
+  let searchRequestId = 0;
 
-  const extractSlug = (url: string): string | null => {
-    if (!url) return null;
-    const clean = url.split(/[?#]/)[0];
-    const parts = clean.split("/").filter(Boolean);
-    return parts.length ? parts[parts.length - 1] : null;
-  };
+  async function loadSearchIndex(): Promise<Map<string, string> | null> {
+    if (searchIndexPromise) return searchIndexPromise;
 
-  async function loadPagefind() {
-    if (pagefindModule) return pagefindModule;
-    if (pagefindLoading) return pagefindLoading;
+    searchIndexPromise = fetch("/library-index.json", {
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        const payload = await response.json();
+        const resources = Array.isArray(payload?.resources) ? payload.resources : [];
+        const index = new Map<string, string>();
 
-    pagefindLoading = new Promise((resolve) => {
-      const existing = (window as any).pagefind;
-      if (existing?.search) {
-        pagefindModule = existing;
-        resolve(pagefindModule);
-        return;
-      }
+        for (const resource of resources) {
+          if (typeof resource?.slug !== "string") continue;
 
-      const script = document.createElement("script");
-      script.src = "/pagefind/pagefind.js";
-      script.async = true;
-      script.onload = () => {
-        pagefindModule = (window as any).pagefind ?? null;
-        resolve(pagefindModule);
-      };
-      script.onerror = () => {
-        pagefindModule = null;
-        resolve(pagefindModule);
-      };
-      document.head.appendChild(script);
-    });
+          const rawSearchText =
+            typeof resource?.searchText === "string"
+              ? resource.searchText
+              : [
+                  resource?.title,
+                  resource?.description,
+                  ...(Array.isArray(resource?.tags) ? resource.tags : []),
+                  ...(Array.isArray(resource?.tech) ? resource.tech : []),
+                ].join(" ");
 
-    return pagefindLoading;
+          index.set(resource.slug, rawSearchText.toLowerCase());
+        }
+
+        return index;
+      })
+      .catch(() => null);
+
+    return searchIndexPromise;
   }
 
-  async function runPagefindSearch(query: string): Promise<Set<string> | null> {
-    const pf = await loadPagefind();
-    if (!pf?.search) return null;
+  async function runIndexedSearch(query: string): Promise<Set<string> | null> {
+    const index = await loadSearchIndex();
+    if (!index) return null;
 
-    const results = await pf.search(query);
-    const slugs = new Set<string>();
-
-    for (const result of results.results ?? []) {
-      const data = await result.data();
-      const slug = extractSlug(data?.url ?? result?.url ?? "");
-      if (slug) slugs.add(slug);
+    const matches = new Set<string>();
+    for (const [slug, text] of index.entries()) {
+      if (text.includes(query)) matches.add(slug);
     }
 
-    return slugs;
+    return matches;
   }
 
   function matches(card: HTMLElement): boolean {
@@ -208,8 +229,8 @@ const difficulties = ["easy", "med", "hard"] as const;
     if (state.author !== "all" && cardAuthor !== state.author) return false;
     if (state.favoritesOnly && !getFavoriteSlugs().has(cardSlug)) return false;
     if (state.search) {
-      if (state.pagefindResults) {
-        if (!state.pagefindResults.has(cardSlug)) return false;
+      if (state.indexedResults) {
+        if (!state.indexedResults.has(cardSlug)) return false;
       } else if (!cardTitle.includes(state.search) && !cardDesc.includes(state.search)) {
         return false;
       }
@@ -218,18 +239,24 @@ const difficulties = ["easy", "med", "hard"] as const;
     return true;
   }
 
+  let pendingScroll = false;
+
   function applyFilters() {
     let visible = 0;
+    const visibleSlugs = new Set<string>();
     cards.forEach((card) => {
       const show = matches(card);
       card.style.display = show ? "" : "none";
-      if (show) visible++;
+      if (show) {
+        visible++;
+        visibleSlugs.add(card.dataset.slug ?? "");
+      }
     });
 
-    // Hide category sections with no visible cards
+    // Hide category sections with no visible cards (use slug set for reliability)
     document.querySelectorAll<HTMLElement>("[data-category-section]").forEach((section) => {
       const hasVisible = [...section.querySelectorAll<HTMLElement>("[data-slug]")]
-        .some((c) => c.style.display !== "none");
+        .some((c) => visibleSlugs.has(c.dataset.slug ?? ""));
       section.style.display = hasVisible ? "" : "none";
     });
 
@@ -253,6 +280,17 @@ const difficulties = ["easy", "med", "hard"] as const;
 
     if (resultsCount) {
       resultsCount.textContent = `${visible} resource${visible !== 1 ? "s" : ""}`;
+    }
+
+    // Scroll to the resource grid so filtered results are immediately visible
+    if (pendingScroll) {
+      pendingScroll = false;
+      const grid = document.getElementById("resource-grid");
+      if (grid && visible > 0) {
+        requestAnimationFrame(() => {
+          grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
     }
   }
 
@@ -278,6 +316,7 @@ const difficulties = ["easy", "med", "hard"] as const;
       const filter = btn.dataset.filter as "collection" | "category" | "difficulty" | "tech" | "author";
       const value = btn.dataset.value ?? "all";
 
+      if (value !== "all") pendingScroll = true;
       setFilter(filter, value);
     });
   });
@@ -285,7 +324,7 @@ const difficulties = ["easy", "med", "hard"] as const;
   // Search
   async function handleSearch(value: string) {
     state.search = value.toLowerCase().trim();
-    state.pagefindResults = null;
+    state.indexedResults = null;
     if (!state.search) {
       applyFilters();
       return;
@@ -295,9 +334,14 @@ const difficulties = ["easy", "med", "hard"] as const;
 
     if (state.search.length < 2) return;
 
+    const requestId = ++searchRequestId;
     if (searchTimer) window.clearTimeout(searchTimer);
     searchTimer = window.setTimeout(async () => {
-      state.pagefindResults = await runPagefindSearch(state.search);
+      const activeSearch = state.search;
+      const indexedResults = await runIndexedSearch(activeSearch);
+      if (requestId !== searchRequestId || activeSearch !== state.search) return;
+
+      state.indexedResults = indexedResults;
       applyFilters();
     }, 250);
   }
@@ -341,6 +385,11 @@ const difficulties = ["easy", "med", "hard"] as const;
 
   const authorParam = params.get("author");
   if (authorParam) setFilter("author", authorParam, false);
+
+  // Scroll to results on initial load if a specific filter is active from URL
+  if (categoryParam || collectionParam || difficultyParam || techParam || authorParam) {
+    pendingScroll = true;
+  }
 
   const searchParam = params.get("search");
   if (searchParam && searchInput) {

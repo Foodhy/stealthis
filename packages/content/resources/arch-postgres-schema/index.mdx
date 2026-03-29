@@ -1,0 +1,62 @@
+---
+slug: arch-postgres-schema
+title: PostgreSQL Schema Patterns
+description: PostgreSQL schema design patterns including multi-schema organization, migration workflows, indexing strategies, and schema-as-code with Drizzle/Prisma.
+category: architectures
+type: architecture
+tags: [postgresql, schema, migrations, drizzle, database, indexing]
+tech: [postgresql, drizzle, sql]
+difficulty: med
+targets: [html]
+labRoute: /architectures/arch-postgres-schema
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## PostgreSQL Schema Patterns
+
+Well-organized PostgreSQL schemas are the foundation of a maintainable application. This resource covers **multi-schema organization**, **naming conventions**, **indexing strategies**, and **schema-as-code** using Drizzle ORM.
+
+### Multi-Schema Organization
+
+Group related tables into separate schema files by domain. This keeps individual files focused and makes it easy to find and modify table definitions:
+
+- **auth.ts**: users, sessions, accounts, verification tokens
+- **billing.ts**: plans, subscriptions, invoices, payment methods
+- **content.ts**: posts, comments, tags, categories
+
+Each schema file exports its tables, and a central `index.ts` re-exports everything for the Drizzle client.
+
+### Naming Conventions
+
+- Use `snake_case` for table and column names
+- Prefix join tables: `user_roles`, `post_tags`
+- Suffix timestamps: `created_at`, `updated_at`, `deleted_at`
+- Use singular table names: `user` not `users`
+
+### Indexing Strategies
+
+Choose the right index type for your query patterns:
+
+- **B-tree** (default): Equality and range queries (`WHERE`, `ORDER BY`)
+- **GIN**: Full-text search, JSONB containment, array operations
+- **Partial indexes**: Index only rows matching a condition (`WHERE deleted_at IS NULL`)
+- **Composite indexes**: Multi-column indexes for common query patterns
+
+### Migration Workflow
+
+1. Modify schema files (TypeScript)
+2. Run `drizzle-kit generate` to produce SQL migration
+3. Review the generated SQL
+4. Run `drizzle-kit migrate` to apply
+5. Commit both schema changes and migration files
+
+### Learn More
+
+- [Drizzle ORM Documentation](https://orm.drizzle.team/docs/sql-schema-declaration)
+- [PostgreSQL Index Types](https://www.postgresql.org/docs/current/indexes-types.html)
+- [Drizzle Kit Migrations](https://orm.drizzle.team/docs/kit-overview)

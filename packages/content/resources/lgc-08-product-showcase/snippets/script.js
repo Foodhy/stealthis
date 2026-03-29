@@ -43,29 +43,35 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
-initDemoShell({ title: '3D Product Showcase', category: '3d', tech: ['three.js', 'pbr-material', 'lighting'] });
+initDemoShell({
+  title: "3D Product Showcase",
+  category: "3d",
+  tech: ["three.js", "pbr-material", "lighting"],
+});
 
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
-window.addEventListener('motion-preference', (e) => { reduced = e.detail.reduced; });
+if (reduced) document.documentElement.classList.add("reduced-motion");
+window.addEventListener("motion-preference", (e) => {
+  reduced = e.detail.reduced;
+});
 
 // State
 let orbiting = true;
 let colorIndex = 0;
 const colors = [
-  new THREE.Color('#86e8ff'),
-  new THREE.Color('#ae52ff'),
-  new THREE.Color('#ff40d6'),
-  new THREE.Color('#ffcc66'),
-  new THREE.Color('#50c878'),
+  new THREE.Color("#86e8ff"),
+  new THREE.Color("#ae52ff"),
+  new THREE.Color("#ff40d6"),
+  new THREE.Color("#ffcc66"),
+  new THREE.Color("#50c878"),
 ];
 
 // Scene
-const container = document.getElementById('canvas-container');
+const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#050508');
+scene.background = new THREE.Color("#050508");
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 1, 6);
@@ -109,7 +115,9 @@ scene.add(mesh);
 // Ground reflection plane (subtle)
 const planeGeo = new THREE.PlaneGeometry(20, 20);
 const planeMat = new THREE.MeshStandardMaterial({
-  color: 0x050508, metalness: 0.8, roughness: 0.3,
+  color: 0x050508,
+  metalness: 0.8,
+  roughness: 0.3,
 });
 const plane = new THREE.Mesh(planeGeo, planeMat);
 plane.rotation.x = -Math.PI / 2;
@@ -118,18 +126,18 @@ scene.add(plane);
 
 // Mouse
 const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
-document.addEventListener('mousemove', (e) => {
+document.addEventListener("mousemove", (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 });
 
 // Controls
-document.getElementById('btn-pause').addEventListener('click', () => {
+document.getElementById("btn-pause").addEventListener("click", () => {
   orbiting = !orbiting;
-  document.getElementById('btn-pause').textContent = orbiting ? 'Pause Orbit' : 'Resume Orbit';
+  document.getElementById("btn-pause").textContent = orbiting ? "Pause Orbit" : "Resume Orbit";
 });
 
-document.getElementById('btn-color').addEventListener('click', () => {
+document.getElementById("btn-color").addEventListener("click", () => {
   colorIndex = (colorIndex + 1) % colors.length;
   material.color.copy(colors[colorIndex]);
 });
@@ -165,10 +173,14 @@ function animate() {
 animate();
 
 // Resize
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-window.addEventListener('beforeunload', () => { geometry.dispose(); material.dispose(); renderer.dispose(); });
+window.addEventListener("beforeunload", () => {
+  geometry.dispose();
+  material.dispose();
+  renderer.dispose();
+});

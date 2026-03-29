@@ -38,16 +38,24 @@
   });
 
   // Touch events
-  handle.addEventListener("touchstart", function (e) {
-    e.preventDefault();
-    isDragging = true;
-    slider.classList.add("dragging");
-  }, { passive: false });
+  handle.addEventListener(
+    "touchstart",
+    function (e) {
+      e.preventDefault();
+      isDragging = true;
+      slider.classList.add("dragging");
+    },
+    { passive: false }
+  );
 
-  document.addEventListener("touchmove", function (e) {
-    if (!isDragging) return;
-    setSplit(getPercent(e.touches[0].clientX));
-  }, { passive: true });
+  document.addEventListener(
+    "touchmove",
+    function (e) {
+      if (!isDragging) return;
+      setSplit(getPercent(e.touches[0].clientX));
+    },
+    { passive: true }
+  );
 
   document.addEventListener("touchend", function () {
     if (!isDragging) return;
@@ -58,10 +66,22 @@
   // Keyboard support
   handle.addEventListener("keydown", function (e) {
     const step = e.shiftKey ? 10 : 2;
-    if (e.key === "ArrowLeft")  { e.preventDefault(); setSplit(split - step); }
-    if (e.key === "ArrowRight") { e.preventDefault(); setSplit(split + step); }
-    if (e.key === "Home")       { e.preventDefault(); setSplit(2); }
-    if (e.key === "End")        { e.preventDefault(); setSplit(98); }
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setSplit(split - step);
+    }
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      setSplit(split + step);
+    }
+    if (e.key === "Home") {
+      e.preventDefault();
+      setSplit(2);
+    }
+    if (e.key === "End") {
+      e.preventDefault();
+      setSplit(98);
+    }
   });
 
   // Click on slider background to jump

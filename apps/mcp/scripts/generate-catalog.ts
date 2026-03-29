@@ -9,19 +9,22 @@ import { writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { loadResources } from "@stealthis/schema";
 
-const CONTENT_DIR = fileURLToPath(
-  new URL("../../../packages/content", import.meta.url)
-);
+const CONTENT_DIR = fileURLToPath(new URL("../../../packages/content", import.meta.url));
 
 const SNIPPET_FILES: Record<string, string> = {
-  html:    "snippets/html.html",
-  css:     "snippets/style.css",
-  js:      "snippets/script.js",
-  react:   "snippets/react.tsx",
-  next:    "snippets/next.tsx",
-  vue:     "snippets/vue.vue",
-  svelte:  "snippets/svelte.svelte",
-  astro:   "snippets/astro.astro",
+  html: "snippets/html.html",
+  css: "snippets/style.css",
+  js: "snippets/script.js",
+  react: "snippets/react.tsx",
+  next: "snippets/next.tsx",
+  vue: "snippets/vue.vue",
+  svelte: "snippets/svelte.svelte",
+  astro: "snippets/astro.astro",
+  "schema-sql": "snippets/schema.sql",
+  "seed-sql": "snippets/seed.sql",
+  "queries-sql": "snippets/queries.sql",
+  "diagram-mmd": "snippets/diagram.mmd",
+  "schema-dbml": "snippets/schema.dbml",
 };
 
 const resources = await loadResources(CONTENT_DIR);
