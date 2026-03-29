@@ -1,0 +1,71 @@
+---
+slug: arch-cicd
+title: "CI/CD Pipeline Architecture (GitHub Actions)"
+description: GitHub Actions pipeline structure with reusable workflows, matrix strategies, environment protection rules, and multi-stage deployment.
+category: architectures
+type: architecture
+tags: [cicd, github-actions, pipeline, deployment, automation]
+tech: [github-actions, yaml]
+difficulty: med
+targets: [html]
+labRoute: /architectures/arch-cicd
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## CI/CD Pipeline Architecture (GitHub Actions)
+
+A well-structured CI/CD pipeline automates the journey from code push to production deployment. GitHub Actions provides **reusable workflows**, **matrix strategies**, **environment protection rules**, and **composite actions** to build robust, maintainable pipelines.
+
+### Workflow Triggers
+
+Workflows are triggered by events like `push`, `pull_request`, `workflow_dispatch` (manual), or `schedule` (cron). Use path filters and branch filters to control when workflows run:
+
+```yaml
+on:
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'package.json']
+```
+
+### Reusable Workflows
+
+Extract common jobs into reusable workflows with `workflow_call`. This eliminates duplication across CI, staging, and production workflows:
+
+```yaml
+jobs:
+  test:
+    uses: ./.github/workflows/reusable/test.yml
+    with:
+      node-version: '20'
+    secrets: inherit
+```
+
+### Matrix Strategies
+
+Run tests across multiple Node.js versions, operating systems, or configurations in parallel:
+
+```yaml
+strategy:
+  matrix:
+    node: [18, 20]
+    os: [ubuntu-latest, macos-latest]
+```
+
+### Environment Protection
+
+GitHub Environments provide **required reviewers**, **wait timers**, and **deployment branch rules** to gate production deployments.
+
+### Composite Actions
+
+Bundle multiple steps into a single reusable action for common setup tasks (installing dependencies, caching, etc.).
+
+### Learn More
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
+- [Environment Protection Rules](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)

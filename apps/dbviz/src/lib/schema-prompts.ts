@@ -188,11 +188,19 @@ Keep it concise. When the plan looks good, I'll switch to Execute mode to genera
 
 // ─── Execute mode (generate/refine artifacts) ────────────────────────────
 
-export function buildExecuteMessage(instruction: string, currentSchema?: string, currentDiagram?: string): OllamaChatMessage {
+export function buildExecuteMessage(
+  instruction: string,
+  currentSchema?: string,
+  currentDiagram?: string
+): OllamaChatMessage {
   const hasContext = currentSchema?.trim();
 
   if (hasContext) {
-    return buildRefinementMessage(instruction || "Generate/update the schema based on our discussion so far.", currentSchema ?? "", currentDiagram ?? "");
+    return buildRefinementMessage(
+      instruction || "Generate/update the schema based on our discussion so far.",
+      currentSchema ?? "",
+      currentDiagram ?? ""
+    );
   }
 
   return {
@@ -301,7 +309,11 @@ If my question would be better answered with a query, suggest: "Want me to write
 
 // ─── Query Plan mode ─────────────────────────────────────────────────────────
 
-export function buildQueryPlanMessage(description: string, currentSchema: string, currentQueries?: string): OllamaChatMessage {
+export function buildQueryPlanMessage(
+  description: string,
+  currentSchema: string,
+  currentQueries?: string
+): OllamaChatMessage {
   const qCtx = currentQueries?.trim()
     ? `\n\nEXISTING QUERIES:\n\`\`\`sql\n${currentQueries}\n\`\`\``
     : "";
@@ -328,7 +340,11 @@ When the plan looks good, I'll switch to Execute mode to generate the actual SQL
 
 // ─── Query Execute mode ──────────────────────────────────────────────────────
 
-export function buildQueryExecuteMessage(instruction: string, currentSchema: string, currentQueries?: string): OllamaChatMessage {
+export function buildQueryExecuteMessage(
+  instruction: string,
+  currentSchema: string,
+  currentQueries?: string
+): OllamaChatMessage {
   const qCtx = currentQueries?.trim()
     ? `\n\nEXISTING QUERIES (append to these, do not repeat them):\n\`\`\`sql\n${currentQueries}\n\`\`\``
     : "";
@@ -353,7 +369,10 @@ Generate now:`,
 
 // ─── Auto-generate queries (one-shot) ────────────────────────────────────────
 
-export function buildAutoGenerateQueriesMessage(currentSchema: string, currentQueries?: string): OllamaChatMessage {
+export function buildAutoGenerateQueriesMessage(
+  currentSchema: string,
+  currentQueries?: string
+): OllamaChatMessage {
   const qCtx = currentQueries?.trim()
     ? `\n\nEXISTING QUERIES (do not repeat these, generate NEW ones):\n\`\`\`sql\n${currentQueries}\n\`\`\``
     : "";

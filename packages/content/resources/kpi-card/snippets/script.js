@@ -1,4 +1,4 @@
-document.querySelectorAll('.kpi-card').forEach(card => {
+document.querySelectorAll(".kpi-card").forEach((card) => {
   const val = parseInt(card.dataset.value);
   const prev = parseInt(card.dataset.prev);
   const prefix = card.dataset.prefix;
@@ -7,11 +7,11 @@ document.querySelectorAll('.kpi-card').forEach(card => {
   const period = card.dataset.period;
   const color = card.dataset.color;
 
-  const delta = prev ? ((val - prev) / prev * 100).toFixed(1) : 0;
+  const delta = prev ? (((val - prev) / prev) * 100).toFixed(1) : 0;
   const isUp = delta > 0;
   const isDown = delta < 0;
 
-  let deltaHtml = '';
+  let deltaHtml = "";
   if (isUp) deltaHtml = `<div class="kpi-delta up">▲ ${Math.abs(delta)}%</div>`;
   else if (isDown) deltaHtml = `<div class="kpi-delta down">▼ ${Math.abs(delta)}%</div>`;
   else deltaHtml = `<div class="kpi-delta">0%</div>`;
@@ -28,7 +28,7 @@ document.querySelectorAll('.kpi-card').forEach(card => {
     </svg>
   `;
 
-  const numEl = card.querySelector('.kpi-val-num');
+  const numEl = card.querySelector(".kpi-val-num");
 
   // Animate counter
   let start = null;

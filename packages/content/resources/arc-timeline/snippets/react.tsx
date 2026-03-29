@@ -88,15 +88,19 @@ export default function ArcTimeline({
           Project Timeline
         </h2>
 
-        <div
-          ref={containerRef}
-          style={{ position: "relative", width, height }}
-        >
+        <div ref={containerRef} style={{ position: "relative", width, height }}>
           {/* SVG arc path */}
           <svg
             viewBox={`0 0 ${width} ${height - 60}`}
             fill="none"
-            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: height - 60, pointerEvents: "none" }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: height - 60,
+              pointerEvents: "none",
+            }}
           >
             <path
               d={arcPathD}
@@ -152,10 +156,24 @@ export default function ArcTimeline({
                 >
                   {event.date}
                 </span>
-                <strong style={{ display: "block", fontSize: "0.85rem", color: "#e2e8f0", marginTop: "0.2rem" }}>
+                <strong
+                  style={{
+                    display: "block",
+                    fontSize: "0.85rem",
+                    color: "#e2e8f0",
+                    marginTop: "0.2rem",
+                  }}
+                >
                   {event.title}
                 </strong>
-                <p style={{ fontSize: "0.75rem", color: "#64748b", lineHeight: 1.4, marginTop: "0.2rem" }}>
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#64748b",
+                    lineHeight: 1.4,
+                    marginTop: "0.2rem",
+                  }}
+                >
                   {event.description}
                 </p>
               </div>

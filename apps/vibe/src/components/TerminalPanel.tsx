@@ -7,11 +7,7 @@ function AnsiLine({ text, className }: { text: string; className: string }) {
   // If all spans have empty styles, render plain
   const isPlain = spans.every((s) => Object.keys(s.style).length === 0);
   if (isPlain) {
-    return (
-      <div className={`whitespace-pre-wrap break-all leading-5 ${className}`}>
-        {text}
-      </div>
-    );
+    return <div className={`whitespace-pre-wrap break-all leading-5 ${className}`}>{text}</div>;
   }
   return (
     <div className={`whitespace-pre-wrap break-all leading-5 ${className}`}>
@@ -164,7 +160,7 @@ export default function TerminalPanel() {
         abortRef.current = null;
       }
     },
-    [state.terminalRunning, state.terminalCwd, state.projectPath, dispatch, killProcess],
+    [state.terminalRunning, state.terminalCwd, state.projectPath, dispatch, killProcess]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -214,9 +210,7 @@ export default function TerminalPanel() {
     }
   };
 
-  const cwd = state.terminalCwd
-    ? state.terminalCwd.split("/").slice(-2).join("/")
-    : "~";
+  const cwd = state.terminalCwd ? state.terminalCwd.split("/").slice(-2).join("/") : "~";
 
   return (
     <div className="flex h-full flex-col bg-slate-950 font-mono text-xs">
@@ -250,9 +244,7 @@ export default function TerminalPanel() {
             Clear
           </button>
           <button
-            onClick={() =>
-              dispatch({ type: "TERMINAL_SET_VISIBLE", payload: false })
-            }
+            onClick={() => dispatch({ type: "TERMINAL_SET_VISIBLE", payload: false })}
             className="rounded px-1.5 py-0.5 text-[10px] text-slate-500 hover:bg-white/6 hover:text-slate-300"
           >
             Hide
@@ -261,10 +253,7 @@ export default function TerminalPanel() {
       </div>
 
       {/* Output */}
-      <div
-        className="flex-1 overflow-y-auto px-3 py-2"
-        onClick={() => inputRef.current?.focus()}
-      >
+      <div className="flex-1 overflow-y-auto px-3 py-2" onClick={() => inputRef.current?.focus()}>
         {state.terminalLines.map((line, i) => (
           <AnsiLine key={i} text={line.text} className={lineColor(line.type)} />
         ))}
@@ -280,11 +269,7 @@ export default function TerminalPanel() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           className="flex-1 bg-transparent text-slate-200 outline-none placeholder-slate-600"
-          placeholder={
-            state.terminalRunning
-              ? "Ctrl+C to kill..."
-              : "Enter command..."
-          }
+          placeholder={state.terminalRunning ? "Ctrl+C to kill..." : "Enter command..."}
           autoFocus
         />
         {state.terminalRunning && (

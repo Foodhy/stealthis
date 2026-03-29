@@ -136,8 +136,8 @@ export default function NeonGradientCardDemo() {
               margin: 0,
             }}
           >
-            An animated neon glow border that shifts through vivid colors,
-            perfect for eye-catching UI elements.
+            An animated neon glow border that shifts through vivid colors, perfect for eye-catching
+            UI elements.
           </p>
           <ul
             style={{
@@ -149,19 +149,14 @@ export default function NeonGradientCardDemo() {
               margin: 0,
             }}
           >
-            {["Animated color shifting", "Soft outer glow", "Pure CSS animation"].map(
-              (feature) => (
-                <li
-                  key={feature}
-                  style={{ fontSize: "0.875rem", color: "#cbd5e1" }}
-                >
-                  <span style={{ color: "#40e0d0", fontWeight: 700, marginRight: "0.5rem" }}>
-                    &#x2713;
-                  </span>
-                  {feature}
-                </li>
-              )
-            )}
+            {["Animated color shifting", "Soft outer glow", "Pure CSS animation"].map((feature) => (
+              <li key={feature} style={{ fontSize: "0.875rem", color: "#cbd5e1" }}>
+                <span style={{ color: "#40e0d0", fontWeight: 700, marginRight: "0.5rem" }}>
+                  &#x2713;
+                </span>
+                {feature}
+              </li>
+            ))}
           </ul>
         </div>
       </NeonGradientCard>

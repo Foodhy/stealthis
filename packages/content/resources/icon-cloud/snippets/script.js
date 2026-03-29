@@ -6,26 +6,26 @@
   if (!container) return;
 
   const ICONS = [
-    "\u269B\uFE0F",   // React
-    "\u{1F310}",       // Globe (Web)
-    "\u26A1",          // Zap (Vite)
-    "\u{1F4E6}",       // Package (npm)
-    "\u{1F680}",       // Rocket (Deploy)
-    "\u{1F3A8}",       // Art (CSS)
-    "\u{1F527}",       // Wrench (Tools)
-    "\u{1F4BB}",       // Laptop (Dev)
-    "\u2728",          // Sparkles
-    "\u{1F50D}",       // Search
-    "\u{1F4CA}",       // Chart
-    "\u{1F512}",       // Lock (Security)
-    "\u2601\uFE0F",   // Cloud
-    "\u{1F916}",       // Robot (AI)
-    "\u{1F9E9}",       // Puzzle
-    "\u{1F4A1}",       // Lightbulb
-    "\u{1F525}",       // Fire
-    "\u{1F48E}",       // Gem
-    "\u{1F3AF}",       // Target
-    "\u{1F30A}",       // Wave
+    "\u269B\uFE0F", // React
+    "\u{1F310}", // Globe (Web)
+    "\u26A1", // Zap (Vite)
+    "\u{1F4E6}", // Package (npm)
+    "\u{1F680}", // Rocket (Deploy)
+    "\u{1F3A8}", // Art (CSS)
+    "\u{1F527}", // Wrench (Tools)
+    "\u{1F4BB}", // Laptop (Dev)
+    "\u2728", // Sparkles
+    "\u{1F50D}", // Search
+    "\u{1F4CA}", // Chart
+    "\u{1F512}", // Lock (Security)
+    "\u2601\uFE0F", // Cloud
+    "\u{1F916}", // Robot (AI)
+    "\u{1F9E9}", // Puzzle
+    "\u{1F4A1}", // Lightbulb
+    "\u{1F525}", // Fire
+    "\u{1F48E}", // Gem
+    "\u{1F3AF}", // Target
+    "\u{1F30A}", // Wave
   ];
 
   const ROTATE_SPEED = 0.004;

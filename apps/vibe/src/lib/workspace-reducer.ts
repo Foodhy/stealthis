@@ -21,10 +21,7 @@ export const initialState: WorkspaceState = {
   terminalCwd: "",
 };
 
-export function workspaceReducer(
-  state: WorkspaceState,
-  action: WorkspaceAction,
-): WorkspaceState {
+export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
   switch (action.type) {
     case "SET_PROJECT_ID":
       return { ...state, projectId: action.payload };

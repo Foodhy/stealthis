@@ -16,14 +16,13 @@ export const GET: APIRoute = async ({ url }) => {
       .map((e) => e.name)
       .sort((a, b) => a.localeCompare(b));
 
-    return new Response(
-      JSON.stringify({ path: dir, dirs }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ path: dir, dirs }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err: any) {
-    return new Response(
-      JSON.stringify({ path: dir, dirs: [], error: err?.message }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ path: dir, dirs: [], error: err?.message }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };

@@ -14,8 +14,7 @@ export function useMagnetic<T extends HTMLElement = HTMLElement>({
 }: UseMagneticOptions = {}) {
   const ref = useRef<T>(null);
   const reduced =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent | MouseEvent) => {
@@ -80,8 +79,10 @@ function MagneticButton({
   children: React.ReactNode;
   variant?: "primary" | "ghost";
 }) {
-  const { ref, onMouseMove, onMouseLeave } =
-    useMagnetic<HTMLButtonElement>({ strength: 0.45, radius: 100 });
+  const { ref, onMouseMove, onMouseLeave } = useMagnetic<HTMLButtonElement>({
+    strength: 0.45,
+    radius: 100,
+  });
 
   const base: React.CSSProperties = {
     display: "inline-flex",
@@ -135,12 +136,8 @@ export default function UseMagneticDemo() {
       }}
     >
       <div style={{ textAlign: "center" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.5rem" }}>
-          useMagnetic
-        </h1>
-        <p style={{ color: "#475569", fontSize: "0.875rem" }}>
-          Move your cursor near any element
-        </p>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.5rem" }}>useMagnetic</h1>
+        <p style={{ color: "#475569", fontSize: "0.875rem" }}>Move your cursor near any element</p>
       </div>
 
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", justifyContent: "center" }}>

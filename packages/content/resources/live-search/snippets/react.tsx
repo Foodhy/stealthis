@@ -41,7 +41,11 @@ export default function LiveSearchRC() {
   }, []);
 
   useEffect(() => {
-    if (!query) { setResults(ITEMS); setLoading(false); return; }
+    if (!query) {
+      setResults(ITEMS);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const id = setTimeout(() => {
       setResults(search(query));
@@ -53,9 +57,18 @@ export default function LiveSearchRC() {
   return (
     <div className="min-h-screen bg-[#0d1117] flex justify-center p-6 pt-12">
       <div className="w-full max-w-lg">
-        <div className={`relative flex items-center bg-[#161b22] border rounded-xl px-4 transition-colors ${focused ? "border-[#58a6ff]" : "border-[#30363d]"}`}>
-          <svg className="w-4 h-4 text-[#8b949e] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+        <div
+          className={`relative flex items-center bg-[#161b22] border rounded-xl px-4 transition-colors ${focused ? "border-[#58a6ff]" : "border-[#30363d]"}`}
+        >
+          <svg
+            className="w-4 h-4 text-[#8b949e] flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
           </svg>
           <input
             type="text"
@@ -70,12 +83,19 @@ export default function LiveSearchRC() {
             <div className="w-4 h-4 border-2 border-[#30363d] border-t-[#58a6ff] rounded-full animate-spin flex-shrink-0" />
           )}
           {query && !loading && (
-            <button onClick={() => setQuery("")} className="text-[#484f58] hover:text-[#8b949e] flex-shrink-0">✕</button>
+            <button
+              onClick={() => setQuery("")}
+              className="text-[#484f58] hover:text-[#8b949e] flex-shrink-0"
+            >
+              ✕
+            </button>
           )}
         </div>
 
         <div className="mt-2 text-[11px] text-[#484f58] px-1">
-          {query ? `${results.length} result${results.length !== 1 ? "s" : ""} for "${query}"` : `${ITEMS.length} components`}
+          {query
+            ? `${results.length} result${results.length !== 1 ? "s" : ""} for "${query}"`
+            : `${ITEMS.length} components`}
         </div>
 
         <div className="mt-3 space-y-2">
@@ -90,7 +110,10 @@ export default function LiveSearchRC() {
               </div>
               <span
                 className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                style={{ color: CATEGORY_COLORS[item.category], background: `${CATEGORY_COLORS[item.category]}18` }}
+                style={{
+                  color: CATEGORY_COLORS[item.category],
+                  background: `${CATEGORY_COLORS[item.category]}18`,
+                }}
               >
                 {item.category}
               </span>

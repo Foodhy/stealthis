@@ -1,12 +1,5 @@
 import React, { useState, type ReactNode } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  type ViewStyle,
-  type TextStyle,
-} from "react-native";
+import { View, Text, Pressable, StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 
 // --- Types ---
 
@@ -48,12 +41,7 @@ const DOT_COLORS: Record<BadgeVariant, string> = {
 
 // --- Badge ---
 
-function Badge({
-  label,
-  variant = "default",
-  size = "md",
-  dot = false,
-}: BadgeProps) {
+function Badge({ label, variant = "default", size = "md", dot = false }: BadgeProps) {
   const colors = VARIANT_COLORS[variant];
   const isSmall = size === "sm";
 
@@ -71,14 +59,7 @@ function Badge({
             },
           ]}
         />
-        <Text
-          style={[
-            styles.dotLabel,
-            { fontSize: isSmall ? 11 : 13 },
-          ]}
-        >
-          {label}
-        </Text>
+        <Text style={[styles.dotLabel, { fontSize: isSmall ? 11 : 13 }]}>{label}</Text>
       </View>
     );
   }
@@ -114,23 +95,11 @@ function Badge({
 
 function Chip({ label, onPress, onDismiss, icon, selected = false }: ChipProps) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.chip,
-        selected && styles.chipSelected,
-      ]}
-    >
+    <Pressable onPress={onPress} style={[styles.chip, selected && styles.chipSelected]}>
       {icon && <View style={styles.chipIcon}>{icon}</View>}
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-        {label}
-      </Text>
+      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
       {onDismiss && (
-        <Pressable
-          onPress={onDismiss}
-          hitSlop={6}
-          style={styles.chipDismiss}
-        >
+        <Pressable onPress={onDismiss} hitSlop={6} style={styles.chipDismiss}>
           <Text style={styles.chipDismissText}>✕</Text>
         </Pressable>
       )}
@@ -165,9 +134,7 @@ export default function App() {
   ]);
 
   const toggleChip = (index: number) => {
-    setChips((prev) =>
-      prev.map((c, i) => (i === index ? { ...c, selected: !c.selected } : c))
-    );
+    setChips((prev) => prev.map((c, i) => (i === index ? { ...c, selected: !c.selected } : c)));
   };
 
   const dismissChip = (index: number) => {
@@ -216,11 +183,7 @@ export default function App() {
             selected={chip.selected}
             onPress={() => toggleChip(i)}
             onDismiss={chip.dismissible ? () => dismissChip(i) : undefined}
-            icon={
-              chip.selected ? (
-                <CircleIcon color="#818cf8" />
-              ) : undefined
-            }
+            icon={chip.selected ? <CircleIcon color="#818cf8" /> : undefined}
           />
         ))}
       </View>

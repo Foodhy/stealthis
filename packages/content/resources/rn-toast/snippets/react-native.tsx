@@ -1,18 +1,5 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-} from "react";
-import {
-  Animated,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import React, { createContext, useCallback, useContext, useRef, useState } from "react";
+import { Animated, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -43,10 +30,7 @@ interface ToastContextValue {
 
 // ── Variant config ───────────────────────────────────────────────────────────
 
-const VARIANT_STYLES: Record<
-  ToastVariant,
-  { bg: string; icon: string; iconColor: string }
-> = {
+const VARIANT_STYLES: Record<ToastVariant, { bg: string; icon: string; iconColor: string }> = {
   success: { bg: "#065f46", icon: "\u2713", iconColor: "#34d399" },
   error: { bg: "#7f1d1d", icon: "\u2717", iconColor: "#f87171" },
   warning: { bg: "#78350f", icon: "\u26A0", iconColor: "#fbbf24" },
@@ -184,12 +168,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       <View style={styles.container} pointerEvents="box-none">
         {toasts.map((toast, i) => (
-          <ToastItem
-            key={toast.id}
-            toast={toast}
-            index={i}
-            onDismiss={dismiss}
-          />
+          <ToastItem key={toast.id} toast={toast} index={i} onDismiss={dismiss} />
         ))}
       </View>
     </ToastContext.Provider>
@@ -208,10 +187,7 @@ function DemoButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.button, { backgroundColor: color }]}
-    >
+    <Pressable onPress={onPress} style={[styles.button, { backgroundColor: color }]}>
       <Text style={styles.buttonText}>{label}</Text>
     </Pressable>
   );
@@ -229,9 +205,7 @@ function DemoScreen() {
         <DemoButton
           label="Success"
           color="#065f46"
-          onPress={() =>
-            show({ message: "Item saved successfully!", variant: "success" })
-          }
+          onPress={() => show({ message: "Item saved successfully!", variant: "success" })}
         />
         <DemoButton
           label="Error"
@@ -258,9 +232,7 @@ function DemoScreen() {
         <DemoButton
           label="Info"
           color="#1e3a5f"
-          onPress={() =>
-            show({ message: "A new version is available.", variant: "info" })
-          }
+          onPress={() => show({ message: "A new version is available.", variant: "info" })}
         />
       </View>
     </SafeAreaView>

@@ -125,8 +125,7 @@ export function AnimatedGridPattern({
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(ellipse 50% 50% at 50% 50%, transparent 30%, #0a0a0a 80%)",
+          background: "radial-gradient(ellipse 50% 50% at 50% 50%, transparent 30%, #0a0a0a 80%)",
           pointerEvents: "none",
         }}
       />

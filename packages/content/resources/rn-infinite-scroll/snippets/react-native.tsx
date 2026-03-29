@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  ListRenderItem,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, ListRenderItem, StyleSheet, Text, View } from "react-native";
 
 // ---------------------------------------------------------------------------
 // InfiniteList — generic infinite scroll component

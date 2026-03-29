@@ -4,7 +4,8 @@ const FEED = [
   {
     id: 1,
     user: { name: "Sarah Chen", handle: "@sarahchen", avatar: "SC", color: "#bc8cff" },
-    content: "Just shipped a new feature: real-time collaboration with CRDT! The engineering challenge was immense but totally worth it. 🚀",
+    content:
+      "Just shipped a new feature: real-time collaboration with CRDT! The engineering challenge was immense but totally worth it. 🚀",
     time: "2m ago",
     likes: 47,
     comments: 12,
@@ -14,7 +15,8 @@ const FEED = [
   {
     id: 2,
     user: { name: "Alex Rivera", handle: "@arivera", avatar: "AR", color: "#58a6ff" },
-    content: "Hot take: The best documentation is code that doesn't need documentation. Write self-documenting code first, comments second.",
+    content:
+      "Hot take: The best documentation is code that doesn't need documentation. Write self-documenting code first, comments second.",
     time: "18m ago",
     likes: 128,
     comments: 34,
@@ -24,7 +26,8 @@ const FEED = [
   {
     id: 3,
     user: { name: "Jordan Kim", handle: "@jordankim", avatar: "JK", color: "#7ee787" },
-    content: "Spent 3 hours debugging a race condition only to find it was a missing `await`. We've all been there. 😅",
+    content:
+      "Spent 3 hours debugging a race condition only to find it was a missing `await`. We've all been there. 😅",
     time: "1h ago",
     likes: 215,
     comments: 41,
@@ -33,7 +36,7 @@ const FEED = [
   },
 ];
 
-type Post = typeof FEED[0];
+type Post = (typeof FEED)[0];
 
 function PostCard({ post }: { post: Post }) {
   const [liked, setLiked] = useState(post.liked);
@@ -66,7 +69,14 @@ function PostCard({ post }: { post: Post }) {
         {[
           {
             icon: (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill={liked ? "#ff6b6b" : "none"} stroke={liked ? "#ff6b6b" : "#8b949e"} strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill={liked ? "#ff6b6b" : "none"}
+                stroke={liked ? "#ff6b6b" : "#8b949e"}
+                strokeWidth="2"
+              >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             ),
@@ -77,7 +87,14 @@ function PostCard({ post }: { post: Post }) {
           },
           {
             icon: (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b949e" strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8b949e"
+                strokeWidth="2"
+              >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             ),
@@ -88,9 +105,18 @@ function PostCard({ post }: { post: Post }) {
           },
           {
             icon: (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b949e" strokeWidth="2">
-                <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8b949e"
+                strokeWidth="2"
+              >
+                <polyline points="17 1 21 5 17 9" />
+                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                <polyline points="7 23 3 19 7 15" />
+                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
               </svg>
             ),
             count: post.reposts,
@@ -105,7 +131,9 @@ function PostCard({ post }: { post: Post }) {
             className="flex items-center gap-1.5 text-xs text-[#8b949e] hover:text-[#e6edf3] transition-colors"
           >
             {action.icon}
-            <span style={{ color: action.active ? action.activeColor : undefined }}>{action.count}</span>
+            <span style={{ color: action.active ? action.activeColor : undefined }}>
+              {action.count}
+            </span>
           </button>
         ))}
       </div>
@@ -121,7 +149,9 @@ export default function SocialFeedRC() {
           <h2 className="text-[#e6edf3] font-bold text-lg">Feed</h2>
           <button className="text-xs text-[#58a6ff] hover:underline">Latest</button>
         </div>
-        {FEED.map((post) => <PostCard key={post.id} post={post} />)}
+        {FEED.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
       </div>
     </div>
   );

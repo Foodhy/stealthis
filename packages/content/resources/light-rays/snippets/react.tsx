@@ -52,7 +52,10 @@ export function LightRays({
   `;
 
   return (
-    <div className={className} style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+    <div
+      className={className}
+      style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}
+    >
       <style>{keyframes}</style>
       <div
         style={{

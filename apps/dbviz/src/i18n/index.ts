@@ -23,8 +23,7 @@ const translations = {
     "toolbar.applying": "Applying...",
 
     // Engine Messages
-    "engine.ready":
-      "DBViz ready. Load an example and run SQL commands.",
+    "engine.ready": "DBViz ready. Load an example and run SQL commands.",
     "engine.notInitialized": "SQL engine not initialized.",
     "engine.initializing": "Initializing engine ({reason})...",
     "engine.initialized": "Engine ready ({reason}).",
@@ -36,20 +35,15 @@ const translations = {
     "engine.initFailed": "Failed to initialize SQL engine: {message}",
     "engine.externalRuntime":
       "Active runtime is external (docker/supabase). Use the suggested command to validate/import.",
-    "engine.sqlLocalOnly":
-      "SQL commands in UI are only available with local+pglite runtime.",
+    "engine.sqlLocalOnly": "SQL commands in UI are only available with local+pglite runtime.",
     "engine.noSql": "No SQL to execute. Write a command first.",
-    "engine.notReady":
-      "SQL engine not ready. Apply schema + seed first.",
-    "engine.commandExecuted":
-      "Command executed ({count} statement(s), {rows} row(s) returned).",
+    "engine.notReady": "SQL engine not ready. Apply schema + seed first.",
+    "engine.commandExecuted": "Command executed ({count} statement(s), {rows} row(s) returned).",
     "engine.sqlError": "Error executing SQL: {message}",
     "engine.supabaseScaffold":
       "Supabase active in CLI scaffold mode. Run check/import from terminal.",
-    "engine.supabaseNotConfigured":
-      "Supabase not configured. Define DBVIZ_SUPABASE_DB_URL.",
-    "engine.dockerCli":
-      "Docker active in CLI mode. Run `bun run dbviz:validate`.",
+    "engine.supabaseNotConfigured": "Supabase not configured. Define DBVIZ_SUPABASE_DB_URL.",
+    "engine.dockerCli": "Docker active in CLI mode. Run `bun run dbviz:validate`.",
 
     // Export
     "export.button": "Export",
@@ -90,8 +84,7 @@ const translations = {
     "ai.empty.generateQueriesHint":
       "Ask questions, plan query strategies, or generate SQL queries based on the current schema.",
     "ai.empty.loadSchemaFirst": "Load or create a schema first.",
-    "ai.empty.connectFirst":
-      "Connect an AI provider first (Settings).",
+    "ai.empty.connectFirst": "Connect an AI provider first (Settings).",
     "ai.noSchema":
       "No schema available. Create or load a schema first, then switch to Queries context.",
 
@@ -116,34 +109,26 @@ const translations = {
 
     // AI Placeholders
     "ai.ph.queryAsk": "Ask about querying this schema...",
-    "ai.ph.queryPlan":
-      "What queries do you need? Describe the use case...",
-    "ai.ph.queryExecute":
-      "Describe the queries you need, or say 'generate'...",
+    "ai.ph.queryPlan": "What queries do you need? Describe the use case...",
+    "ai.ph.queryExecute": "Describe the queries you need, or say 'generate'...",
     "ai.ph.schemaAsk": "Ask a question about your schema design...",
     "ai.ph.schemaPlan":
       "Describe what you want to build \u2014 entities, relationships, purpose...",
-    "ai.ph.schemaRefine":
-      "Refine, add tables, change relationships...",
-    "ai.ph.schemaGenerate":
-      "Describe your database or say 'generate' to run the plan...",
+    "ai.ph.schemaRefine": "Refine, add tables, change relationships...",
+    "ai.ph.schemaGenerate": "Describe your database or say 'generate' to run the plan...",
 
     // AI Output Messages
     "ai.output.queriesGenerated":
       "Generated queries and added to the Queries tab. The first query is ready in the SQL bar.",
-    "ai.output.queriesFailed":
-      "Could not extract queries from the response. Try rephrasing.",
-    "ai.output.artifactsFailed":
-      "Could not extract artifacts from the response. Try rephrasing.",
+    "ai.output.queriesFailed": "Could not extract queries from the response. Try rephrasing.",
+    "ai.output.artifactsFailed": "Could not extract artifacts from the response. Try rephrasing.",
     "ai.output.generated":
       "Generated: {parts}. Review the artifacts and apply to engine when ready. You can ask me to refine or add more tables.",
-    "ai.output.autoGeneratePrompt":
-      "Auto-generate useful queries for the current schema",
+    "ai.output.autoGeneratePrompt": "Auto-generate useful queries for the current schema",
 
     // Results Tab
     "results.noResults": "No results yet",
-    "results.executeHint":
-      "Execute a SQL command to see rows here.",
+    "results.executeHint": "Execute a SQL command to see rows here.",
     "results.noColumns": "No columns to display.",
     "results.showing": "Showing {shown} of {total} rows.",
     "results.statement": "Statement #{num}",
@@ -153,8 +138,7 @@ const translations = {
     // Migrations Tab
     "migrations.snapshot": "Snapshot",
     "migrations.history": "History",
-    "migrations.noMigrations":
-      "No migrations yet. Execute a SQL command to log it.",
+    "migrations.noMigrations": "No migrations yet. Execute a SQL command to log it.",
 
     // Diagram Tab
     "diagram.viewSource": "View source",
@@ -173,8 +157,7 @@ const translations = {
     "settings.baseUrl": "Base URL",
     "settings.apiKey": "API Key",
     "settings.getKey": "Get key",
-    "settings.apiKeyHint":
-      "Stored in localStorage. Never sent to our servers.",
+    "settings.apiKeyHint": "Stored in localStorage. Never sent to our servers.",
     "settings.loadModels": "Load Models",
     "settings.loadingModels": "Loading models...",
     "settings.model": "Model",
@@ -244,8 +227,8 @@ const translations = {
     "erd.ctx.deleteColumn": "Delete column",
     "erd.ctx.promptTableName": "Table name:",
     "erd.ctx.promptColumnDef": "Column (name type):",
-    "erd.ctx.confirmDeleteTable": "Delete table \"{name}\"?",
-    "erd.ctx.confirmDeleteColumn": "Delete column \"{name}\"?",
+    "erd.ctx.confirmDeleteTable": 'Delete table "{name}"?',
+    "erd.ctx.confirmDeleteColumn": 'Delete column "{name}"?',
 
     // DB Chat Panel
     "chat.designer": "Designer",
@@ -258,7 +241,8 @@ const translations = {
     "chat.placeholder.explain": "What should I explain about the schema?",
     "chat.send": "Send",
     "chat.new": "New",
-    "chat.empty": "Ask questions, get suggestions, or request explanations about your database schema.",
+    "chat.empty":
+      "Ask questions, get suggestions, or request explanations about your database schema.",
     "chat.noSchema": "Load or create a schema first to chat about it.",
 
     // Query Actions
@@ -278,14 +262,14 @@ const translations = {
     "save.save": "Save",
     "save.cancel": "Cancel",
     "save.saved": "Project saved: {name}",
-    "save.overwrite": "Overwrite existing project \"{name}\"?",
+    "save.overwrite": 'Overwrite existing project "{name}"?',
     "load.button": "Load",
     "load.title": "Saved Projects",
     "load.empty": "No saved projects yet.",
     "load.close": "Close",
     "load.loaded": "Project loaded: {name}",
     "load.delete": "Delete",
-    "load.confirmDelete": "Delete project \"{name}\"?",
+    "load.confirmDelete": 'Delete project "{name}"?',
     "load.deleted": "Project deleted: {name}",
     "load.savedAt": "Saved {date}",
 
@@ -334,8 +318,7 @@ const translations = {
     "tour.settings.description":
       "Configure your AI provider here — choose between Ollama (local), OpenAI, Claude, or Gemini. Set your API key and load available models.",
     "tour.langToggle.title": "Language",
-    "tour.langToggle.description":
-      "Switch the interface between English and Spanish.",
+    "tour.langToggle.description": "Switch the interface between English and Spanish.",
     "tour.theme.dark": "Dark theme",
     "tour.theme.soft": "Light theme",
   },
@@ -360,42 +343,33 @@ const translations = {
     "toolbar.applying": "Aplicando...",
 
     // Engine Messages
-    "engine.ready":
-      "DBViz listo. Carga un ejemplo y ejecuta comandos SQL.",
+    "engine.ready": "DBViz listo. Carga un ejemplo y ejecuta comandos SQL.",
     "engine.notInitialized": "Motor SQL no inicializado.",
     "engine.initializing": "Inicializando motor ({reason})...",
     "engine.initialized": "Motor listo ({reason}).",
-    "engine.schemaApplied":
-      "Motor inicializado: schema {status}.",
+    "engine.schemaApplied": "Motor inicializado: schema {status}.",
     "engine.applied": "aplicado",
     "engine.empty": "vac\u00edo",
     "engine.seedApplied": " + seed aplicado",
     "engine.error": "Error de motor: {message}",
-    "engine.initFailed":
-      "Fallo al inicializar motor SQL: {message}",
+    "engine.initFailed": "Fallo al inicializar motor SQL: {message}",
     "engine.externalRuntime":
       "El runtime activo es externo (docker/supabase). Usa el comando sugerido para validar/importar.",
     "engine.sqlLocalOnly":
       "Comandos SQL en UI solo est\u00e1n disponibles con runtime local+pglite.",
-    "engine.noSql":
-      "No hay SQL para ejecutar. Escribe un comando primero.",
-    "engine.notReady":
-      "El motor SQL no est\u00e1 listo. Aplica schema + seed primero.",
-    "engine.commandExecuted":
-      "Comando ejecutado ({count} sentencia(s), {rows} fila(s) devueltas).",
+    "engine.noSql": "No hay SQL para ejecutar. Escribe un comando primero.",
+    "engine.notReady": "El motor SQL no est\u00e1 listo. Aplica schema + seed primero.",
+    "engine.commandExecuted": "Comando ejecutado ({count} sentencia(s), {rows} fila(s) devueltas).",
     "engine.sqlError": "Error ejecutando SQL: {message}",
     "engine.supabaseScaffold":
       "Supabase activo en modo scaffold CLI. Ejecuta check/import desde terminal.",
-    "engine.supabaseNotConfigured":
-      "Supabase no configurado. Define DBVIZ_SUPABASE_DB_URL.",
-    "engine.dockerCli":
-      "Docker activo en modo CLI. Ejecuta `bun run dbviz:validate`.",
+    "engine.supabaseNotConfigured": "Supabase no configurado. Define DBVIZ_SUPABASE_DB_URL.",
+    "engine.dockerCli": "Docker activo en modo CLI. Ejecuta `bun run dbviz:validate`.",
 
     // Export
     "export.button": "Exportar",
     "export.all": "Exportar todo",
-    "export.noContent":
-      "Sin contenido en {file} para exportar.",
+    "export.noContent": "Sin contenido en {file} para exportar.",
     "export.exported": "Exportado: {file}",
     "export.allExported": "Todos los artefactos exportados.",
 
@@ -416,8 +390,7 @@ const translations = {
     "ai.unsavedWork": "Trabajo IA sin guardar",
     "ai.confirmNewSession":
       "\u00bfIniciar nueva sesi\u00f3n? El trabajo generado por IA se eliminar\u00e1 del chat.",
-    "ai.modelsLoaded":
-      "{provider}: {count} modelo(s) cargados.",
+    "ai.modelsLoaded": "{provider}: {count} modelo(s) cargados.",
     "ai.providerError": "{provider}: {error}",
 
     // AI Context
@@ -428,22 +401,18 @@ const translations = {
     "ai.empty.describeDb": "Describe tu base de datos",
     "ai.empty.describeDbHint":
       "S\u00e9 espec\u00edfico o vago \u2014 la IA har\u00e1 preguntas de aclaraci\u00f3n si necesita m\u00e1s detalle antes de generar.",
-    "ai.empty.generateQueries":
-      "Genera consultas para tu esquema",
+    "ai.empty.generateQueries": "Genera consultas para tu esquema",
     "ai.empty.generateQueriesHint":
       "Haz preguntas, planifica estrategias de consulta o genera consultas SQL basadas en el esquema actual.",
-    "ai.empty.loadSchemaFirst":
-      "Carga o crea un esquema primero.",
-    "ai.empty.connectFirst":
-      "Conecta un proveedor IA primero (Configuraci\u00f3n).",
+    "ai.empty.loadSchemaFirst": "Carga o crea un esquema primero.",
+    "ai.empty.connectFirst": "Conecta un proveedor IA primero (Configuraci\u00f3n).",
     "ai.noSchema":
       "No hay esquema disponible. Crea o carga un esquema primero, luego cambia al contexto de Consultas.",
 
     // AI Status
     "ai.status.evaluating": "Evaluando tu solicitud...",
     "ai.status.generating": "Generando esquema...",
-    "ai.status.generatingOk":
-      "Entendido, generando tu esquema...",
+    "ai.status.generatingOk": "Entendido, generando tu esquema...",
 
     // AI Mode Labels
     "ai.mode.ask": "Preguntar",
@@ -460,20 +429,14 @@ const translations = {
     "ai.modeDesc.schemaExecute": "Generar SQL",
 
     // AI Placeholders
-    "ai.ph.queryAsk":
-      "Pregunta sobre consultar este esquema...",
-    "ai.ph.queryPlan":
-      "\u00bfQu\u00e9 consultas necesitas? Describe el caso de uso...",
-    "ai.ph.queryExecute":
-      "Describe las consultas que necesitas, o di 'generar'...",
-    "ai.ph.schemaAsk":
-      "Haz una pregunta sobre el dise\u00f1o de tu esquema...",
+    "ai.ph.queryAsk": "Pregunta sobre consultar este esquema...",
+    "ai.ph.queryPlan": "\u00bfQu\u00e9 consultas necesitas? Describe el caso de uso...",
+    "ai.ph.queryExecute": "Describe las consultas que necesitas, o di 'generar'...",
+    "ai.ph.schemaAsk": "Haz una pregunta sobre el dise\u00f1o de tu esquema...",
     "ai.ph.schemaPlan":
       "Describe lo que quieres construir \u2014 entidades, relaciones, prop\u00f3sito...",
-    "ai.ph.schemaRefine":
-      "Refinar, agregar tablas, cambiar relaciones...",
-    "ai.ph.schemaGenerate":
-      "Describe tu base de datos o di 'generar' para ejecutar el plan...",
+    "ai.ph.schemaRefine": "Refinar, agregar tablas, cambiar relaciones...",
+    "ai.ph.schemaGenerate": "Describe tu base de datos o di 'generar' para ejecutar el plan...",
 
     // AI Output Messages
     "ai.output.queriesGenerated":
@@ -484,16 +447,13 @@ const translations = {
       "No se pudieron extraer artefactos de la respuesta. Intenta reformular.",
     "ai.output.generated":
       "Generado: {parts}. Revisa los artefactos y aplica al motor cuando est\u00e9s listo. Puedes pedirme que refine o agregue m\u00e1s tablas.",
-    "ai.output.autoGeneratePrompt":
-      "Auto-generar consultas \u00fatiles para el esquema actual",
+    "ai.output.autoGeneratePrompt": "Auto-generar consultas \u00fatiles para el esquema actual",
 
     // Results Tab
     "results.noResults": "Sin resultados a\u00fan",
-    "results.executeHint":
-      "Ejecuta un comando SQL para ver filas aqu\u00ed.",
+    "results.executeHint": "Ejecuta un comando SQL para ver filas aqu\u00ed.",
     "results.noColumns": "Sin columnas para mostrar.",
-    "results.showing":
-      "Mostrando {shown} de {total} filas.",
+    "results.showing": "Mostrando {shown} de {total} filas.",
     "results.statement": "Sentencia #{num}",
     "results.rows": "{count} fila(s)",
     "results.affected": "{count} afectadas",
@@ -501,8 +461,7 @@ const translations = {
     // Migrations Tab
     "migrations.snapshot": "Snapshot",
     "migrations.history": "Historial",
-    "migrations.noMigrations":
-      "Sin migraciones a\u00fan. Ejecuta un comando SQL para registrarlo.",
+    "migrations.noMigrations": "Sin migraciones a\u00fan. Ejecuta un comando SQL para registrarlo.",
 
     // Diagram Tab
     "diagram.viewSource": "Ver c\u00f3digo fuente",
@@ -521,27 +480,23 @@ const translations = {
     "settings.baseUrl": "URL Base",
     "settings.apiKey": "Clave API",
     "settings.getKey": "Obtener clave",
-    "settings.apiKeyHint":
-      "Almacenado en localStorage. Nunca se env\u00eda a nuestros servidores.",
+    "settings.apiKeyHint": "Almacenado en localStorage. Nunca se env\u00eda a nuestros servidores.",
     "settings.loadModels": "Cargar Modelos",
     "settings.loadingModels": "Cargando modelos...",
     "settings.model": "Modelo",
     "settings.status": "Estado:",
-    "settings.modelsAvailable":
-      "{count} modelo(s) disponibles",
+    "settings.modelsAvailable": "{count} modelo(s) disponibles",
     "settings.loading": "Cargando...",
     "settings.connectionFailed": "Conexi\u00f3n fallida",
     "settings.notConnected": "No conectado",
     "settings.active": "Activo:",
 
     // Diagram Canvas (SchemaDiagramCanvas)
-    "canvas.noDiagramContent":
-      "Sin contenido de diagrama para renderizar.",
+    "canvas.noDiagramContent": "Sin contenido de diagrama para renderizar.",
     "canvas.noTablesDetected":
       "No se detectaron tablas en el diagrama. Aseg\u00farate de usar formato erDiagram.",
     "canvas.parseError": "Error al parsear el diagrama.",
-    "canvas.dragHint":
-      "Arrastra las tablas para reposicionarlas",
+    "canvas.dragHint": "Arrastra las tablas para reposicionarlas",
     "canvas.animated": "Animado",
     "canvas.static": "Est\u00e1tico",
     "canvas.reset": "Restablecer",
@@ -555,13 +510,11 @@ const translations = {
     "canvas.relationsPlural": "relaciones",
 
     // ERD (CrowsFootDiagram)
-    "erd.noSqlContent":
-      "Sin contenido SQL DDL para renderizar.",
+    "erd.noSqlContent": "Sin contenido SQL DDL para renderizar.",
     "erd.noTablesDetected":
       "No se detectaron tablas. Aseg\u00farate de que el input contenga sentencias CREATE TABLE v\u00e1lidas.",
     "erd.parseError": "Error al parsear SQL DDL.",
-    "erd.dragHint":
-      "Arrastra las tablas para reposicionarlas",
+    "erd.dragHint": "Arrastra las tablas para reposicionarlas",
     "erd.resetLayout": "Restablecer dise\u00f1o",
     "erd.primaryKey": "Clave primaria",
     "erd.foreignKey": "Clave for\u00e1nea",
@@ -578,16 +531,13 @@ const translations = {
     "help.title": "Ayuda / Help",
     "help.subtitle": "Pregunta lo que sea sobre DbViz",
     "help.close": "Cerrar",
-    "help.emptyHint":
-      "\u00a1Preg\u00fantame c\u00f3mo usar DbViz!",
+    "help.emptyHint": "\u00a1Preg\u00fantame c\u00f3mo usar DbViz!",
     "help.placeholder": "Pregunta sobre DbViz...",
     "help.send": "Enviar",
     "help.configureFirst":
       "Por favor, configura un proveedor de IA en **Configuraci\u00f3n** primero (bot\u00f3n arriba a la derecha).",
-    "help.q1":
-      "\u00bfC\u00f3mo conecto un proveedor de IA?",
-    "help.q2":
-      "\u00bfC\u00f3mo genero un esquema de base de datos?",
+    "help.q1": "\u00bfC\u00f3mo conecto un proveedor de IA?",
+    "help.q2": "\u00bfC\u00f3mo genero un esquema de base de datos?",
     "help.q3": "\u00bfC\u00f3mo ejecuto consultas SQL?",
     "help.q4": "\u00bfC\u00f3mo exporto mi esquema?",
 
@@ -600,8 +550,8 @@ const translations = {
     "erd.ctx.deleteColumn": "Eliminar columna",
     "erd.ctx.promptTableName": "Nombre de tabla:",
     "erd.ctx.promptColumnDef": "Columna (nombre tipo):",
-    "erd.ctx.confirmDeleteTable": "\u00bfEliminar tabla \"{name}\"?",
-    "erd.ctx.confirmDeleteColumn": "\u00bfEliminar columna \"{name}\"?",
+    "erd.ctx.confirmDeleteTable": '\u00bfEliminar tabla "{name}"?',
+    "erd.ctx.confirmDeleteColumn": '\u00bfEliminar columna "{name}"?',
 
     // DB Chat Panel
     "chat.designer": "Diseñador",
@@ -614,7 +564,8 @@ const translations = {
     "chat.placeholder.explain": "¿Qué debo explicar del esquema?",
     "chat.send": "Enviar",
     "chat.new": "Nuevo",
-    "chat.empty": "Haz preguntas, obtén sugerencias o pide explicaciones sobre tu esquema de base de datos.",
+    "chat.empty":
+      "Haz preguntas, obtén sugerencias o pide explicaciones sobre tu esquema de base de datos.",
     "chat.noSchema": "Carga o crea un esquema primero para chatear sobre él.",
 
     // Query Actions
@@ -634,14 +585,14 @@ const translations = {
     "save.save": "Guardar",
     "save.cancel": "Cancelar",
     "save.saved": "Proyecto guardado: {name}",
-    "save.overwrite": "\u00bfSobrescribir proyecto existente \"{name}\"?",
+    "save.overwrite": '\u00bfSobrescribir proyecto existente "{name}"?',
     "load.button": "Cargar",
     "load.title": "Proyectos Guardados",
     "load.empty": "No hay proyectos guardados a\u00fan.",
     "load.close": "Cerrar",
     "load.loaded": "Proyecto cargado: {name}",
     "load.delete": "Eliminar",
-    "load.confirmDelete": "\u00bfEliminar proyecto \"{name}\"?",
+    "load.confirmDelete": '\u00bfEliminar proyecto "{name}"?',
     "load.deleted": "Proyecto eliminado: {name}",
     "load.savedAt": "Guardado {date}",
 
@@ -690,8 +641,7 @@ const translations = {
     "tour.settings.description":
       "Configura tu proveedor de IA aquí — elige entre Ollama (local), OpenAI, Claude o Gemini. Ingresa tu API key y carga los modelos disponibles.",
     "tour.langToggle.title": "Idioma",
-    "tour.langToggle.description":
-      "Cambia la interfaz entre Inglés y Español.",
+    "tour.langToggle.description": "Cambia la interfaz entre Inglés y Español.",
     "tour.theme.dark": "Tema oscuro",
     "tour.theme.soft": "Tema claro",
   },
@@ -701,8 +651,6 @@ export type TranslationKey = keyof typeof translations.en;
 
 export function useTranslations(locale: Locale) {
   return function t(key: TranslationKey): string {
-    return (
-      translations[locale]?.[key] ?? translations.en[key] ?? key
-    );
+    return translations[locale]?.[key] ?? translations.en[key] ?? key;
   };
 }

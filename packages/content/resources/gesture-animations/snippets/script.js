@@ -39,12 +39,21 @@
   const hoverAnim = animateValue(
     () => hoverScale,
     () => hoverTarget,
-    (v) => { hoverScale = v; hoverEl.style.transform = `scale(${v})`; },
+    (v) => {
+      hoverScale = v;
+      hoverEl.style.transform = `scale(${v})`;
+    },
     0.12
   );
 
-  hoverEl.addEventListener("mouseenter", () => { hoverTarget = 1.15; hoverAnim.start(); });
-  hoverEl.addEventListener("mouseleave", () => { hoverTarget = 1; hoverAnim.start(); });
+  hoverEl.addEventListener("mouseenter", () => {
+    hoverTarget = 1.15;
+    hoverAnim.start();
+  });
+  hoverEl.addEventListener("mouseleave", () => {
+    hoverTarget = 1;
+    hoverAnim.start();
+  });
 
   // ═══════════════════════════════════════
   // 2. TAP SHRINK
@@ -56,27 +65,44 @@
   const tapAnim = animateValue(
     () => tapScale,
     () => tapTarget,
-    (v) => { tapScale = v; tapEl.style.transform = `scale(${v})`; },
+    (v) => {
+      tapScale = v;
+      tapEl.style.transform = `scale(${v})`;
+    },
     0.15
   );
 
-  tapEl.addEventListener("pointerdown", () => { tapTarget = 0.85; tapAnim.start(); });
-  tapEl.addEventListener("pointerup", () => { tapTarget = 1; tapAnim.start(); });
-  tapEl.addEventListener("pointerleave", () => { tapTarget = 1; tapAnim.start(); });
+  tapEl.addEventListener("pointerdown", () => {
+    tapTarget = 0.85;
+    tapAnim.start();
+  });
+  tapEl.addEventListener("pointerup", () => {
+    tapTarget = 1;
+    tapAnim.start();
+  });
+  tapEl.addEventListener("pointerleave", () => {
+    tapTarget = 1;
+    tapAnim.start();
+  });
 
   // ═══════════════════════════════════════
   // 3. DRAG CONSTRAINED
   // ═══════════════════════════════════════
   const dragArea = document.getElementById("drag-area");
   const dragEl = document.getElementById("drag-constrained");
-  let dragX = 0, dragY = 0;
-  let dragTargetX = 0, dragTargetY = 0;
+  let dragX = 0,
+    dragY = 0;
+  let dragTargetX = 0,
+    dragTargetY = 0;
   let isDragging = false;
-  let dragOffX = 0, dragOffY = 0;
-  let originX = 0, originY = 0;
+  let dragOffX = 0,
+    dragOffY = 0;
+  let originX = 0,
+    originY = 0;
 
   // Lerp for smooth return
-  let dragLerpX = 0, dragLerpY = 0;
+  let dragLerpX = 0,
+    dragLerpY = 0;
   let dragRaf;
 
   function dragTick() {

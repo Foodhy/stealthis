@@ -13,8 +13,23 @@ interface ResourceCollectionCandidate {
 
 const DASHBOARD_HINTS = new Set(["dashboard", "admin", "data-viz"]);
 const CARD_HINTS = new Set(["card", "cards"]);
-const MOBILE_NAV_HINTS = new Set(["mobile-nav", "bottom-nav", "tab-bar", "drawer", "fab", "mobile-menu"]);
-const CHART_HINTS = new Set(["chart", "data-visualization", "graph", "pie", "donut", "bar-chart", "geo-chart"]);
+const MOBILE_NAV_HINTS = new Set([
+  "mobile-nav",
+  "bottom-nav",
+  "tab-bar",
+  "drawer",
+  "fab",
+  "mobile-menu",
+]);
+const CHART_HINTS = new Set([
+  "chart",
+  "data-visualization",
+  "graph",
+  "pie",
+  "donut",
+  "bar-chart",
+  "geo-chart",
+]);
 
 function normalize(value: string): string {
   return value.trim().toLowerCase();

@@ -74,29 +74,17 @@ interface HeaderProps {
   rightAction?: ReactNode;
 }
 
-function Header({
-  title,
-  canGoBack,
-  onBack,
-  tintColor,
-  style,
-  rightAction,
-}: HeaderProps) {
+function Header({ title, canGoBack, onBack, tintColor, style, rightAction }: HeaderProps) {
   return (
     <View style={[styles.header, style]}>
       <View style={styles.headerSide}>
         {canGoBack && (
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Text style={[styles.backArrow, { color: tintColor }]}>
-              {"\u2190"}
-            </Text>
+            <Text style={[styles.backArrow, { color: tintColor }]}>{"\u2190"}</Text>
           </TouchableOpacity>
         )}
       </View>
-      <Text
-        style={[styles.headerTitle, { color: tintColor }]}
-        numberOfLines={1}
-      >
+      <Text style={[styles.headerTitle, { color: tintColor }]} numberOfLines={1}>
         {title}
       </Text>
       <View style={styles.headerSide}>{rightAction}</View>
@@ -123,9 +111,7 @@ function StackNavigator({
     anim: new Animated.Value(1),
   });
 
-  const [stack, setStack] = useState<StackEntry[]>([
-    makeEntry(initialScreen),
-  ]);
+  const [stack, setStack] = useState<StackEntry[]>([makeEntry(initialScreen)]);
   const stackRef = useRef(stack);
   stackRef.current = stack;
   const animating = useRef(false);
@@ -149,7 +135,7 @@ function StackNavigator({
         animating.current = false;
       });
     },
-    [animationDuration],
+    [animationDuration]
   );
 
   /* Pop ------------------------------------------------------------ */
@@ -170,13 +156,10 @@ function StackNavigator({
   }, [animationDuration]);
 
   /* Navigate (reset stack) ----------------------------------------- */
-  const navigate = useCallback(
-    (screen: string, params: ScreenParams = {}) => {
-      if (animating.current) return;
-      setStack([makeEntry(screen, params)]);
-    },
-    [],
-  );
+  const navigate = useCallback((screen: string, params: ScreenParams = {}) => {
+    if (animating.current) return;
+    setStack([makeEntry(screen, params)]);
+  }, []);
 
   /* Render --------------------------------------------------------- */
   const topEntry = stack[stack.length - 1];
@@ -208,14 +191,9 @@ function StackNavigator({
           return (
             <Animated.View
               key={`${entry.name}-${index}`}
-              style={[
-                styles.screen,
-                { transform: [{ translateX }], opacity },
-              ]}
+              style={[styles.screen, { transform: [{ translateX }], opacity }]}
             >
-              <NavigationContext.Provider
-                value={{ push, pop, navigate, params: entry.params }}
-              >
+              <NavigationContext.Provider value={{ push, pop, navigate, params: entry.params }}>
                 <ScreenComp params={entry.params} />
               </NavigationContext.Provider>
             </Animated.View>
@@ -277,8 +255,8 @@ function DetailScreen({ params }: { params: ScreenParams }) {
         <Text style={styles.detailEmoji}>{"\u2B50"}</Text>
         <Text style={styles.detailTitle}>{title}</Text>
         <Text style={styles.detailBody}>
-          You are viewing details for item #{itemId}. This screen was pushed
-          onto the stack with a slide-from-right animation.
+          You are viewing details for item #{itemId}. This screen was pushed onto the stack with a
+          slide-from-right animation.
         </Text>
       </View>
       <TouchableOpacity

@@ -3,18 +3,72 @@
 
   /* ── Data ── */
   const AVATAR_COLORS = {
-    Alice: "#38bdf8", Bob: "#a78bfa", Carol: "#fb923c",
-    David: "#34d399", Emma: "#f87171", Milestone: "#fbbf24"
+    Alice: "#38bdf8",
+    Bob: "#a78bfa",
+    Carol: "#fb923c",
+    David: "#34d399",
+    Emma: "#f87171",
+    Milestone: "#fbbf24",
   };
 
   const tasks = [
     { id: "g1", type: "group", name: "Feature Development" },
-    { id: "t1", type: "task", name: "User Authentication", assignee: "Alice", color: "#38bdf8", start: "2026-01-05", end: "2026-01-23", progress: 100, group: "g1" },
-    { id: "t2", type: "task", name: "Dashboard UI", assignee: "Bob", color: "#a78bfa", start: "2026-01-12", end: "2026-02-06", progress: 80, group: "g1" },
-    { id: "t3", type: "task", name: "API Integration", assignee: "Carol", color: "#fb923c", start: "2026-01-26", end: "2026-02-20", progress: 55, group: "g1" },
+    {
+      id: "t1",
+      type: "task",
+      name: "User Authentication",
+      assignee: "Alice",
+      color: "#38bdf8",
+      start: "2026-01-05",
+      end: "2026-01-23",
+      progress: 100,
+      group: "g1",
+    },
+    {
+      id: "t2",
+      type: "task",
+      name: "Dashboard UI",
+      assignee: "Bob",
+      color: "#a78bfa",
+      start: "2026-01-12",
+      end: "2026-02-06",
+      progress: 80,
+      group: "g1",
+    },
+    {
+      id: "t3",
+      type: "task",
+      name: "API Integration",
+      assignee: "Carol",
+      color: "#fb923c",
+      start: "2026-01-26",
+      end: "2026-02-20",
+      progress: 55,
+      group: "g1",
+    },
     { id: "g2", type: "group", name: "Testing" },
-    { id: "t4", type: "task", name: "Unit Tests", assignee: "David", color: "#34d399", start: "2026-02-09", end: "2026-02-27", progress: 30, group: "g2" },
-    { id: "t5", type: "task", name: "E2E Testing", assignee: "Emma", color: "#f87171", start: "2026-02-23", end: "2026-03-13", progress: 10, group: "g2" },
+    {
+      id: "t4",
+      type: "task",
+      name: "Unit Tests",
+      assignee: "David",
+      color: "#34d399",
+      start: "2026-02-09",
+      end: "2026-02-27",
+      progress: 30,
+      group: "g2",
+    },
+    {
+      id: "t5",
+      type: "task",
+      name: "E2E Testing",
+      assignee: "Emma",
+      color: "#f87171",
+      start: "2026-02-23",
+      end: "2026-03-13",
+      progress: 10,
+      group: "g2",
+    },
     { id: "g3", type: "group", name: "Launch" },
     { id: "m1", type: "milestone", name: "Beta Release", start: "2026-03-06", group: "g3" },
     { id: "m2", type: "milestone", name: "Production Deploy", start: "2026-03-27", group: "g3" },
@@ -24,19 +78,19 @@
   const DAY_W = 28; // px per day
   const ROW_H = 44;
   const TIMELINE_START = new Date(2026, 0, 5); // Jan 5, 2026
-  const TIMELINE_END   = new Date(2026, 2, 29); // Mar 29, 2026
+  const TIMELINE_END = new Date(2026, 2, 29); // Mar 29, 2026
   const TODAY = new Date(2026, 2, 2); // today for demo
 
   let currentZoom = "week";
   let scrollOffset = 0;
 
   /* ── Elements ── */
-  const taskList    = document.getElementById("tl-task-list");
-  const dateHeader  = document.getElementById("tl-date-header");
-  const gridArea    = document.getElementById("tl-grid-area");
-  const todayLine   = document.getElementById("tl-today-line");
+  const taskList = document.getElementById("tl-task-list");
+  const dateHeader = document.getElementById("tl-date-header");
+  const gridArea = document.getElementById("tl-grid-area");
+  const todayLine = document.getElementById("tl-today-line");
   const timelinePanel = document.getElementById("tl-timeline-panel");
-  const tooltip     = document.getElementById("tl-tooltip");
+  const tooltip = document.getElementById("tl-tooltip");
 
   /* ── Helpers ── */
   function daysBetween(a, b) {
@@ -54,7 +108,20 @@
   }
 
   function fmtDate(d) {
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
   }
 
@@ -68,7 +135,7 @@
   /* ── Render task list ── */
   function renderTaskList() {
     taskList.innerHTML = "";
-    tasks.forEach(t => {
+    tasks.forEach((t) => {
       const row = document.createElement("div");
       row.className = `tl-task-row ${t.type}`;
       row.dataset.id = t.id;
@@ -104,9 +171,25 @@
         const col = document.createElement("div");
         col.className = "tl-date-col";
         col.style.width = `${daysInWeek * DAY_W}px`;
-        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
         col.textContent = `${months[weekStart.getMonth()]} ${weekStart.getDate()}`;
-        if (isSameDay(weekStart, TODAY) || (TODAY >= weekStart && TODAY < new Date(weekStart.getTime() + daysInWeek * 86400000))) {
+        if (
+          isSameDay(weekStart, TODAY) ||
+          (TODAY >= weekStart && TODAY < new Date(weekStart.getTime() + daysInWeek * 86400000))
+        ) {
           col.classList.add("today-col");
         }
         dateHeader.appendChild(col);
@@ -115,7 +198,20 @@
     } else if (currentZoom === "month") {
       // Group by months
       let d = new Date(TIMELINE_START.getFullYear(), TIMELINE_START.getMonth(), 1);
-      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
       while (d <= TIMELINE_END) {
         const monthStart = new Date(Math.max(d, TIMELINE_START));
         const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0);
@@ -142,7 +238,7 @@
   /* ── Render grid ── */
   function renderGrid() {
     // Remove old rows (but keep today line)
-    gridArea.querySelectorAll(".tl-grid-row").forEach(r => r.remove());
+    gridArea.querySelectorAll(".tl-grid-row").forEach((r) => r.remove());
 
     tasks.forEach((t, idx) => {
       const row = document.createElement("div");
@@ -190,8 +286,8 @@
         setupBarDrag(bar, t);
 
         // Tooltip
-        bar.addEventListener("mouseenter", e => showTooltip(e, t));
-        bar.addEventListener("mousemove", e => positionTooltip(e));
+        bar.addEventListener("mouseenter", (e) => showTooltip(e, t));
+        bar.addEventListener("mousemove", (e) => positionTooltip(e));
         bar.addEventListener("mouseleave", hideTooltip);
 
         row.appendChild(bar);
@@ -202,8 +298,8 @@
         diamond.className = "tl-milestone";
         diamond.style.left = `${startOff * DAY_W + DAY_W / 2 - 7}px`;
         diamond.title = t.name;
-        diamond.addEventListener("mouseenter", e => showTooltip(e, t));
-        diamond.addEventListener("mousemove", e => positionTooltip(e));
+        diamond.addEventListener("mouseenter", (e) => showTooltip(e, t));
+        diamond.addEventListener("mousemove", (e) => positionTooltip(e));
         diamond.addEventListener("mouseleave", hideTooltip);
         row.appendChild(diamond);
       }
@@ -219,9 +315,11 @@
 
   /* ── Drag ── */
   function setupBarDrag(bar, task) {
-    let startX, startLeft, dragging = false;
+    let startX,
+      startLeft,
+      dragging = false;
 
-    bar.addEventListener("mousedown", e => {
+    bar.addEventListener("mousedown", (e) => {
       e.preventDefault();
       dragging = true;
       startX = e.clientX;
@@ -229,7 +327,7 @@
       document.body.style.userSelect = "none";
     });
 
-    document.addEventListener("mousemove", e => {
+    document.addEventListener("mousemove", (e) => {
       if (!dragging) return;
       hideTooltip();
       const dx = e.clientX - startX;
@@ -254,16 +352,19 @@
   }
 
   function fmtDateISO(d) {
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
   /* ── Tooltip ── */
   function showTooltip(e, task) {
     document.getElementById("tt-title").textContent = task.name;
     document.getElementById("tt-assignee").textContent = task.assignee || "—";
-    document.getElementById("tt-start").textContent = task.start ? fmtDate(parseDate(task.start)) : "—";
+    document.getElementById("tt-start").textContent = task.start
+      ? fmtDate(parseDate(task.start))
+      : "—";
     document.getElementById("tt-end").textContent = task.end ? fmtDate(parseDate(task.end)) : "—";
-    document.getElementById("tt-progress").textContent = task.progress !== undefined ? `${task.progress}%` : "Milestone";
+    document.getElementById("tt-progress").textContent =
+      task.progress !== undefined ? `${task.progress}%` : "Milestone";
     tooltip.classList.add("visible");
     positionTooltip(e);
   }
@@ -279,12 +380,14 @@
     tooltip.style.top = `${y}px`;
   }
 
-  function hideTooltip() { tooltip.classList.remove("visible"); }
+  function hideTooltip() {
+    tooltip.classList.remove("visible");
+  }
 
   /* ── View zoom ── */
-  document.querySelectorAll(".view-btn").forEach(btn => {
+  document.querySelectorAll(".view-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".view-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       currentZoom = btn.dataset.zoom;
       renderDateHeader();
@@ -310,7 +413,11 @@
   });
 
   function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
   }
 
   /* ── Init ── */

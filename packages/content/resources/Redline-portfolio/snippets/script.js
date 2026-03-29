@@ -3,41 +3,41 @@ const data = {
     {
       title: "Crimson Grid",
       desc: "Minimal admin UI with redline accents and rapid navigation.",
-      tag: "UI"
+      tag: "UI",
     },
     {
       title: "Shadow Runner",
       desc: "Landing system for a stealth game brand rollout.",
-      tag: "Brand"
+      tag: "Brand",
     },
     {
       title: "Night Signal",
       desc: "Realtime dashboard tuned for low-light control rooms.",
-      tag: "Data"
+      tag: "Data",
     },
     {
       title: "Blacksite",
       desc: "Secure onboarding flow with multi-step verification.",
-      tag: "Product"
-    }
+      tag: "Product",
+    },
   ],
   capabilities: [
     "High-contrast UI systems",
     "Motion timing and easing",
     "Brand systems for dark interfaces",
-    "Interactive dashboards"
+    "Interactive dashboards",
   ],
   stack: ["Figma", "GSAP", "Lenis", "Three.js", "TypeScript", "WebGL"],
   stats: [
     { value: "18", label: "Launches completed" },
     { value: "7", label: "Active retainers" },
-    { value: "96%", label: "On-time delivery" }
+    { value: "96%", label: "On-time delivery" },
   ],
   contacts: [
     { label: "Email", value: "redline@studio.com" },
     { label: "LinkedIn", value: "/redline" },
-    { label: "GitHub", value: "@redline" }
-  ]
+    { label: "GitHub", value: "@redline" },
+  ],
 };
 
 const projectGrid = document.getElementById("project-grid");
@@ -61,9 +61,7 @@ if (projectGrid) {
 }
 
 if (capabilityList) {
-  capabilityList.innerHTML = data.capabilities
-    .map((item) => `<li>${item}</li>`)
-    .join("");
+  capabilityList.innerHTML = data.capabilities.map((item) => `<li>${item}</li>`).join("");
 }
 
 if (stackGrid) {
@@ -99,7 +97,7 @@ if (contactGrid) {
 const lenis = window.Lenis
   ? new Lenis({
       smoothWheel: true,
-      smoothTouch: false
+      smoothTouch: false,
     })
   : null;
 
@@ -113,7 +111,7 @@ gsap.from(".hero", {
   opacity: 0,
   y: 40,
   duration: 1,
-  ease: "power3.out"
+  ease: "power3.out",
 });
 
 gsap.utils.toArray(".card, .list li, .pill-grid span, .stats div").forEach((item, index) => {
@@ -122,7 +120,7 @@ gsap.utils.toArray(".card, .list li, .pill-grid span, .stats div").forEach((item
     y: 20,
     duration: 0.8,
     delay: index * 0.04,
-    ease: "power2.out"
+    ease: "power2.out",
   });
 });
 

@@ -8,7 +8,7 @@
   // ── Single with tooltip ──────────────────────────────────────────────────────
 
   (function () {
-    const input   = document.getElementById("rs-single");
+    const input = document.getElementById("rs-single");
     const tooltip = document.getElementById("tt-single");
     if (!input || !tooltip) return;
 
@@ -26,7 +26,7 @@
   // ── Stepped ─────────────────────────────────────────────────────────────────
 
   (function () {
-    const input   = document.getElementById("rs-stepped");
+    const input = document.getElementById("rs-stepped");
     const tooltip = document.getElementById("tt-stepped");
     if (!input || !tooltip) return;
 
@@ -46,9 +46,9 @@
   (function () {
     const minInput = document.getElementById("rs-min");
     const maxInput = document.getElementById("rs-max");
-    const fill     = document.getElementById("rs-dual-fill");
-    const lblMin   = document.getElementById("lbl-min");
-    const lblMax   = document.getElementById("lbl-max");
+    const fill = document.getElementById("rs-dual-fill");
+    const lblMin = document.getElementById("lbl-min");
+    const lblMax = document.getElementById("lbl-max");
     if (!minInput || !maxInput || !fill) return;
 
     function update() {
@@ -61,13 +61,13 @@
         maxInput.value = hi;
       }
 
-      const min   = parseFloat(minInput.min);
-      const max   = parseFloat(minInput.max);
-      const left  = pct(lo, min, max);
+      const min = parseFloat(minInput.min);
+      const max = parseFloat(minInput.max);
+      const left = pct(lo, min, max);
       const right = pct(hi, min, max);
 
-      fill.style.left  = left + "%";
-      fill.style.width = (right - left) + "%";
+      fill.style.left = left + "%";
+      fill.style.width = right - left + "%";
 
       // Dual inputs use transparent bg — reset CSS fill var so no gradient shows
       minInput.style.setProperty("--fill", "0%");
@@ -91,5 +91,4 @@
     input.addEventListener("input", update);
     update();
   });
-
 })();

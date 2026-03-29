@@ -117,14 +117,7 @@ export const KineticText: React.FC = () => {
         }}
       >
         {WORDS.map((word, i) => (
-          <Word
-            key={i}
-            word={word}
-            index={i}
-            frame={frame}
-            fps={fps}
-            total={WORDS.length}
-          />
+          <Word key={i} word={word} index={i} frame={frame} fps={fps} total={WORDS.length} />
         ))}
       </div>
     </AbsoluteFill>

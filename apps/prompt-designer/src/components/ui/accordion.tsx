@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { cn } from '@/lib/cn';
-import { ChevronDown } from '@/components/icons';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { cn } from "@/lib/cn";
+import { ChevronDown } from "@/components/icons";
 
 interface AccordionContextValue {
   openItems: string[];
@@ -16,7 +16,7 @@ interface AccordionItemContextValue {
 const AccordionItemContext = createContext<AccordionItemContextValue | undefined>(undefined);
 
 interface AccordionProps extends React.HTMLAttributes<HTMLDivElement> {
-  type?: 'single' | 'multiple';
+  type?: "single" | "multiple";
   defaultValue?: string | string[];
   value?: string | string[];
   onValueChange?: (value: any) => void;
@@ -37,7 +37,7 @@ interface AccordionContentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Accordion: React.FC<AccordionProps> = ({
-  type = 'single',
+  type = "single",
   defaultValue,
   value: controlledValue,
   onValueChange,
@@ -46,23 +46,31 @@ export const Accordion: React.FC<AccordionProps> = ({
   ...props
 }) => {
   // Normalize default value to array
-  const initialValue = Array.isArray(defaultValue) ? defaultValue : (defaultValue ? [defaultValue] : []);
+  const initialValue = Array.isArray(defaultValue)
+    ? defaultValue
+    : defaultValue
+      ? [defaultValue]
+      : [];
 
   const [internalValue, setInternalValue] = useState<string[]>(initialValue);
 
   const isControlled = controlledValue !== undefined;
   const openItems = isControlled
-    ? (Array.isArray(controlledValue) ? controlledValue : (controlledValue ? [controlledValue] : []))
+    ? Array.isArray(controlledValue)
+      ? controlledValue
+      : controlledValue
+        ? [controlledValue]
+        : []
     : internalValue;
 
   const toggleItem = (itemValue: string) => {
     let newItems: string[];
 
-    if (type === 'single') {
+    if (type === "single") {
       newItems = openItems.includes(itemValue) ? [] : [itemValue];
     } else {
       newItems = openItems.includes(itemValue)
-        ? openItems.filter(item => item !== itemValue)
+        ? openItems.filter((item) => item !== itemValue)
         : [...openItems, itemValue];
     }
 
@@ -71,7 +79,7 @@ export const Accordion: React.FC<AccordionProps> = ({
     }
 
     if (onValueChange) {
-      onValueChange(type === 'single' ? (newItems[0] || '') : newItems);
+      onValueChange(type === "single" ? newItems[0] || "" : newItems);
     }
   };
 
@@ -123,9 +131,7 @@ export const AccordionTrigger: React.FC<AccordionTriggerProps> = ({
     >
       {children}
       <ChevronDown
-        className={cn("h-4 w-4 shrink-0 transition-transform duration-200",
-          isOpen && "rotate-180"
-        )}
+        className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isOpen && "rotate-180")}
       />
     </button>
   );
@@ -147,10 +153,7 @@ export const AccordionContent: React.FC<AccordionContentProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      className={cn("overflow-hidden text-sm transition-all", className)}
-      {...props}
-    >
+    <div className={cn("overflow-hidden text-sm transition-all", className)} {...props}>
       <div className="pb-4 pt-0">{children}</div>
     </div>
   );

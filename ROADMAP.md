@@ -665,122 +665,109 @@ System prompts, templates y patrones para optimizar interacciones con LLMs.
 
 ---
 
-## Phase 18 — Developer Skills
+## Phase 18 — Developer Skills → **Merged into Phase 26 (Plugins)**
 
-Skills de terminal, Git, debugging y workflow para devs.
-
-### Git & Version Control
-
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `skill-git-rebase` | Git rebase interactivo | bash | med | [ ] |
-| `skill-git-cherry-pick` | Git cherry-pick | bash | easy | [ ] |
-| `skill-git-bisect` | Git bisect (find bug) | bash | med | [ ] |
-| `skill-git-worktree` | Git worktree (multi-branch) | bash | med | [ ] |
-| `skill-git-stash` | Git stash patterns | bash | easy | [ ] |
-| `skill-git-hooks` | Git hooks setup | bash | easy | [ ] |
-
-### Terminal & Shell
-
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `skill-vim-basics` | Vim basics (navigation, edit) | vim | easy | [ ] |
-| `skill-vim-advanced` | Vim macros & registers | vim | med | [ ] |
-| `skill-tmux` | Tmux workflow (sessions, panes) | tmux | med | [ ] |
-| `skill-fzf` | Fuzzy finder (fzf + rg) | bash | med | [ ] |
-| `skill-aliases` | Useful shell aliases | bash | easy | [ ] |
-
-### Debugging
-
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `skill-debug-console` | Browser console tricks | javascript | easy | [ ] |
-| `skill-debug-network` | Network tab debugging | devtools | easy | [ ] |
-| `skill-debug-react` | React DevTools debugging | react | med | [ ] |
-| `skill-debug-performance` | Performance profiling | devtools | med | [ ] |
-
-### Code Review
-
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `skill-review-pr` | PR review checklist | markdown | easy | [ ] |
-| `skill-review-patterns` | Code review patterns | markdown | easy | [ ] |
+> Todos los items de skills, MCP servers y plugins se unificaron en Phase 26 bajo la categoría `plugins`.
 
 ---
 
-## Phase 19 — Architectures
+## Phase 19 — Architectures ✅ DONE (2026-03-28)
 
-Patrones arquitectónicos, estructuras de proyecto y diagramas.
+Patrones arquitectónicos, estructuras de proyecto y diagramas. Cada recurso incluye: estructura de carpetas, archivos clave, diagrama visual y links a fuentes oficiales.
+
+> **Formato:** frontmatter con `category: architectures`, `type: architecture`. Snippet HTML con diagrama visual de la arquitectura + estructura de carpetas interactiva.
+
+### Implementación
+
+**Estructura de cada recurso:**
+```
+packages/content/resources/<slug>/
+├── index.mdx          # frontmatter + descripción detallada
+└── snippets/
+    └── html.html      # Diagrama visual + tree de carpetas + archivos clave
+```
 
 ### Frontend Architectures
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `arch-nextjs-app` | Next.js App Router structure | nextjs | med | [ ] |
-| `arch-react-vite` | React + Vite structure | react, vite | easy | [ ] |
-| `arch-astro` | Astro project structure | astro | easy | [ ] |
-| `arch-micro-frontend` | Micro-frontend pattern | webpack | hard | [ ] |
+| Slug | Description | Tech | Difficulty | Official Docs | Reference Repos | Status |
+|---|---|---|---|---|---|---|
+| `arch-nextjs-app` | Next.js App Router structure | nextjs | med | [nextjs.org/docs/app/getting-started/project-structure](https://nextjs.org/docs/app/getting-started/project-structure) | [nhanluongoe/nextjs-boilerplate](https://github.com/nhanluongoe/nextjs-boilerplate), [hiroppy/nextjs-app-router-training](https://github.com/hiroppy/nextjs-app-router-training) | ✅ |
+| `arch-react-vite` | React + Vite structure | react, vite | easy | [vite.dev/guide/](https://vite.dev/guide/) | [vitejs/vite template-react-ts](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts), [RicardoValdovinos/vite-react-boilerplate](https://github.com/RicardoValdovinos/vite-react-boilerplate) | ✅ |
+| `arch-astro` | Astro project structure | astro | easy | [docs.astro.build/en/basics/project-structure/](https://docs.astro.build/en/basics/project-structure/) | [withastro/astro/examples](https://github.com/withastro/astro/tree/main/examples), [withastro/docs](https://github.com/withastro/docs) | ✅ |
+| `arch-micro-frontend` | Micro-frontend (Module Federation) | webpack | hard | [module-federation.io](https://module-federation.io/), [webpack.js.org/concepts/module-federation/](https://webpack.js.org/concepts/module-federation/) | [module-federation/module-federation-examples](https://github.com/module-federation/module-federation-examples) | ✅ |
 
 ### Backend Architectures
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `arch-rest-api` | REST API structure | nodejs | med | [ ] |
-| `arch-graphql` | GraphQL schema structure | graphql | med | [ ] |
-| `arch-t3-stack` | T3 Stack structure | nextjs, trpc | hard | [ ] |
+| Slug | Description | Tech | Difficulty | Official Docs | Reference Repos | Status |
+|---|---|---|---|---|---|---|
+| `arch-rest-api` | REST API — Clean Architecture | nodejs | med | [mannhowie.com/clean-architecture-node](https://mannhowie.com/clean-architecture-node) | [panagiop/node.js-clean-architecture](https://github.com/panagiop/node.js-clean-architecture), [jbuget/nodejs-clean-architecture-app](https://github.com/jbuget/nodejs-clean-architecture-app) | ✅ |
+| `arch-graphql` | GraphQL schema structure | graphql | med | [graphql.org/learn/schema/](https://graphql.org/learn/schema/), [apollographql.com/docs/apollo-server/schema](https://www.apollographql.com/docs/apollo-server/schema/schema) | [apollographql/apollo-server](https://github.com/apollographql/apollo-server), [betaflag/graphql-server-scaffolding](https://github.com/betaflag/graphql-server-scaffolding) | ✅ |
+| `arch-t3-stack` | T3 Stack (Next.js + tRPC + Prisma) | nextjs, trpc | hard | [create.t3.gg/en/folder-structure-app](https://create.t3.gg/en/folder-structure-app) | [t3-oss/create-t3-app](https://github.com/t3-oss/create-t3-app) (28.7k⭐), [t3-oss/create-t3-turbo](https://github.com/t3-oss/create-t3-turbo) | ✅ |
 
 ### Monorepo & Scale
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `arch-monorepo-turborepo` | Turborepo monorepo | turborepo | hard | [ ] |
-| `arch-monorepo-nx` | Nx monorepo | nx | hard | [ ] |
-| `arch-cicd` | CI/CD pipeline structure | github-actions | med | [ ] |
+| Slug | Description | Tech | Difficulty | Official Docs | Reference Repos | Status |
+|---|---|---|---|---|---|---|
+| `arch-monorepo-turborepo` | Turborepo monorepo | turborepo | hard | [turborepo.dev/docs](https://turborepo.dev/docs) | [vercel/turborepo examples/](https://github.com/vercel/turborepo), [Vercel Monorepo Template](https://vercel.com/templates/next.js/monorepo-turborepo) | ✅ |
+| `arch-monorepo-nx` | Nx monorepo | nx | hard | [nx.dev/docs/concepts/decisions/folder-structure](https://nx.dev/docs/concepts/decisions/folder-structure) | [nrwl/nx](https://github.com/nrwl/nx), [nrwl/nx-examples](https://github.com/nrwl/nx-examples) | ✅ |
+| `arch-cicd` | CI/CD pipeline (GitHub Actions) | github-actions | med | [docs.github.com/en/actions](https://docs.github.com/en/actions), [reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) | [actions/reusable-workflows](https://github.com/actions/reusable-workflows) | ✅ |
 
 ### Database & Data
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `arch-postgres-schema` | PostgreSQL schema pattern | sql | med | [ ] |
-| `arch-prisma` | Prisma schema structure | prisma | easy | [ ] |
-| `arch-event-sourcing` | Event sourcing pattern | typescript | hard | [ ] |
+| Slug | Description | Tech | Difficulty | Official Docs | Reference Repos | Status |
+|---|---|---|---|---|---|---|
+| `arch-postgres-schema` | PostgreSQL schema patterns | sql | med | [postgresql.org/docs/current/ddl-schemas.html](https://www.postgresql.org/docs/current/ddl-schemas.html), [orm.drizzle.team/docs](https://orm.drizzle.team/docs/sql-schema-declaration) | [drizzle-team/drizzle-orm](https://github.com/drizzle-team/drizzle-orm), [prisma/database-schema-examples](https://github.com/prisma/database-schema-examples) | ✅ |
+| `arch-prisma` | Prisma schema structure | prisma | easy | [prisma.io/docs/orm/prisma-schema/overview](https://www.prisma.io/docs/orm/prisma-schema/overview) | [prisma/prisma-examples](https://github.com/prisma/prisma-examples), [prisma/prisma-client-extensions](https://github.com/prisma/prisma-client-extensions) | ✅ |
+| `arch-event-sourcing` | Event sourcing + CQRS | typescript | hard | [learn.microsoft.com/azure/architecture/patterns/event-sourcing](https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing), [microservices.io/patterns/data/event-sourcing](https://microservices.io/patterns/data/event-sourcing.html) | [oskardudycz/EventSourcing.NodeJS](https://github.com/oskardudycz/EventSourcing.NodeJS), [eugene-khyst/postgresql-event-sourcing](https://github.com/eugene-khyst/postgresql-event-sourcing) | ✅ |
 
 ---
 
-## Phase 20 — Boilerplates
+## Phase 20 — Boilerplates ✅ DONE (2026-03-28)
 
-Plantillas starter para distintos stacks y casos de uso.
+Plantillas starter para distintos stacks y casos de uso. Cada recurso documenta: CLI oficial, estructura de archivos generada, archivos clave y repos de referencia.
+
+> **Formato:** frontmatter con `category: boilerplates`, `type: boilerplate`. Snippet HTML con comandos de instalación, tree de archivos y links.
+
+### Implementación
+
+**Estructura de cada recurso:**
+```
+packages/content/resources/<slug>/
+├── index.mdx          # frontmatter + descripción + CLI command
+└── snippets/
+    └── html.html      # Estructura generada + archivos clave explicados
+```
 
 ### Frontend Starters
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `boiler-react-ts` | React + TypeScript + Vite | react, vite | easy | [ ] |
-| `boiler-next-ts` | Next.js + TypeScript | nextjs | easy | [ ] |
-| `boiler-astro` | Astro + Tailwind | astro | easy | [ ] |
-| `boiler-vue` | Vue 3 + Vite | vue, vite | easy | [ ] |
+| Slug | Description | CLI Command | Official Docs | Community Repo (⭐) | Status |
+|---|---|---|---|---|---|
+| `boiler-react-ts` | React + TypeScript + Vite | `npm create vite@latest -- --template react-ts` | [vite.dev/guide/](https://vite.dev/guide/) | [RicardoValdovinos/vite-react-boilerplate](https://github.com/RicardoValdovinos/vite-react-boilerplate) (1k⭐) | ✅ |
+| `boiler-next-ts` | Next.js + TypeScript | `npx create-next-app@latest --ts` | [nextjs.org/docs/app/getting-started/installation](https://nextjs.org/docs/app/getting-started/installation) | [ixartz/Next-js-Boilerplate](https://github.com/ixartz/Next-js-Boilerplate) (12.8k⭐) | ✅ |
+| `boiler-astro` | Astro + Tailwind | `npm create astro@latest` + `npx astro add tailwind` | [docs.astro.build](https://docs.astro.build/), [tailwindcss.com/docs/.../astro](https://tailwindcss.com/docs/installation/framework-guides/astro) | [arthelokyo/astrowind](https://github.com/arthelokyo/astrowind) (5.5k⭐) | ✅ |
+| `boiler-vue` | Vue 3 + Vite | `npm create vue@latest` | [vuejs.org/guide/quick-start](https://vuejs.org/guide/quick-start), [github.com/vuejs/create-vue](https://github.com/vuejs/create-vue) | [antfu-collective/vitesse](https://github.com/antfu-collective/vitesse) (9.4k⭐) | ✅ |
 
 ### Full-stack Starters
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `boiler-next-db` | Next.js + Prisma + PostgreSQL | nextjs, prisma | med | [ ] |
-| `boiler-t3` | T3 Stack (Next.js, tRPC, Prisma) | nextjs, t3 | hard | [ ] |
-| `boiler-bun` | Bun + Hono API | bun, hono | easy | [ ] |
+| Slug | Description | CLI Command | Official Docs | Community Repo (⭐) | Status |
+|---|---|---|---|---|---|
+| `boiler-next-db` | Next.js + Prisma + PostgreSQL | Vercel template deploy | [prisma.io/docs/guides/frameworks/nextjs](https://www.prisma.io/docs/guides/frameworks/nextjs), [vercel.com/templates/.../postgres-prisma](https://vercel.com/templates/next.js/postgres-prisma) | [nemanjam/nextjs-prisma-boilerplate](https://github.com/nemanjam/nextjs-prisma-boilerplate) (711⭐) | ✅ |
+| `boiler-t3` | T3 Stack (Next.js, tRPC, Prisma) | `npm create t3-app@latest` | [create.t3.gg](https://create.t3.gg/) | [t3-oss/create-t3-app](https://github.com/t3-oss/create-t3-app) (28.7k⭐) | ✅ |
+| `boiler-bun` | Bun + Hono API | `bun create hono@latest -- --template bun` | [hono.dev/docs/getting-started/bun](https://hono.dev/docs/getting-started/bun), [bun.com/docs/quickstart](https://bun.com/docs/quickstart) | [w3cj/hono-open-api-starter](https://github.com/w3cj/hono-open-api-starter) (981⭐) | ✅ |
 
 ### Admin & Dashboard
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `boiler-admin-react` | React Admin Dashboard | react | med | [ ] |
-| `boiler-admin-next` | Next.js Admin Dashboard | nextjs | med | [ ] |
+| Slug | Description | CLI Command | Official Docs | Community Repo (⭐) | Status |
+|---|---|---|---|---|---|
+| `boiler-admin-react` | React Admin Dashboard | `npm create react-admin@latest` | [marmelab.com/react-admin/](https://marmelab.com/react-admin/), [refine.dev](https://refine.dev/) (34k⭐) | [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin) (11.6k⭐) | ✅ |
+| `boiler-admin-next` | Next.js Admin Dashboard | Vercel template deploy | [vercel.com/templates/.../admin-dashboard](https://vercel.com/templates/next.js/admin-dashboard) | [Kiranism/next-shadcn-dashboard-starter](https://github.com/Kiranism/next-shadcn-dashboard-starter) (6.2k⭐) | ✅ |
 
 ### Mobile & PWA
 
-| Slug | Description | Tech | Difficulty | Status |
-|---|---|---|---|---|
-| `boiler-pwa` | PWA starter | vite, pwa | med | [ ] |
-| `boiler-twa` | TWA (Trusted Web Activity) | android | med | [ ] |
+| Slug | Description | CLI Command | Official Docs | Community Repo (⭐) | Status |
+|---|---|---|---|---|---|
+| `boiler-pwa` | PWA starter (Vite + Workbox) | `npm i -D vite-plugin-pwa` | [vite-pwa-org.netlify.app/guide/](https://vite-pwa-org.netlify.app/guide/), [developer.chrome.com/docs/workbox](https://developer.chrome.com/docs/workbox) | [pwa-builder/pwa-starter](https://github.com/pwa-builder/pwa-starter) (1.3k⭐), [vite-pwa/vite-plugin-pwa](https://github.com/vite-pwa/vite-plugin-pwa) (4.1k⭐) | ✅ |
+| `boiler-twa` | TWA (Trusted Web Activity) | `bubblewrap init --manifest <url>` | [developer.android.com/.../guide-trusted-web-activities](https://developer.android.com/develop/ui/views/layout/webapps/guide-trusted-web-activities-version2), [GoogleChromeLabs/bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap) (2.9k⭐) | [GoogleChromeLabs/svgomg-twa](https://github.com/GoogleChromeLabs/svgomg-twa) | ✅ |
 
 ---
 
@@ -1009,3 +996,239 @@ Páginas completas que aprovechan los 225+ componentes existentes. Cada página 
 | `status-page` | System / API status page | `api-status-board`, `status-indicator`, `timeline`, `badge`, `chart-line`, `alert-banner` | med | ✅ |
 | `file-manager-page` | File browser / document manager | `file-tree`, `data-table`, `breadcrumb-nav`, `drag-to-reorder`, `upload-progress`, `modal-dialog`, `document-preview` | hard | ✅ |
 | `onboarding-page` | Multi-step onboarding / welcome flow | `mobile-stepper`, `multi-step-form`, `progress-bar`, `steps-progress`, `alert-banner` | med | ✅ |
+
+---
+
+## Phase 25 — Accessibility, RTL & Inclusive Web
+
+Fase dedicada a accesibilidad profunda, soporte RTL, contraste WCAG, lectores de pantalla, navegación por teclado y diseño inclusivo. Complementa los 6 componentes básicos de Phase 16 (Accessibility & Inclusive Design).
+
+> **Referencia:** WCAG 2.1/2.2, ARIA Authoring Practices Guide (APG), CSS Logical Properties.
+
+### RTL (Right-to-Left) Support
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `rtl-layout` | Layout completo RTL con sidebar, nav y contenido | css (logical properties) | med | [ ] |
+| `rtl-form` | Formulario RTL con validación y labels | css, vanilla-js | med | [ ] |
+| `rtl-card-grid` | Grid de cards con flip automático LTR↔RTL | css (logical properties) | easy | [ ] |
+| `rtl-navigation` | Navbar + breadcrumb con soporte bidireccional | css, vanilla-js | med | [ ] |
+| `rtl-data-table` | Tabla de datos con columnas RTL-aware | vanilla-js, css | med | [ ] |
+| `rtl-text-mixed` | Manejo de texto bidi (árabe + inglés mezclado) | css, unicode-bidi | easy | [ ] |
+
+### Color & Contrast (WCAG)
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `color-contrast-checker` | Herramienta que verifica ratio WCAG AA/AAA en tiempo real | vanilla-js, css | med | [ ] |
+| `palette-accessible` | Generador de paletas que cumple WCAG 2.1 contrast ratios | vanilla-js | med | [ ] |
+| `theme-high-contrast` | Theme system con modo alto contraste (Windows HC compatible) | css (forced-colors, prefers-contrast) | med | [ ] |
+| `theme-color-blind` | Modos para protanopia, deuteranopia, tritanopia | css custom properties, vanilla-js | hard | [ ] |
+| `dark-light-accessible` | Dark/light toggle que mantiene ratio AA en ambos modos | css, vanilla-js | med | [ ] |
+| `color-token-system` | Sistema de design tokens con contraste garantizado | css custom properties | med | [ ] |
+
+### Screen Readers & Semantic HTML
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `aria-live-regions` | Patrones de live regions (polite, assertive, status) | vanilla-js, aria | easy | [ ] |
+| `aria-tabs-pattern` | Tabs con ARIA roles completos (tablist, tab, tabpanel) | vanilla-js, aria | med | [ ] |
+| `aria-modal-pattern` | Modal con focus trap, escape, y anuncio a screen reader | vanilla-js, aria | med | [ ] |
+| `aria-combobox` | Combobox/autocomplete accesible (ARIA 1.2 pattern) | vanilla-js, aria | hard | [ ] |
+| `aria-tree-view` | Tree view con navegación por teclado y ARIA | vanilla-js, aria | hard | [ ] |
+| `aria-carousel` | Carousel accesible con controles, pausa, y anuncio | vanilla-js, aria | med | [ ] |
+| `semantic-landmarks` | Demo de landmarks semánticos (main, nav, aside, etc.) | html, css | easy | [ ] |
+| `sr-only-utilities` | Clases .sr-only y patrones de texto solo para lectores | css | easy | [ ] |
+
+### Keyboard Navigation
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `keyboard-nav-menu` | Menú navegable 100% por teclado (arrows, home, end) | vanilla-js | med | [ ] |
+| `keyboard-roving-tabindex` | Roving tabindex pattern para listas y toolbars | vanilla-js | med | [ ] |
+| `keyboard-shortcuts-overlay` | Overlay de atajos de teclado (estilo GitHub `?`) | vanilla-js, css | easy | [ ] |
+| `focus-management` | Focus management en SPAs (route changes, dynamic content) | vanilla-js | med | [ ] |
+
+### Inclusive Design Patterns
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `dyslexia-friendly` | Modo dyslexia (OpenDyslexic font, spacing, line height) | css, vanilla-js | easy | [ ] |
+| `reading-guide` | Línea guía de lectura que sigue el cursor/scroll | vanilla-js, css | easy | [ ] |
+| `text-spacing-control` | Control de letter-spacing, word-spacing, line-height | vanilla-js, css | easy | [ ] |
+| `media-captions` | Video player con captions/subtítulos accesibles | vanilla-js, html5 | med | [ ] |
+| `cognitive-load-reducer` | Modo simplificado que reduce animaciones, colores, elementos | vanilla-js, css | med | [ ] |
+| `touch-target-demo` | Demo de touch targets mínimos 44x44px (WCAG 2.5.5) | css | easy | [ ] |
+
+---
+
+## Phase 26 — Plugins (AI Coding Tools)
+
+Nueva categoría `plugins` — directorios, marketplaces y colecciones curadas de plugins, extensiones y MCP servers para herramientas de código con IA (Claude Code, OpenCode, Cursor, Copilot, etc.).
+
+> **Nota:** Esta categoría NO es para plugins individuales (eso va en `mcp-servers` o `skills`), sino para **directorios y marketplaces** donde descubrir e instalar plugins.
+
+### Implementación
+
+**1. Schema** ✅
+- `packages/schema/src/schema.ts` — `"plugins"` agregado a `ResourceCategorySchema`
+- `packages/schema/src/types.ts` — `"plugins"` agregado a `ResourceCategoryPhase2`
+- `apps/www/src/content/config.ts` — `"plugins"` agregado al enum
+
+**2. Tipo de recurso:** `type: "component"` (es un directorio/herramienta, no un plugin individual)
+
+**3. Estructura de cada recurso:**
+```
+packages/content/resources/<slug>/
+├── index.mdx          # frontmatter + descripción del marketplace/directorio
+└── snippets/
+    └── html.html      # card informativa con: qué es, cómo instalar, stats, link
+```
+
+**4. Frontmatter modelo:**
+```yaml
+slug: plugin-smithery
+title: "Smithery.ai — MCP Server Marketplace"
+description: "Largest open marketplace of MCP servers. Discover, install, host, and manage MCP servers with one-click install."
+category: plugins
+type: component
+tags: [mcp, marketplace, claude-code, cursor, plugins]
+tech: [markdown]
+difficulty: easy
+targets: [html]
+author:
+  name: "Smithery"
+  src: "https://smithery.ai/"
+createdAt: "2026-03-28"
+updatedAt: "2026-03-28"
+```
+
+**5. Snippet HTML modelo** — Card informativa con:
+- Logo/nombre del directorio
+- Descripción corta
+- Cómo instalar/acceder (CLI commands, URLs)
+- Stats (cantidad de plugins, estrellas GitHub)
+- Links a fuente original
+- Tags de herramientas compatibles (Claude Code, Cursor, etc.)
+
+**6. Hero/www** ✅
+- Categoría unificada — absorbe `skills` y `mcp-servers` (eliminados como categorías separadas)
+- i18n en 15 idiomas
+
+**7. Prioridad de implementación:**
+- Batch 1: Directorios principales (Smithery, mcp.so, PulseMCP, Glama, Official MCP Registry)
+- Batch 2: Claude Code community (awesome-claude-code, awesome-slash, claude-skills)
+- Batch 3: Otros tools (Cursor, OpenCode, Copilot, Cline)
+- Batch 4: Restantes (Devin, Kiro, Composio)
+
+### Developer Skills (ex Phase 18)
+
+| Slug | Title | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `skill-git-rebase` | Git rebase interactivo | bash | med | [ ] |
+| `skill-git-cherry-pick` | Git cherry-pick | bash | easy | [ ] |
+| `skill-git-bisect` | Git bisect (find bug) | bash | med | [ ] |
+| `skill-git-worktree` | Git worktree (multi-branch) | bash | med | [ ] |
+| `skill-git-stash` | Git stash patterns | bash | easy | [ ] |
+| `skill-git-hooks` | Git hooks setup | bash | easy | [ ] |
+| `skill-vim-basics` | Vim basics (navigation, edit) | vim | easy | [ ] |
+| `skill-vim-advanced` | Vim macros & registers | vim | med | [ ] |
+| `skill-tmux` | Tmux workflow (sessions, panes) | tmux | med | [ ] |
+| `skill-fzf` | Fuzzy finder (fzf + rg) | bash | med | [ ] |
+| `skill-aliases` | Useful shell aliases | bash | easy | [ ] |
+| `skill-debug-console` | Browser console tricks | javascript | easy | [ ] |
+| `skill-debug-network` | Network tab debugging | devtools | easy | [ ] |
+| `skill-debug-react` | React DevTools debugging | react | med | [ ] |
+| `skill-debug-performance` | Performance profiling | devtools | med | [ ] |
+| `skill-review-pr` | PR review checklist | markdown | easy | [ ] |
+| `skill-review-patterns` | Code review patterns | markdown | easy | [ ] |
+
+### Existing Resources ✅
+
+| Slug | Title | Type | Status |
+|---|---|---|---|
+| `git-commit-skill` | Git Commit Skill | skill | ✅ migrado a `plugins` |
+| `stealthis-mcp-config` | StealThis MCP Server Config | mcp-server | ✅ migrado a `plugins` |
+
+### Claude Code — Official
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-claude-official-plugins` | Claude Code Official Plugin Directory | [github.com/anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | [ ] |
+| `plugin-claude-marketplace-docs` | Claude Code Plugin Marketplace Docs | [code.claude.com/docs/en/plugin-marketplaces](https://code.claude.com/docs/en/plugin-marketplaces) | [ ] |
+| `plugin-claude-skills-docs` | Claude Code Skills (Slash Commands, Hooks, Agents) | [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills) | [ ] |
+
+### Claude Code — Community
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-awesome-claude-code` | awesome-claude-code — Skills, Hooks, Slash Commands | [github.com/hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | [ ] |
+| `plugin-awesome-claude-plugins` | awesome-claude-code-plugins | [github.com/ccplugins/awesome-claude-code-plugins](https://github.com/ccplugins/awesome-claude-code-plugins) | [ ] |
+| `plugin-awesome-slash` | awesome-slash — Plugins, Agents & Skills (Claude + OpenCode + Codex) | [github.com/avifenesh/awesome-slash](https://github.com/avifenesh/awesome-slash) | [ ] |
+| `plugin-claude-skills-collection` | 192+ Claude Code Skills & Agent Plugins | [github.com/alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | [ ] |
+| `plugin-claude-hooks-mastery` | Claude Code Hooks Mastery (Python) | [github.com/disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) | [ ] |
+| `plugin-claude-marketplaces` | claudemarketplaces.com — Curated Directory | [claudemarketplaces.com](https://claudemarketplaces.com/) | [ ] |
+| `plugin-claude-plugins-dev` | claude-plugins.dev — Agent Skills Directory | [claude-plugins.dev/skills](https://claude-plugins.dev/skills) | [ ] |
+
+### OpenCode
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-opencode` | OpenCode — Open Source AI Coding Agent | [opencode.ai](https://opencode.ai/) | [ ] |
+| `plugin-opencode-cafe` | opencode.cafe — Community Marketplace for OpenCode | [opencode.cafe](https://www.opencode.cafe/) | [ ] |
+| `plugin-awesome-opencode` | awesome-opencode — Plugins, Themes, Agents | [github.com/awesome-opencode/awesome-opencode](https://github.com/awesome-opencode/awesome-opencode) | [ ] |
+
+### Cursor
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-cursor-marketplace` | Cursor Official Plugin Marketplace | [cursor.com/marketplace](https://cursor.com/marketplace) | [ ] |
+| `plugin-cursor-directory` | cursor.directory — Community Rules, MCP & Plugins | [cursor.directory](https://cursor.directory/) | [ ] |
+
+### Windsurf
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-windsurf` | Windsurf Plugins | [windsurf.com/plugins](https://windsurf.com/plugins) | [ ] |
+
+### Cline
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-cline-marketplace` | Cline MCP Marketplace — One-Click Install | [cline.bot/mcp-marketplace](https://cline.bot/mcp-marketplace) | [ ] |
+
+### GitHub Copilot
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-copilot-extensions` | GitHub Copilot Extensions Marketplace | [github.com/marketplace?type=apps&copilot_app=true](https://github.com/marketplace?type=apps&copilot_app=true) | [ ] |
+| `plugin-awesome-copilot` | Awesome GitHub Copilot — Plugins, Agents & Skills | [awesome-copilot.github.com/tools](https://awesome-copilot.github.com/tools/) | [ ] |
+
+### Continue.dev
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-continue-dev` | Continue.dev — Open Source AI Assistant (VS Code + JetBrains) | [continue.dev](https://www.continue.dev/) | [ ] |
+
+### MCP Directories (Model Context Protocol)
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-mcp-registry` | Official MCP Registry | [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io/) | [ ] |
+| `plugin-smithery` | Smithery.ai — Largest MCP Server Marketplace (2,880+) | [smithery.ai](https://smithery.ai/) | [ ] |
+| `plugin-glama-mcp` | Glama.ai — MCP Server Registry with Security Scanning | [glama.ai/mcp/servers](https://glama.ai/mcp/servers) | [ ] |
+| `plugin-pulsemcp` | PulseMCP — Daily-Updated Directory (12,870+ servers) | [pulsemcp.com/servers](https://www.pulsemcp.com/servers) | [ ] |
+| `plugin-mcp-so` | mcp.so — Community Directory (19,000+ servers) | [mcp.so](https://mcp.so/) | [ ] |
+| `plugin-mcp-run` | mcp.run — Portable & Secure MCP Server Hosting | [mcp.run](https://www.mcp.run/) | [ ] |
+| `plugin-mcpmarket` | MCPMarket — MCP Servers & Clients Directory | [mcpmarket.com](https://mcpmarket.com/) | [ ] |
+| `plugin-lobehub-mcp` | LobeHub MCP — Categorized Server Marketplace | [lobehub.com/mcp](https://lobehub.com/mcp) | [ ] |
+| `plugin-awesome-mcp-servers` | awesome-mcp-servers (wong2) — Curated List | [github.com/wong2/awesome-mcp-servers](https://github.com/wong2/awesome-mcp-servers) | [ ] |
+| `plugin-awesome-remote-mcp` | awesome-remote-mcp-servers — Remote/Cloud MCP Servers | [github.com/jaw9c/awesome-remote-mcp-servers](https://github.com/jaw9c/awesome-remote-mcp-servers) | [ ] |
+
+### Other AI Coding Tools
+
+| Slug | Title | Source | Status |
+|---|---|---|---|
+| `plugin-devin-mcp` | Devin MCP Marketplace | [app.devin.ai/settings/mcp-marketplace](https://app.devin.ai/settings/mcp-marketplace) | [ ] |
+| `plugin-kiro` | Kiro IDE (AWS) — Agentic IDE with "Kiro Powers" | [kiro.dev](https://kiro.dev/) | [ ] |
+| `plugin-composio` | Composio — 1000+ Toolkits for AI Agents | [composio.dev](https://composio.dev/) | [ ] |

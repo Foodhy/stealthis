@@ -1,112 +1,108 @@
-# Prompt Designer Roadmap (Migracion desde lead-dialogue-builder)
+# Prompt Designer Roadmap
 
 ## Progreso
-- [x] Fase 1 completada
-- [x] Fase 2 completada
-- [x] Fase 3 completada
-- [ ] Fase 4 en progreso
+- [x] Fase 1 completada — Base de migracion
+- [x] Fase 2 completada — Componentes core de Prompts
+- [x] Fase 3 completada — Migracion por paginas funcionales
+- [x] Fase 4 completada — Cierre de migracion
+- [x] Fase 5 completada — Eliminar Supabase, solo localStorage
+- [x] Fase 6 completada — Fix UI/UX: responsive + layout bugs
+- [x] Fase 7 completada — Sistema de inyeccion "Open in Prompt Designer"
 
-## Objetivo
-- Migrar el proyecto existente `lead-dialogue-builder` hacia `prompt-designer`.
-- Priorizar la migracion de componentes y paginas ya funcionales antes de agregar nuevas features.
-- Mantener paridad funcional en flujo principal de prompts y configuracion.
-- Excluir `Adri Stats` del alcance inicial.
+---
 
-## Alcance Inicial (MVP de migracion)
-- Prompts (listado + editor + detalle).
-- Nueva fuente.
-- Probar endpoints.
-- Valores.
-- Configuracion.
-- Changelog (si ya esta estable y no bloquea la migracion principal).
+## Fases completadas (1-4): Migracion desde lead-dialogue-builder
 
-## Fuera de alcance por ahora
-- Adri Stats.
-- Nuevos modulos no existentes en `lead-dialogue-builder`.
-- Refactors grandes de arquitectura que no sean necesarios para migrar.
+> Migracion finalizada. Todas las paginas, componentes, servicios y tipos fueron migrados.
+> Paridad funcional lograda. Adri Stats excluido del alcance.
 
-## Inventario base a migrar
+---
 
-### Paginas origen
-- `src/pages/Index.tsx` (Prompts).
-- `src/pages/NewDataSource.tsx` (Nueva fuente).
-- `src/pages/TestEndpoints.tsx` (Probar endpoints).
-- `src/pages/Values.tsx` (Valores).
-- `src/pages/Settings.tsx` (Configuracion).
+## Fase 5 — Eliminar Supabase, solo localStorage + inyeccion
 
-### Componentes clave
-- `PromptGrid`, `PromptEditor`, `PromptSection`, `VariablePanel`.
-- `AgentTester` y componentes de `ApiTester/*`.
-- `Navbar`, `MarkdownEditor`, `FullscreenEditor`.
+### Objetivo
+- Eliminar TODA dependencia de Supabase. El app funciona 100% con localStorage.
+- Eliminar archivos, tipos, provider y dependencia de `@supabase/supabase-js`.
+- Simplificar `providerFactory` para que solo use `localProvider`.
 
-### Servicios y tipos
-- `services/promptService.ts`
-- `services/informationSourceService.ts`
-- `services/valuesService.ts`
-- `services/apiConfigService.ts`
-- `services/localStorageService.ts`
-- `types/dataSource.ts`
+### Tareas
+- [x] Eliminar `src/integrations/supabase/` (client.ts, types.ts, errorDiagnostics.ts).
+- [x] Eliminar `src/data/providers/supabaseProvider.ts`.
+- [x] Simplificar `src/data/providerFactory.ts` — usar directamente `localProvider`.
+- [x] Eliminar `supabase/schema.sql`.
+- [x] Eliminar variables `VITE_SUPABASE_*` de `.env.example`.
+- [x] Eliminar `VITE_DATA_PROVIDER` (ya no hay opcion, siempre es local).
+- [x] Eliminar `@supabase/supabase-js` de `package.json`.
+- [x] Eliminar `LOCAL_TO_SUPABASE_PLAN.md` (ya no aplica).
+- [x] Verificar que no queden imports ni referencias a Supabase en ningun archivo.
+- [x] Compilacion limpia sin Supabase.
 
-## Plan por fases
+---
 
-### Fase 1 - Base de migracion
-- [x] Definir estructura de carpetas destino para pages/components/services/types.
-- [x] Migrar router y layout principal para soportar:
-  - [x] `/prompts`
-  - [x] `/nueva-fuente`
-  - [x] `/probar-endpoints`
-  - [x] `/valores`
-  - [x] `/configuracion`
-- [x] Migrar `Navbar` con tabs equivalentes.
-- [x] Quitar/ocultar tab `Adri Stats`.
+## Fase 6 — Fix UI/UX: responsive + layout bugs
 
-### Fase 2 - Migracion de componentes core de Prompts
-- [x] Migrar `PromptGrid` y vista de listado.
-- [x] Migrar `PromptEditor` + secciones de markdown.
-- [x] Migrar panel de variables y toolbar/editor en fullscreen.
-- [x] Validar estado local y persistencia basica con servicios actuales.
+### Objetivo
+- Hacer la app completamente responsive (mobile-first).
+- Corregir bugs visuales reportados en el editor de prompts.
 
-### Fase 3 - Migracion por paginas funcionales
-- Nueva fuente:
-  - [x] Migrar formulario y flujo de alta/edicion de fuente.
-  - [x] Reusar `informationSourceService` y `types/dataSource`.
-- Probar endpoints:
-  - [x] Migrar `AgentTester` + `ApiTester`.
-  - [x] Validar request/response panel y snippets.
-- Valores:
-  - [x] Migrar CRUD y visualizacion de valores.
-  - [x] Reusar `valuesService`.
-- Configuracion:
-  - [x] Migrar pantalla de ajustes y configuraciones de API.
-  - [x] Reusar `apiConfigService`.
+### Problemas identificados
 
-### Fase 4 - Cierre de migracion
-- [x] Revisar paridad visual/funcional con `lead-dialogue-builder`.
-- [ ] Limpiar codigo no usado despues de migrar.
-- [x] Documentar diferencias intencionales (si aplica).
-- [x] Preparar backlog de mejoras post-migracion (sin incluir Adri Stats).
+#### 6.1 — Responsive general
+- [x] El layout del editor de prompts no es responsive.
+- [x] En mobile, los elementos se cortan o no se pueden scrollear.
+- [x] Sidebar + contenido principal deben adaptarse a pantallas pequenas.
 
-## Criterios de aceptacion de migracion
-- Navegacion completa entre Prompts, Nueva fuente, Probar endpoints, Valores y Configuracion.
-- Flujos CRUD principales funcionando con los servicios migrados.
-- Sin referencias activas a Adri Stats en rutas, navbar o layout.
-- Compilacion limpia del app `prompt-designer`.
+#### 6.2 — Editor de prompts: contenido inferior cortado
+- [x] Al cargar un prompt, los elementos de abajo (secciones, Available Tools) no se ven bien.
+- [x] El area de contenido no tiene scroll correcto; se corta el contenido.
+- [x] Asegurar que el contenido del editor tenga scroll completo dentro del viewport.
 
-## Riesgos y mitigaciones
-- Riesgo: dependencias de estado global entre componentes migrados.
-- Mitigacion: migrar por modulo, validando cada pagina de forma aislada.
+#### 6.3 — Consolidated Prompt: area muy pequena y botones rotos
+- [x] El area de "Consolidated Prompt" en la parte inferior es demasiado pequena.
+- [x] Los botones (Preview, New Section, Import, Save prompt, Test Agent, Copy, Export) se ven mal y estan apretados.
+- [x] Redisenar la barra de acciones del consolidated prompt para que sea clara y usable.
 
-- Riesgo: servicios acoplados a estructuras antiguas.
-- Mitigacion: crear adaptadores pequenos en lugar de reescribir todo al inicio.
+#### 6.4 — Sidebar roto al ocultar
+- [x] El sidebar (Tools) se dania visualmente al intentar ocultarlo.
+- [x] Implementar toggle de sidebar correcto con transicion suave.
+- [x] En mobile, el sidebar debe ser un drawer/overlay, no empujar el contenido.
 
-- Riesgo: regresion visual en editor/markdown.
-- Mitigacion: migrar primero componentes de UI compartidos y luego paginas.
+#### 6.5 — Navbar visible dentro del editor
+- [x] Al entrar al workspace/editor de un prompt, el navbar principal sigue visible arriba.
+- [x] El editor debe ocupar toda la pantalla (fullscreen workspace) sin el navbar superior.
+- [x] Solo mostrar la barra de navegacion del prompt (Projects ← / TOOLS / SUPPORT / etc.) sin el nav global.
 
-## Orden recomendado de ejecucion
-1. Navbar + routing base.
-2. Prompts (listado/editor).
-3. Nueva fuente.
-4. Probar endpoints.
-5. Valores.
-6. Configuracion.
-7. Changelog (opcional, si no bloquea el MVP).
+### Criterios de aceptacion
+- La app se ve y funciona bien en mobile (360px+), tablet (768px+) y desktop (1024px+).
+- El editor de prompts ocupa todo el viewport sin navbar global.
+- Sidebar toggle funciona sin bugs visuales.
+- Todo el contenido del editor es scrolleable y visible.
+- Los botones del consolidated prompt son legibles y accesibles en todos los tamanos.
+
+---
+
+## Fase 7 — Sistema de inyeccion "Open in Prompt Designer"
+
+### Objetivo
+- Desde la web principal (`apps/www`), los recursos de categoria "prompts" tendran un boton "Open in Prompt Designer".
+- Similar al flujo de "Open in CodePen" que ya existe.
+- Al hacer click, abre `prompt-designer` e inyecta el contenido del recurso como un prompt nuevo.
+
+### Tareas
+- [x] Definir formato de datos para inyeccion — localStorage key `pd_injected_prompt` con JSON payload.
+- [x] Agregar boton "Open in Prompt Designer" en ActionMenu de recursos tipo prompt en `apps/www`.
+- [x] En `prompt-designer`, detectar datos inyectados al cargar y crear un prompt temporal.
+- [x] Validar flujo completo: click en www → abre prompt-designer → prompt cargado y editable.
+- [x] Manejar caso: siempre abre nueva tab con `?injected=1`.
+
+### Criterios de aceptacion
+- Boton visible solo en recursos de categoria "prompts" en www.
+- Click abre prompt-designer con el prompt pre-cargado.
+- El usuario puede editar y guardar el prompt inyectado localmente.
+
+---
+
+## Orden de ejecucion
+1. **Fase 5** — Eliminar Supabase (limpieza, sin cambios funcionales).
+2. **Fase 6** — Fix UI/UX (responsive + bugs visuales).
+3. **Fase 7** — Sistema de inyeccion "Open in Prompt Designer".

@@ -1,13 +1,5 @@
 import React, { useRef } from "react";
-import {
-  Animated,
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from "react-native";
+import { Animated, Dimensions, Image, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -27,10 +19,9 @@ function ParallaxScrollView({ children, style }: ParallaxScrollViewProps) {
     <Animated.ScrollView
       style={[styles.scrollView, style]}
       scrollEventThrottle={16}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true }
-      )}
+      onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+        useNativeDriver: true,
+      })}
       showsVerticalScrollIndicator={false}
     >
       {React.Children.map(children, (child) => {
@@ -57,13 +48,7 @@ interface ParallaxLayerProps {
   scrollY?: Animated.Value;
 }
 
-function ParallaxLayer({
-  speed = 0.5,
-  offset = 0,
-  children,
-  style,
-  scrollY,
-}: ParallaxLayerProps) {
+function ParallaxLayer({ speed = 0.5, offset = 0, children, style, scrollY }: ParallaxLayerProps) {
   if (!scrollY) {
     return <View style={style}>{children}</View>;
   }
@@ -78,11 +63,7 @@ function ParallaxLayer({
     ],
   });
 
-  return (
-    <Animated.View style={[style, { transform: [{ translateY }] }]}>
-      {children}
-    </Animated.View>
-  );
+  return <Animated.View style={[style, { transform: [{ translateY }] }]}>{children}</Animated.View>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -97,23 +78,13 @@ interface ParallaxImageProps {
   scrollY?: Animated.Value;
 }
 
-function ParallaxImage({
-  uri,
-  height,
-  speed = 0.4,
-  style,
-  scrollY,
-}: ParallaxImageProps) {
+function ParallaxImage({ uri, height, speed = 0.4, style, scrollY }: ParallaxImageProps) {
   const imageHeight = height * 1.4;
 
   const translateY = scrollY
     ? scrollY.interpolate({
         inputRange: [-SCREEN_HEIGHT, 0, SCREEN_HEIGHT],
-        outputRange: [
-          -SCREEN_HEIGHT * speed,
-          0,
-          SCREEN_HEIGHT * speed,
-        ],
+        outputRange: [-SCREEN_HEIGHT * speed, 0, SCREEN_HEIGHT * speed],
         extrapolate: "clamp",
       })
     : new Animated.Value(0);
@@ -141,12 +112,9 @@ function ParallaxImage({
 /*  Demo components                                                    */
 /* ------------------------------------------------------------------ */
 
-const PLACEHOLDER_IMAGE =
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80";
-const CARD_IMAGE_1 =
-  "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80";
-const CARD_IMAGE_2 =
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80";
+const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80";
+const CARD_IMAGE_1 = "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80";
+const CARD_IMAGE_2 = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80";
 
 function ContentCard({
   title,
@@ -175,15 +143,10 @@ export default function App() {
       <ParallaxScrollView>
         {/* Hero section with parallax background */}
         <ParallaxLayer speed={0.3} style={styles.heroContainer}>
-          <ParallaxImage
-            uri={PLACEHOLDER_IMAGE}
-            height={SCREEN_HEIGHT * 0.5}
-          />
+          <ParallaxImage uri={PLACEHOLDER_IMAGE} height={SCREEN_HEIGHT * 0.5} />
           <View style={styles.heroOverlay}>
             <Text style={styles.heroTitle}>Parallax Scroll</Text>
-            <Text style={styles.heroSubtitle}>
-              Layered elements at different speeds
-            </Text>
+            <Text style={styles.heroSubtitle}>Layered elements at different speeds</Text>
           </View>
         </ParallaxLayer>
 

@@ -153,10 +153,7 @@ function SharedTransitionProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const getTransition = useCallback(
-    (id: string) => transitions[id],
-    [transitions],
-  );
+  const getTransition = useCallback((id: string) => transitions[id], [transitions]);
 
   const value = useMemo(
     () => ({
@@ -167,7 +164,7 @@ function SharedTransitionProvider({ children }: { children: ReactNode }) {
       getTransition,
       isAnimating,
     }),
-    [register, unregister, startTransition, reverseTransition, getTransition, isAnimating],
+    [register, unregister, startTransition, reverseTransition, getTransition, isAnimating]
   );
 
   // Render the animated overlay clones
@@ -244,7 +241,7 @@ function SharedTransition({ id, children, style }: SharedTransitionProps) {
       register(id, viewRef);
       return () => unregister(id);
     },
-    [id, register, unregister],
+    [id, register, unregister]
   );
 
   return (
@@ -289,11 +286,7 @@ function GridView({ onSelect }: { onSelect: (item: ImageItem) => void }) {
   return (
     <View style={styles.grid}>
       {IMAGES.map((item) => (
-        <TouchableOpacity
-          key={item.id}
-          activeOpacity={0.8}
-          onPress={() => onSelect(item)}
-        >
+        <TouchableOpacity key={item.id} activeOpacity={0.8} onPress={() => onSelect(item)}>
           <SharedTransition id={`image-${item.id}`} style={styles.thumbWrapper}>
             <Image source={{ uri: item.uri }} style={styles.thumb} />
           </SharedTransition>
@@ -334,24 +327,16 @@ function DetailView({
 
   return (
     <Animated.View style={[styles.detail, { opacity: fadeAnim }]}>
-      <Image
-        source={{ uri: item.uri }}
-        style={styles.detailImage}
-        resizeMode="cover"
-      />
+      <Image source={{ uri: item.uri }} style={styles.detailImage} resizeMode="cover" />
       <View style={styles.detailContent}>
         <Text style={styles.detailTitle}>Photo #{item.id}</Text>
         <Text style={styles.detailDesc}>
-          This is a full-screen detail view. The shared element transition
-          animates the thumbnail from its grid position to the hero image above
-          using measured coordinates and spring physics.
+          This is a full-screen detail view. The shared element transition animates the thumbnail
+          from its grid position to the hero image above using measured coordinates and spring
+          physics.
         </Text>
       </View>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={handleBack}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
         <Text style={styles.backText}>← Back</Text>
       </TouchableOpacity>
     </Animated.View>

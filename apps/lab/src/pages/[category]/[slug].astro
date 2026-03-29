@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
+import { compile as compileSvelte } from "svelte/compiler";
 import { SITE_URLS } from "../../lib/urls";
 import "../../styles/global.css";
 
@@ -115,6 +116,291 @@ ${scriptTagClose}
 </html>`;
   }
 
+  function buildVueSrcdoc(sfc: string): string {
+    const scriptTagOpen = "<" + "script";
+    const scriptTagClose = "</" + "script>";
+
+    // Extract <script setup> or <script> block
+    const scriptMatch = sfc.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+    const scriptContent = scriptMatch?.[1]?.trim() ?? "";
+
+    // Extract <template> block (greedy to handle nested <template v-if/v-for>)
+    const templateMatch = sfc.match(/<template>([\s\S]*)<\/template>/);
+    const templateContent = templateMatch?.[1]?.trim() ?? "";
+
+    // Extract all <style> blocks (with or without scoped) and concatenate
+    const styleContent = [...sfc.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+      .map((m) => m[1].trim())
+      .filter(Boolean)
+      .join("\n");
+
+    // Clean script: remove vue imports, handle defineProps/withDefaults macros
+    let cleanScript = scriptContent
+      .replace(/^\s*import\s+\{[^}]*\}\s+from\s+['"]vue['"];?\s*$/gm, "")
+      .replace(/^\s*import\s+.*from\s+['"][^'"]+['"];?\s*$/gm, "")
+      .trim();
+
+    // Track the props variable name so we can spread its refs into the setup return
+    let propsVarName = "";
+
+    // Handle withDefaults(defineProps<...>(), { defaults }) using bracket counting
+    // Find the withDefaults call and extract the defaults object
+    const wdMatch = cleanScript.match(/const\s+(\w+)\s*=\s*withDefaults\s*\(/);
+    if (wdMatch) {
+      const varName = wdMatch[1];
+      propsVarName = varName;
+      const wdStart = cleanScript.indexOf(wdMatch[0]);
+      // Find the matching closing paren of withDefaults(...)
+      let depth = 0;
+      let wdEnd = wdStart + wdMatch[0].length;
+      for (let i = wdEnd - 1; i < cleanScript.length; i++) {
+        if (cleanScript[i] === "(") depth++;
+        else if (cleanScript[i] === ")") {
+          depth--;
+          if (depth === 0) {
+            wdEnd = i + 1;
+            break;
+          }
+        }
+      }
+      const fullCall = cleanScript.slice(wdStart, wdEnd);
+
+      // Extract the defaults object: second arg to withDefaults
+      // Find defineProps<...>() first, then get the comma after it
+      const dpEnd = fullCall.indexOf("(),");
+      if (dpEnd !== -1) {
+        const afterDp = fullCall.slice(dpEnd + 3).trim(); // skip "(),"
+        // afterDp should be like "{ events: () => [...], radius: 250, ... })"
+        // Remove the trailing ")"
+        const defaultsStr = afterDp.replace(/\)\s*$/, "").trim();
+        // Resolve factory functions: key: () => value → key: value
+        // Use a self-invoking pattern: wrap in a function that resolves factories
+        cleanScript =
+          cleanScript.slice(0, wdStart) +
+          `const ${varName} = reactive((() => { const _d = ${defaultsStr}; const _r = {}; for (const [k,v] of Object.entries(_d)) _r[k] = typeof v === 'function' ? v() : v; return _r; })())` +
+          cleanScript.slice(wdEnd);
+      } else {
+        cleanScript =
+          cleanScript.slice(0, wdStart) +
+          `const ${varName} = reactive({})` +
+          cleanScript.slice(wdEnd);
+      }
+    }
+
+    // Handle standalone defineProps<...>() (without withDefaults)
+    const dpMatch = cleanScript.match(/const\s+(\w+)\s*=\s*defineProps<[\s\S]*?>\s*\(\s*\)/);
+    if (dpMatch) {
+      cleanScript = cleanScript.replace(dpMatch[0], `const ${dpMatch[1]} = reactive({})`);
+    }
+
+    // Remove bare defineProps (TypeScript generic style)
+    cleanScript = cleanScript.replace(/defineProps<[\s\S]*?>\s*\(\s*\)/g, "reactive({})");
+
+    // Handle defineProps({ key: { type, default }, ... }) — runtime object syntax
+    // Uses bracket counting to find the full defineProps({...}) call
+    const dpObjMatch = cleanScript.match(/const\s+(\w+)\s*=\s*defineProps\s*\(/);
+    if (dpObjMatch) {
+      const dpVarName = dpObjMatch[1];
+      propsVarName = dpVarName;
+      const dpStart = cleanScript.indexOf(dpObjMatch[0]);
+      let dpDepth = 0;
+      let dpEndPos = dpStart + dpObjMatch[0].length;
+      for (let i = dpEndPos - 1; i < cleanScript.length; i++) {
+        if (cleanScript[i] === "(") dpDepth++;
+        else if (cleanScript[i] === ")") {
+          dpDepth--;
+          if (dpDepth === 0) {
+            dpEndPos = i + 1;
+            break;
+          }
+        }
+      }
+      // Extract the object argument: everything between defineProps( and the final )
+      const innerContent = cleanScript.slice(dpStart + dpObjMatch[0].length, dpEndPos - 1).trim();
+      // Convert props definition to reactive with defaults extracted
+      cleanScript =
+        cleanScript.slice(0, dpStart) +
+        `const ${dpVarName} = reactive((() => { const _d = ${innerContent}; const _r = {}; for (const [k,v] of Object.entries(_d)) _r[k] = v && typeof v === 'object' && 'default' in v ? (typeof v.default === 'function' ? v.default() : v.default) : undefined; return _r; })())` +
+        cleanScript.slice(dpEndPos);
+    }
+
+    // Handle defineEmits — replace with a no-op function for standalone demos
+    cleanScript = cleanScript.replace(
+      /const\s+(\w+)\s*=\s*defineEmits\s*\([^)]*\)\s*;?/g,
+      "const $1 = (...args) => {};"
+    );
+    cleanScript = cleanScript.replace(/defineEmits\s*\([^)]*\)\s*;?/g, "");
+
+    // Strip TypeScript generics from function calls: ref<Type>(val) → ref(val)
+    cleanScript = cleanScript.replace(/(\w+)<[^>]+>\(/g, "$1(");
+    // Strip interface/type declarations
+    cleanScript = cleanScript.replace(/^\s*(?:interface|type)\s+\w[\s\S]*?(?:\n\}|;)\s*$/gm, "");
+
+    // Extract all top-level const/let/function names to auto-return them
+    const names = new Set<string>();
+    for (const m of cleanScript.matchAll(/^(?:const|let|var)\s+(\w+)/gm)) names.add(m[1]);
+    for (const m of cleanScript.matchAll(/^function\s+(\w+)/gm)) names.add(m[1]);
+    // Also catch destructured: const { a, b } = ...
+    for (const m of cleanScript.matchAll(/^(?:const|let|var)\s+\{\s*([^}]+)\}/gm)) {
+      for (const name of m[1].split(",").map((s) => s.trim().split(/\s/)[0])) {
+        if (name) names.add(name);
+      }
+    }
+
+    // Detect custom directives (vXxx naming from <script setup>) and hoist them
+    // out of setup(), since auto-registration only works in <script setup>
+    const directiveNames = [...names].filter((n) => /^v[A-Z]/.test(n));
+    let hoistedDirectives = "";
+    let directiveRegistrations = "";
+    for (const dirName of directiveNames) {
+      const re = new RegExp(`(const|let|var)\\s+${dirName}\\s*=\\s*\\{`);
+      const m = cleanScript.match(re);
+      if (m && m.index !== undefined) {
+        const start = m.index;
+        let depth = 0;
+        let end = start;
+        for (let i = start + m[0].length - 1; i < cleanScript.length; i++) {
+          if (cleanScript[i] === "{") depth++;
+          else if (cleanScript[i] === "}") {
+            depth--;
+            if (depth === 0) {
+              end = i + 1;
+              break;
+            }
+          }
+        }
+        hoistedDirectives += cleanScript.slice(start, end) + "\n";
+        cleanScript = cleanScript.slice(0, start) + cleanScript.slice(end);
+        names.delete(dirName);
+        const kebab = dirName
+          .slice(1)
+          .replace(/[A-Z]/g, (c) => "-" + c.toLowerCase())
+          .replace(/^-/, "");
+        directiveRegistrations += `  app.directive('${kebab}', ${dirName});\n`;
+      }
+    }
+
+    const returnStatement =
+      names.size > 0
+        ? `return { ${propsVarName ? `...toRefs(${propsVarName}), ` : ""}${[...names].join(", ")} };`
+        : propsVarName
+          ? `return { ...toRefs(${propsVarName}) };`
+          : "return {};";
+
+    const safeScript = cleanScript.replace(/<\/script>/gi, "<\\/script>");
+    const safeTemplate = templateContent.replace(/<\/script>/gi, "<\\/script>");
+
+    return `<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+${scriptTagOpen} src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js">${scriptTagClose}
+${scriptTagOpen} src="https://cdn.tailwindcss.com">${scriptTagClose}
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; background: #020617; }
+  ${styleContent}
+</style>
+</head>
+<body>
+<div id="app"></div>
+${scriptTagOpen}>
+try {
+  const { createApp, ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick, reactive, toRef, toRefs, provide, inject, defineComponent } = Vue;
+
+  ${hoistedDirectives}
+
+  const app = createApp({
+    setup() {
+      ${safeScript}
+
+      ${returnStatement}
+    },
+    template: ${JSON.stringify(safeTemplate)},
+  });
+
+${directiveRegistrations}  app.mount('#app');
+} catch (error) {
+  const root = document.getElementById('app');
+  if (root) {
+    const pre = document.createElement('pre');
+    pre.textContent = error instanceof Error ? error.name + ': ' + error.message + '\\n\\n' + (error.stack || '') : String(error);
+    pre.style.cssText = 'margin:24px;padding:16px;border-radius:12px;border:1px solid rgba(248,113,113,.28);background:#190b0f;color:#fecaca;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;';
+    root.append(pre);
+  }
+}
+${scriptTagClose}
+</body>
+</html>`;
+  }
+
+  function buildSvelteSrcdoc(sfc: string): string | null {
+    const scriptTagOpen = "<" + "script";
+    const scriptTagClose = "</" + "script>";
+
+    // Compile Svelte at build time (server-side)
+    let compiled: { js: { code: string }; css: { code: string | null } };
+    try {
+      compiled = compileSvelte(sfc, {
+        generate: "dom",
+        css: "injected",
+        hydratable: false,
+        name: "App",
+      });
+    } catch {
+      return null;
+    }
+
+    // Rewrite svelte/internal imports to use CDN and remove export default
+    let jsCode = compiled.js.code
+      .replace(
+        /from\s+["']svelte\/internal\/disclose-version["']/g,
+        'from "https://esm.sh/svelte@4/internal/disclose-version"'
+      )
+      .replace(/from\s+["']svelte\/internal["']/g, 'from "https://esm.sh/svelte@4/internal"')
+      .replace(/from\s+["']svelte["']/g, 'from "https://esm.sh/svelte@4"')
+      .replace(
+        /^\s*import\s+["']svelte\/internal\/disclose-version["'];?\s*$/gm,
+        'import "https://esm.sh/svelte@4/internal/disclose-version";'
+      )
+      .replace(/^\s*export\s+default\s+App\s*;?\s*$/gm, "");
+
+    const safeJs = jsCode.replace(/<\/script>/gi, "<\\/script>");
+
+    return `<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+${scriptTagOpen} src="https://cdn.tailwindcss.com">${scriptTagClose}
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; background: #020617; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+${scriptTagOpen} type="module">
+${safeJs}
+
+new App({ target: document.getElementById("app") });
+${scriptTagClose}
+${scriptTagOpen}>
+window.addEventListener("error", (e) => {
+  const root = document.getElementById("app");
+  if (root && !root.hasChildNodes()) {
+    const pre = document.createElement("pre");
+    pre.textContent = e.message || String(e.error);
+    pre.style.cssText = "margin:24px;padding:16px;border-radius:12px;border:1px solid rgba(248,113,113,.28);background:#190b0f;color:#fecaca;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;";
+    root.append(pre);
+  }
+});
+${scriptTagClose}
+</body>
+</html>`;
+  }
+
   const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
   const files = await fg(path.join(CONTENT_DIR, "resources/*/index.mdx"));
 
@@ -155,6 +441,14 @@ ${scriptTagClose}
     const reactTsx = existsSync(reactPath) ? readFileSync(reactPath, "utf-8") : null;
     const reactSrcdoc = reactTsx ? buildReactSrcdoc(reactTsx) : null;
 
+    const vuePath = path.join(snippetsDir, "vue.vue");
+    const vueCode = existsSync(vuePath) ? readFileSync(vuePath, "utf-8") : null;
+    const vueSrcdoc = vueCode ? buildVueSrcdoc(vueCode) : null;
+
+    const sveltePath = path.join(snippetsDir, "svelte.svelte");
+    const svelteCode = existsSync(sveltePath) ? readFileSync(sveltePath, "utf-8") : null;
+    const svelteSrcdoc = svelteCode ? buildSvelteSrcdoc(svelteCode) : null;
+
     paths.push({
       params: { category, slug },
       props: {
@@ -168,6 +462,8 @@ ${scriptTagClose}
         diagramMmd,
         schemaDbml,
         reactSrcdoc,
+        vueSrcdoc,
+        svelteSrcdoc,
       },
     });
   }
@@ -176,8 +472,20 @@ ${scriptTagClose}
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: Used in Astro template markup.
-const { meta, html, css, js, schemaSql, seedSql, queriesSql, diagramMmd, schemaDbml, reactSrcdoc } =
-  Astro.props;
+const {
+  meta,
+  html,
+  css,
+  js,
+  schemaSql,
+  seedSql,
+  queriesSql,
+  diagramMmd,
+  schemaDbml,
+  reactSrcdoc,
+  vueSrcdoc,
+  svelteSrcdoc,
+} = Astro.props;
 
 const isDatabaseSchema = meta.category === "database-schemas";
 const scriptTagOpen = "<" + "script";
@@ -299,6 +607,8 @@ if (!isDatabaseSchema && js && srcdoc) {
 const demoVariants = [
   ...(srcdoc ? [{ id: "vanilla", label: "Vanilla", srcdoc }] : []),
   ...(reactSrcdoc ? [{ id: "react", label: "React", srcdoc: reactSrcdoc }] : []),
+  ...(vueSrcdoc ? [{ id: "vue", label: "Vue", srcdoc: vueSrcdoc }] : []),
+  ...(svelteSrcdoc ? [{ id: "svelte", label: "Svelte", srcdoc: svelteSrcdoc }] : []),
 ];
 const defaultSrcdoc = demoVariants[0]?.srcdoc ?? "";
 const hasVariants = demoVariants.length > 1;

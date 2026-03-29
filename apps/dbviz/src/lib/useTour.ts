@@ -19,7 +19,11 @@ type TFunc = (key: TranslationKey) => string;
 type SetSettingsOpen = (open: boolean) => void;
 type SetActiveTab = (tab: string) => void;
 
-function buildSteps(t: TFunc, setSettingsOpen: SetSettingsOpen, setActiveTab: SetActiveTab): DriveStep[] {
+function buildSteps(
+  t: TFunc,
+  setSettingsOpen: SetSettingsOpen,
+  setActiveTab: SetActiveTab
+): DriveStep[] {
   return [
     {
       popover: {
@@ -133,7 +137,9 @@ function loadTheme(): TourTheme {
   try {
     const v = localStorage.getItem(TOUR_THEME_KEY);
     if (v && TOUR_THEMES.includes(v as TourTheme)) return v as TourTheme;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return "dark";
 }
 
@@ -143,7 +149,11 @@ export function useTour(t: TFunc, setSettingsOpen: SetSettingsOpen, setActiveTab
 
   const setTourTheme = useCallback((theme: TourTheme) => {
     setTourThemeState(theme);
-    try { localStorage.setItem(TOUR_THEME_KEY, theme); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(TOUR_THEME_KEY, theme);
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   // Auto-start on first visit

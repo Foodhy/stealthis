@@ -21,9 +21,21 @@ interface Particle {
 }
 
 const DEFAULT_EMOJIS = [
-  "\u2728", "\u2B50", "\u2764\uFE0F", "\uD83D\uDD25", "\uD83C\uDF89",
-  "\uD83C\uDF1F", "\uD83D\uDCAB", "\uD83C\uDF08", "\uD83D\uDE80", "\uD83C\uDF88",
-  "\uD83C\uDF81", "\uD83C\uDF82", "\uD83C\uDF86", "\uD83C\uDF87", "\u2604\uFE0F",
+  "\u2728",
+  "\u2B50",
+  "\u2764\uFE0F",
+  "\uD83D\uDD25",
+  "\uD83C\uDF89",
+  "\uD83C\uDF1F",
+  "\uD83D\uDCAB",
+  "\uD83C\uDF08",
+  "\uD83D\uDE80",
+  "\uD83C\uDF88",
+  "\uD83C\uDF81",
+  "\uD83C\uDF82",
+  "\uD83C\uDF86",
+  "\uD83C\uDF87",
+  "\u2604\uFE0F",
 ];
 
 export function CoolMode({
@@ -189,13 +201,31 @@ export default function CoolModeDemo() {
             Click anywhere for emoji explosions!
           </p>
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
-            <button style={{ ...btnBase, background: "rgba(239,68,68,0.15)", borderColor: "rgba(239,68,68,0.3)" }}>
+            <button
+              style={{
+                ...btnBase,
+                background: "rgba(239,68,68,0.15)",
+                borderColor: "rgba(239,68,68,0.3)",
+              }}
+            >
               <span>{"\u2764\uFE0F"}</span> Like
             </button>
-            <button style={{ ...btnBase, background: "rgba(250,204,21,0.12)", borderColor: "rgba(250,204,21,0.3)" }}>
+            <button
+              style={{
+                ...btnBase,
+                background: "rgba(250,204,21,0.12)",
+                borderColor: "rgba(250,204,21,0.3)",
+              }}
+            >
               <span>{"\u2B50"}</span> Star
             </button>
-            <button style={{ ...btnBase, background: "rgba(168,85,247,0.12)", borderColor: "rgba(168,85,247,0.3)" }}>
+            <button
+              style={{
+                ...btnBase,
+                background: "rgba(168,85,247,0.12)",
+                borderColor: "rgba(168,85,247,0.3)",
+              }}
+            >
               <span>{"\uD83C\uDF89"}</span> Party
             </button>
           </div>

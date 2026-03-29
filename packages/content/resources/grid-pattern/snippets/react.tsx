@@ -38,8 +38,7 @@ export function GridPattern({
   const fadeStyle: CSSProperties = {
     position: "absolute",
     inset: 0,
-    background:
-      "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, #0a0a0a 100%)",
+    background: "radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, #0a0a0a 100%)",
     pointerEvents: "none",
   };
 
@@ -106,8 +105,8 @@ export default function GridPatternDemo() {
             fontFamily: "system-ui, -apple-system, sans-serif",
           }}
         >
-          A minimal SVG-based grid background with customizable size, color, and
-          stroke width via CSS custom properties.
+          A minimal SVG-based grid background with customizable size, color, and stroke width via
+          CSS custom properties.
         </p>
       </div>
     </GridPattern>

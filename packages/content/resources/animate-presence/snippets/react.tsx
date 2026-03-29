@@ -11,19 +11,34 @@ interface Item {
 
 const icons = ["✦", "◆", "●", "▲", "★", "◉", "⬟", "⬡"];
 const colors = [
-  "rgba(109,40,217,0.25)", "rgba(59,130,246,0.25)", "rgba(16,185,129,0.25)",
-  "rgba(245,158,11,0.25)", "rgba(239,68,68,0.25)", "rgba(236,72,153,0.25)",
-  "rgba(14,165,233,0.25)", "rgba(168,85,247,0.25)",
+  "rgba(109,40,217,0.25)",
+  "rgba(59,130,246,0.25)",
+  "rgba(16,185,129,0.25)",
+  "rgba(245,158,11,0.25)",
+  "rgba(239,68,68,0.25)",
+  "rgba(236,72,153,0.25)",
+  "rgba(14,165,233,0.25)",
+  "rgba(168,85,247,0.25)",
 ];
 const borderColors = [
-  "rgba(109,40,217,0.5)", "rgba(59,130,246,0.5)", "rgba(16,185,129,0.5)",
-  "rgba(245,158,11,0.5)", "rgba(239,68,68,0.5)", "rgba(236,72,153,0.5)",
-  "rgba(14,165,233,0.5)", "rgba(168,85,247,0.5)",
+  "rgba(109,40,217,0.5)",
+  "rgba(59,130,246,0.5)",
+  "rgba(16,185,129,0.5)",
+  "rgba(245,158,11,0.5)",
+  "rgba(239,68,68,0.5)",
+  "rgba(236,72,153,0.5)",
+  "rgba(14,165,233,0.5)",
+  "rgba(168,85,247,0.5)",
 ];
 const names = [
-  "Design tokens updated", "New component merged", "Build pipeline passed",
-  "Sprint review scheduled", "Pull request approved", "Test coverage improved",
-  "Deployment complete", "Security audit passed",
+  "Design tokens updated",
+  "New component merged",
+  "Build pipeline passed",
+  "Sprint review scheduled",
+  "Pull request approved",
+  "Test coverage improved",
+  "Deployment complete",
+  "Security audit passed",
 ];
 
 function AnimatePresenceItem({
@@ -89,9 +104,7 @@ function AnimatePresenceItem({
         {item.icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "#e4e4e7" }}>
-          {item.name}
-        </div>
+        <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "#e4e4e7" }}>{item.name}</div>
         <div style={{ fontSize: "0.7rem", color: "#52525b", marginTop: "0.15rem" }}>
           {item.time}
         </div>
@@ -172,7 +185,14 @@ export default function AnimatePresence() {
           to { opacity: 0; transform: translateY(12px) scale(0.96); }
         }
       `}</style>
-      <div style={{ width: "min(480px, 100%)", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div
+        style={{
+          width: "min(480px, 100%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.25rem",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#f4f4f5" }}>
@@ -216,12 +236,27 @@ export default function AnimatePresence() {
           </div>
         </div>
 
-        <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem", minHeight: 60 }}>
+        <ul
+          style={{
+            listStyle: "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+            minHeight: 60,
+          }}
+        >
           {items.map((item) => (
             <AnimatePresenceItem key={item.id} item={item} onRemove={removeItem} />
           ))}
           {items.length === 0 && (
-            <p style={{ textAlign: "center", padding: "2rem", color: "#3f3f46", fontSize: "0.85rem" }}>
+            <p
+              style={{
+                textAlign: "center",
+                padding: "2rem",
+                color: "#3f3f46",
+                fontSize: "0.85rem",
+              }}
+            >
               Click "+ Add item" to begin
             </p>
           )}

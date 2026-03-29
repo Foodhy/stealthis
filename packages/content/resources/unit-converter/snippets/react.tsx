@@ -2,7 +2,10 @@ import { useState } from "react";
 
 type Category = "length" | "weight" | "temperature";
 
-const UNITS: Record<Category, { label: string; toBase: (v: number) => number; fromBase: (v: number) => number }[]> = {
+const UNITS: Record<
+  Category,
+  { label: string; toBase: (v: number) => number; fromBase: (v: number) => number }[]
+> = {
   length: [
     { label: "Meters", toBase: (v) => v, fromBase: (v) => v },
     { label: "Kilometers", toBase: (v) => v * 1000, fromBase: (v) => v / 1000 },
@@ -73,7 +76,11 @@ export default function UnitConverterRC() {
               onChange={(e) => setFromIdx(Number(e.target.value))}
               className="w-full bg-transparent text-[#8b949e] text-xs mb-2 focus:outline-none"
             >
-              {units.map((u, i) => <option key={u.label} value={i}>{u.label}</option>)}
+              {units.map((u, i) => (
+                <option key={u.label} value={i}>
+                  {u.label}
+                </option>
+              ))}
             </select>
             <input
               type="number"
@@ -91,7 +98,11 @@ export default function UnitConverterRC() {
               onChange={(e) => setToIdx(Number(e.target.value))}
               className="w-full bg-transparent text-[#8b949e] text-xs mb-2 focus:outline-none"
             >
-              {units.map((u, i) => <option key={u.label} value={i}>{u.label}</option>)}
+              {units.map((u, i) => (
+                <option key={u.label} value={i}>
+                  {u.label}
+                </option>
+              ))}
             </select>
             <p className="text-[#7ee787] text-3xl font-bold tabular-nums">
               {isNaN(converted) ? "—" : parseFloat(converted.toPrecision(8)).toLocaleString()}

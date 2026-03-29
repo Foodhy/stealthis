@@ -89,7 +89,7 @@ export function StyledTextInput({
         useNativeDriver: false,
       }).start();
     },
-    [labelAnim],
+    [labelAnim]
   );
 
   const animateBorder = useCallback(
@@ -100,7 +100,7 @@ export function StyledTextInput({
         useNativeDriver: false,
       }).start();
     },
-    [borderAnim],
+    [borderAnim]
   );
 
   // ---- handlers ----------------------------------------------------------
@@ -163,9 +163,7 @@ export function StyledTextInput({
         ]}
       >
         {/* Left icon */}
-        {leftIcon && (
-          <Animated.View style={styles.iconLeft}>{leftIcon}</Animated.View>
-        )}
+        {leftIcon && <Animated.View style={styles.iconLeft}>{leftIcon}</Animated.View>}
 
         {/* Input area */}
         <Animated.View style={styles.inputArea}>
@@ -205,18 +203,13 @@ export function StyledTextInput({
         </Animated.View>
 
         {/* Right icon */}
-        {rightIcon && (
-          <Animated.View style={styles.iconRight}>{rightIcon}</Animated.View>
-        )}
+        {rightIcon && <Animated.View style={styles.iconRight}>{rightIcon}</Animated.View>}
       </Animated.View>
 
       {/* Helper / Error text */}
       {(hasError || helperText) && (
         <Animated.Text
-          style={[
-            styles.helperText,
-            { color: hasError ? COLORS.error : COLORS.textSecondary },
-          ]}
+          style={[styles.helperText, { color: hasError ? COLORS.error : COLORS.textSecondary }]}
         >
           {hasError ? error : helperText}
         </Animated.Text>
@@ -284,16 +277,11 @@ export default function App() {
   const [disabled, setDisabled] = useState("Cannot edit this");
 
   const emailError =
-    email.length > 0 && !email.includes("@")
-      ? "Please enter a valid email address"
-      : undefined;
+    email.length > 0 && !email.includes("@") ? "Please enter a valid email address" : undefined;
 
   return (
     <SafeAreaView style={demoStyles.safe}>
-      <ScrollView
-        style={demoStyles.scroll}
-        contentContainerStyle={demoStyles.content}
-      >
+      <ScrollView style={demoStyles.scroll} contentContainerStyle={demoStyles.content}>
         <Text style={demoStyles.heading}>StyledTextInput Demo</Text>
 
         {/* Normal input */}
@@ -322,17 +310,10 @@ export default function App() {
           value={password}
           onChangeText={setPassword}
           success={password.length >= 8}
-          helperText={
-            password.length >= 8
-              ? "Strong password"
-              : "Must be at least 8 characters"
-          }
+          helperText={password.length >= 8 ? "Strong password" : "Must be at least 8 characters"}
           secureTextEntry
           rightIcon={
-            <Text
-              style={demoStyles.icon}
-              onPress={() => Alert.alert("Toggle visibility")}
-            >
+            <Text style={demoStyles.icon} onPress={() => Alert.alert("Toggle visibility")}>
               {"👁"}
             </Text>
           }

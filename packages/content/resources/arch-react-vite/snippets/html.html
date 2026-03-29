@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React + Vite Architecture</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(59,130,246,0.04) 100%);
+    }
+
+    .card-header .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.12);
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      margin-bottom: 12px;
+    }
+
+    .card-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .card-header p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .card-body { padding: 0; }
+
+    .section {
+      padding: 24px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #22d3ee;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: #22d3ee;
+      border-radius: 2px;
+    }
+
+    .tree {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+    }
+
+    .tree .dir { color: #3b82f6; font-weight: 500; }
+    .tree .file { color: #e2e8f0; }
+    .tree .comment { color: #64748b; font-style: italic; }
+    .tree .special { color: #22d3ee; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      body { padding: 16px; }
+      .section { padding: 20px 20px; }
+      .card-header { padding: 20px 20px 16px; }
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .info-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .info-card p {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .info-card .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #3b82f6;
+      background: rgba(59,130,246,0.1);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+
+    .key-files {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .key-file {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .key-file code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .key-file span {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .links a {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: none;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 8px;
+      padding: 8px 14px;
+      transition: all 0.2s;
+    }
+
+    .links a:hover {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.3);
+      color: #60a5fa;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge">Architecture</span>
+    <h1>React + Vite</h1>
+    <p>Feature-based project structure with native ESM dev server and Rollup production builds</p>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Folder Tree -->
+    <div class="section">
+      <div class="section-title">Folder Structure</div>
+      <div class="tree"><span class="special">&#9500;&#9472;&#9472; index.html</span>            <span class="comment">(Vite entry point)</span>
+<span class="special">&#9500;&#9472;&#9472; vite.config.ts</span>        <span class="comment">(Plugins, aliases, build)</span>
+<span class="file">&#9500;&#9472;&#9472; tsconfig.json</span>
+<span class="dir">&#9500;&#9472;&#9472; public/</span>               <span class="comment">(Static assets)</span>
+<span class="dir">&#9492;&#9472;&#9472; src/</span>
+<span class="file">    &#9500;&#9472;&#9472; main.tsx</span>          <span class="comment">(React root mount)</span>
+<span class="file">    &#9500;&#9472;&#9472; App.tsx</span>           <span class="comment">(Root component)</span>
+<span class="dir">    &#9500;&#9472;&#9472; components/</span>       <span class="comment">(Shared UI)</span>
+<span class="dir">    &#9500;&#9472;&#9472; features/</span>         <span class="comment">(Feature modules)</span>
+<span class="dir">    &#9474;   &#9500;&#9472;&#9472; auth/</span>
+<span class="dir">    &#9474;   &#9492;&#9472;&#9472; dashboard/</span>
+<span class="dir">    &#9500;&#9472;&#9472; hooks/</span>            <span class="comment">(Custom hooks)</span>
+<span class="dir">    &#9500;&#9472;&#9472; lib/</span>              <span class="comment">(Utilities)</span>
+<span class="dir">    &#9500;&#9472;&#9472; styles/</span>           <span class="comment">(Global CSS)</span>
+<span class="dir">    &#9492;&#9472;&#9472; types/</span>            <span class="comment">(TypeScript types)</span></div>
+    </div>
+
+    <!-- Key Files -->
+    <div class="section">
+      <div class="section-title">Key Files</div>
+      <div class="key-files">
+        <div class="key-file"><code>index.html</code> <span>Vite's true entry point; contains the root div and module script tag</span></div>
+        <div class="key-file"><code>vite.config.ts</code> <span>Plugins, resolve aliases, dev server proxy, and build options</span></div>
+        <div class="key-file"><code>main.tsx</code> <span>React root mount with createRoot().render()</span></div>
+        <div class="key-file"><code>features/</code> <span>Self-contained domain modules with co-located components and hooks</span></div>
+      </div>
+    </div>
+
+    <!-- Dev Server & Build -->
+    <div class="section">
+      <div class="section-title">Dev Server (ESM) &amp; Production Build (Rollup)</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Dev Server</h4>
+          <p>Native ES modules served on demand. No bundling step. Browser requests trigger on-the-fly transforms via esbuild. Instant HMR regardless of app size.</p>
+          <span class="tag">Native ESM</span>
+        </div>
+        <div class="info-card">
+          <h4>Production Build</h4>
+          <p>Rollup bundles optimized output with tree-shaking, code-splitting, and asset hashing. CSS is extracted and minified automatically.</p>
+          <span class="tag">Rollup</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Path Aliases -->
+    <div class="section">
+      <div class="section-title">Path Aliases</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>vite.config.ts</h4>
+          <p>Define aliases in resolve.alias to map @ to ./src. Supports any prefix pattern for clean imports across the project.</p>
+          <span class="tag">resolve.alias</span>
+        </div>
+        <div class="info-card">
+          <h4>tsconfig.json</h4>
+          <p>Mirror the same aliases in compilerOptions.paths so TypeScript resolves types correctly and editors provide autocomplete.</p>
+          <span class="tag">compilerOptions.paths</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="section">
+      <div class="section-title">Official Links</div>
+      <div class="links">
+        <a href="https://vite.dev/guide/" target="_blank" rel="noopener">Getting Started</a>
+        <a href="https://vite.dev/guide/features" target="_blank" rel="noopener">Features</a>
+        <a href="https://vite.dev/config/" target="_blank" rel="noopener">Config Reference</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

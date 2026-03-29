@@ -79,10 +79,7 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     // Sort by updatedAt descending
-    projects.sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
+    projects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
     return new Response(JSON.stringify({ projects }), {
       headers: { "Content-Type": "application/json" },
@@ -113,11 +110,7 @@ export const POST: APIRoute = async ({ request, url }) => {
         const raw = await readFile(projectFile(id), "utf-8");
         const project = JSON.parse(raw) as SavedProject;
         project.updatedAt = new Date().toISOString();
-        await writeFile(
-          projectFile(id),
-          JSON.stringify(project, null, 2),
-          "utf-8",
-        );
+        await writeFile(projectFile(id), JSON.stringify(project, null, 2), "utf-8");
       } catch {}
       return new Response(JSON.stringify({ ok: true }), {
         headers: { "Content-Type": "application/json" },
@@ -151,11 +144,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       updatedAt: now,
     };
 
-    await writeFile(
-      projectFile(project.id),
-      JSON.stringify(saved, null, 2),
-      "utf-8",
-    );
+    await writeFile(projectFile(project.id), JSON.stringify(saved, null, 2), "utf-8");
 
     return new Response(JSON.stringify({ ok: true, project: saved }), {
       headers: { "Content-Type": "application/json" },

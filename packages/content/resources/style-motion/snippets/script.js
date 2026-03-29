@@ -1,29 +1,29 @@
 /* Motion / Kinetic — Interactive JS */
 
 (function () {
-  'use strict';
+  "use strict";
 
   // ── Elastic click animation on primary button ──
-  const primaryBtn = document.getElementById('primaryBtn');
+  const primaryBtn = document.getElementById("primaryBtn");
   if (primaryBtn) {
-    primaryBtn.addEventListener('click', () => {
-      primaryBtn.style.transition = 'transform 0.08s ease';
-      primaryBtn.style.transform = 'scale(0.92)';
+    primaryBtn.addEventListener("click", () => {
+      primaryBtn.style.transition = "transform 0.08s ease";
+      primaryBtn.style.transform = "scale(0.92)";
       setTimeout(() => {
-        primaryBtn.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-        primaryBtn.style.transform = 'scale(1)';
+        primaryBtn.style.transition = "transform 0.5s cubic-bezier(0.34,1.56,0.64,1)";
+        primaryBtn.style.transform = "scale(1)";
         setTimeout(() => {
-          primaryBtn.style.transition = '';
-          primaryBtn.style.transform = '';
+          primaryBtn.style.transition = "";
+          primaryBtn.style.transform = "";
         }, 500);
       }, 80);
     });
   }
 
   // ── Mouse parallax on the motion card ──
-  const card = document.getElementById('motionCard');
+  const card = document.getElementById("motionCard");
   if (card) {
-    document.addEventListener('mousemove', (e) => {
+    document.addEventListener("mousemove", (e) => {
       const rect = card.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
@@ -36,13 +36,13 @@
       card.style.transform = `translate(${ox}px, ${oy}px)`;
     });
 
-    document.addEventListener('mouseleave', () => {
-      card.style.transform = '';
+    document.addEventListener("mouseleave", () => {
+      card.style.transform = "";
     });
   }
 
   // ── IntersectionObserver: re-trigger entrance animations on scroll ──
-  const animItems = document.querySelectorAll('.anim-up, .word, .anim-badge');
+  const animItems = document.querySelectorAll(".anim-up, .word, .anim-badge");
 
   const observer = new IntersectionObserver(
     (entries) => {
@@ -50,7 +50,7 @@
         if (entry.isIntersecting) {
           // Reset animation by toggling class
           const el = entry.target;
-          el.style.animationPlayState = 'running';
+          el.style.animationPlayState = "running";
         }
       });
     },
@@ -60,7 +60,7 @@
   animItems.forEach((el) => observer.observe(el));
 
   // ── Stat counter animation ──
-  function animateCounter(el, target, duration = 1000, suffix = '') {
+  function animateCounter(el, target, duration = 1000, suffix = "") {
     const start = performance.now();
     const isFloat = target % 1 !== 0;
     const targetNum = parseFloat(target);
@@ -78,32 +78,32 @@
   }
 
   // Parse stat values and animate them in
-  const statValues = document.querySelectorAll('.stat__value');
+  const statValues = document.querySelectorAll(".stat__value");
   statValues.forEach((el) => {
     const raw = el.textContent.trim();
     let num, suffix;
 
-    if (raw.endsWith('k')) {
+    if (raw.endsWith("k")) {
       num = parseFloat(raw);
-      suffix = 'k';
-    } else if (raw.endsWith('%')) {
+      suffix = "k";
+    } else if (raw.endsWith("%")) {
       num = parseFloat(raw);
-      suffix = '%';
+      suffix = "%";
     } else {
       num = parseFloat(raw);
-      suffix = '';
+      suffix = "";
     }
 
-    el.textContent = '0' + suffix;
+    el.textContent = "0" + suffix;
 
     // Trigger after entrance animation delay
     setTimeout(() => animateCounter(el, num, 1200, suffix), 900);
   });
 
   // ── All buttons: ripple effect ──
-  document.querySelectorAll('.btn').forEach((btn) => {
-    btn.addEventListener('click', function (e) {
-      const ripple = document.createElement('span');
+  document.querySelectorAll(".btn").forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      const ripple = document.createElement("span");
       const rect = btn.getBoundingClientRect();
       const size = Math.max(rect.width, rect.height) * 2;
       ripple.style.cssText = `
@@ -120,9 +120,9 @@
         z-index: 0;
       `;
 
-      if (!document.getElementById('ripple-style')) {
-        const style = document.createElement('style');
-        style.id = 'ripple-style';
+      if (!document.getElementById("ripple-style")) {
+        const style = document.createElement("style");
+        style.id = "ripple-style";
         style.textContent = `
           @keyframes rippleKinetic {
             to { transform: scale(1); opacity: 0; }

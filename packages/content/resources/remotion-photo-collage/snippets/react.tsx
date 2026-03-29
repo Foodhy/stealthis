@@ -1,4 +1,11 @@
-import { AbsoluteFill, Composition, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Composition,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 
 const TITLE = "Memories";
 const PHOTOS = [
@@ -17,22 +24,37 @@ const GAP = 8;
 
 // Manually position photos in a masonry-like grid
 const POSITIONS = [
-  { col: 0, row: 0 },  // 2x2 featured
-  { col: 2, row: 0 },  // 1x1
-  { col: 3, row: 0 },  // 1x1
-  { col: 2, row: 1 },  // 1x2
-  { col: 3, row: 1 },  // 1x1
-  { col: 0, row: 2 },  // 2x1
-  { col: 3, row: 2 },  // 1x1
-  { col: 2, row: 2 },  // 1x1 (moved from col 3 to avoid overlap)
+  { col: 0, row: 0 }, // 2x2 featured
+  { col: 2, row: 0 }, // 1x1
+  { col: 3, row: 0 }, // 1x1
+  { col: 2, row: 1 }, // 1x2
+  { col: 3, row: 1 }, // 1x1
+  { col: 0, row: 2 }, // 2x1
+  { col: 3, row: 2 }, // 1x1
+  { col: 2, row: 2 }, // 1x1 (moved from col 3 to avoid overlap)
 ];
 
-const PhotoCard: React.FC<{ photo: typeof PHOTOS[number]; pos: typeof POSITIONS[number]; index: number; frame: number; fps: number }> = ({ photo, pos, index, frame, fps }) => {
+const PhotoCard: React.FC<{
+  photo: (typeof PHOTOS)[number];
+  pos: (typeof POSITIONS)[number];
+  index: number;
+  frame: number;
+  fps: number;
+}> = ({ photo, pos, index, frame, fps }) => {
   const delay = 15 + index * 8;
   const f = Math.max(0, frame - delay);
   const scale = spring({ frame: f, fps, from: 0, to: 1, config: { damping: 12, stiffness: 120 } });
-  const opacity = interpolate(f, [0, 8], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const rotate = spring({ frame: f, fps, from: -5 + index * 2, to: 0, config: { damping: 14, stiffness: 100 } });
+  const opacity = interpolate(f, [0, 8], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const rotate = spring({
+    frame: f,
+    fps,
+    from: -5 + index * 2,
+    to: 0,
+    config: { damping: 14, stiffness: 100 },
+  });
 
   const x = pos.col * (CELL + GAP);
   const y = pos.row * (CELL + GAP);
@@ -40,9 +62,40 @@ const PhotoCard: React.FC<{ photo: typeof PHOTOS[number]; pos: typeof POSITIONS[
   const h = photo.h * CELL + (photo.h - 1) * GAP;
 
   return (
-    <div style={{ position: "absolute", left: x, top: y, width: w, height: h, borderRadius: 12, overflow: "hidden", opacity, transform: `scale(${scale}) rotate(${rotate}deg)`, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
-      <div style={{ width: "100%", height: "100%", background: photo.gradient, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontFamily: "system-ui, sans-serif", fontWeight: 600, fontSize: photo.w > 1 ? 20 : 14, color: "rgba(255,255,255,0.7)" }}>{photo.label}</span>
+    <div
+      style={{
+        position: "absolute",
+        left: x,
+        top: y,
+        width: w,
+        height: h,
+        borderRadius: 12,
+        overflow: "hidden",
+        opacity,
+        transform: `scale(${scale}) rotate(${rotate}deg)`,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          background: photo.gradient,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 600,
+            fontSize: photo.w > 1 ? 20 : 14,
+            color: "rgba(255,255,255,0.7)",
+          }}
+        >
+          {photo.label}
+        </span>
       </div>
     </div>
   );
@@ -52,8 +105,17 @@ export const PhotoCollage: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const titleScale = spring({ frame, fps, from: 0.8, to: 1, config: { damping: 14, stiffness: 100 } });
+  const titleOpacity = interpolate(frame, [0, 15], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const titleScale = spring({
+    frame,
+    fps,
+    from: 0.8,
+    to: 1,
+    config: { damping: 14, stiffness: 100 },
+  });
 
   const totalW = 4 * CELL + 3 * GAP;
   const totalH = 3 * CELL + 2 * GAP;
@@ -61,12 +123,41 @@ export const PhotoCollage: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#0a0a0f" }}>
       {/* Title */}
-      <div style={{ position: "absolute", top: 35, left: 0, right: 0, textAlign: "center", opacity: titleOpacity, transform: `scale(${titleScale})` }}>
-        <span style={{ fontFamily: "system-ui, sans-serif", fontWeight: 800, fontSize: 40, color: "#ffffff", letterSpacing: -1 }}>{TITLE}</span>
+      <div
+        style={{
+          position: "absolute",
+          top: 35,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          opacity: titleOpacity,
+          transform: `scale(${titleScale})`,
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 800,
+            fontSize: 40,
+            color: "#ffffff",
+            letterSpacing: -1,
+          }}
+        >
+          {TITLE}
+        </span>
       </div>
 
       {/* Grid */}
-      <div style={{ position: "absolute", top: "50%", left: "50%", width: totalW, height: totalH, transform: "translate(-50%, -40%)" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          width: totalW,
+          height: totalH,
+          transform: "translate(-50%, -40%)",
+        }}
+      >
         {PHOTOS.map((photo, i) => (
           <PhotoCard key={i} photo={photo} pos={POSITIONS[i]} index={i} frame={frame} fps={fps} />
         ))}

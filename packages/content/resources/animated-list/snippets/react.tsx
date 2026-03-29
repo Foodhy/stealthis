@@ -142,7 +142,9 @@ function ListItem({
           </svg>
         )}
       </div>
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "0.125rem" }}>
+      <div
+        style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "0.125rem" }}
+      >
         <strong style={{ fontSize: "0.875rem", fontWeight: 600, color: "#e2e8f0" }}>
           {item.title}
         </strong>
@@ -159,9 +161,7 @@ function ListItem({
         </span>
       </div>
       {item.time && (
-        <span style={{ flexShrink: 0, fontSize: "0.75rem", color: "#475569" }}>
-          {item.time}
-        </span>
+        <span style={{ flexShrink: 0, fontSize: "0.75rem", color: "#475569" }}>{item.time}</span>
       )}
     </li>
   );
@@ -183,14 +183,27 @@ export default function AnimatedList({
         color: "#f1f5f9",
       }}
     >
-      <div style={{ width: "min(520px, 100%)", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <h2 style={{ fontSize: "1.375rem", fontWeight: 700, color: "#f1f5f9" }}>
-          Notifications
-        </h2>
+      <div
+        style={{
+          width: "min(520px, 100%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
+        }}
+      >
+        <h2 style={{ fontSize: "1.375rem", fontWeight: 700, color: "#f1f5f9" }}>Notifications</h2>
         <p style={{ fontSize: "0.875rem", color: "#64748b", marginBottom: "1rem" }}>
           Watch the items animate in
         </p>
-        <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem", padding: 0 }}>
+        <ul
+          style={{
+            listStyle: "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+            padding: 0,
+          }}
+        >
           {items.map((item, i) => (
             <ListItem
               key={item.id}

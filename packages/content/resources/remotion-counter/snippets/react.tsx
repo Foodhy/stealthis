@@ -141,7 +141,12 @@ export const AnimatedCounter: React.FC<CounterProps> = (inputProps) => {
 
       {/* SVG ring */}
       <svg
-        style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
         width={320}
         height={320}
         viewBox="0 0 320 320"

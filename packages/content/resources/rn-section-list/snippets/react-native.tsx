@@ -144,16 +144,13 @@ export function GroupedSectionList({
 
   const letters = sections.map((s) => s.title);
 
-  const handleAlphabetPress = useCallback(
-    (sectionIndex: number) => {
-      listRef.current?.scrollToLocation({
-        sectionIndex,
-        itemIndex: 0,
-        animated: true,
-      });
-    },
-    []
-  );
+  const handleAlphabetPress = useCallback((sectionIndex: number) => {
+    listRef.current?.scrollToLocation({
+      sectionIndex,
+      itemIndex: 0,
+      animated: true,
+    });
+  }, []);
 
   const defaultRenderItem = useCallback(
     ({
@@ -198,9 +195,7 @@ export function GroupedSectionList({
           index,
         })}
       />
-      {showAlphabetIndex && (
-        <AlphabetIndex letters={letters} onPress={handleAlphabetPress} />
-      )}
+      {showAlphabetIndex && <AlphabetIndex letters={letters} onPress={handleAlphabetPress} />}
     </View>
   );
 }
@@ -246,9 +241,7 @@ const CONTACTS: SectionData[] = [
   },
   {
     title: "F",
-    data: [
-      { id: "f1", name: "Fiona Green", subtitle: "Scrum Master" },
-    ],
+    data: [{ id: "f1", name: "Fiona Green", subtitle: "Scrum Master" }],
   },
   {
     title: "G",
@@ -259,9 +252,7 @@ const CONTACTS: SectionData[] = [
   },
   {
     title: "H",
-    data: [
-      { id: "h1", name: "Hannah White", subtitle: "Product Manager" },
-    ],
+    data: [{ id: "h1", name: "Hannah White", subtitle: "Product Manager" }],
   },
   {
     title: "J",
@@ -272,9 +263,7 @@ const CONTACTS: SectionData[] = [
   },
   {
     title: "K",
-    data: [
-      { id: "k1", name: "Kevin Park", subtitle: "ML Engineer" },
-    ],
+    data: [{ id: "k1", name: "Kevin Park", subtitle: "ML Engineer" }],
   },
   {
     title: "L",
@@ -292,15 +281,11 @@ const CONTACTS: SectionData[] = [
   },
   {
     title: "N",
-    data: [
-      { id: "n1", name: "Noah Wright", subtitle: "Platform Engineer" },
-    ],
+    data: [{ id: "n1", name: "Noah Wright", subtitle: "Platform Engineer" }],
   },
   {
     title: "R",
-    data: [
-      { id: "r1", name: "Rachel Scott", subtitle: "VP Engineering" },
-    ],
+    data: [{ id: "r1", name: "Rachel Scott", subtitle: "VP Engineering" }],
   },
   {
     title: "S",
@@ -311,9 +296,7 @@ const CONTACTS: SectionData[] = [
   },
   {
     title: "T",
-    data: [
-      { id: "t1", name: "Tyler Brooks", subtitle: "CTO" },
-    ],
+    data: [{ id: "t1", name: "Tyler Brooks", subtitle: "CTO" }],
   },
 ];
 
@@ -325,9 +308,9 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Contacts</Text>
-        <Text style={styles.headerCount}>{
-          CONTACTS.reduce((sum, s) => sum + s.data.length, 0)
-        } people</Text>
+        <Text style={styles.headerCount}>
+          {CONTACTS.reduce((sum, s) => sum + s.data.length, 0)} people
+        </Text>
       </View>
       <GroupedSectionList sections={CONTACTS} showAlphabetIndex />
     </SafeAreaView>

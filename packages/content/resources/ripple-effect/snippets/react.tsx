@@ -157,14 +157,15 @@ export default function RippleEffectDemo() {
           placeItems: "center",
         }}
       >
-        <div style={{ textAlign: "center", pointerEvents: "none", position: "relative", zIndex: 2 }}>
+        <div
+          style={{ textAlign: "center", pointerEvents: "none", position: "relative", zIndex: 2 }}
+        >
           <h1
             style={{
               fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
               fontWeight: 800,
               letterSpacing: "-0.03em",
-              background:
-                "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
+              background: "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",

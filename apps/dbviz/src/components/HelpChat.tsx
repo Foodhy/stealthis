@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  type AiProviderConfig,
-  type ChatMessage,
-  chat as providerChat,
-} from "../lib/ai-providers";
+import { type AiProviderConfig, type ChatMessage, chat as providerChat } from "../lib/ai-providers";
 import { useTranslations, type Locale } from "../i18n";
 import { renderMarkdown } from "../lib/markdown";
 
@@ -198,12 +194,8 @@ export default function HelpChat({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
         <div>
-          <h3 className="text-sm font-semibold text-slate-200">
-            {t("help.title")}
-          </h3>
-          <p className="text-[10px] text-slate-500">
-            {t("help.subtitle")}
-          </p>
+          <h3 className="text-sm font-semibold text-slate-200">{t("help.title")}</h3>
+          <p className="text-[10px] text-slate-500">{t("help.subtitle")}</p>
         </div>
         <button
           onClick={() => setOpen(false)}
@@ -217,9 +209,7 @@ export default function HelpChat({
       <div className="flex-1 overflow-y-auto px-3 py-3">
         {messages.length === 0 && (
           <div className="space-y-3 py-4">
-            <p className="text-center text-xs text-slate-500">
-              {t("help.emptyHint")}
-            </p>
+            <p className="text-center text-xs text-slate-500">{t("help.emptyHint")}</p>
             <div className="space-y-1.5">
               {[t("help.q1"), t("help.q2"), t("help.q3"), t("help.q4")].map((q) => (
                 <button
@@ -240,10 +230,7 @@ export default function HelpChat({
         )}
 
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`mb-2.5 ${msg.role === "user" ? "flex justify-end" : ""}`}
-          >
+          <div key={msg.id} className={`mb-2.5 ${msg.role === "user" ? "flex justify-end" : ""}`}>
             <div
               className={`max-w-[85%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
                 msg.role === "user"
@@ -262,9 +249,7 @@ export default function HelpChat({
                 <p className="whitespace-pre-wrap">{msg.content}</p>
               )}
               {msg.role === "assistant" && !msg.content && loading && (
-                <span className="inline-block animate-pulse text-slate-500">
-                  ...
-                </span>
+                <span className="inline-block animate-pulse text-slate-500">...</span>
               )}
             </div>
           </div>

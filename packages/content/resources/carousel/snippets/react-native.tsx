@@ -27,15 +27,12 @@ function Carousel<T>({ data, renderItem, autoPlay = false, interval = 3000 }: Ca
   const scrollRef = useRef<ScrollView>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const scrollToIndex = useCallback(
-    (index: number) => {
-      scrollRef.current?.scrollTo({
-        x: index * SCREEN_WIDTH,
-        animated: true,
-      });
-    },
-    []
-  );
+  const scrollToIndex = useCallback((index: number) => {
+    scrollRef.current?.scrollTo({
+      x: index * SCREEN_WIDTH,
+      animated: true,
+    });
+  }, []);
 
   useEffect(() => {
     if (!autoPlay) return;
@@ -85,12 +82,7 @@ function Carousel<T>({ data, renderItem, autoPlay = false, interval = 3000 }: Ca
               scrollToIndex(index);
             }}
           >
-            <View
-              style={[
-                styles.dot,
-                index === activeIndex && styles.dotActive,
-              ]}
-            />
+            <View style={[styles.dot, index === activeIndex && styles.dotActive]} />
           </TouchableOpacity>
         ))}
       </View>

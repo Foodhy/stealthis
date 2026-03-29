@@ -93,9 +93,7 @@ export function TweetCard({
               </svg>
             )}
           </div>
-          <div style={{ fontSize: "0.8125rem", color: "#71767b", lineHeight: 1.3 }}>
-            @{handle}
-          </div>
+          <div style={{ fontSize: "0.8125rem", color: "#71767b", lineHeight: 1.3 }}>@{handle}</div>
         </div>
         {/* X Logo */}
         <svg viewBox="0 0 24 24" width={20} height={20} style={{ opacity: 0.6, flexShrink: 0 }}>

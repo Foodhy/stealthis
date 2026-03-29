@@ -18,10 +18,7 @@ export const POST: APIRoute = async ({ request }) => {
     const allReferences = [...curated.pages, ...curated.components];
     const referencesBySlug = indexReferencesBySlug(allReferences);
 
-    const sourceReferences = [
-      ...selection.pageReferenceSlugs,
-      ...selection.componentReferenceSlugs,
-    ]
+    const sourceReferences = [...selection.pageReferenceSlugs, ...selection.componentReferenceSlugs]
       .map((slug) => referencesBySlug.get(slug))
       .filter((reference): reference is StyleForgeReference => Boolean(reference));
 

@@ -84,7 +84,9 @@ function SearchableList<T extends Record<string, unknown>>({
     ? data.filter((item) =>
         searchKeys.some((key) => {
           const val = item[key];
-          return typeof val === "string" && val.toLowerCase().includes(debouncedQuery.toLowerCase());
+          return (
+            typeof val === "string" && val.toLowerCase().includes(debouncedQuery.toLowerCase())
+          );
         })
       )
     : data;
@@ -184,7 +186,10 @@ const LANGUAGES: Language[] = [
   { name: "Erlang", description: "Concurrent language built for fault-tolerant systems" },
   { name: "C#", description: "Modern object-oriented language by Microsoft for .NET" },
   { name: "PHP", description: "Widely used server-side scripting language for the web" },
-  { name: "Java", description: "Versatile object-oriented language that runs on billions of devices" },
+  {
+    name: "Java",
+    description: "Versatile object-oriented language that runs on billions of devices",
+  },
 ];
 
 export default function App() {

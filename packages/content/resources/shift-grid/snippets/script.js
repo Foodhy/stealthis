@@ -3,19 +3,19 @@
 
   // ── Config ──
   const EMPLOYEES = [
-    { id: "alice",  name: "Alice M.",  color: "#38bdf8", initials: "AM" },
-    { id: "bob",    name: "Bob K.",    color: "#818cf8", initials: "BK" },
-    { id: "carol",  name: "Carol S.",  color: "#f472b6", initials: "CS" },
-    { id: "david",  name: "David R.",  color: "#34d399", initials: "DR" },
-    { id: "emma",   name: "Emma J.",   color: "#fb923c", initials: "EJ" },
-    { id: "frank",  name: "Frank L.",  color: "#fbbf24", initials: "FL" },
+    { id: "alice", name: "Alice M.", color: "#38bdf8", initials: "AM" },
+    { id: "bob", name: "Bob K.", color: "#818cf8", initials: "BK" },
+    { id: "carol", name: "Carol S.", color: "#f472b6", initials: "CS" },
+    { id: "david", name: "David R.", color: "#34d399", initials: "DR" },
+    { id: "emma", name: "Emma J.", color: "#fb923c", initials: "EJ" },
+    { id: "frank", name: "Frank L.", color: "#fbbf24", initials: "FL" },
   ];
 
   const SHIFT_TYPES = {
-    "Morning":   { label: "Morning",   hours: 8, cls: "morning" },
-    "Afternoon": { label: "Afternoon", hours: 8, cls: "afternoon" },
-    "Night":     { label: "Night",     hours: 8, cls: "night" },
-    "Day Off":   { label: "Day Off",   hours: 0, cls: "dayoff" },
+    Morning: { label: "Morning", hours: 8, cls: "morning" },
+    Afternoon: { label: "Afternoon", hours: 8, cls: "afternoon" },
+    Night: { label: "Night", hours: 8, cls: "night" },
+    "Day Off": { label: "Day Off", hours: 0, cls: "dayoff" },
   };
 
   const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -31,48 +31,48 @@
 
   // Seed some initial data so the grid looks populated
   const seed = [
-    ["alice",  0, "Morning"],
-    ["alice",  1, "Morning"],
-    ["alice",  2, "Afternoon"],
-    ["alice",  3, "Morning"],
-    ["alice",  4, "Morning"],
-    ["alice",  5, "Day Off"],
-    ["alice",  6, "Day Off"],
-    ["bob",    0, "Afternoon"],
-    ["bob",    1, "Afternoon"],
-    ["bob",    2, "Morning"],
-    ["bob",    3, "Night"],
-    ["bob",    4, "Afternoon"],
-    ["carol",  0, "Night"],
-    ["carol",  2, "Night"],
-    ["carol",  4, "Night"],
-    ["carol",  5, "Night"],
-    ["david",  0, "Morning"],
-    ["david",  1, "Day Off"],
-    ["david",  2, "Morning"],
-    ["david",  3, "Morning"],
-    ["david",  4, "Morning"],
-    ["emma",   0, "Afternoon"],
-    ["emma",   1, "Morning"],
-    ["emma",   3, "Afternoon"],
-    ["emma",   4, "Afternoon"],
-    ["frank",  1, "Morning"],
-    ["frank",  2, "Morning"],
-    ["frank",  3, "Day Off"],
-    ["frank",  4, "Night"],
+    ["alice", 0, "Morning"],
+    ["alice", 1, "Morning"],
+    ["alice", 2, "Afternoon"],
+    ["alice", 3, "Morning"],
+    ["alice", 4, "Morning"],
+    ["alice", 5, "Day Off"],
+    ["alice", 6, "Day Off"],
+    ["bob", 0, "Afternoon"],
+    ["bob", 1, "Afternoon"],
+    ["bob", 2, "Morning"],
+    ["bob", 3, "Night"],
+    ["bob", 4, "Afternoon"],
+    ["carol", 0, "Night"],
+    ["carol", 2, "Night"],
+    ["carol", 4, "Night"],
+    ["carol", 5, "Night"],
+    ["david", 0, "Morning"],
+    ["david", 1, "Day Off"],
+    ["david", 2, "Morning"],
+    ["david", 3, "Morning"],
+    ["david", 4, "Morning"],
+    ["emma", 0, "Afternoon"],
+    ["emma", 1, "Morning"],
+    ["emma", 3, "Afternoon"],
+    ["emma", 4, "Afternoon"],
+    ["frank", 1, "Morning"],
+    ["frank", 2, "Morning"],
+    ["frank", 3, "Day Off"],
+    ["frank", 4, "Night"],
   ];
   seed.forEach(([empId, dayIdx, type]) => {
     schedule[empId][dayIdx] = type;
   });
 
   // ── DOM refs ──
-  const tableHead    = document.getElementById("tableHead");
-  const tableBody    = document.getElementById("tableBody");
-  const tableFoot    = document.getElementById("tableFoot");
-  const weekLabel    = document.getElementById("weekLabel");
-  const prevWeekBtn  = document.getElementById("prevWeek");
-  const nextWeekBtn  = document.getElementById("nextWeek");
-  const popover      = document.getElementById("cellPopover");
+  const tableHead = document.getElementById("tableHead");
+  const tableBody = document.getElementById("tableBody");
+  const tableFoot = document.getElementById("tableFoot");
+  const weekLabel = document.getElementById("weekLabel");
+  const prevWeekBtn = document.getElementById("prevWeek");
+  const nextWeekBtn = document.getElementById("nextWeek");
+  const popover = document.getElementById("cellPopover");
   const popoverDelete = document.getElementById("popoverDeleteBtn");
   const shiftTypeBtns = popover.querySelectorAll(".shift-type-btn");
 
@@ -80,7 +80,7 @@
 
   // ── Week computation ──
   function getWeekDates(offset) {
-    const now  = new Date(2026, 0, 27); // base: Mon Jan 27 2026
+    const now = new Date(2026, 0, 27); // base: Mon Jan 27 2026
     const base = new Date(now);
     base.setDate(base.getDate() + offset * 7);
 
@@ -97,9 +97,13 @@
 
   function formatWeekRange(dates) {
     const first = dates[0];
-    const last  = dates[6];
-    const fStr  = first.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const lStr  = last.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const last = dates[6];
+    const fStr = first.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const lStr = last.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
     return `${fStr} – ${lStr}`;
   }
 
@@ -154,7 +158,7 @@
         const shiftType = schedule[emp.id][dayIdx] || null;
         const td = document.createElement("td");
         td.className = "shift-cell";
-        td.dataset.empId  = emp.id;
+        td.dataset.empId = emp.id;
         td.dataset.dayIdx = dayIdx;
 
         if (shiftType) {
@@ -202,7 +206,9 @@
     dates.forEach((_, dayIdx) => {
       const td = document.createElement("td");
       td.className = "foot-day-count";
-      const count = EMPLOYEES.filter((emp) => schedule[emp.id][dayIdx] && schedule[emp.id][dayIdx] !== "Day Off").length;
+      const count = EMPLOYEES.filter(
+        (emp) => schedule[emp.id][dayIdx] && schedule[emp.id][dayIdx] !== "Day Off"
+      ).length;
       td.textContent = count;
       tableFoot.children[0].insertBefore(td, footTotal);
     });
@@ -215,20 +221,20 @@
     activePopoverData = { empId, dayIdx, currentShift };
 
     // Show/hide delete
-    popoverDelete.hidden = (currentShift === null);
+    popoverDelete.hidden = currentShift === null;
 
     // Position
     const rect = cellEl.getBoundingClientRect();
-    const pw   = 200;
-    let left   = rect.left + rect.width / 2 - pw / 2;
-    let top    = rect.bottom + 8 + window.scrollY;
+    const pw = 200;
+    let left = rect.left + rect.width / 2 - pw / 2;
+    let top = rect.bottom + 8 + window.scrollY;
 
     // Clamp within viewport
     if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
     if (left < 8) left = 8;
 
-    popover.style.left    = `${left + window.scrollX}px`;
-    popover.style.top     = `${top}px`;
+    popover.style.left = `${left + window.scrollX}px`;
+    popover.style.top = `${top}px`;
     popover.style.minWidth = `${pw}px`;
     popover.hidden = false;
 

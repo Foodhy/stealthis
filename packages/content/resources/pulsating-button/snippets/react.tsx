@@ -104,20 +104,20 @@ export default function PulsatingButtonDemo() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>
-        Pulsating Buttons
-      </h2>
-      <p style={{ color: "#525252", fontSize: "0.875rem" }}>
-        Buttons with animated glow rings
-      </p>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>Pulsating Buttons</h2>
+      <p style={{ color: "#525252", fontSize: "0.875rem" }}>Buttons with animated glow rings</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "center" }}>
         <PulsatingButton color="59, 130, 246">Get Started</PulsatingButton>
         <PulsatingButton color="139, 92, 246">Subscribe Now</PulsatingButton>
         <PulsatingButton color="16, 185, 129">Download Free</PulsatingButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "center" }}>
-        <PulsatingButton color="244, 63, 94" size="lg">Sign Up Today</PulsatingButton>
-        <PulsatingButton color="245, 158, 11" size="sm">Learn More</PulsatingButton>
+        <PulsatingButton color="244, 63, 94" size="lg">
+          Sign Up Today
+        </PulsatingButton>
+        <PulsatingButton color="245, 158, 11" size="sm">
+          Learn More
+        </PulsatingButton>
       </div>
     </div>
   );

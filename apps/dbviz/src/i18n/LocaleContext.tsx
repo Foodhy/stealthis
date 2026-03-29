@@ -13,7 +13,9 @@ function loadLocale(): Locale {
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
     if (stored === "en" || stored === "es") return stored;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return "en";
 }
 
@@ -22,15 +24,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
-    try { localStorage.setItem(LOCALE_STORAGE_KEY, l); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(LOCALE_STORAGE_KEY, l);
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const t = useTranslations(locale);
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </LocaleContext.Provider>
+    <LocaleContext.Provider value={{ locale, setLocale, t }}>{children}</LocaleContext.Provider>
   );
 }
 

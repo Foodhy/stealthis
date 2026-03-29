@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useReducer,
-  type Dispatch,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
 import type { WorkspaceState, WorkspaceAction } from "./types";
 import { initialState, workspaceReducer } from "./workspace-reducer";
 
@@ -18,9 +12,7 @@ const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(workspaceReducer, initialState);
   return (
-    <WorkspaceContext.Provider value={{ state, dispatch }}>
-      {children}
-    </WorkspaceContext.Provider>
+    <WorkspaceContext.Provider value={{ state, dispatch }}>{children}</WorkspaceContext.Provider>
   );
 }
 

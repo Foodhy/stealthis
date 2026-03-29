@@ -16,11 +16,7 @@ function msgId() {
   return `msg-${++nextId}-${Date.now()}`;
 }
 
-async function writeFileToDisk(
-  projectPath: string,
-  filePath: string,
-  content: string,
-) {
+async function writeFileToDisk(projectPath: string, filePath: string, content: string) {
   try {
     await fetch("/api/write-file", {
       method: "POST",
@@ -87,9 +83,7 @@ export function useChat() {
       dispatch({ type: "SET_LOADING", payload: true });
 
       const systemPrompt =
-        state.mode === "plan"
-          ? planSystemPrompt(state.config)
-          : executeSystemPrompt(state.config);
+        state.mode === "plan" ? planSystemPrompt(state.config) : executeSystemPrompt(state.config);
 
       // Build AI message history
       const aiMessages: AiChatMessage[] = [
@@ -168,7 +162,15 @@ export function useChat() {
         saveProjectMeta(state.projectId);
       }
     },
-    [state.loading, state.messages, state.mode, state.config, state.projectPath, state.projectId, dispatch],
+    [
+      state.loading,
+      state.messages,
+      state.mode,
+      state.config,
+      state.projectPath,
+      state.projectId,
+      dispatch,
+    ]
   );
 
   const stop = useCallback(() => {

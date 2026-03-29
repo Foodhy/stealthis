@@ -79,7 +79,7 @@ function createImplementationGuide(input: BuildKitInput, kitId: string): string 
     "Copy `kit/tokens/style-tokens.css` into your project and import it globally.",
     "",
     "```css",
-    "@import \"./style-tokens.css\";",
+    '@import "./style-tokens.css";',
     "```",
     "",
     "## 2) Install components in order",
@@ -234,8 +234,8 @@ function createPreviewHtml(componentSlugs: string[]): string {
     "</head>",
     "<body>",
     "  <main>",
-    "    <h1 style=\"margin:0;font-family:var(--sf-font-display);\">StyleForge Kit Preview</h1>",
-    "    <p style=\"margin:0 0 1rem;opacity:.8\">Generated components rendered together.</p>",
+    '    <h1 style="margin:0;font-family:var(--sf-font-display);">StyleForge Kit Preview</h1>',
+    '    <p style="margin:0 0 1rem;opacity:.8">Generated components rendered together.</p>',
     `      ${componentMarkup}`,
     "  </main>",
     "  <script>",
@@ -252,7 +252,9 @@ export function createStyleForgeKit(input: BuildKitInput): StyleForgeKit {
   const kitId = createId("sf-kit");
 
   const files: StyleForgeGeneratedFile[] = [];
-  const componentSlugs = input.draft.suggestedComponents.slice(0, 6).map((component) => slugify(component.id));
+  const componentSlugs = input.draft.suggestedComponents
+    .slice(0, 6)
+    .map((component) => slugify(component.id));
 
   files.push(toFile("kit/README.md", createReadme(input, kitId)));
   files.push(toFile("kit/IMPLEMENTATION.md", createImplementationGuide(input, kitId)));
@@ -260,7 +262,12 @@ export function createStyleForgeKit(input: BuildKitInput): StyleForgeKit {
 
   input.draft.suggestedComponents.slice(0, 6).forEach((component, index) => {
     const componentSlug = componentSlugs[index];
-    files.push(toFile(`kit/components/${componentSlug}.html`, createComponentHtml(componentSlug, component.name)));
+    files.push(
+      toFile(
+        `kit/components/${componentSlug}.html`,
+        createComponentHtml(componentSlug, component.name)
+      )
+    );
     files.push(toFile(`kit/components/${componentSlug}.css`, createComponentCss(componentSlug)));
     files.push(toFile(`kit/components/${componentSlug}.js`, createComponentJs(component.name)));
   });

@@ -6,9 +6,7 @@ const DEFAULT_SITE = "https://stealthis.dev";
 const LOCALIZED_BASE_PATHS = ["/", "/library/", "/showcase/", "/changelog"];
 const STATIC_PATHS = [
   ...new Set(
-    LOCALIZED_BASE_PATHS.flatMap((path) =>
-      LOCALES.map((locale) => getLocalizedPath(path, locale))
-    )
+    LOCALIZED_BASE_PATHS.flatMap((path) => LOCALES.map((locale) => getLocalizedPath(path, locale)))
   ),
   "/llms.txt",
   "/llms-full.txt",
@@ -40,7 +38,10 @@ export const GET: APIRoute = async ({ site }) => {
   }
 
   const body = urls
-    .map(({ loc, lastmod }) => `<url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`)
+    .map(
+      ({ loc, lastmod }) =>
+        `<url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`
+    )
     .join("");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`;

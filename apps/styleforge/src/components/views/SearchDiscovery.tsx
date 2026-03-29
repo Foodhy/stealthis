@@ -25,7 +25,16 @@ const TYPE_ICONS: Record<string, string> = {
   architecture: "account_tree",
 };
 
-const POPULAR_SEARCHES = ["button", "modal", "dashboard", "animation", "form", "navigation", "card", "glassmorphism"];
+const POPULAR_SEARCHES = [
+  "button",
+  "modal",
+  "dashboard",
+  "animation",
+  "form",
+  "navigation",
+  "card",
+  "glassmorphism",
+];
 const TYPE_OPTIONS = ["component", "page", "animation", "pattern", "prompt", "schema"];
 const CATEGORY_OPTIONS = [
   "ui-components",
@@ -82,12 +91,13 @@ export function SearchDiscovery({ onSelectResource }: Props) {
         setResults([]);
       }
     }, 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [query, typeFilter, categoryFilter]);
 
-  const sorted = sortBy === "name"
-    ? [...results].sort((a, b) => a.title.localeCompare(b.title))
-    : results;
+  const sorted =
+    sortBy === "name" ? [...results].sort((a, b) => a.title.localeCompare(b.title)) : results;
 
   return (
     <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
@@ -137,7 +147,10 @@ export function SearchDiscovery({ onSelectResource }: Props) {
                 {TYPE_OPTIONS.map((type) => {
                   const isChecked = typeFilter === type;
                   return (
-                    <label key={type} className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer group">
+                    <label
+                      key={type}
+                      className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer group"
+                    >
                       <button
                         type="button"
                         className="w-4 h-4 rounded border flex items-center justify-center"
@@ -148,7 +161,9 @@ export function SearchDiscovery({ onSelectResource }: Props) {
                         onClick={() => setTypeFilter(isChecked ? null : type)}
                       >
                         {isChecked && (
-                          <span className="material-symbols-outlined text-[10px] text-primary">check</span>
+                          <span className="material-symbols-outlined text-[10px] text-primary">
+                            check
+                          </span>
                         )}
                       </button>
                       <span className="group-hover:text-slate-100 capitalize">{type}s</span>
@@ -159,12 +174,17 @@ export function SearchDiscovery({ onSelectResource }: Props) {
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Category</h4>
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Category
+              </h4>
               <div className="space-y-2">
                 {CATEGORY_OPTIONS.map((cat) => {
                   const isChecked = categoryFilter === cat;
                   return (
-                    <label key={cat} className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer group">
+                    <label
+                      key={cat}
+                      className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer group"
+                    >
                       <button
                         type="button"
                         className="w-4 h-4 rounded border flex items-center justify-center"
@@ -175,7 +195,9 @@ export function SearchDiscovery({ onSelectResource }: Props) {
                         onClick={() => setCategoryFilter(isChecked ? null : cat)}
                       >
                         {isChecked && (
-                          <span className="material-symbols-outlined text-[10px] text-primary">check</span>
+                          <span className="material-symbols-outlined text-[10px] text-primary">
+                            check
+                          </span>
                         )}
                       </button>
                       <span className="group-hover:text-slate-100">{cat.replace(/-/g, " ")}</span>
@@ -189,7 +211,10 @@ export function SearchDiscovery({ onSelectResource }: Props) {
               <button
                 type="button"
                 className="text-xs text-primary hover:underline"
-                onClick={() => { setTypeFilter(null); setCategoryFilter(null); }}
+                onClick={() => {
+                  setTypeFilter(null);
+                  setCategoryFilter(null);
+                }}
               >
                 Clear all filters
               </button>
@@ -241,13 +266,16 @@ export function SearchDiscovery({ onSelectResource }: Props) {
                       </span>
                     </div>
                     <h4 className="text-sm font-bold text-slate-100 mb-1">{resource.title}</h4>
-                    <p className="text-xs text-slate-400 mb-3 line-clamp-2">{resource.description}</p>
+                    <p className="text-xs text-slate-400 mb-3 line-clamp-2">
+                      {resource.description}
+                    </p>
                     <div className="mt-auto pt-3 border-t border-[rgba(13,185,242,0.1)] w-full flex justify-between items-center">
                       <span className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded font-bold capitalize">
                         {resource.category.replace(/-/g, " ")}
                       </span>
                       <span className="text-[10px] uppercase font-bold text-slate-400 hover:text-primary transition-colors flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[12px]">visibility</span> Preview
+                        <span className="material-symbols-outlined text-[12px]">visibility</span>{" "}
+                        Preview
                       </span>
                     </div>
                   </button>

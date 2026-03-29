@@ -48,7 +48,10 @@
   list.addEventListener("drop", (e) => {
     e.preventDefault();
     const item = e.target.closest(".drag-item");
-    if (!item || item === dragged) { clearDropHints(); return; }
+    if (!item || item === dragged) {
+      clearDropHints();
+      return;
+    }
 
     const rect = item.getBoundingClientRect();
     const midY = rect.top + rect.height / 2;

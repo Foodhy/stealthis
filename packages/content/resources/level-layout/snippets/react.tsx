@@ -9,14 +9,7 @@ interface LevelProps {
   variant?: "default" | "card" | "footer";
 }
 
-export function Level({
-  left,
-  center,
-  right,
-  children,
-  style,
-  variant = "default",
-}: LevelProps) {
+export function Level({ left, center, right, children, style, variant = "default" }: LevelProps) {
   const bg = variant === "footer" ? "transparent" : "#141414";
   const border = variant === "footer" ? "1px solid #1a1a1a" : "1px solid #1e1e1e";
 
@@ -39,17 +32,38 @@ export function Level({
       ) : (
         <>
           {left && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", justifyContent: "flex-start" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                justifyContent: "flex-start",
+              }}
+            >
               {left}
             </div>
           )}
           {center && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", justifyContent: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                justifyContent: "center",
+              }}
+            >
               {center}
             </div>
           )}
           {right && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", justifyContent: "flex-end" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                justifyContent: "flex-end",
+              }}
+            >
               {right}
             </div>
           )}
@@ -74,9 +88,7 @@ export function LevelItem({ value, label }: LevelItemProps) {
         gap: "0.125rem",
       }}
     >
-      <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "#f2f6ff" }}>
-        {value}
-      </span>
+      <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "#f2f6ff" }}>{value}</span>
       <span
         style={{
           fontSize: "0.6875rem",
@@ -113,7 +125,11 @@ export default function LevelLayoutDemo() {
     cursor: "pointer",
   };
 
-  const btnSmStyle: CSSProperties = { ...btnStyle, padding: "0.25rem 0.625rem", fontSize: "0.75rem" };
+  const btnSmStyle: CSSProperties = {
+    ...btnStyle,
+    padding: "0.25rem 0.625rem",
+    fontSize: "0.75rem",
+  };
 
   const badgeStyle: CSSProperties = {
     display: "inline-flex",
@@ -139,7 +155,15 @@ export default function LevelLayoutDemo() {
         padding: "2rem",
       }}
     >
-      <div style={{ width: "100%", maxWidth: 640, display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 640,
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5rem",
+        }}
+      >
         <div>
           <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.375rem" }}>
             Level Layout
@@ -152,7 +176,14 @@ export default function LevelLayoutDemo() {
         <Section label="Navigation Bar">
           <Level
             left={
-              <span style={{ fontSize: "1rem", fontWeight: 800, color: "#38bdf8", letterSpacing: "-0.02em" }}>
+              <span
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: 800,
+                  color: "#38bdf8",
+                  letterSpacing: "-0.02em",
+                }}
+              >
                 Stealthis
               </span>
             }
@@ -178,7 +209,11 @@ export default function LevelLayoutDemo() {
 
         <Section label="Card Header">
           <Level
-            left={<h3 style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#f2f6ff" }}>Recent Activity</h3>}
+            left={
+              <h3 style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#f2f6ff" }}>
+                Recent Activity
+              </h3>
+            }
             right={
               <>
                 <span style={badgeStyle}>12 new</span>
@@ -191,12 +226,20 @@ export default function LevelLayoutDemo() {
         <Section label="Footer">
           <Level
             variant="footer"
-            left={<span style={{ fontSize: "0.8125rem", color: "#4a4a4a" }}>&copy; 2026 Stealthis</span>}
+            left={
+              <span style={{ fontSize: "0.8125rem", color: "#4a4a4a" }}>&copy; 2026 Stealthis</span>
+            }
             right={
               <>
-                <span style={{ fontSize: "0.75rem", color: "#4a4a4a", cursor: "pointer" }}>Privacy</span>
-                <span style={{ fontSize: "0.75rem", color: "#4a4a4a", cursor: "pointer" }}>Terms</span>
-                <span style={{ fontSize: "0.75rem", color: "#4a4a4a", cursor: "pointer" }}>Contact</span>
+                <span style={{ fontSize: "0.75rem", color: "#4a4a4a", cursor: "pointer" }}>
+                  Privacy
+                </span>
+                <span style={{ fontSize: "0.75rem", color: "#4a4a4a", cursor: "pointer" }}>
+                  Terms
+                </span>
+                <span style={{ fontSize: "0.75rem", color: "#4a4a4a", cursor: "pointer" }}>
+                  Contact
+                </span>
               </>
             }
           />

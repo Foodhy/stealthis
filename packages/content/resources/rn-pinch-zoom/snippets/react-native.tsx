@@ -16,17 +16,13 @@ const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 /* ------------------------------------------------------------------ */
 /*  Utility: Euclidean distance between two touches                    */
 /* ------------------------------------------------------------------ */
-function getDistance(
-  touches: { pageX: number; pageY: number }[]
-): number {
+function getDistance(touches: { pageX: number; pageY: number }[]): number {
   const dx = touches[0].pageX - touches[1].pageX;
   const dy = touches[0].pageY - touches[1].pageY;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function getCenter(
-  touches: { pageX: number; pageY: number }[]
-): { x: number; y: number } {
+function getCenter(touches: { pageX: number; pageY: number }[]): { x: number; y: number } {
   return {
     x: (touches[0].pageX + touches[1].pageX) / 2,
     y: (touches[0].pageY + touches[1].pageY) / 2,
@@ -70,28 +66,21 @@ function PinchZoomView({
     [minScale, maxScale]
   );
 
-  const clampTranslation = useCallback(
-    (tx: number, ty: number, s: number) => {
-      if (s <= 1) return { x: 0, y: 0 };
-      const { width, height } = layoutSize.current;
-      const maxTx = ((s - 1) * width) / 2;
-      const maxTy = ((s - 1) * height) / 2;
-      return {
-        x: Math.min(maxTx, Math.max(-maxTx, tx)),
-        y: Math.min(maxTy, Math.max(-maxTy, ty)),
-      };
-    },
-    []
-  );
+  const clampTranslation = useCallback((tx: number, ty: number, s: number) => {
+    if (s <= 1) return { x: 0, y: 0 };
+    const { width, height } = layoutSize.current;
+    const maxTx = ((s - 1) * width) / 2;
+    const maxTy = ((s - 1) * height) / 2;
+    return {
+      x: Math.min(maxTx, Math.max(-maxTx, tx)),
+      y: Math.min(maxTy, Math.max(-maxTy, ty)),
+    };
+  }, []);
 
   /* ---------- spring to valid bounds ---------- */
   const springToBounds = useCallback(() => {
     const clamped = clampScale(currentScale.current);
-    const { x, y } = clampTranslation(
-      lastTranslateX.current,
-      lastTranslateY.current,
-      clamped
-    );
+    const { x, y } = clampTranslation(lastTranslateX.current, lastTranslateY.current, clamped);
 
     currentScale.current = clamped;
     baseScale.current = clamped;
@@ -198,10 +187,7 @@ function PinchZoomView({
           const newScale = baseScale.current * ratio;
 
           // Allow slight over-zoom for rubber-band feel, clamp on release
-          const softClamped = Math.min(
-            maxScale * 1.5,
-            Math.max(minScale * 0.8, newScale)
-          );
+          const softClamped = Math.min(maxScale * 1.5, Math.max(minScale * 0.8, newScale));
           currentScale.current = softClamped;
           scale.setValue(softClamped);
           return;
@@ -271,20 +257,12 @@ function PinchZoomView({
   };
 
   return (
-    <View
-      style={styles.container}
-      onLayout={onLayout}
-      {...panResponder.panHandlers}
-    >
+    <View style={styles.container} onLayout={onLayout} {...panResponder.panHandlers}>
       <Animated.View
         style={[
           styles.content,
           {
-            transform: [
-              { translateX },
-              { translateY },
-              { scale },
-            ],
+            transform: [{ translateX }, { translateY }, { scale }],
           },
         ]}
       >

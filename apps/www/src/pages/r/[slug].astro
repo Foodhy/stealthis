@@ -6,7 +6,7 @@ import RemotionPreview from "@components/RemotionPreview";
 import ExpoSnackEmbed from "@components/ExpoSnackEmbed.astro";
 import CodePenExamples from "@components/CodePenExamples.astro";
 import TechIcon from "@components/TechIcon.astro";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { getCollection, render } from "astro:content";
 import {
@@ -19,6 +19,7 @@ import {
 import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 import { SITE_URLS } from "@lib/urls";
 import { findResourcePreview, normalizePreviewPath } from "@lib/resource-preview";
+import { SHOW_PROMPT_DESIGNER } from "@lib/constant";
 
 export async function getStaticPaths() {
   const resources = await getCollection("resources");
@@ -76,7 +77,8 @@ const categoryKey = `category.${category}` as
   | "category.remotion"
   | "category.database-schemas"
   | "category.ultra-high-definition-pages"
-  | "category.music";
+  | "category.music"
+  | "category.plugins";
 const categoryLabel = t(categoryKey);
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -87,9 +89,41 @@ const hasTS =
   existsSync(path.join(snippetsDir, "next.tsx")) ||
   existsSync(path.join(snippetsDir, "typescript.ts")) ||
   existsSync(path.join(snippetsDir, "typescript.tsx"));
+const hasPromptSnippet =
+  category === "prompts" && existsSync(path.join(snippetsDir, "markdown.md"));
+const promptSnippetContent = hasPromptSnippet
+  ? readFileSync(path.join(snippetsDir, "markdown.md"), "utf-8").trim()
+  : "";
+const promptDesignerPayload = hasPromptSnippet
+  ? JSON.stringify({
+      title,
+      description: description ?? "",
+      content: promptSnippetContent,
+      source: slug,
+    })
+  : "";
+
 const hasReactNative =
   existsSync(path.join(snippetsDir, "react-native.tsx")) ||
   existsSync(path.join(snippetsDir, "expo.tsx"));
+
+const htmlSnippetPath = path.join(snippetsDir, "html.html");
+const hasHtmlPreview = labRoute && existsSync(htmlSnippetPath);
+let htmlSrcdoc = "";
+if (hasHtmlPreview) {
+  let rawHtml = readFileSync(htmlSnippetPath, "utf-8");
+  const cssPath = path.join(snippetsDir, "style.css");
+  const jsPath = path.join(snippetsDir, "script.js");
+  if (existsSync(cssPath)) {
+    const css = readFileSync(cssPath, "utf-8");
+    rawHtml = rawHtml.replace("</head>", `<style>${css}</style></head>`);
+  }
+  if (existsSync(jsPath)) {
+    const js = readFileSync(jsPath, "utf-8");
+    rawHtml = rawHtml.replace("</body>", `<script>${js}<\/script></body>`);
+  }
+  htmlSrcdoc = rawHtml;
+}
 
 const languageBadges = [...(hasTS ? ["TS"] : []), ...(hasJS ? ["JS"] : [])];
 
@@ -121,17 +155,23 @@ const baseResourcePath = `/r/${slug}`;
 const canonicalPath = getLocalizedPath(baseResourcePath, locale);
 const resourceUrl = `https://stealthis.dev${canonicalPath}`;
 const alternateLinks = getAlternateLinks(baseResourcePath);
-const resourceKeywords = mergeKeywords(BRAND_ALIASES, [
-  BRAND_NAME,
-  title,
-  slug,
-  slug.replaceAll("-", " "),
-  `${title} example`,
-  `${title} code snippet`,
-  category,
-  type,
-  difficulty,
-], tags, tech, targets);
+const resourceKeywords = mergeKeywords(
+  BRAND_ALIASES,
+  [
+    BRAND_NAME,
+    title,
+    slug,
+    slug.replaceAll("-", " "),
+    `${title} example`,
+    `${title} code snippet`,
+    category,
+    type,
+    difficulty,
+  ],
+  tags,
+  tech,
+  targets
+);
 const structuredData = [
   {
     "@context": "https://schema.org",
@@ -271,6 +311,18 @@ const structuredData = [
               {t("resource.openLab")}
             </a>
           )}
+          {SHOW_PROMPT_DESIGNER && hasPromptSnippet && (
+            <button
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/15 border border-violet-400/30 text-sm font-medium text-violet-300 hover:bg-violet-500/25 hover:text-violet-100 transition-colors"
+              data-open-prompt-designer
+              data-prompt-payload={promptDesignerPayload}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              {t("resource.openPromptDesigner")}
+            </button>
+          )}
           <ActionMenu resource={resource} locale={locale} resourceUrl={resourceUrl} />
         </div>
       </div>
@@ -319,7 +371,7 @@ const structuredData = [
     <!-- Code tabs -->
     <section class="mb-12">
       <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{t("resource.section.code")}</h2>
-      <CodeTabs slug={slug} targets={targets} />
+      <CodeTabs slug={slug} targets={targets} htmlSrcdoc={htmlSrcdoc} />
     </section>
 
     <!-- CodePen examples -->
@@ -427,7 +479,21 @@ const structuredData = [
     }
   }
 
+  function initPromptDesignerButtons() {
+    document.querySelectorAll<HTMLButtonElement>("[data-open-prompt-designer]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const payload = btn.dataset.promptPayload;
+        if (!payload) return;
+        const encoded = btoa(unescape(encodeURIComponent(payload)));
+        const isDev = window.location.hostname === "localhost";
+        const baseUrl = isDev ? "http://localhost:4328" : "https://prompt-designer.stealthis.dev";
+        window.open(`${baseUrl}/prompts/new?pd=${encodeURIComponent(encoded)}`, "_blank");
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", initResourceFavoriteButtons);
+  document.addEventListener("DOMContentLoaded", initPromptDesignerButtons);
 </script>
 
 <style is:global>

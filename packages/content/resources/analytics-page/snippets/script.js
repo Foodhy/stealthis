@@ -6,7 +6,9 @@
   const pills = document.querySelectorAll(".date-pill");
   pills.forEach(function (pill) {
     pill.addEventListener("click", function () {
-      pills.forEach(function (p) { p.classList.remove("active"); });
+      pills.forEach(function (p) {
+        p.classList.remove("active");
+      });
       pill.classList.add("active");
     });
   });
@@ -65,16 +67,16 @@
     ctx.scale(dpr, dpr);
 
     var data = [
-      3200, 4100, 3800, 4600, 5200, 4900, 5800, 6100, 5400, 6800,
-      7200, 6500, 7800, 8100, 7400, 8600, 7900, 8200, 9100, 8400,
-      9600, 10200, 9800, 10800, 11200, 10400, 11800, 12400, 11600, 12800
+      3200, 4100, 3800, 4600, 5200, 4900, 5800, 6100, 5400, 6800, 7200, 6500, 7800, 8100, 7400,
+      8600, 7900, 8200, 9100, 8400, 9600, 10200, 9800, 10800, 11200, 10400, 11800, 12400, 11600,
+      12800,
     ];
     var labels = [];
     var today = new Date();
     for (var i = 29; i >= 0; i--) {
       var d = new Date(today);
       d.setDate(d.getDate() - i);
-      labels.push((d.getMonth() + 1) + "/" + d.getDate());
+      labels.push(d.getMonth() + 1 + "/" + d.getDate());
     }
 
     var padLeft = 50;
@@ -86,8 +88,12 @@
     var maxVal = Math.max.apply(null, data) * 1.1;
     var stepX = chartW / (data.length - 1);
 
-    function xPos(i) { return padLeft + i * stepX; }
-    function yPos(v) { return padTop + chartH - (v / maxVal) * chartH; }
+    function xPos(i) {
+      return padLeft + i * stepX;
+    }
+    function yPos(v) {
+      return padTop + chartH - (v / maxVal) * chartH;
+    }
 
     // Grid lines
     ctx.strokeStyle = "#f3f4f6";
@@ -105,7 +111,11 @@
       ctx.fillStyle = "#9ca3af";
       ctx.font = "11px -apple-system, sans-serif";
       ctx.textAlign = "right";
-      ctx.fillText(gridVal >= 1000 ? (gridVal / 1000).toFixed(1) + "k" : gridVal.toString(), padLeft - 8, gy + 4);
+      ctx.fillText(
+        gridVal >= 1000 ? (gridVal / 1000).toFixed(1) + "k" : gridVal.toString(),
+        padLeft - 8,
+        gy + 4
+      );
     }
 
     // Gradient fill
@@ -194,7 +204,7 @@
         var dateStr = cellDate.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
-          year: "numeric"
+          year: "numeric",
         });
 
         var tooltip = document.createElement("span");

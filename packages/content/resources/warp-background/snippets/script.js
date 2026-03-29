@@ -44,8 +44,10 @@
     const dy1 = Math.cos(baseX * FREQUENCY + t * 1.1) * AMPLITUDE_Y;
 
     // Layer 2: Secondary smaller wave
-    const dx2 = Math.sin(baseX * FREQUENCY * 1.5 + baseY * FREQUENCY * 0.5 + t * 0.7) * AMPLITUDE_X * 0.5;
-    const dy2 = Math.cos(baseY * FREQUENCY * 1.3 + baseX * FREQUENCY * 0.4 + t * 0.9) * AMPLITUDE_Y * 0.5;
+    const dx2 =
+      Math.sin(baseX * FREQUENCY * 1.5 + baseY * FREQUENCY * 0.5 + t * 0.7) * AMPLITUDE_X * 0.5;
+    const dy2 =
+      Math.cos(baseY * FREQUENCY * 1.3 + baseX * FREQUENCY * 0.4 + t * 0.9) * AMPLITUDE_Y * 0.5;
 
     // Layer 3: Micro turbulence
     const dx3 = Math.sin(baseX * FREQUENCY * 3 + t * 2.1) * AMPLITUDE_X * 0.15;

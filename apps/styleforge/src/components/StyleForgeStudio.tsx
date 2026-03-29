@@ -524,12 +524,22 @@ export default function StyleForgeStudio() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [revealedComponentCount, setRevealedComponentCount] = useState(0);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [currentView, setCurrentView] = useState<"generator" | "collections" | "collection_detail" | "templates" | "assets" | "comparison" | "settings">("generator");
+  const [currentView, setCurrentView] = useState<
+    | "generator"
+    | "collections"
+    | "collection_detail"
+    | "templates"
+    | "assets"
+    | "comparison"
+    | "settings"
+  >("generator");
 
   // Collection views state
   const [explicitCollections, setExplicitCollections] = useState<StyleForgeCollectionGroup[]>([]);
   const [categoryCollections, setCategoryCollections] = useState<StyleForgeCollectionGroup[]>([]);
-  const [selectedCollection, setSelectedCollection] = useState<StyleForgeCollectionGroup | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<StyleForgeCollectionGroup | null>(
+    null
+  );
   const [comparisonA, setComparisonA] = useState<CollectionResource | null>(null);
   const [comparisonB, setComparisonB] = useState<CollectionResource | null>(null);
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
@@ -596,7 +606,12 @@ export default function StyleForgeStudio() {
   }, [isSidebarCollapsed]);
 
   useEffect(() => {
-    if (currentView !== "collections" && currentView !== "collection_detail" && currentView !== "assets") return;
+    if (
+      currentView !== "collections" &&
+      currentView !== "collection_detail" &&
+      currentView !== "assets"
+    )
+      return;
     if (explicitCollections.length > 0) return; // already loaded
 
     async function loadCollections() {
@@ -604,11 +619,16 @@ export default function StyleForgeStudio() {
       try {
         const resp = await fetch("/api/styleforge/collections");
         if (!resp.ok) throw new Error("Failed to load collections");
-        const data = await resp.json() as { explicit: StyleForgeCollectionGroup[]; byCategory: StyleForgeCollectionGroup[] };
+        const data = (await resp.json()) as {
+          explicit: StyleForgeCollectionGroup[];
+          byCategory: StyleForgeCollectionGroup[];
+        };
         setExplicitCollections(data.explicit);
         setCategoryCollections(data.byCategory);
       } catch (error) {
-        setStatusMessage(`Collections loading failed: ${error instanceof Error ? error.message : String(error)}`);
+        setStatusMessage(
+          `Collections loading failed: ${error instanceof Error ? error.message : String(error)}`
+        );
       } finally {
         setIsLoadingCollections(false);
       }
@@ -840,11 +860,11 @@ export default function StyleForgeStudio() {
         current.map((job) =>
           job.id === jobId
             ? {
-              ...job,
-              status: "ready",
-              kitId: typed.kit.id,
-              updatedAt: new Date().toISOString(),
-            }
+                ...job,
+                status: "ready",
+                kitId: typed.kit.id,
+                updatedAt: new Date().toISOString(),
+              }
             : job
         )
       );
@@ -870,11 +890,11 @@ export default function StyleForgeStudio() {
         current.map((job) =>
           job.id === jobId
             ? {
-              ...job,
-              status: "error",
-              error: error instanceof Error ? error.message : String(error),
-              updatedAt: new Date().toISOString(),
-            }
+                ...job,
+                status: "error",
+                error: error instanceof Error ? error.message : String(error),
+                updatedAt: new Date().toISOString(),
+              }
             : job
         )
       );
@@ -927,7 +947,12 @@ export default function StyleForgeStudio() {
       <aside className={`sf-admin-sidebar ${isSidebarCollapsed ? "is-collapsed" : ""}`}>
         <div className="sf-admin-logo">
           <div className="sf-admin-logo-icon">
-            <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "#0a1215", fontVariationSettings: "'FILL' 1" }}>token</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "18px", color: "#0a1215", fontVariationSettings: "'FILL' 1" }}
+            >
+              token
+            </span>
           </div>
           <div>
             <p className="sf-admin-logo-title">StyleForge</p>
@@ -948,7 +973,12 @@ export default function StyleForgeStudio() {
 
         <nav className="sf-admin-nav" aria-label="StyleForge navigation">
           {/* Top-level nav items matching Collection Detail style */}
-          <button type="button" className={`sf-nav-icon-item ${currentView === "settings" ? "is-active" : ""}`} title="Dashboard" onClick={() => setCurrentView("generator")}>
+          <button
+            type="button"
+            className={`sf-nav-icon-item ${currentView === "settings" ? "is-active" : ""}`}
+            title="Dashboard"
+            onClick={() => setCurrentView("generator")}
+          >
             <span className="material-symbols-outlined">dashboard</span>
             <span>Dashboard</span>
           </button>
@@ -958,14 +988,29 @@ export default function StyleForgeStudio() {
             title="Collections"
             onClick={() => setCurrentView("collections")}
           >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>folder_open</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              folder_open
+            </span>
             <span>Collections</span>
           </button>
-          <button type="button" className={`sf-nav-icon-item ${currentView === "templates" ? "is-active" : ""}`} title="Templates" onClick={() => setCurrentView("templates")}>
+          <button
+            type="button"
+            className={`sf-nav-icon-item ${currentView === "templates" ? "is-active" : ""}`}
+            title="Templates"
+            onClick={() => setCurrentView("templates")}
+          >
             <span className="material-symbols-outlined">layers</span>
             <span>Templates</span>
           </button>
-          <button type="button" className={`sf-nav-icon-item ${currentView === "assets" ? "is-active" : ""}`} title="Assets" onClick={() => setCurrentView("assets")}>
+          <button
+            type="button"
+            className={`sf-nav-icon-item ${currentView === "assets" ? "is-active" : ""}`}
+            title="Assets"
+            onClick={() => setCurrentView("assets")}
+          >
             <span className="material-symbols-outlined">package_2</span>
             <span>Assets</span>
           </button>
@@ -1085,8 +1130,12 @@ export default function StyleForgeStudio() {
         <div style={{ marginTop: "auto" }}>
           <div className="sf-sidebar-storage">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "rgba(203,213,225,0.8)" }}>Storage</span>
-              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--sf-primary)" }}>74%</span>
+              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "rgba(203,213,225,0.8)" }}>
+                Storage
+              </span>
+              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--sf-primary)" }}>
+                74%
+              </span>
             </div>
             <div className="sf-sidebar-storage-bar">
               <div className="sf-sidebar-storage-fill" style={{ width: "74%" }} />
@@ -1116,8 +1165,8 @@ export default function StyleForgeStudio() {
         </div>
       </aside>
 
-      {currentView === "collections" && (
-        isLoadingCollections ? (
+      {currentView === "collections" &&
+        (isLoadingCollections ? (
           <div className="flex-1 flex items-center justify-center text-slate-500">
             <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
             Loading collections...
@@ -1126,16 +1175,22 @@ export default function StyleForgeStudio() {
           <CollectionOverview
             explicit={explicitCollections}
             byCategory={categoryCollections}
-            onSelectCollection={(coll) => { setSelectedCollection(coll); setCurrentView("collection_detail"); }}
+            onSelectCollection={(coll) => {
+              setSelectedCollection(coll);
+              setCurrentView("collection_detail");
+            }}
             onNewCollection={() => setCurrentView("generator")}
           />
-        )
-      )}
+        ))}
       {currentView === "collection_detail" && selectedCollection && (
         <CollectionDetail
           collection={selectedCollection}
           onBack={() => setCurrentView("collections")}
-          onCompare={(a, b) => { setComparisonA(a); setComparisonB(b); setCurrentView("comparison"); }}
+          onCompare={(a, b) => {
+            setComparisonA(a);
+            setComparisonB(b);
+            setCurrentView("comparison");
+          }}
           onPreview={() => {}}
         />
       )}
@@ -1152,14 +1207,20 @@ export default function StyleForgeStudio() {
           resourceB={comparisonB}
           onBack={() => setCurrentView("collections")}
         />
-      ) : currentView === "templates" && (
-        <div className="flex-1 flex items-center justify-center text-slate-500 flex-col gap-3">
-          <span className="material-symbols-outlined text-4xl">compare</span>
-          <p>Select two resources from a collection to compare them.</p>
-          <button type="button" className="sf-pill-btn" onClick={() => setCurrentView("collections")}>
-            Browse Collections
-          </button>
-        </div>
+      ) : (
+        currentView === "templates" && (
+          <div className="flex-1 flex items-center justify-center text-slate-500 flex-col gap-3">
+            <span className="material-symbols-outlined text-4xl">compare</span>
+            <p>Select two resources from a collection to compare them.</p>
+            <button
+              type="button"
+              className="sf-pill-btn"
+              onClick={() => setCurrentView("collections")}
+            >
+              Browse Collections
+            </button>
+          </div>
+        )
       )}
       {currentView === "assets" && (
         <SearchDiscovery
@@ -1267,7 +1328,9 @@ export default function StyleForgeStudio() {
               selected={selectedComponents}
               maxSelect={COMPONENT_SELECTION_LIMIT}
               isLoading={isLoadingReferences}
-              onToggle={(id) => toggleSelection(id, COMPONENT_SELECTION_LIMIT, setSelectedComponents)}
+              onToggle={(id) =>
+                toggleSelection(id, COMPONENT_SELECTION_LIMIT, setSelectedComponents)
+              }
             />
           </section>
 
@@ -1285,9 +1348,7 @@ export default function StyleForgeStudio() {
           <section className="sf-card sf-actions">
             <div>
               <h2>4) Generate and review</h2>
-              <p>
-                {statusMessage}
-              </p>
+              <p>{statusMessage}</p>
             </div>
 
             <div className="sf-action-buttons">
@@ -1317,7 +1378,9 @@ export default function StyleForgeStudio() {
                   <h2>5) Visual direction preview</h2>
                   <p>Editable draft before final kit generation.</p>
                 </div>
-                <span className={`sf-draft-mode-badge ${draftMode === "ai" ? "is-ai" : "is-deterministic"}`}>
+                <span
+                  className={`sf-draft-mode-badge ${draftMode === "ai" ? "is-ai" : "is-deterministic"}`}
+                >
                   {draftMode === "ai" ? "✦ AI Draft" : "⚡ Deterministic"}
                 </span>
               </div>

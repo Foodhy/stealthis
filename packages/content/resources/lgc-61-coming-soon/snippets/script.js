@@ -4,15 +4,17 @@
   // ── Countdown ─────────────────────────────────────────────────
   const TARGET = new Date("2026-09-01T00:00:00Z");
 
-  function pad(n) { return String(n).padStart(2, "0"); }
+  function pad(n) {
+    return String(n).padStart(2, "0");
+  }
 
   function updateCountdown() {
-    const now  = new Date();
+    const now = new Date();
     const diff = Math.max(0, TARGET - now);
-    const days  = Math.floor(diff / 86400000);
+    const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
-    const mins  = Math.floor((diff % 3600000) / 60000);
-    const secs  = Math.floor((diff % 60000) / 1000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
 
     const d = document.getElementById("cd-days");
     const h = document.getElementById("cd-hours");
@@ -28,9 +30,9 @@
   setInterval(updateCountdown, 1000);
 
   // ── Waitlist form ──────────────────────────────────────────────
-  const form    = document.getElementById("cs-form");
-  const input   = document.getElementById("cs-email");
-  const error   = document.getElementById("cs-error");
+  const form = document.getElementById("cs-form");
+  const input = document.getElementById("cs-email");
+  const error = document.getElementById("cs-error");
   const success = document.getElementById("cs-success");
 
   if (form) {
@@ -39,7 +41,10 @@
       const val = input.value.trim();
       const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
       error.hidden = valid;
-      if (!valid) { input.focus(); return; }
+      if (!valid) {
+        input.focus();
+        return;
+      }
       form.hidden = true;
       success.hidden = false;
     });
@@ -57,9 +62,9 @@
   function resize() {
     W = window.innerWidth;
     H = window.innerHeight;
-    canvas.width  = W * DPR;
+    canvas.width = W * DPR;
     canvas.height = H * DPR;
-    canvas.style.width  = W + "px";
+    canvas.style.width = W + "px";
     canvas.style.height = H + "px";
     ctx.scale(DPR, DPR);
   }

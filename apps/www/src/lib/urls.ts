@@ -8,5 +8,6 @@ export const SITE_URLS = {
   styleforge: isDev ? "http://localhost:4326/" : "https://styleforge.stealthis.dev",
   dbviz: isDev ? "http://localhost:4327/" : "https://dbviz.stealthis.dev",
   remotion: isDev ? "http://localhost:4325" : "https://remotion.stealthis.dev",
+  promptDesigner: isDev ? "http://localhost:4328" : "https://prompt-designer.stealthis.dev",
   changelog: "https://github.com/Foodhy/stealthis/releases",
 } as const;

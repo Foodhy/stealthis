@@ -9,11 +9,7 @@ export default defineConfig({
   output: "static",
   site: "https://stealthis.dev",
   adapter: cloudflare(),
-  integrations: [
-    mdx(),
-    react(),
-    tailwind({ applyBaseStyles: false }),
-  ],
+  integrations: [mdx(), react(), tailwind({ applyBaseStyles: false })],
   i18n: {
     defaultLocale: "en",
     locales: [

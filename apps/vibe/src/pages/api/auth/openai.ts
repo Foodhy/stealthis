@@ -80,9 +80,7 @@ async function readCodexTokens(): Promise<StoredTokens | null> {
     if (data.auth_mode !== "chatgpt" || !data.tokens?.access_token) return null;
 
     const accessPayload = decodeJwtPayload(data.tokens.access_token);
-    const idPayload = data.tokens.id_token
-      ? decodeJwtPayload(data.tokens.id_token)
-      : {};
+    const idPayload = data.tokens.id_token ? decodeJwtPayload(data.tokens.id_token) : {};
 
     return {
       access_token: data.tokens.access_token,
@@ -90,8 +88,7 @@ async function readCodexTokens(): Promise<StoredTokens | null> {
       expires_at: (accessPayload.exp ?? Math.floor(Date.now() / 1000) + 3600) * 1000,
       email: idPayload.email,
       account_id:
-        data.tokens.account_id ??
-        accessPayload["https://api.openai.com/auth"]?.chatgpt_account_id,
+        data.tokens.account_id ?? accessPayload["https://api.openai.com/auth"]?.chatgpt_account_id,
     };
   } catch {
     return null;

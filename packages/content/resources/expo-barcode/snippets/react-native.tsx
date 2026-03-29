@@ -54,8 +54,7 @@ function randomData(type: BarcodeType): string {
     case "Code128": {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let code = "";
-      for (let i = 0; i < 10; i++)
-        code += chars[Math.floor(Math.random() * chars.length)];
+      for (let i = 0; i < 10; i++) code += chars[Math.floor(Math.random() * chars.length)];
       return code;
     }
   }
@@ -101,11 +100,7 @@ function ScanLine() {
     outputRange: [0, SCAN_SIZE - 4],
   });
 
-  return (
-    <Animated.View
-      style={[styles.scanLine, { transform: [{ translateY }] }]}
-    />
-  );
+  return <Animated.View style={[styles.scanLine, { transform: [{ translateY }] }]} />;
 }
 
 /* ── Corner Brackets ──────────────────────────── */
@@ -173,27 +168,15 @@ function ResultModal({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalSheet}>
           {/* Handle */}
           <View style={styles.modalHandle} />
 
           {/* Badge */}
-          <View
-            style={[
-              styles.typeBadge,
-              { backgroundColor: typeColors[result.type] + "22" },
-            ]}
-          >
-            <Text
-              style={[styles.typeBadgeText, { color: typeColors[result.type] }]}
-            >
+          <View style={[styles.typeBadge, { backgroundColor: typeColors[result.type] + "22" }]}>
+            <Text style={[styles.typeBadgeText, { color: typeColors[result.type] }]}>
               {result.type}
             </Text>
           </View>
@@ -207,9 +190,7 @@ function ResultModal({
           </View>
 
           {/* Timestamp */}
-          <Text style={styles.timestamp}>
-            Scanned at {formatTime(result.timestamp)}
-          </Text>
+          <Text style={styles.timestamp}>Scanned at {formatTime(result.timestamp)}</Text>
 
           {/* Actions */}
           <View style={styles.actions}>
@@ -219,10 +200,7 @@ function ResultModal({
             </TouchableOpacity>
 
             {isURL(result.data) && (
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={handleOpenURL}
-              >
+              <TouchableOpacity style={styles.actionBtn} onPress={handleOpenURL}>
                 <Text style={styles.actionIcon}>&#x1F310;</Text>
                 <Text style={styles.actionLabel}>Open URL</Text>
               </TouchableOpacity>
@@ -256,18 +234,8 @@ function HistoryItem({ item }: { item: ScanResult }) {
   return (
     <View style={styles.historyItem}>
       <View style={styles.historyLeft}>
-        <View
-          style={[
-            styles.historyBadge,
-            { backgroundColor: typeColors[item.type] + "22" },
-          ]}
-        >
-          <Text
-            style={[
-              styles.historyBadgeText,
-              { color: typeColors[item.type] },
-            ]}
-          >
+        <View style={[styles.historyBadge, { backgroundColor: typeColors[item.type] + "22" }]}>
+          <Text style={[styles.historyBadgeText, { color: typeColors[item.type] }]}>
             {item.type}
           </Text>
         </View>
@@ -325,11 +293,7 @@ export default function App() {
           <View style={styles.overlayRow}>
             <View style={styles.overlaySide} />
             {/* Scan area */}
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.scanArea}
-              onPress={handleScan}
-            >
+            <TouchableOpacity activeOpacity={0.9} style={styles.scanArea} onPress={handleScan}>
               <CornerBrackets />
               <ScanLine />
               <Text style={styles.scanHint}>Tap to scan</Text>
@@ -348,15 +312,10 @@ export default function App() {
       {/* History */}
       <View style={styles.historyHeader}>
         <Text style={styles.historyTitle}>Scan History</Text>
-        {history.length > 0 && (
-          <Text style={styles.historyCount}>{history.length}</Text>
-        )}
+        {history.length > 0 && <Text style={styles.historyCount}>{history.length}</Text>}
       </View>
 
-      <ScrollView
-        style={styles.historyList}
-        contentContainerStyle={styles.historyContent}
-      >
+      <ScrollView style={styles.historyList} contentContainerStyle={styles.historyContent}>
         {history.length === 0 ? (
           <Text style={styles.emptyText}>No scans yet. Tap the scan area above.</Text>
         ) : (

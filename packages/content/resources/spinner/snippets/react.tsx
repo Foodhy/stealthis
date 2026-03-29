@@ -11,11 +11,7 @@ interface SpinnerProps {
 
 const sizes: Record<SpinnerSize, number> = { sm: 16, md: 24, lg: 36 };
 
-export function Spinner({
-  variant = "circle",
-  size = "md",
-  color = "#38bdf8",
-}: SpinnerProps) {
+export function Spinner({ variant = "circle", size = "md", color = "#38bdf8" }: SpinnerProps) {
   const s = sizes[size];
 
   if (variant === "circle") {
@@ -148,9 +144,7 @@ export default function SpinnerDemo() {
       }}
     >
       <div style={{ width: "100%", maxWidth: 520 }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.375rem" }}>
-          Spinner
-        </h1>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.375rem" }}>Spinner</h1>
         <p style={{ color: "#475569", fontSize: "0.875rem", marginBottom: "2rem" }}>
           Multiple loading animation styles and sizes.
         </p>

@@ -18,7 +18,11 @@ interface Message {
 }
 
 function TypingIndicator() {
-  const dots = [useRef(new Animated.Value(0)).current, useRef(new Animated.Value(0)).current, useRef(new Animated.Value(0)).current];
+  const dots = [
+    useRef(new Animated.Value(0)).current,
+    useRef(new Animated.Value(0)).current,
+    useRef(new Animated.Value(0)).current,
+  ];
 
   useEffect(() => {
     const animations = dots.map((dot, i) =>
@@ -47,10 +51,7 @@ function TypingIndicator() {
       <View style={styles.assistantBubble}>
         <View style={styles.dotsContainer}>
           {dots.map((dot, i) => (
-            <Animated.View
-              key={i}
-              style={[styles.dot, { transform: [{ translateY: dot }] }]}
-            />
+            <Animated.View key={i} style={[styles.dot, { transform: [{ translateY: dot }] }]} />
           ))}
         </View>
       </View>
@@ -60,9 +61,17 @@ function TypingIndicator() {
 
 const initialMessages: Message[] = [
   { id: "1", role: "user", text: "Hey, can you help me with React Native?" },
-  { id: "2", role: "assistant", text: "Of course! I'd be happy to help you with React Native. What would you like to know?" },
+  {
+    id: "2",
+    role: "assistant",
+    text: "Of course! I'd be happy to help you with React Native. What would you like to know?",
+  },
   { id: "3", role: "user", text: "How do I handle animations?" },
-  { id: "4", role: "assistant", text: "React Native provides the Animated API for performant animations. You can use Animated.timing, Animated.spring, and Animated.decay for different effects. For complex sequences, use Animated.parallel or Animated.sequence." },
+  {
+    id: "4",
+    role: "assistant",
+    text: "React Native provides the Animated API for performant animations. You can use Animated.timing, Animated.spring, and Animated.decay for different effects. For complex sequences, use Animated.parallel or Animated.sequence.",
+  },
 ];
 
 export default function App() {
@@ -101,9 +110,7 @@ export default function App() {
     return (
       <View style={[styles.messageRow, isUser && styles.messageRowUser]}>
         <View style={[isUser ? styles.userBubble : styles.assistantBubble]}>
-          <Text style={[styles.messageText, isUser && styles.userText]}>
-            {item.text}
-          </Text>
+          <Text style={[styles.messageText, isUser && styles.userText]}>{item.text}</Text>
         </View>
       </View>
     );
@@ -125,9 +132,7 @@ export default function App() {
         renderItem={renderMessage}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messageList}
-        onContentSizeChange={() =>
-          flatListRef.current?.scrollToEnd({ animated: true })
-        }
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         ListFooterComponent={typing ? <TypingIndicator /> : null}
       />
 

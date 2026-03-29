@@ -28,9 +28,7 @@ export function Combobox({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()));
 
   const open = () => {
     setIsOpen(true);
@@ -202,12 +200,9 @@ export function Combobox({
                     i === activeIndex
                       ? "#38bdf8"
                       : selectedValue === opt.value
-                      ? "#38bdf8"
-                      : "#94a3b8",
-                  background:
-                    i === activeIndex
-                      ? "rgba(56,189,248,0.12)"
-                      : "transparent",
+                        ? "#38bdf8"
+                        : "#94a3b8",
+                  background: i === activeIndex ? "rgba(56,189,248,0.12)" : "transparent",
                   cursor: "pointer",
                   fontWeight: selectedValue === opt.value ? 600 : 400,
                   transition: "background 0.1s, color 0.1s",
@@ -265,9 +260,7 @@ export default function ComboboxDemo() {
       }}
     >
       <div style={{ width: "100%", maxWidth: 640 }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.375rem" }}>
-          Combobox
-        </h1>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.375rem" }}>Combobox</h1>
         <p style={{ color: "#475569", fontSize: "0.875rem", marginBottom: "2rem" }}>
           Searchable dropdown select with keyboard navigation.
         </p>
@@ -286,11 +279,7 @@ export default function ComboboxDemo() {
             placeholder="Search frameworks..."
             onChange={(v) => setSelected(v)}
           />
-          <Combobox
-            label="Country"
-            options={countries}
-            placeholder="Search countries..."
-          />
+          <Combobox label="Country" options={countries} placeholder="Search countries..." />
         </div>
 
         {selected && (

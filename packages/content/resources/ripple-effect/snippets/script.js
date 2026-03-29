@@ -12,10 +12,7 @@
       Math.sqrt(x * x + y * y),
       Math.sqrt((rect.width - x) * (rect.width - x) + y * y),
       Math.sqrt(x * x + (rect.height - y) * (rect.height - y)),
-      Math.sqrt(
-        (rect.width - x) * (rect.width - x) +
-          (rect.height - y) * (rect.height - y)
-      )
+      Math.sqrt((rect.width - x) * (rect.width - x) + (rect.height - y) * (rect.height - y))
     );
     var size = maxDist * 2;
 

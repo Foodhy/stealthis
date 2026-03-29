@@ -3,10 +3,11 @@
 
   // ── Mobile nav toggle ─────────────────────────────────────────────
   const toggle = document.querySelector(".nav-mobile-toggle");
-  const links  = document.querySelector(".nav-links");
+  const links = document.querySelector(".nav-links");
 
   if (toggle && links) {
-    links.style.cssText = "display:none;position:absolute;top:100%;left:0;right:0;background:var(--warm);border-bottom:1px solid #e2ddd5;padding:1rem 3rem;flex-direction:column;gap:1rem;";
+    links.style.cssText =
+      "display:none;position:absolute;top:100%;left:0;right:0;background:var(--warm);border-bottom:1px solid #e2ddd5;padding:1rem 3rem;flex-direction:column;gap:1rem;";
     let open = false;
     toggle.addEventListener("click", () => {
       open = !open;
@@ -15,7 +16,10 @@
     });
     // Close on link click
     links.querySelectorAll("a").forEach((a) => {
-      a.addEventListener("click", () => { open = false; links.style.display = "none"; });
+      a.addEventListener("click", () => {
+        open = false;
+        links.style.display = "none";
+      });
     });
   }
 
@@ -49,15 +53,22 @@
     e.preventDefault();
     let valid = true;
 
-    const name    = document.getElementById("cf-name");
-    const email   = document.getElementById("cf-email");
+    const name = document.getElementById("cf-name");
+    const email = document.getElementById("cf-email");
     const message = document.getElementById("cf-message");
 
-    if (!name.value.trim()) { showError(name, "Please enter your full name."); valid = false; }
-    if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-      showError(email, "Please enter a valid email address."); valid = false;
+    if (!name.value.trim()) {
+      showError(name, "Please enter your full name.");
+      valid = false;
     }
-    if (!message.value.trim()) { showError(message, "Please briefly describe your matter."); valid = false; }
+    if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+      showError(email, "Please enter a valid email address.");
+      valid = false;
+    }
+    if (!message.value.trim()) {
+      showError(message, "Please briefly describe your matter.");
+      valid = false;
+    }
 
     if (!valid) return;
 

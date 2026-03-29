@@ -22,10 +22,16 @@
       });
     }
     w.querySelectorAll(".popover-close").forEach(function (btn) {
-      btn.addEventListener("click", function () { close(w); });
+      btn.addEventListener("click", function () {
+        close(w);
+      });
     });
   });
 
-  document.addEventListener("click", function () { wraps.forEach(close); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") wraps.forEach(close); });
-}());
+  document.addEventListener("click", function () {
+    wraps.forEach(close);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") wraps.forEach(close);
+  });
+})();

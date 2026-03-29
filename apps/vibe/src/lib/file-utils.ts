@@ -65,7 +65,7 @@ export function buildTreeFromPaths(paths: string[]): TreeNode[] {
 export async function writeFileToFolder(
   dirHandle: FileSystemDirectoryHandle,
   filePath: string,
-  content: string,
+  content: string
 ): Promise<void> {
   const parts = filePath.split("/");
   let current = dirHandle;
@@ -83,7 +83,7 @@ export async function writeFileToFolder(
 
 export async function writeAllFiles(
   dirHandle: FileSystemDirectoryHandle,
-  files: Record<string, { content: string }>,
+  files: Record<string, { content: string }>
 ): Promise<void> {
   for (const [path, file] of Object.entries(files)) {
     await writeFileToFolder(dirHandle, path, file.content);

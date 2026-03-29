@@ -1,0 +1,106 @@
+---
+slug: boiler-pwa
+title: PWA Starter (Vite + Workbox)
+description: Progressive Web App starter with Vite PWA plugin, Workbox service worker, web manifest, offline support, and install prompts.
+category: boilerplates
+type: boilerplate
+tags: [pwa, vite, workbox, service-worker, offline, installable]
+tech: [vite, typescript]
+difficulty: med
+targets: [html]
+labRoute: /boilerplates/boiler-pwa
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+Everything you need to turn a Vite app into a Progressive Web App: service worker, web manifest, offline caching, and install prompts.
+
+## Core Concepts
+
+A PWA requires three things:
+
+1. **Web App Manifest** (`manifest.webmanifest`) -- tells the browser your app's name, icons, theme color, and display mode.
+2. **Service Worker** -- a background script that intercepts network requests and enables offline caching.
+3. **HTTPS** -- required for service worker registration (localhost is exempt during development).
+
+## Setup with vite-plugin-pwa
+
+```bash
+npm i -D vite-plugin-pwa
+```
+
+```ts
+// vite.config.ts
+import { VitePWA } from "vite-plugin-pwa";
+
+export default defineConfig({
+  plugins: [
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.svg", "robots.txt"],
+      manifest: {
+        name: "My PWA App",
+        short_name: "MyPWA",
+        theme_color: "#0a0a0f",
+        icons: [
+          { src: "/icons/192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icons/512.png", sizes: "512x512", type: "image/png" },
+        ],
+      },
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\./,
+            handler: "NetworkFirst",
+            options: { cacheName: "api-cache" },
+          },
+        ],
+      },
+    }),
+  ],
+});
+```
+
+## Caching Strategies (Workbox)
+
+| Strategy | Behavior | Best For |
+|---|---|---|
+| **CacheFirst** | Serve from cache, fall back to network | Static assets, fonts, icons |
+| **NetworkFirst** | Try network first, fall back to cache | API responses, dynamic data |
+| **StaleWhileRevalidate** | Serve from cache, update in background | Semi-static content, avatars |
+
+## Project Structure
+
+```
+public/
+  icons/
+    192.png
+    512.png
+  robots.txt
+src/
+  main.ts
+  sw.ts                # Custom service worker (optional)
+vite.config.ts         # VitePWA() plugin config
+```
+
+## PWA Checklist
+
+- Manifest with name, icons, and theme color
+- Service worker registered and active
+- Offline mode functional
+- App is installable (Add to Home Screen)
+- Served over HTTPS
+
+## Community Alternative
+
+**pwa-builder/pwa-starter** (1.3k stars) -- a more opinionated starter from Microsoft's PWA team with Lit components and Shoelace UI.
+
+## References
+
+- [vite-plugin-pwa Guide](https://vite-pwa-org.netlify.app/guide/)
+- [Workbox Documentation](https://developer.chrome.com/docs/workbox)
+- [pwa-builder/pwa-starter](https://github.com/pwa-builder/pwa-starter)

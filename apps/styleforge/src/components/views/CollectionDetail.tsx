@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
-import type { StyleForgeCollectionGroup, CollectionResource } from "../../lib/styleforge/collections";
+import type {
+  StyleForgeCollectionGroup,
+  CollectionResource,
+} from "../../lib/styleforge/collections";
 
 interface Props {
   collection: StyleForgeCollectionGroup;
@@ -48,7 +51,7 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
         (r) =>
           r.title.toLowerCase().includes(q) ||
           r.description.toLowerCase().includes(q) ||
-          r.tags.some((t) => t.toLowerCase().includes(q)),
+          r.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
     return items;
@@ -73,16 +76,15 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
   const current = previewResource;
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 space-y-8" style={{ background: "var(--sf-surface)" }}>
+    <div
+      className="flex-1 overflow-y-auto p-8 space-y-8"
+      style={{ background: "var(--sf-surface)" }}
+    >
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start gap-8 border-b border-[rgba(13,185,242,0.1)] pb-8 mb-4">
         <div className="space-y-4 max-w-2xl">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="sf-preview-win-icon-btn"
-              onClick={onBack}
-            >
+            <button type="button" className="sf-preview-win-icon-btn" onClick={onBack}>
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
             <div className="inline-flex items-center px-2 py-1 rounded bg-primary/10 border border-primary/20 text-[10px] text-primary font-bold uppercase tracking-wider">
@@ -117,7 +119,10 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
           </div>
           {types.slice(0, 5).map(([type, count]) => (
             <div key={type} className="flex items-center gap-2 text-xs text-slate-400">
-              <span className="material-symbols-outlined text-sm" style={{ color: "var(--sf-primary)" }}>
+              <span
+                className="material-symbols-outlined text-sm"
+                style={{ color: "var(--sf-primary)" }}
+              >
                 {TYPE_ICONS[type] ?? "circle"}
               </span>
               <span className="flex-1">{type}</span>
@@ -170,14 +175,24 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
       <div className="grid grid-cols-12 gap-8">
         {/* Resource list */}
         <div className={current ? "col-span-12 lg:col-span-4 space-y-2" : "col-span-12"}>
-          <div className={current ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"}>
+          <div
+            className={
+              current
+                ? "space-y-2"
+                : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            }
+          >
             {filtered.map((resource) => {
               const isSelected = selectedResources.has(resource.slug);
               return (
                 <div
                   key={resource.slug}
                   className={`sf-comp-tile ${isSelected ? "is-active" : ""}`}
-                  style={{ alignItems: current ? "center" : "flex-start", padding: "1rem", cursor: "pointer" }}
+                  style={{
+                    alignItems: current ? "center" : "flex-start",
+                    padding: "1rem",
+                    cursor: "pointer",
+                  }}
                 >
                   <div className="flex items-center gap-3 w-full">
                     <button
@@ -187,10 +202,15 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
                         borderColor: isSelected ? "var(--sf-primary)" : "rgba(100,116,139,0.5)",
                         background: isSelected ? "var(--sf-primary-dim)" : "transparent",
                       }}
-                      onClick={(e) => { e.stopPropagation(); toggleSelect(resource.slug); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelect(resource.slug);
+                      }}
                     >
                       {isSelected && (
-                        <span className="material-symbols-outlined text-[10px] text-primary">check</span>
+                        <span className="material-symbols-outlined text-[10px] text-primary">
+                          check
+                        </span>
                       )}
                     </button>
                     <div
@@ -201,10 +221,20 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
                         {TYPE_ICONS[resource.type] ?? "circle"}
                       </span>
                     </div>
-                    <div className="flex-1 min-w-0" onClick={() => { setPreviewResource(resource); onPreview(resource); }}>
-                      <h4 className="text-sm font-bold text-slate-100 truncate">{resource.title}</h4>
+                    <div
+                      className="flex-1 min-w-0"
+                      onClick={() => {
+                        setPreviewResource(resource);
+                        onPreview(resource);
+                      }}
+                    >
+                      <h4 className="text-sm font-bold text-slate-100 truncate">
+                        {resource.title}
+                      </h4>
                       {!current && (
-                        <p className="text-xs text-slate-400 line-clamp-2 mt-1">{resource.description}</p>
+                        <p className="text-xs text-slate-400 line-clamp-2 mt-1">
+                          {resource.description}
+                        </p>
                       )}
                     </div>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700 uppercase shrink-0">
@@ -214,7 +244,10 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
                   {!current && resource.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2 pl-10">
                       {resource.tags.slice(0, 3).map((tag) => (
-                        <span key={tag} className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800/60 text-slate-500">
+                        <span
+                          key={tag}
+                          className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800/60 text-slate-500"
+                        >
                           {tag}
                         </span>
                       ))}
@@ -239,7 +272,9 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
               <div className="sf-preview-win-bar">
                 <div className="flex items-center gap-4">
                   <div className="sf-preview-win-dots">
-                    <i /><i /><i />
+                    <i />
+                    <i />
+                    <i />
                   </div>
                   <span className="sf-preview-win-title">{current.title}</span>
                 </div>
@@ -272,21 +307,30 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        Category
+                      </span>
                       <p className="text-sm text-slate-300">{current.category}</p>
                     </div>
                     <div className="space-y-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Difficulty</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        Difficulty
+                      </span>
                       <p className="text-sm text-slate-300 capitalize">{current.difficulty}</p>
                     </div>
                   </div>
 
                   {current.tech.length > 0 && (
                     <div className="space-y-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tech Stack</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        Tech Stack
+                      </span>
                       <div className="flex flex-wrap gap-2">
                         {current.tech.map((t) => (
-                          <span key={t} className="px-2 py-1 rounded text-xs bg-primary/10 text-primary border border-primary/20">
+                          <span
+                            key={t}
+                            className="px-2 py-1 rounded text-xs bg-primary/10 text-primary border border-primary/20"
+                          >
                             {t}
                           </span>
                         ))}
@@ -296,10 +340,15 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
 
                   {current.targets.length > 0 && (
                     <div className="space-y-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Targets</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        Targets
+                      </span>
                       <div className="flex flex-wrap gap-2">
                         {current.targets.map((t) => (
-                          <span key={t} className="px-2 py-1 rounded text-xs bg-slate-800 text-slate-300 border border-slate-700">
+                          <span
+                            key={t}
+                            className="px-2 py-1 rounded text-xs bg-slate-800 text-slate-300 border border-slate-700"
+                          >
                             {t}
                           </span>
                         ))}
@@ -309,10 +358,15 @@ export function CollectionDetail({ collection, onBack, onCompare, onPreview }: P
 
                   {current.tags.length > 0 && (
                     <div className="space-y-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tags</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        Tags
+                      </span>
                       <div className="flex flex-wrap gap-2">
                         {current.tags.map((tag) => (
-                          <span key={tag} className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800/60 text-slate-500">
+                          <span
+                            key={tag}
+                            className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800/60 text-slate-500"
+                          >
                             {tag}
                           </span>
                         ))}

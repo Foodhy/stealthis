@@ -95,27 +95,16 @@ function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
   return (
     <View style={StyleSheet.absoluteFill}>
       <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          activeOpacity={1}
-          onPress={close}
-        />
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={close} />
       </Animated.View>
 
       <Animated.View
-        style={[
-          styles.sheet,
-          { transform: [{ translateY }], maxHeight: SHEET_MAX_HEIGHT },
-        ]}
+        style={[styles.sheet, { transform: [{ translateY }], maxHeight: SHEET_MAX_HEIGHT }]}
       >
         <View style={styles.handleArea} {...panResponder.panHandlers}>
           <View style={styles.handle} />
         </View>
-        <ScrollView
-          style={styles.content}
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={styles.content} bounces={false} showsVerticalScrollIndicator={false}>
           {children}
         </ScrollView>
       </Animated.View>

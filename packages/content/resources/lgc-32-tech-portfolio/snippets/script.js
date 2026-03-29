@@ -43,28 +43,28 @@ function initDemoShell() {
   // No-op shim in imported standalone snippets.
 }
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import Lenis from 'lenis';
-import * as THREE from 'three';
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import Lenis from "lenis";
+import * as THREE from "three";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 // ─── Shell ────────────────────────────────────────────────────────────────
 initDemoShell({
-  title: 'Tech Lead Portfolio',
-  category: 'pages',
-  tech: ['three.js', 'gsap', 'lenis', 'scrolltrigger', 'splittext'],
+  title: "Tech Lead Portfolio",
+  category: "pages",
+  tech: ["three.js", "gsap", "lenis", "scrolltrigger", "splittext"],
 });
 
 // ─── Reduced Motion ───────────────────────────────────────────────────────
 let reduced = prefersReducedMotion();
-if (reduced) document.documentElement.classList.add('reduced-motion');
+if (reduced) document.documentElement.classList.add("reduced-motion");
 
-window.addEventListener('motion-preference', (e) => {
+window.addEventListener("motion-preference", (e) => {
   reduced = e.detail.reduced;
-  document.documentElement.classList.toggle('reduced-motion', reduced);
+  document.documentElement.classList.toggle("reduced-motion", reduced);
   ScrollTrigger.refresh();
 });
 
@@ -72,16 +72,16 @@ const dur = (d) => (reduced ? 0 : d);
 
 // ─── Lenis ────────────────────────────────────────────────────────────────
 const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
 // ─── Three.js Hero Background ─────────────────────────────────────────────
 function initHeroCanvas() {
-  const canvas = document.getElementById('heroCanvas');
+  const canvas = document.getElementById("heroCanvas");
   if (!canvas) return;
 
-  const hero = document.querySelector('.hero');
+  const hero = document.querySelector(".hero");
   const w = hero.offsetWidth;
   const h = hero.offsetHeight;
 
@@ -148,15 +148,18 @@ function initHeroCanvas() {
     renderer.setSize(nw, nh);
   }
 
-  window.addEventListener('resize', onResize);
+  window.addEventListener("resize", onResize);
 
   // Pause rendering when hero is fully scrolled past
   ScrollTrigger.create({
-    trigger: '.hero',
-    start: 'top top',
-    end: 'bottom top',
+    trigger: ".hero",
+    start: "top top",
+    end: "bottom top",
     onLeave: () => {
-      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = null;
+      }
     },
     onEnterBack: () => {
       if (!animId && !reduced) animate();
@@ -166,17 +169,17 @@ function initHeroCanvas() {
 
 // ─── Hero Animations ──────────────────────────────────────────────────────
 function animateHero() {
-  const nameEl = document.getElementById('heroName');
-  const taglineEl = document.getElementById('heroTagline');
+  const nameEl = document.getElementById("heroName");
+  const taglineEl = document.getElementById("heroTagline");
 
   if (nameEl) {
-    const splitName = new SplitText(nameEl, { type: 'words,lines', linesClass: 'line' });
+    const splitName = new SplitText(nameEl, { type: "words,lines", linesClass: "line" });
     gsap.set(splitName.words, { y: 50, opacity: 0 });
     gsap.to(splitName.words, {
       y: 0,
       opacity: 1,
       duration: dur(1),
-      ease: 'expo.out',
+      ease: "expo.out",
       stagger: { each: dur(0.06) },
       delay: dur(0.3),
     });
@@ -187,28 +190,28 @@ function animateHero() {
       y: reduced ? 0 : 24,
       opacity: 0,
       duration: dur(0.9),
-      ease: 'expo.out',
+      ease: "expo.out",
       delay: dur(0.7),
     });
   }
 
-  gsap.from('.hero__eyebrow', {
+  gsap.from(".hero__eyebrow", {
     opacity: 0,
     y: reduced ? 0 : -12,
     duration: dur(0.7),
-    ease: 'expo.out',
+    ease: "expo.out",
     delay: dur(0.15),
   });
 
-  gsap.from('.hero__ctas', {
+  gsap.from(".hero__ctas", {
     opacity: 0,
     y: reduced ? 0 : 18,
     duration: dur(0.8),
-    ease: 'expo.out',
+    ease: "expo.out",
     delay: dur(0.9),
   });
 
-  gsap.from('.hero__scroll-indicator', {
+  gsap.from(".hero__scroll-indicator", {
     opacity: 0,
     duration: dur(1),
     delay: dur(1.4),
@@ -217,7 +220,7 @@ function animateHero() {
 
 // ─── Expertise Cards ──────────────────────────────────────────────────────
 function animateExpertise() {
-  const cards = document.querySelectorAll('.expertise-card');
+  const cards = document.querySelectorAll(".expertise-card");
   if (!cards.length) return;
 
   gsap.set(cards, { scale: 0.92, opacity: 0 });
@@ -226,72 +229,72 @@ function animateExpertise() {
     scale: 1,
     opacity: 1,
     duration: dur(0.75),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: dur(0.1) },
     scrollTrigger: {
-      trigger: '.expertise__grid',
-      start: 'top 78%',
-      toggleActions: 'play none none reverse',
+      trigger: ".expertise__grid",
+      start: "top 78%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // ─── Timeline Items ───────────────────────────────────────────────────────
 function animateTimeline() {
-  document.querySelectorAll('.timeline-item').forEach((item) => {
-    const isLeft = item.classList.contains('timeline-item--left');
-    const card = item.querySelector('.timeline-item__card');
-    const year = item.querySelector('.timeline-item__year');
+  document.querySelectorAll(".timeline-item").forEach((item) => {
+    const isLeft = item.classList.contains("timeline-item--left");
+    const card = item.querySelector(".timeline-item__card");
+    const year = item.querySelector(".timeline-item__year");
 
     if (card) {
-      gsap.set(card, { x: reduced ? 0 : (isLeft ? 48 : -48), opacity: 0 });
+      gsap.set(card, { x: reduced ? 0 : isLeft ? 48 : -48, opacity: 0 });
       gsap.to(card, {
         x: 0,
         opacity: 1,
         duration: dur(0.8),
-        ease: 'expo.out',
+        ease: "expo.out",
         scrollTrigger: {
           trigger: item,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
+          start: "top 80%",
+          toggleActions: "play none none reverse",
         },
       });
     }
 
     if (year) {
-      gsap.set(year, { x: reduced ? 0 : (isLeft ? -24 : 24), opacity: 0 });
+      gsap.set(year, { x: reduced ? 0 : isLeft ? -24 : 24, opacity: 0 });
       gsap.to(year, {
         x: 0,
         opacity: 1,
         duration: dur(0.7),
-        ease: 'expo.out',
+        ease: "expo.out",
         delay: dur(0.08),
         scrollTrigger: {
           trigger: item,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
+          start: "top 80%",
+          toggleActions: "play none none reverse",
         },
       });
     }
   });
 
   // Grow the center line in from top
-  gsap.from('.timeline__line', {
+  gsap.from(".timeline__line", {
     scaleY: 0,
-    transformOrigin: 'top center',
+    transformOrigin: "top center",
     duration: dur(1.5),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.timeline__track',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".timeline__track",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // ─── Repo Cards ───────────────────────────────────────────────────────────
 function animateRepos() {
-  const cards = document.querySelectorAll('.repo-card');
+  const cards = document.querySelectorAll(".repo-card");
   if (!cards.length) return;
 
   gsap.set(cards, { y: reduced ? 0 : 40, opacity: 0 });
@@ -300,75 +303,75 @@ function animateRepos() {
     y: 0,
     opacity: 1,
     duration: dur(0.75),
-    ease: 'expo.out',
+    ease: "expo.out",
     stagger: { each: dur(0.1) },
     scrollTrigger: {
-      trigger: '.repos__grid',
-      start: 'top 78%',
-      toggleActions: 'play none none reverse',
+      trigger: ".repos__grid",
+      start: "top 78%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // ─── Contact CTA ──────────────────────────────────────────────────────────
 function animateContact() {
-  const ctaEl = document.getElementById('contactCta');
+  const ctaEl = document.getElementById("contactCta");
   if (ctaEl) {
-    const splitCta = new SplitText(ctaEl, { type: 'words,lines', linesClass: 'line' });
+    const splitCta = new SplitText(ctaEl, { type: "words,lines", linesClass: "line" });
     gsap.set(splitCta.words, { y: 60, opacity: 0 });
 
     gsap.to(splitCta.words, {
       y: 0,
       opacity: 1,
       duration: dur(0.95),
-      ease: 'expo.out',
+      ease: "expo.out",
       stagger: { each: dur(0.06) },
       scrollTrigger: {
-        trigger: '.contact__inner',
-        start: 'top 80%',
-        toggleActions: 'play none none reverse',
+        trigger: ".contact__inner",
+        start: "top 80%",
+        toggleActions: "play none none reverse",
       },
     });
   }
 
-  gsap.from('.contact__kicker', {
+  gsap.from(".contact__kicker", {
     opacity: 0,
     y: reduced ? 0 : 16,
     duration: dur(0.7),
-    ease: 'expo.out',
+    ease: "expo.out",
     scrollTrigger: {
-      trigger: '.contact__inner',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
+      trigger: ".contact__inner",
+      start: "top 80%",
+      toggleActions: "play none none reverse",
     },
   });
 
-  gsap.from('.contact__links', {
+  gsap.from(".contact__links", {
     opacity: 0,
     y: reduced ? 0 : 20,
     duration: dur(0.8),
-    ease: 'expo.out',
+    ease: "expo.out",
     delay: dur(0.35),
     scrollTrigger: {
-      trigger: '.contact__inner',
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
+      trigger: ".contact__inner",
+      start: "top 75%",
+      toggleActions: "play none none reverse",
     },
   });
 }
 
 // ─── Section Headers ──────────────────────────────────────────────────────
 function animateSectionHeaders() {
-  document.querySelectorAll('.section__header').forEach((el) => {
+  document.querySelectorAll(".section__header").forEach((el) => {
     gsap.from(el, {
       opacity: 0,
       y: reduced ? 0 : 16,
       duration: dur(0.65),
-      ease: 'expo.out',
+      ease: "expo.out",
       scrollTrigger: {
         trigger: el,
-        start: 'top 88%',
-        toggleActions: 'play none none reverse',
+        start: "top 88%",
+        toggleActions: "play none none reverse",
       },
     });
   });

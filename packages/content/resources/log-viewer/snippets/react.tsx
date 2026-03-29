@@ -10,41 +10,41 @@ interface LogEntry {
 }
 
 const LEVEL_COLORS: Record<Level, string> = {
-  info:  "text-[#58a6ff]",
-  warn:  "text-[#e3b341]",
+  info: "text-[#58a6ff]",
+  warn: "text-[#e3b341]",
   error: "text-[#f85149]",
   debug: "text-[#8b949e]",
 };
 
 const LEVEL_BG: Record<Level, string> = {
-  info:  "bg-[#58a6ff]/10",
-  warn:  "bg-[#e3b341]/10",
+  info: "bg-[#58a6ff]/10",
+  warn: "bg-[#e3b341]/10",
   error: "bg-[#f85149]/10",
   debug: "",
 };
 
 const LEVEL_BADGE: Record<Level, string> = {
-  info:  "border-[#58a6ff]/40 text-[#58a6ff]",
-  warn:  "border-[#e3b341]/40 text-[#e3b341]",
+  info: "border-[#58a6ff]/40 text-[#58a6ff]",
+  warn: "border-[#e3b341]/40 text-[#e3b341]",
   error: "border-[#f85149]/40 text-[#f85149]",
   debug: "border-[#484f58] text-[#8b949e]",
 };
 
 const DEMO_MESSAGES: { level: Level; message: string }[] = [
-  { level: "info",  message: "Server started on port 3000" },
+  { level: "info", message: "Server started on port 3000" },
   { level: "debug", message: "DB connection pool initialized (max: 10)" },
-  { level: "info",  message: "GET /api/users 200 12ms" },
+  { level: "info", message: "GET /api/users 200 12ms" },
   { level: "debug", message: "Cache hit: user:42" },
-  { level: "warn",  message: "Rate limit approaching: 85/100 req/min" },
-  { level: "info",  message: "POST /api/auth/login 200 48ms" },
+  { level: "warn", message: "Rate limit approaching: 85/100 req/min" },
+  { level: "info", message: "POST /api/auth/login 200 48ms" },
   { level: "error", message: "Failed to connect to Redis: ECONNREFUSED" },
-  { level: "warn",  message: "Retrying Redis in 5s (attempt 1/3)" },
-  { level: "info",  message: "GET /api/products 200 23ms" },
+  { level: "warn", message: "Retrying Redis in 5s (attempt 1/3)" },
+  { level: "info", message: "GET /api/products 200 23ms" },
   { level: "debug", message: "Query executed in 4ms: SELECT * FROM users" },
   { level: "error", message: "Unhandled rejection: Cannot read property 'id' of null" },
-  { level: "info",  message: "Redis reconnected successfully" },
-  { level: "warn",  message: "Slow query detected: 1.2s — SELECT * FROM logs" },
-  { level: "info",  message: "DELETE /api/sessions/77 204 8ms" },
+  { level: "info", message: "Redis reconnected successfully" },
+  { level: "warn", message: "Slow query detected: 1.2s — SELECT * FROM logs" },
+  { level: "info", message: "DELETE /api/sessions/77 204 8ms" },
   { level: "debug", message: "Middleware: auth token validated (exp: 3600s)" },
 ];
 
@@ -93,7 +93,9 @@ export default function LogViewerRC() {
       msgIdx.current++;
       setLogs((prev) => [...prev.slice(-199), makeEntry(next.level, next.message)]);
     }, 1200);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [streaming]);
 
   const toggleFilter = (level: Level) => {
@@ -106,17 +108,22 @@ export default function LogViewerRC() {
   };
 
   const filtered = logs.filter(
-    (l) => activeFilters.has(l.level) &&
-      (!search || l.message.toLowerCase().includes(search.toLowerCase()) || l.level.includes(search.toLowerCase()))
+    (l) =>
+      activeFilters.has(l.level) &&
+      (!search ||
+        l.message.toLowerCase().includes(search.toLowerCase()) ||
+        l.level.includes(search.toLowerCase()))
   );
 
   const highlight = (text: string) => {
     if (!search) return text;
     const idx = text.toLowerCase().indexOf(search.toLowerCase());
     if (idx === -1) return text;
-    return text.slice(0, idx) +
+    return (
+      text.slice(0, idx) +
       `<mark class="bg-yellow-400/30 text-yellow-200 rounded">${text.slice(idx, idx + search.length)}</mark>` +
-      text.slice(idx + search.length);
+      text.slice(idx + search.length)
+    );
   };
 
   return (
@@ -131,9 +138,7 @@ export default function LogViewerRC() {
                 key={lvl}
                 onClick={() => toggleFilter(lvl)}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide border transition-all ${
-                  activeFilters.has(lvl)
-                    ? LEVEL_BADGE[lvl]
-                    : "border-transparent text-[#484f58]"
+                  activeFilters.has(lvl) ? LEVEL_BADGE[lvl] : "border-transparent text-[#484f58]"
                 }`}
               >
                 {lvl}

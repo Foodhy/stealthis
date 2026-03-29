@@ -64,11 +64,7 @@ export default function Dashboard() {
   const canSubmit = name.trim().length > 0 && projectPath.length > 0;
 
   const fullPath = projectPath
-    ? `${projectPath}${
-        name.trim() && !projectPath.endsWith(name.trim())
-          ? `/${name.trim()}`
-          : ""
-      }`
+    ? `${projectPath}${name.trim() && !projectPath.endsWith(name.trim()) ? `/${name.trim()}` : ""}`
     : "";
 
   async function handleStart() {
@@ -115,9 +111,7 @@ export default function Dashboard() {
   const handleResume = useCallback(
     async (project: SavedProject) => {
       try {
-        const res = await fetch(
-          `/api/projects?id=${encodeURIComponent(project.id)}`,
-        );
+        const res = await fetch(`/api/projects?id=${encodeURIComponent(project.id)}`);
         const data = (await res.json()) as {
           project: SavedProject;
           messages: ChatMessage[];
@@ -153,21 +147,18 @@ export default function Dashboard() {
         });
       }
     },
-    [dispatch],
+    [dispatch]
   );
 
-  const handleDelete = useCallback(
-    async (e: React.MouseEvent, id: string) => {
-      e.stopPropagation();
-      try {
-        await fetch(`/api/projects?id=${encodeURIComponent(id)}`, {
-          method: "DELETE",
-        });
-        setRecentProjects((prev) => prev.filter((p) => p.id !== id));
-      } catch {}
-    },
-    [],
-  );
+  const handleDelete = useCallback(async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await fetch(`/api/projects?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      setRecentProjects((prev) => prev.filter((p) => p.id !== id));
+    } catch {}
+  }, []);
 
   return (
     <div className="flex h-full items-center justify-center">
@@ -175,13 +166,9 @@ export default function Dashboard() {
         {/* New project form */}
         <div className="w-full max-w-md rounded-xl border border-white/8 bg-slate-900/60 p-8">
           <h1 className="mb-1 text-2xl font-bold text-vibe-400">Vibe</h1>
-          <p className="mb-6 text-sm text-slate-400">
-            Set up your project to get started.
-          </p>
+          <p className="mb-6 text-sm text-slate-400">Set up your project to get started.</p>
 
-          <label className="mb-1 block text-xs font-medium text-slate-300">
-            Project name
-          </label>
+          <label className="mb-1 block text-xs font-medium text-slate-300">Project name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -189,28 +176,21 @@ export default function Dashboard() {
             className="mb-4 w-full rounded-lg border border-white/8 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-vibe-500/50"
           />
 
-          <label className="mb-1 block text-xs font-medium text-slate-300">
-            Project folder
-          </label>
+          <label className="mb-1 block text-xs font-medium text-slate-300">Project folder</label>
           <button
             onClick={() => setShowBrowser(true)}
             className="mb-1 flex w-full items-center justify-between rounded-lg border border-white/8 bg-slate-950 px-3 py-2 text-left text-sm transition-colors hover:border-white/14"
           >
             {projectPath ? (
-              <span className="truncate font-mono text-slate-200">
-                {projectPath}
-              </span>
+              <span className="truncate font-mono text-slate-200">{projectPath}</span>
             ) : (
               <span className="text-slate-500">Browse...</span>
             )}
-            <span className="ml-2 shrink-0 text-xs text-slate-500">
-              Select
-            </span>
+            <span className="ml-2 shrink-0 text-xs text-slate-500">Select</span>
           </button>
           {fullPath && (
             <p className="mb-4 text-[10px] text-slate-500">
-              Files will be written to:{" "}
-              <span className="font-mono text-slate-400">{fullPath}</span>
+              Files will be written to: <span className="font-mono text-slate-400">{fullPath}</span>
             </p>
           )}
           {!fullPath && <div className="mb-4" />}
@@ -226,9 +206,7 @@ export default function Dashboard() {
             className="mb-4 w-full resize-none rounded-lg border border-white/8 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-vibe-500/50"
           />
 
-          <label className="mb-1 block text-xs font-medium text-slate-300">
-            Tech stack
-          </label>
+          <label className="mb-1 block text-xs font-medium text-slate-300">Tech stack</label>
           <div className="mb-6 grid grid-cols-4 gap-2">
             {STACKS.map((s) => (
               <button
@@ -260,9 +238,7 @@ export default function Dashboard() {
             Recent Projects
           </h2>
 
-          {loadingRecent && (
-            <p className="text-xs text-slate-500">Loading...</p>
-          )}
+          {loadingRecent && <p className="text-xs text-slate-500">Loading...</p>}
 
           {!loadingRecent && recentProjects.length === 0 && (
             <p className="text-xs text-slate-500">No previous projects yet.</p>
@@ -276,9 +252,7 @@ export default function Dashboard() {
                 className="group relative rounded-lg border border-white/8 bg-slate-900/40 px-3 py-2.5 text-left transition-colors hover:border-vibe-500/30 hover:bg-slate-900/80"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-200">
-                    {proj.name}
-                  </span>
+                  <span className="text-sm font-medium text-slate-200">{proj.name}</span>
                   <button
                     onClick={(e) => handleDelete(e, proj.id)}
                     className="hidden rounded px-1 text-[10px] text-slate-600 transition-colors hover:text-red-400 group-hover:block"
@@ -291,14 +265,10 @@ export default function Dashboard() {
                   <span className="rounded bg-white/6 px-1.5 py-0.5 text-[10px] text-slate-400">
                     {proj.stack}
                   </span>
-                  <span className="text-[10px] text-slate-500">
-                    {timeAgo(proj.updatedAt)}
-                  </span>
+                  <span className="text-[10px] text-slate-500">{timeAgo(proj.updatedAt)}</span>
                 </div>
                 {proj.description && (
-                  <p className="mt-1 truncate text-[11px] text-slate-500">
-                    {proj.description}
-                  </p>
+                  <p className="mt-1 truncate text-[11px] text-slate-500">{proj.description}</p>
                 )}
                 <p className="mt-1 truncate font-mono text-[10px] text-slate-600">
                   {proj.projectPath}

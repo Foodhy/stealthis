@@ -1,12 +1,12 @@
 (function () {
   "use strict";
 
-  const tabBar    = document.getElementById("tabs");
-  const tabs      = tabBar.querySelectorAll(".tab");
+  const tabBar = document.getElementById("tabs");
+  const tabs = tabBar.querySelectorAll(".tab");
   const indicator = tabBar.querySelector(".tab-indicator");
 
   function moveIndicator(tab) {
-    indicator.style.left  = tab.offsetLeft + "px";
+    indicator.style.left = tab.offsetLeft + "px";
     indicator.style.width = tab.offsetWidth + "px";
   }
 
@@ -35,7 +35,7 @@
   // Keyboard: arrow keys for tab navigation
   tabBar.addEventListener("keydown", (e) => {
     const list = Array.from(tabs);
-    const idx  = list.indexOf(document.activeElement);
+    const idx = list.indexOf(document.activeElement);
     if (idx === -1) return;
 
     if (e.key === "ArrowRight") {

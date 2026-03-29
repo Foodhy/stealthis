@@ -57,41 +57,42 @@ export default function TextHighlighter({
             userSelect: "none",
           }}
         >
-          {words.map((word, i) => {
-            const active = i < highlightedCount;
-            return (
-              <span
-                key={`${key}-${i}`}
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                  padding: "0 0.1em",
-                  color: active ? "#f1f5f9" : undefined,
-                  transition: "color 0.3s ease",
-                }}
-              >
-                {/* Highlight background */}
+          {words
+            .map((word, i) => {
+              const active = i < highlightedCount;
+              return (
                 <span
+                  key={`${key}-${i}`}
                   style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: highlightColor,
-                    borderRadius: 4,
-                    transform: active ? "scaleX(1)" : "scaleX(0)",
-                    transformOrigin: "left",
-                    transition:
-                      "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
-                    zIndex: -1,
+                    position: "relative",
+                    display: "inline-block",
+                    padding: "0 0.1em",
+                    color: active ? "#f1f5f9" : undefined,
+                    transition: "color 0.3s ease",
                   }}
-                />
-                {word}
-              </span>
-            );
-          }).reduce<React.ReactNode[]>((acc, el, i) => {
-            if (i > 0) acc.push(" ");
-            acc.push(el);
-            return acc;
-          }, [])}
+                >
+                  {/* Highlight background */}
+                  <span
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: highlightColor,
+                      borderRadius: 4,
+                      transform: active ? "scaleX(1)" : "scaleX(0)",
+                      transformOrigin: "left",
+                      transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
+                      zIndex: -1,
+                    }}
+                  />
+                  {word}
+                </span>
+              );
+            })
+            .reduce<React.ReactNode[]>((acc, el, i) => {
+              if (i > 0) acc.push(" ");
+              acc.push(el);
+              return acc;
+            }, [])}
         </p>
 
         <p

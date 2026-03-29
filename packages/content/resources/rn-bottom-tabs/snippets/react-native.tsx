@@ -79,9 +79,7 @@ function BottomTabs({ tabs, initialTab }: BottomTabsProps) {
             styles.indicator,
             {
               width: tabWidth * 0.5,
-              transform: [
-                { translateX: Animated.add(indicatorX, tabWidth * 0.25) },
-              ],
+              transform: [{ translateX: Animated.add(indicatorX, tabWidth * 0.25) }],
             },
           ]}
         />
@@ -96,12 +94,7 @@ function BottomTabs({ tabs, initialTab }: BottomTabsProps) {
               onPress={() => setActiveKey(tab.key)}
             >
               <View style={styles.iconWrapper}>
-                <Animated.Text
-                  style={[
-                    styles.icon,
-                    { transform: [{ scale: scales[i] }] },
-                  ]}
-                >
+                <Animated.Text style={[styles.icon, { transform: [{ scale: scales[i] }] }]}>
                   {tab.icon}
                 </Animated.Text>
 
@@ -109,19 +102,13 @@ function BottomTabs({ tabs, initialTab }: BottomTabsProps) {
                 {tab.badge != null && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>
-                      {typeof tab.badge === "number" && tab.badge > 99
-                        ? "99+"
-                        : String(tab.badge)}
+                      {typeof tab.badge === "number" && tab.badge > 99 ? "99+" : String(tab.badge)}
                     </Text>
                   </View>
                 )}
               </View>
 
-              <Text
-                style={[styles.label, isActive && styles.labelActive]}
-              >
-                {tab.label}
-              </Text>
+              <Text style={[styles.label, isActive && styles.labelActive]}>{tab.label}</Text>
             </TouchableOpacity>
           );
         })}

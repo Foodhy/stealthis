@@ -94,7 +94,15 @@ export function MessageBlock({
         </span>
 
         {title ? (
-          <span style={{ flex: 1, fontSize: "0.875rem", fontWeight: 700, color: "#f2f6ff", lineHeight: 1.5 }}>
+          <span
+            style={{
+              flex: 1,
+              fontSize: "0.875rem",
+              fontWeight: 700,
+              color: "#f2f6ff",
+              lineHeight: 1.5,
+            }}
+          >
             {title}
           </span>
         ) : (
@@ -174,42 +182,53 @@ export default function MessageBlockDemo() {
         </p>
 
         <MessageBlock variant="info" title="New Feature Available">
-          We just launched dark mode support across all components. Toggle it from the
-          settings panel or use the keyboard shortcut <code style={{
-            fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-            fontSize: "0.75rem",
-            background: "rgba(255,255,255,0.06)",
-            padding: "0.125rem 0.375rem",
-            borderRadius: "0.25rem",
-            color: "#f2f6ff",
-          }}>Ctrl+D</code>.
+          We just launched dark mode support across all components. Toggle it from the settings
+          panel or use the keyboard shortcut{" "}
+          <code
+            style={{
+              fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+              fontSize: "0.75rem",
+              background: "rgba(255,255,255,0.06)",
+              padding: "0.125rem 0.375rem",
+              borderRadius: "0.25rem",
+              color: "#f2f6ff",
+            }}
+          >
+            Ctrl+D
+          </code>
+          .
         </MessageBlock>
 
         <MessageBlock variant="success" title="Deployment Complete">
-          Your application has been successfully deployed to production. All health checks
-          passed and the CDN cache has been purged.
+          Your application has been successfully deployed to production. All health checks passed
+          and the CDN cache has been purged.
         </MessageBlock>
 
         <MessageBlock variant="warning" title="API Rate Limit">
-          You have used 85% of your API quota for this billing period. Consider upgrading
-          your plan to avoid service interruptions.
+          You have used 85% of your API quota for this billing period. Consider upgrading your plan
+          to avoid service interruptions.
         </MessageBlock>
 
         <MessageBlock variant="danger" title="Build Failed">
           The production build failed due to a type error in{" "}
-          <code style={{
-            fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-            fontSize: "0.75rem",
-            background: "rgba(255,255,255,0.06)",
-            padding: "0.125rem 0.375rem",
-            borderRadius: "0.25rem",
-            color: "#f2f6ff",
-          }}>src/components/Dashboard.tsx</code>. Check the build logs for details.
+          <code
+            style={{
+              fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+              fontSize: "0.75rem",
+              background: "rgba(255,255,255,0.06)",
+              padding: "0.125rem 0.375rem",
+              borderRadius: "0.25rem",
+              color: "#f2f6ff",
+            }}
+          >
+            src/components/Dashboard.tsx
+          </code>
+          . Check the build logs for details.
         </MessageBlock>
 
         <MessageBlock variant="info">
-          This is a compact info message without a separate title. Dismiss it with the
-          button on the right.
+          This is a compact info message without a separate title. Dismiss it with the button on the
+          right.
         </MessageBlock>
 
         <MessageBlock variant="success" dismissible={false}>

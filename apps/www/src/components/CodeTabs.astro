@@ -7,9 +7,10 @@ import { marked } from "marked";
 interface Props {
   slug: string;
   targets: string[];
+  htmlSrcdoc?: string;
 }
 
-const { slug, targets } = Astro.props;
+const { slug, targets, htmlSrcdoc } = Astro.props;
 const normalizedTargets = targets.map((target) => target.toLowerCase());
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
@@ -78,9 +79,23 @@ interface Tab {
   mermaidSources?: string[];
   isMarkdownPreview?: boolean;
   markdownHtml?: string;
+  isHtmlPreview?: boolean;
+  htmlSrcdocContent?: string;
 }
 
 const tabs: Tab[] = [];
+
+// Inline HTML preview tab (rendered iframe)
+if (htmlSrcdoc) {
+  tabs.push({
+    id: "preview",
+    label: "Preview",
+    code: "",
+    lang: "text",
+    isHtmlPreview: true,
+    htmlSrcdocContent: htmlSrcdoc,
+  });
+}
 
 // HTML target: combine css + js + html as separate tabs
 if (normalizedTargets.includes("html")) {
@@ -237,7 +252,24 @@ for (const target of normalizedTargets.filter((t) => t !== "html")) {
 
     <!-- Panels -->
     {tabs.map((tab, i) => (
-      tab.isMermaidPreview ? (
+      tab.isHtmlPreview ? (
+        <div
+          class:list={["tab-panel", i !== 0 ? "hidden" : ""]}
+          data-panel={tab.id}
+          data-code={tab.htmlSrcdocContent}
+        >
+          <div class="rounded-b-xl border border-white/8 border-t-0 bg-surface-900 overflow-hidden">
+            <iframe
+              srcdoc={tab.htmlSrcdocContent}
+              class="w-full border-0"
+              style="height:680px; background:#0a0a0f;"
+              loading="lazy"
+              sandbox="allow-scripts"
+              title="Preview"
+            ></iframe>
+          </div>
+        </div>
+      ) : tab.isMermaidPreview ? (
         <div
           class:list={["tab-panel", i !== 0 ? "hidden" : ""]}
           data-panel={tab.id}

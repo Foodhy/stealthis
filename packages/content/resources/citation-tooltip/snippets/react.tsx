@@ -14,28 +14,32 @@ const CITATIONS: Citation[] = [
     title: "Attention Is All You Need",
     url: "https://arxiv.org/abs/1706.03762",
     domain: "arxiv.org",
-    snippet: "We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.",
+    snippet:
+      "We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.",
   },
   {
     id: 2,
     title: "RLHF: Training language models to follow instructions",
     url: "https://arxiv.org/abs/2203.02155",
     domain: "arxiv.org",
-    snippet: "We fine-tune language models to follow instructions with human feedback, showing that this substantially improves alignment across a range of tasks.",
+    snippet:
+      "We fine-tune language models to follow instructions with human feedback, showing that this substantially improves alignment across a range of tasks.",
   },
   {
     id: 3,
     title: "Constitutional AI: Harmlessness from AI Feedback",
     url: "https://arxiv.org/abs/2212.08073",
     domain: "anthropic.com",
-    snippet: "We propose a method for training a harmless AI assistant without any human labels identifying harmful outputs, using a set of principles to guide self-critique.",
+    snippet:
+      "We propose a method for training a harmless AI assistant without any human labels identifying harmful outputs, using a set of principles to guide self-critique.",
   },
   {
     id: 4,
     title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP",
     url: "https://arxiv.org/abs/2005.11401",
     domain: "arxiv.org",
-    snippet: "We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG) — models which combine pre-trained parametric and non-parametric memory.",
+    snippet:
+      "We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG) — models which combine pre-trained parametric and non-parametric memory.",
   },
 ];
 
@@ -104,9 +108,7 @@ function CitationMarker({ citation, side = "top" }: TooltipProps) {
           {/* Arrow */}
           <div
             className={`absolute left-[50%] w-2 h-2 rotate-45 bg-[#21262d] border-[#30363d] ${
-              side === "top"
-                ? "bottom-[-5px] border-r border-b"
-                : "top-[-5px] border-l border-t"
+              side === "top" ? "bottom-[-5px] border-r border-b" : "top-[-5px] border-l border-t"
             }`}
             style={{ transform: `translateX(-50%) rotate(45deg)` }}
           />
@@ -114,9 +116,16 @@ function CitationMarker({ citation, side = "top" }: TooltipProps) {
           {/* Source line */}
           <div className="flex items-center gap-1.5 mb-2">
             <div className="w-3.5 h-3.5 rounded-sm bg-[#58a6ff]/20 flex items-center justify-center flex-shrink-0">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" strokeWidth="2.5">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              <svg
+                width="8"
+                height="8"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#58a6ff"
+                strokeWidth="2.5"
+              >
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg>
             </div>
             <span className="text-[10px] text-[#484f58] font-mono">{citation.domain}</span>
@@ -134,9 +143,7 @@ function CitationMarker({ citation, side = "top" }: TooltipProps) {
 
           {/* View link */}
           <div className="mt-2.5 pt-2 border-t border-[#30363d]">
-            <span className="text-[10px] text-[#58a6ff] font-semibold">
-              View source →
-            </span>
+            <span className="text-[10px] text-[#58a6ff] font-semibold">View source →</span>
           </div>
         </div>
       )}
@@ -173,7 +180,9 @@ export default function CitationTooltipRC() {
 
           {/* Citations list */}
           <div className="mt-4 pt-4 border-t border-[#30363d] space-y-1.5">
-            <p className="text-[10px] font-bold text-[#484f58] uppercase tracking-wider mb-2">Sources</p>
+            <p className="text-[10px] font-bold text-[#484f58] uppercase tracking-wider mb-2">
+              Sources
+            </p>
             {CITATIONS.map((c) => (
               <div key={c.id} className="flex items-start gap-2 text-[11px]">
                 <span className="w-4 h-4 rounded-full bg-[#58a6ff]/10 text-[#58a6ff] font-bold flex items-center justify-center flex-shrink-0 text-[9px]">
@@ -188,7 +197,9 @@ export default function CitationTooltipRC() {
           </div>
         </div>
 
-        <p className="text-[11px] text-[#484f58] text-center">Hover the citation numbers to see source tooltips</p>
+        <p className="text-[11px] text-[#484f58] text-center">
+          Hover the citation numbers to see source tooltips
+        </p>
       </div>
     </div>
   );

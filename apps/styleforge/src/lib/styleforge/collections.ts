@@ -51,20 +51,49 @@ const COLLECTION_META: Record<string, { name: string; description: string }> = {
 };
 
 const CATEGORY_META: Record<string, { name: string; description: string }> = {
-  "ui-components": { name: "UI Components", description: "Reusable interface building blocks — buttons, cards, modals, forms, and more." },
-  "web-animations": { name: "Web Animations", description: "Scroll effects, parallax, GSAP, Three.js, and SVG animations." },
-  patterns: { name: "Interaction Patterns", description: "UX patterns like pagination, infinite scroll, drag-and-drop." },
-  pages: { name: "Full Pages", description: "Complete page designs — landing, portfolio, dashboard layouts." },
-  "web-pages": { name: "Website Pages", description: "Complete website implementations and page templates." },
-  "design-styles": { name: "Design Styles", description: "CSS design system implementations — glassmorphism, brutalism, neumorphism." },
+  "ui-components": {
+    name: "UI Components",
+    description: "Reusable interface building blocks — buttons, cards, modals, forms, and more.",
+  },
+  "web-animations": {
+    name: "Web Animations",
+    description: "Scroll effects, parallax, GSAP, Three.js, and SVG animations.",
+  },
+  patterns: {
+    name: "Interaction Patterns",
+    description: "UX patterns like pagination, infinite scroll, drag-and-drop.",
+  },
+  pages: {
+    name: "Full Pages",
+    description: "Complete page designs — landing, portfolio, dashboard layouts.",
+  },
+  "web-pages": {
+    name: "Website Pages",
+    description: "Complete website implementations and page templates.",
+  },
+  "design-styles": {
+    name: "Design Styles",
+    description: "CSS design system implementations — glassmorphism, brutalism, neumorphism.",
+  },
   prompts: { name: "Prompts", description: "AI system prompts and instruction templates." },
-  remotion: { name: "Remotion Compositions", description: "Programmatic video generation with Remotion." },
-  "database-schemas": { name: "Database Schemas", description: "Database schema designs for CMS, CRM, ecommerce, and more." },
+  remotion: {
+    name: "Remotion Compositions",
+    description: "Programmatic video generation with Remotion.",
+  },
+  "database-schemas": {
+    name: "Database Schemas",
+    description: "Database schema designs for CMS, CRM, ecommerce, and more.",
+  },
   components: { name: "Components", description: "Standalone component implementations." },
-  "ultra-high-definition-pages": { name: "Ultra HD Pages", description: "Premium high-fidelity page designs." },
-  skills: { name: "Skills", description: "AI skills and agent capabilities." },
-  "mcp-servers": { name: "MCP Servers", description: "Model Context Protocol server implementations." },
-  architectures: { name: "Architectures", description: "System architecture patterns and designs." },
+  "ultra-high-definition-pages": {
+    name: "Ultra HD Pages",
+    description: "Premium high-fidelity page designs.",
+  },
+  plugins: { name: "Plugins", description: "Skills, MCP servers & AI tool extensions." },
+  architectures: {
+    name: "Architectures",
+    description: "System architecture patterns and designs.",
+  },
   boilerplates: { name: "Boilerplates", description: "Starter templates and project scaffolds." },
 };
 
@@ -138,7 +167,7 @@ export function buildCollections(resources: CollectionEntry<"resources">[]): {
 export function searchResources(
   resources: CollectionEntry<"resources">[],
   query: string,
-  filters?: { type?: string; category?: string },
+  filters?: { type?: string; category?: string }
 ): CollectionResource[] {
   const q = query.toLowerCase().trim();
 

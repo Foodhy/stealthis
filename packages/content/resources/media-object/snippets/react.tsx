@@ -58,13 +58,16 @@ export function MediaObject({
         {avatar}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "0.25rem" }}>
-          <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#f2f6ff" }}>
-            {title}
-          </span>
-          {time && (
-            <span style={{ fontSize: "0.75rem", color: "#4a4a4a" }}>{time}</span>
-          )}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: "0.5rem",
+            marginBottom: "0.25rem",
+          }}
+        >
+          <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#f2f6ff" }}>{title}</span>
+          {time && <span style={{ fontSize: "0.75rem", color: "#4a4a4a" }}>{time}</span>}
         </div>
         <p style={{ fontSize: "0.8125rem", lineHeight: 1.6, color: "#94a3b8", margin: 0 }}>
           {content}
@@ -113,7 +116,15 @@ export default function MediaObjectDemo() {
         padding: "2rem",
       }}
     >
-      <div style={{ width: "100%", maxWidth: 600, display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 600,
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.25rem",
+        }}
+      >
         <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.375rem" }}>
           Media Object
         </h1>

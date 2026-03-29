@@ -227,10 +227,7 @@ if (howTrack && stepCards.length > 0) {
     onUpdate: (self) => {
       const progress = self.progress;
       const totalSteps = stepCards.length;
-      const stepIndex = Math.min(
-        totalSteps - 1,
-        Math.floor(progress * totalSteps)
-      );
+      const stepIndex = Math.min(totalSteps - 1, Math.floor(progress * totalSteps));
       setActiveStep(stepIndex);
     },
   });

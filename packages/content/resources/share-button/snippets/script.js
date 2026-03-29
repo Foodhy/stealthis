@@ -1,12 +1,12 @@
-const shareToggle = document.getElementById('share-toggle');
-const shareMenu = document.getElementById('share-menu');
-const closeShare = document.getElementById('close-share');
-const copyLinkBtn = document.getElementById('copy-link');
+const shareToggle = document.getElementById("share-toggle");
+const shareMenu = document.getElementById("share-menu");
+const closeShare = document.getElementById("close-share");
+const copyLinkBtn = document.getElementById("copy-link");
 
 const shareData = {
-  title: 'Check this out!',
-  text: 'I found this amazing component on Stealthis.',
-  url: window.location.href
+  title: "Check this out!",
+  text: "I found this amazing component on Stealthis.",
+  url: window.location.href,
 };
 
 async function handleShare() {
@@ -14,7 +14,7 @@ async function handleShare() {
     try {
       await navigator.share(shareData);
     } catch (err) {
-      console.log('Error sharing:', err);
+      console.log("Error sharing:", err);
       toggleMenu();
     }
   } else {
@@ -23,54 +23,54 @@ async function handleShare() {
 }
 
 function toggleMenu() {
-  shareMenu.classList.toggle('active');
+  shareMenu.classList.toggle("active");
 }
 
-shareToggle.addEventListener('click', handleShare);
-closeShare.addEventListener('click', toggleMenu);
+shareToggle.addEventListener("click", handleShare);
+closeShare.addEventListener("click", toggleMenu);
 
 // Social Links Implementation
-document.querySelectorAll('.share-opt').forEach(opt => {
+document.querySelectorAll(".share-opt").forEach((opt) => {
   const platform = opt.dataset.platform;
   if (!platform) return;
-  
-  opt.addEventListener('click', (e) => {
+
+  opt.addEventListener("click", (e) => {
     e.preventDefault();
-    let url = '';
+    let url = "";
     const encodedUrl = encodeURIComponent(shareData.url);
     const encodedText = encodeURIComponent(shareData.text);
-    
+
     switch (platform) {
-      case 'twitter':
+      case "twitter":
         url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
         break;
-      case 'facebook':
+      case "facebook":
         url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
         break;
-      case 'linkedin':
+      case "linkedin":
         url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
         break;
     }
-    
-    window.open(url, '_blank', 'width=600,height=400');
+
+    window.open(url, "_blank", "width=600,height=400");
     toggleMenu();
   });
 });
 
-copyLinkBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(shareData.url).then(() => {
-        const originalText = copyLinkBtn.textContent;
-        copyLinkBtn.textContent = 'Link Copied!';
-        setTimeout(() => {
-            copyLinkBtn.textContent = originalText;
-            toggleMenu();
-        }, 1500);
-    });
+copyLinkBtn.addEventListener("click", () => {
+  navigator.clipboard.writeText(shareData.url).then(() => {
+    const originalText = copyLinkBtn.textContent;
+    copyLinkBtn.textContent = "Link Copied!";
+    setTimeout(() => {
+      copyLinkBtn.textContent = originalText;
+      toggleMenu();
+    }, 1500);
+  });
 });
 
 // Close menu when clicking outside
-window.addEventListener('click', (e) => {
-    if (!shareMenu.contains(e.target) && !shareToggle.contains(e.target)) {
-        shareMenu.classList.remove('active');
-    }
+window.addEventListener("click", (e) => {
+  if (!shareMenu.contains(e.target) && !shareToggle.contains(e.target)) {
+    shareMenu.classList.remove("active");
+  }
 });

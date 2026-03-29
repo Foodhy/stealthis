@@ -1,5 +1,5 @@
 (function () {
-  var openTimer  = null;
+  var openTimer = null;
   var closeTimer = null;
   var currentCard = null;
 
@@ -27,9 +27,17 @@
     var card = document.getElementById(cardId);
     if (!card) return;
 
-    trigger.addEventListener("mouseenter", function () { showCard(card); });
-    trigger.addEventListener("mouseleave", function () { hideCard(card); });
-    card.addEventListener("mouseenter", function () { clearTimeout(closeTimer); });
-    card.addEventListener("mouseleave", function () { hideCard(card); });
+    trigger.addEventListener("mouseenter", function () {
+      showCard(card);
+    });
+    trigger.addEventListener("mouseleave", function () {
+      hideCard(card);
+    });
+    card.addEventListener("mouseenter", function () {
+      clearTimeout(closeTimer);
+    });
+    card.addEventListener("mouseleave", function () {
+      hideCard(card);
+    });
   });
-}());
+})();

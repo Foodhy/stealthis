@@ -98,7 +98,7 @@ function SwipeCardStack<T>({
         }
       });
     },
-    [currentIndex, data, onSwipeLeft, onSwipeRight, onEmpty, position, nextCardScale],
+    [currentIndex, data, onSwipeLeft, onSwipeRight, onEmpty, position, nextCardScale]
   );
 
   const springBack = useCallback(() => {
@@ -125,7 +125,7 @@ function SwipeCardStack<T>({
           springBack();
         }
       },
-    }),
+    })
   ).current;
 
   const handleButtonSwipe = useCallback(
@@ -133,7 +133,7 @@ function SwipeCardStack<T>({
       if (currentIndex >= data.length) return;
       animateSwipeOut(direction);
     },
-    [currentIndex, data.length, animateSwipeOut],
+    [currentIndex, data.length, animateSwipeOut]
   );
 
   // Render empty state
@@ -153,10 +153,7 @@ function SwipeCardStack<T>({
 
       if (isTopCard) {
         const animatedStyle = {
-          transform: [
-            ...position.getTranslateTransform(),
-            { rotate },
-          ],
+          transform: [...position.getTranslateTransform(), { rotate }],
         };
 
         return (
@@ -168,24 +165,12 @@ function SwipeCardStack<T>({
             {renderCard(item)}
 
             {/* LIKE overlay */}
-            <Animated.View
-              style={[
-                styles.overlay,
-                styles.likeOverlay,
-                { opacity: likeOpacity },
-              ]}
-            >
+            <Animated.View style={[styles.overlay, styles.likeOverlay, { opacity: likeOpacity }]}>
               <Text style={[styles.overlayText, styles.likeText]}>LIKE</Text>
             </Animated.View>
 
             {/* NOPE overlay */}
-            <Animated.View
-              style={[
-                styles.overlay,
-                styles.nopeOverlay,
-                { opacity: nopeOpacity },
-              ]}
-            >
+            <Animated.View style={[styles.overlay, styles.nopeOverlay, { opacity: nopeOpacity }]}>
               <Text style={[styles.overlayText, styles.nopeText]}>NOPE</Text>
             </Animated.View>
           </Animated.View>

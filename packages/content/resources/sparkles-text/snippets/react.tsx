@@ -132,7 +132,15 @@ export default function SparklesTextDemo() {
             Sparkles Text
           </h1>
         </SparklesText>
-        <p style={{ marginTop: "1.5rem", color: "#666", fontSize: "1rem", position: "relative", zIndex: 1 }}>
+        <p
+          style={{
+            marginTop: "1.5rem",
+            color: "#666",
+            fontSize: "1rem",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
           Floating sparkle particles around text
         </p>
       </div>

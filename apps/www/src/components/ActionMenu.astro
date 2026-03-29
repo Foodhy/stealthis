@@ -50,13 +50,19 @@ if (hasHtmlTarget) {
 
   // Extract inline <style> blocks from body
   const inlineStyles: string[] = [];
-  let htmlBody = bodyContent.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_: string, c: string) => {
-    inlineStyles.push(c.trim());
-    return "";
-  });
+  let htmlBody = bodyContent.replace(
+    /<style[^>]*>([\s\S]*?)<\/style>/gi,
+    (_: string, c: string) => {
+      inlineStyles.push(c.trim());
+      return "";
+    }
+  );
 
   // Remove local <script src="*.js"> (JS goes in the JS panel)
-  htmlBody = htmlBody.replace(/<script[^>]*\bsrc=["'][^"']*\.js["'][^>]*>[\s\S]*?<\/script>\s*/gi, "");
+  htmlBody = htmlBody.replace(
+    /<script[^>]*\bsrc=["'][^"']*\.js["'][^>]*>[\s\S]*?<\/script>\s*/gi,
+    ""
+  );
 
   // Also grab inline <style> from <head>
   headContent.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_: string, c: string) => {
@@ -77,7 +83,9 @@ if (hasHtmlTarget) {
   // Rewrite bare import specifiers → full CDN URLs using the import map
   let transformedJs = jsSnippet;
   let useModule = false;
-  const importMapMatch = htmlSnippet.match(/<script[^>]*type=["']importmap["'][^>]*>([\s\S]*?)<\/script>/i);
+  const importMapMatch = htmlSnippet.match(
+    /<script[^>]*type=["']importmap["'][^>]*>([\s\S]*?)<\/script>/i
+  );
   if (importMapMatch && /\bimport\s/.test(jsSnippet)) {
     try {
       const map = JSON.parse(importMapMatch[1]) as { imports?: Record<string, string> };
@@ -87,13 +95,21 @@ if (hasHtmlTarget) {
         for (const [spec, url] of entries) {
           const esc = spec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
           if (spec.endsWith("/")) {
-            transformedJs = transformedJs.replace(new RegExp(`(from\\s+['"])${esc}`, "g"), `$1${url}`);
+            transformedJs = transformedJs.replace(
+              new RegExp(`(from\\s+['"])${esc}`, "g"),
+              `$1${url}`
+            );
           } else {
-            transformedJs = transformedJs.replace(new RegExp(`(from\\s+['"])${esc}(['"])`, "g"), `$1${url}$2`);
+            transformedJs = transformedJs.replace(
+              new RegExp(`(from\\s+['"])${esc}(['"])`, "g"),
+              `$1${url}$2`
+            );
           }
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   const prefill: Record<string, unknown> = {

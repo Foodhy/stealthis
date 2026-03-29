@@ -68,7 +68,7 @@ function TopTabs({ tabs }: TopTabsProps) {
         }),
       ]).start();
     },
-    [underlineX, underlineW, tabLayouts],
+    [underlineX, underlineW, tabLayouts]
   );
 
   const handleTabLayout = useCallback(
@@ -82,7 +82,7 @@ function TopTabs({ tabs }: TopTabsProps) {
         underlineW.setValue(width);
       }
     },
-    [activeIndex, tabs.length, underlineX, underlineW, tabLayouts],
+    [activeIndex, tabs.length, underlineX, underlineW, tabLayouts]
   );
 
   const scrollToTab = useCallback(
@@ -95,7 +95,7 @@ function TopTabs({ tabs }: TopTabsProps) {
         });
       }
     },
-    [tabLayouts],
+    [tabLayouts]
   );
 
   const handleTabPress = useCallback(
@@ -105,7 +105,7 @@ function TopTabs({ tabs }: TopTabsProps) {
       scrollToTab(index);
       panelRef.current?.scrollTo({ x: index * SCREEN_WIDTH, animated: true });
     },
-    [animateUnderline, scrollToTab],
+    [animateUnderline, scrollToTab]
   );
 
   const handlePanelScroll = useCallback(
@@ -118,7 +118,7 @@ function TopTabs({ tabs }: TopTabsProps) {
         scrollToTab(index);
       }
     },
-    [activeIndex, tabs.length, animateUnderline, scrollToTab],
+    [activeIndex, tabs.length, animateUnderline, scrollToTab]
   );
 
   /* ---------- render ---------- */
@@ -141,12 +141,7 @@ function TopTabs({ tabs }: TopTabsProps) {
               style={styles.tab}
               activeOpacity={0.7}
             >
-              <Text
-                style={[
-                  styles.tabLabel,
-                  i === activeIndex && styles.tabLabelActive,
-                ]}
-              >
+              <Text style={[styles.tabLabel, i === activeIndex && styles.tabLabelActive]}>
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -204,45 +199,27 @@ const DEMO_TABS: Tab[] = [
   {
     key: "all",
     label: "All",
-    content: (
-      <DemoList
-        items={["Featured Mix", "Daily Picks", "New Releases", "Trending Now"]}
-      />
-    ),
+    content: <DemoList items={["Featured Mix", "Daily Picks", "New Releases", "Trending Now"]} />,
   },
   {
     key: "music",
     label: "Music",
-    content: (
-      <DemoList items={["Lo-fi Beats", "Jazz Vibes", "Indie Rock", "Ambient"]} />
-    ),
+    content: <DemoList items={["Lo-fi Beats", "Jazz Vibes", "Indie Rock", "Ambient"]} />,
   },
   {
     key: "videos",
     label: "Videos",
-    content: (
-      <DemoList
-        items={["Tech Reviews", "Travel Vlogs", "Tutorials", "Short Films"]}
-      />
-    ),
+    content: <DemoList items={["Tech Reviews", "Travel Vlogs", "Tutorials", "Short Films"]} />,
   },
   {
     key: "podcasts",
     label: "Podcasts",
-    content: (
-      <DemoList
-        items={["True Crime", "Comedy Hour", "Science Weekly", "Interviews"]}
-      />
-    ),
+    content: <DemoList items={["True Crime", "Comedy Hour", "Science Weekly", "Interviews"]} />,
   },
   {
     key: "articles",
     label: "Articles",
-    content: (
-      <DemoList
-        items={["Design Trends", "AI Research", "Startup Stories", "Deep Dives"]}
-      />
-    ),
+    content: <DemoList items={["Design Trends", "AI Research", "Startup Stories", "Deep Dives"]} />,
   },
 ];
 

@@ -5,10 +5,7 @@ interface VideoTextProps {
   videoSrc?: string;
 }
 
-export default function VideoText({
-  text = "STEAL\nTHIS",
-  videoSrc,
-}: VideoTextProps) {
+export default function VideoText({ text = "STEAL\nTHIS", videoSrc }: VideoTextProps) {
   const [useFallback, setUseFallback] = useState(!videoSrc);
   const videoRef = useRef<HTMLVideoElement>(null);
 

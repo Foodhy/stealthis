@@ -59,7 +59,10 @@ function parseMermaidER(source: string): {
   const tables: Omit<SchemaTable, "x" | "y" | "color">[] = [];
   const relations: SchemaRelation[] = [];
 
-  const lines = source.split("\n").map((l) => l.trim()).filter(Boolean);
+  const lines = source
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
 
   let inTable: string | null = null;
   let currentColumns: SchemaColumn[] = [];
@@ -124,9 +127,7 @@ function parseMermaidER(source: string): {
 
 // ─── Layout Engine: auto-place tables in a grid if no position known ─────────
 
-function assignInitialPositions(
-  tables: Omit<SchemaTable, "x" | "y" | "color">[]
-): SchemaTable[] {
+function assignInitialPositions(tables: Omit<SchemaTable, "x" | "y" | "color">[]): SchemaTable[] {
   const cols = Math.ceil(Math.sqrt(tables.length));
 
   return tables.map((t, i) => {
@@ -343,14 +344,14 @@ function TableNode({
         fill={selected ? table.color : table.color + "44"}
       />
       {/* Colored left accent stripe */}
+      <rect width={3} height={h} rx={10} fill={table.color} opacity={selected ? 1 : 0.6} />
       <rect
         width={3}
-        height={h}
-        rx={10}
+        y={HEADER_H}
+        height={h - HEADER_H}
         fill={table.color}
-        opacity={selected ? 1 : 0.6}
+        opacity={selected ? 0.8 : 0.3}
       />
-      <rect width={3} y={HEADER_H} height={h - HEADER_H} fill={table.color} opacity={selected ? 0.8 : 0.3} />
 
       {/* Table name */}
       <text
@@ -460,9 +461,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
   }, [diagramMmd]);
 
   const handleDrag = useCallback((id: string, dx: number, dy: number) => {
-    setTables((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t))
-    );
+    setTables((prev) => prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t)));
   }, []);
 
   const handleReset = useCallback(() => {
@@ -477,21 +476,25 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
   }, []);
 
   // Compute SVG canvas size
-  const canvasW = Math.max(
-    800,
-    ...tables.map((t) => t.x + TABLE_W + INITIAL_PADDING)
-  );
-  const canvasH = Math.max(
-    500,
-    ...tables.map((t) => t.y + tableHeight(t) + INITIAL_PADDING)
-  );
+  const canvasW = Math.max(800, ...tables.map((t) => t.x + TABLE_W + INITIAL_PADDING));
+  const canvasH = Math.max(500, ...tables.map((t) => t.y + tableHeight(t) + INITIAL_PADDING));
 
   if (parseError && tables.length === 0) {
     return (
       <div className="flex min-h-[340px] items-center justify-center rounded-xl border border-amber-400/20 bg-amber-500/5 p-6 text-center">
         <div>
-          <svg viewBox="0 0 24 24" className="mx-auto mb-3 h-8 w-8 text-amber-400" fill="none" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          <svg
+            viewBox="0 0 24 24"
+            className="mx-auto mb-3 h-8 w-8 text-amber-400"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+            />
           </svg>
           <p className="text-xs text-amber-200">{parseError}</p>
         </div>
@@ -504,8 +507,18 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+          <svg
+            viewBox="0 0 24 24"
+            className="h-3.5 w-3.5 text-slate-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+            />
           </svg>
           <span className="text-[11px] text-slate-500">{t("canvas.dragHint")}</span>
         </div>
@@ -527,7 +540,9 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom out"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" /></svg>
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                <path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" />
+              </svg>
             </button>
             <button
               onClick={() => setZoom(1)}
@@ -541,11 +556,16 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom in"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" /></svg>
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                <path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" />
+              </svg>
             </button>
           </div>
           <button
-            onClick={() => { handleReset(); setZoom(1); }}
+            onClick={() => {
+              handleReset();
+              setZoom(1);
+            }}
             className="rounded-lg border border-white/10 px-2.5 py-1 text-[11px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200"
           >
             {t("canvas.reset")}
@@ -576,44 +596,44 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
           className="block"
           style={{ display: "block" }}
         >
-        <g transform={`scale(${zoom})`}>
-          {/* Grid pattern */}
-          <defs>
-            <pattern id="schema-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-              <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#1e293b" strokeWidth="0.5" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#schema-grid)" />
+          <g transform={`scale(${zoom})`}>
+            {/* Grid pattern */}
+            <defs>
+              <pattern id="schema-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#1e293b" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#schema-grid)" />
 
-          {/* Relations — rendered behind tables */}
-          {relations.map((rel, i) => {
-            const ft = tables.find((t) => t.id === rel.from);
-            const tt = tables.find((t) => t.id === rel.to);
-            if (!ft || !tt) return null;
-            const isActive = selected === rel.from || selected === rel.to;
-            return (
-              <RelationLine
-                key={`${rel.from}-${rel.to}-${i}`}
-                fromTable={ft}
-                toTable={tt}
-                label={rel.label}
-                active={isActive}
-                animated={animated}
+            {/* Relations — rendered behind tables */}
+            {relations.map((rel, i) => {
+              const ft = tables.find((t) => t.id === rel.from);
+              const tt = tables.find((t) => t.id === rel.to);
+              if (!ft || !tt) return null;
+              const isActive = selected === rel.from || selected === rel.to;
+              return (
+                <RelationLine
+                  key={`${rel.from}-${rel.to}-${i}`}
+                  fromTable={ft}
+                  toTable={tt}
+                  label={rel.label}
+                  active={isActive}
+                  animated={animated}
+                />
+              );
+            })}
+
+            {/* Tables */}
+            {tables.map((t) => (
+              <TableNode
+                key={t.id}
+                table={t}
+                onDrag={handleDrag}
+                selected={selected === t.id}
+                onClick={setSelected}
               />
-            );
-          })}
-
-          {/* Tables */}
-          {tables.map((t) => (
-            <TableNode
-              key={t.id}
-              table={t}
-              onDrag={handleDrag}
-              selected={selected === t.id}
-              onClick={setSelected}
-            />
-          ))}
-        </g>
+            ))}
+          </g>
         </svg>
       </div>
 
@@ -626,14 +646,18 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
           <span className="font-mono font-bold text-[#bc8cff]">FK</span> {t("canvas.foreignKey")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-px w-6 border-t-2 border-dashed border-slate-600" /> {t("canvas.relation")}
+          <span className="inline-block h-px w-6 border-t-2 border-dashed border-slate-600" />{" "}
+          {t("canvas.relation")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-px w-6 border-t-2 border-blue-500" /> {t("canvas.activeRelation")}
+          <span className="inline-block h-px w-6 border-t-2 border-blue-500" />{" "}
+          {t("canvas.activeRelation")}
         </span>
         {tables.length > 0 && (
           <span className="ml-auto text-slate-600">
-            {tables.length} {tables.length !== 1 ? t("canvas.tablesPlural") : t("canvas.tables")} · {relations.length} {relations.length !== 1 ? t("canvas.relationsPlural") : t("canvas.relationSingular")}
+            {tables.length} {tables.length !== 1 ? t("canvas.tablesPlural") : t("canvas.tables")} ·{" "}
+            {relations.length}{" "}
+            {relations.length !== 1 ? t("canvas.relationsPlural") : t("canvas.relationSingular")}
           </span>
         )}
       </div>

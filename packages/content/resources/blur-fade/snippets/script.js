@@ -27,9 +27,7 @@
     groups.forEach((children) => {
       children.forEach((el, i) => {
         const customDelay = el.dataset.delay;
-        const delay = customDelay
-          ? parseInt(customDelay, 10)
-          : i * DEFAULTS.staggerDelay;
+        const delay = customDelay ? parseInt(customDelay, 10) : i * DEFAULTS.staggerDelay;
         el.style.transitionDelay = `${delay}ms`;
       });
     });

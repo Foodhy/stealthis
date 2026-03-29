@@ -124,9 +124,21 @@ function getInitials(name: string): string {
 }
 
 const AVATAR_COLORS = [
-  "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4",
-  "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#f43f5e",
-  "#a855f7", "#6366f1", "#0ea5e9", "#84cc16", "#d946ef",
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#06b6d4",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f43f5e",
+  "#a855f7",
+  "#6366f1",
+  "#0ea5e9",
+  "#84cc16",
+  "#d946ef",
 ];
 
 const renderContact: ListRenderItem<Contact> = ({ item, index }) => {
@@ -168,9 +180,7 @@ export default function App() {
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Contacts</Text>
-            <Text style={styles.headerSubtitle}>
-              Pull down to refresh ({contacts.length})
-            </Text>
+            <Text style={styles.headerSubtitle}>Pull down to refresh ({contacts.length})</Text>
           </View>
         }
       />

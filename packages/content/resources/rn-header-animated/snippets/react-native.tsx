@@ -1,13 +1,5 @@
 import React, { useRef } from "react";
-import {
-  Animated,
-  Dimensions,
-  Image,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Dimensions, Image, StatusBar, StyleSheet, Text, View } from "react-native";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -32,12 +24,7 @@ const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 44;
 /*  AnimatedHeader                                                     */
 /* ------------------------------------------------------------------ */
 
-function AnimatedHeader({
-  title,
-  imageUri,
-  children,
-  headerHeight = 200,
-}: AnimatedHeaderProps) {
+function AnimatedHeader({ title, imageUri, children, headerHeight = 200 }: AnimatedHeaderProps) {
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const scrollRange = headerHeight - COMPACT_HEIGHT;
@@ -84,38 +71,23 @@ function AnimatedHeader({
   return (
     <View style={styles.container}>
       {/* Large header (sits behind scroll content) */}
-      <Animated.View
-        style={[
-          styles.headerBackground,
-          { height: headerHeight },
-        ]}
-      >
+      <Animated.View style={[styles.headerBackground, { height: headerHeight }]}>
         <Animated.Image
           source={{ uri: imageUri }}
           style={[
             styles.headerImage,
             {
               height: headerHeight + 50,
-              transform: [
-                { translateY: imageTranslateY },
-                { scale: imageScale },
-              ],
+              transform: [{ translateY: imageTranslateY }, { scale: imageScale }],
             },
           ]}
         />
 
         {/* Dark overlay */}
-        <Animated.View
-          style={[styles.overlay, { opacity: overlayOpacity }]}
-        />
+        <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]} />
 
         {/* Large title */}
-        <Animated.View
-          style={[
-            styles.titleContainer,
-            { opacity: titleOpacity },
-          ]}
-        >
+        <Animated.View style={[styles.titleContainer, { opacity: titleOpacity }]}>
           <Text style={styles.largeTitle}>{title}</Text>
         </Animated.View>
       </Animated.View>
@@ -124,10 +96,9 @@ function AnimatedHeader({
       <Animated.ScrollView
         contentContainerStyle={{ paddingTop: headerHeight }}
         scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true },
-        )}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: true,
+        })}
       >
         {children}
       </Animated.ScrollView>
@@ -162,9 +133,7 @@ function ListItem({ index }: { index: number }) {
       </View>
       <View style={styles.listContent}>
         <Text style={styles.listTitle}>Item {index + 1}</Text>
-        <Text style={styles.listSubtitle}>
-          Tap to explore more details about this item
-        </Text>
+        <Text style={styles.listSubtitle}>Tap to explore more details about this item</Text>
       </View>
     </View>
   );
@@ -174,11 +143,7 @@ export default function App() {
   const items = Array.from({ length: 20 }, (_, i) => i);
 
   return (
-    <AnimatedHeader
-      title="Explore"
-      imageUri="https://picsum.photos/800/400"
-      headerHeight={200}
-    >
+    <AnimatedHeader title="Explore" imageUri="https://picsum.photos/800/400" headerHeight={200}>
       <View style={styles.contentContainer}>
         <Text style={styles.sectionTitle}>Popular</Text>
         {items.map((i) => (

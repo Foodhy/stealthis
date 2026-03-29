@@ -45,8 +45,8 @@ const routes = {
         cards: [
           { k: "Health", v: "97%", d: "All systems nominal" },
           { k: "Velocity", v: "+18%", d: "vs previous cycle" },
-          { k: "Focus", v: "4 themes", d: "active initiatives" }
-        ]
+          { k: "Focus", v: "4 themes", d: "active initiatives" },
+        ],
       },
       activity: {
         title: "Recent Activity",
@@ -54,10 +54,10 @@ const routes = {
         cards: [
           { k: "Releases", v: "3", d: "this week" },
           { k: "Rollbacks", v: "0", d: "stable channel" },
-          { k: "Incidents", v: "1", d: "resolved" }
-        ]
-      }
-    }
+          { k: "Incidents", v: "1", d: "resolved" },
+        ],
+      },
+    },
   },
   analytics: {
     title: "Analytics",
@@ -68,8 +68,8 @@ const routes = {
         cards: [
           { k: "CTR", v: "4.8%", d: "upward trend" },
           { k: "Retention", v: "72%", d: "week 4" },
-          { k: "Bounce", v: "21%", d: "improved" }
-        ]
+          { k: "Bounce", v: "21%", d: "improved" },
+        ],
       },
       funnels: {
         title: "Funnel View",
@@ -77,10 +77,10 @@ const routes = {
         cards: [
           { k: "Visit > Signup", v: "26%", d: "strong top funnel" },
           { k: "Signup > Trial", v: "58%", d: "good activation" },
-          { k: "Trial > Paid", v: "31%", d: "optimize onboarding" }
-        ]
-      }
-    }
+          { k: "Trial > Paid", v: "31%", d: "optimize onboarding" },
+        ],
+      },
+    },
   },
   settings: {
     title: "Settings",
@@ -91,8 +91,8 @@ const routes = {
         cards: [
           { k: "Locale", v: "en-US", d: "default language" },
           { k: "Time zone", v: "Local", d: "automatic" },
-          { k: "Density", v: "Comfort", d: "balanced layout" }
-        ]
+          { k: "Density", v: "Comfort", d: "balanced layout" },
+        ],
       },
       access: {
         title: "Access Control",
@@ -100,11 +100,11 @@ const routes = {
         cards: [
           { k: "Admins", v: "2", d: "full access" },
           { k: "Editors", v: "5", d: "project scope" },
-          { k: "Viewers", v: "12", d: "read-only" }
-        ]
-      }
-    }
-  }
+          { k: "Viewers", v: "12", d: "read-only" },
+        ],
+      },
+    },
+  },
 };
 
 const state = { route: "overview", section: "summary" };

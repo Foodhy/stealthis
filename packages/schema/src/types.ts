@@ -5,8 +5,6 @@ export type ResourceCategoryPhase2 =
   | "components"
   | "pages"
   | "prompts"
-  | "skills"
-  | "mcp-servers"
   | "architectures"
   | "boilerplates"
   | "remotion"
@@ -14,7 +12,8 @@ export type ResourceCategoryPhase2 =
   | "ultra-high-definition-pages"
   | "music"
   | "3d-models"
-  | "3d-interactions";
+  | "3d-interactions"
+  | "plugins";
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 

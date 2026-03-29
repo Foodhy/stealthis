@@ -7,7 +7,9 @@ const DEFAULT_SITE = "https://stealthis.dev";
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site ?? new URL(DEFAULT_SITE)).toString().replace(/\/$/, "");
   const resources = await getCollection("resources");
-  const showcaseCount = resources.filter((resource) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0).length;
+  const showcaseCount = resources.filter(
+    (resource) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0
+  ).length;
 
   const sortedResources = [...resources].sort((a, b) => {
     const aDate = new Date(a.data.updatedAt ?? a.data.createdAt).getTime();
@@ -35,6 +37,7 @@ export const GET: APIRoute = async ({ site }) => {
       `  en: ${origin}/r/${data.slug}`,
       `  es: ${origin}/es/r/${data.slug}`,
       `  fr: ${origin}/fr/r/${data.slug}`,
+      `  ar: ${origin}/ar/r/${data.slug}`,
       `  ja: ${origin}/ja/r/${data.slug}`,
       `  ms: ${origin}/ms/r/${data.slug}`,
       `  hi: ${origin}/hi/r/${data.slug}`,
@@ -76,6 +79,7 @@ export const GET: APIRoute = async ({ site }) => {
     `- German library: ${origin}/de/library/`,
     `- Brazilian Portuguese library: ${origin}/pt-br/library/`,
     `- French library: ${origin}/fr/library/`,
+    `- Arabic library: ${origin}/ar/library/`,
     `- Japanese library: ${origin}/ja/library/`,
     `- Italian library: ${origin}/it/library/`,
     `- Polish library: ${origin}/pl/library/`,

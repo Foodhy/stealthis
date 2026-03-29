@@ -117,19 +117,17 @@ export default function RainbowButtonDemo() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>
-        Rainbow Buttons
-      </h2>
-      <p style={{ color: "#525252", fontSize: "0.875rem" }}>
-        Animated rainbow gradient borders
-      </p>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>Rainbow Buttons</h2>
+      <p style={{ color: "#525252", fontSize: "0.875rem" }}>Animated rainbow gradient borders</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "center" }}>
         <RainbowButton>Explore Now</RainbowButton>
         <RainbowButton filled>Get Premium</RainbowButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "center" }}>
         <RainbowButton size="lg">Start Your Journey</RainbowButton>
-        <RainbowButton size="sm" filled>Try Free</RainbowButton>
+        <RainbowButton size="sm" filled>
+          Try Free
+        </RainbowButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2.5rem", justifyContent: "center" }}>
         <RainbowButton rounded>Join Community</RainbowButton>

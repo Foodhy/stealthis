@@ -84,9 +84,7 @@ function TreeItem({
           className="flex w-full items-center gap-1.5 px-2 py-[3px] text-left text-[12px] text-slate-300 hover:bg-white/6"
           style={{ paddingLeft: `${depth * 14 + 8}px` }}
         >
-          <span className="w-[10px] shrink-0 text-[9px] text-slate-500">
-            {open ? "▾" : "▸"}
-          </span>
+          <span className="w-[10px] shrink-0 text-[9px] text-slate-500">{open ? "▾" : "▸"}</span>
           <FileIcon name={node.name} isDir isOpen={open} />
           <span className="truncate font-medium">{node.name}</span>
         </button>
@@ -136,9 +134,7 @@ function TreeItem({
     >
       <FileIcon name={node.name} isDir={false} />
       <span className="flex-1 truncate">{node.name}</span>
-      {isDirty && (
-        <span className="ml-auto shrink-0 text-[10px] font-medium text-vibe-400">M</span>
-      )}
+      {isDirty && <span className="ml-auto shrink-0 text-[10px] font-medium text-vibe-400">M</span>}
     </button>
   );
 }
@@ -163,9 +159,7 @@ function InlineNameInput({
       className="flex items-center gap-1.5 px-2 py-[3px]"
       style={{ paddingLeft: `${depth * 14 + 18}px` }}
     >
-      <span className="text-[10px] text-slate-500">
-        {kind === "folder" ? "📁" : "📄"}
-      </span>
+      <span className="text-[10px] text-slate-500">{kind === "folder" ? "📁" : "📄"}</span>
       <input
         ref={inputRef}
         autoFocus
@@ -192,7 +186,7 @@ function InlineNameInput({
 /* ── Save files helper ── */
 async function saveFilesToDisk(
   projectPath: string,
-  files: Record<string, { path: string; content: string; dirty: boolean }>,
+  files: Record<string, { path: string; content: string; dirty: boolean }>
 ): Promise<number> {
   let saved = 0;
   for (const file of Object.values(files)) {
@@ -229,7 +223,7 @@ export default function FileTree() {
     (e: React.MouseEvent, dirPath: string, filePath: string | null) => {
       setCtx({ x: e.clientX, y: e.clientY, targetDir: dirPath, targetFile: filePath });
     },
-    [],
+    []
   );
 
   const handleRootContext = useCallback((e: React.MouseEvent) => {
@@ -273,7 +267,7 @@ export default function FileTree() {
 
       setCtx(null);
     },
-    [ctx, state.files, state.activeTab, dispatch],
+    [ctx, state.files, state.activeTab, dispatch]
   );
 
   const handleInlineSubmit = useCallback(
@@ -319,7 +313,7 @@ export default function FileTree() {
 
       setInlineInput(null);
     },
-    [inlineInput, state.projectPath, dispatch],
+    [inlineInput, state.projectPath, dispatch]
   );
 
   const handleInlineCancel = useCallback(() => setInlineInput(null), []);
@@ -374,9 +368,7 @@ export default function FileTree() {
               <span className="rounded-full bg-vibe-600/30 px-1 text-[9px]">{dirtyCount}</span>
             </button>
           )}
-          {saveStatus && (
-            <span className="text-[10px] text-vibe-400">{saveStatus}</span>
-          )}
+          {saveStatus && <span className="text-[10px] text-vibe-400">{saveStatus}</span>}
           {/* New file */}
           <button
             onClick={() => setInlineInput({ parentDir: "", kind: "file" })}
@@ -401,7 +393,9 @@ export default function FileTree() {
         {paths.length === 0 && !inlineInput && (
           <div className="flex h-full items-center justify-center p-4">
             <p className="text-center text-[11px] text-slate-500">
-              No files yet. Right-click to create<br />or switch to Execute mode.
+              No files yet. Right-click to create
+              <br />
+              or switch to Execute mode.
             </p>
           </div>
         )}

@@ -13,9 +13,18 @@ const variantStyles: Record<string, CSSProperties> = {
   purple: { background: "#8b5cf6", color: "#fff", boxShadow: "0 4px 14px rgba(139,92,246,0.3)" },
   emerald: { background: "#10b981", color: "#fff", boxShadow: "0 4px 14px rgba(16,185,129,0.3)" },
   rose: { background: "#f43f5e", color: "#fff", boxShadow: "0 4px 14px rgba(244,63,94,0.3)" },
-  dark: { background: "#1e293b", color: "#fff", border: "1px solid #334155", boxShadow: "0 4px 14px rgba(0,0,0,0.3)" },
+  dark: {
+    background: "#1e293b",
+    color: "#fff",
+    border: "1px solid #334155",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+  },
   amber: { background: "#f59e0b", color: "#0a0a0a", boxShadow: "0 4px 14px rgba(245,158,11,0.3)" },
-  gradient: { background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)", color: "#fff", boxShadow: "0 4px 14px rgba(139,92,246,0.35)" },
+  gradient: {
+    background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
+    color: "#fff",
+    boxShadow: "0 4px 14px rgba(139,92,246,0.35)",
+  },
 };
 
 const sizeStyles: Record<string, CSSProperties> = {
@@ -92,9 +101,7 @@ export default function ShinyButtonDemo() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>
-        Shiny Buttons
-      </h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>Shiny Buttons</h2>
       <p style={{ color: "#525252", fontSize: "0.875rem" }}>
         Hover over the buttons to see the shine effect
       </p>
@@ -104,8 +111,12 @@ export default function ShinyButtonDemo() {
         <ShinyButton variant="dark">View Details</ShinyButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
-        <ShinyButton variant="emerald" size="lg">Download App</ShinyButton>
-        <ShinyButton variant="rose" size="sm">Subscribe</ShinyButton>
+        <ShinyButton variant="emerald" size="lg">
+          Download App
+        </ShinyButton>
+        <ShinyButton variant="rose" size="sm">
+          Subscribe
+        </ShinyButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
         <ShinyButton variant="gradient">Premium Access</ShinyButton>

@@ -1,0 +1,64 @@
+---
+slug: arch-nextjs-app
+title: Next.js App Router Architecture
+description: Complete Next.js App Router project structure with nested layouts, server/client components, route handlers, and middleware patterns.
+category: architectures
+type: architecture
+tags: [nextjs, app-router, react, architecture, server-components]
+tech: [nextjs, react, typescript]
+difficulty: med
+targets: [html]
+labRoute: /architectures/arch-nextjs-app
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## Next.js App Router Architecture
+
+The App Router (introduced in Next.js 13.4) replaces the legacy `pages/` directory with a new `app/` directory that supports nested layouts, React Server Components by default, and co-located route handlers.
+
+### App Router Structure
+
+Everything under `app/` is a route segment. Special file conventions control rendering behavior:
+
+- **`layout.tsx`** — persistent UI that wraps child routes. The root layout replaces `_app.tsx` and `_document.tsx`.
+- **`page.tsx`** — the unique UI for a route. A segment is only publicly accessible when it has a `page.tsx`.
+- **`loading.tsx`** — instant loading state powered by React Suspense.
+- **`error.tsx`** — error boundary scoped to the segment and its children.
+- **`not-found.tsx`** — UI shown when `notFound()` is called.
+- **`route.ts`** — API endpoint (GET, POST, etc.) that replaces `pages/api/`.
+
+### Nested Layouts
+
+Layouts nest automatically. A `dashboard/layout.tsx` wraps all pages under `/dashboard/*` without re-rendering the root layout. This enables persistent sidebars, navigation, and shared state.
+
+### Server vs Client Components
+
+All components in the App Router are **React Server Components** by default. They run on the server, have zero JS bundle cost, and can directly access databases or filesystem.
+
+Add the `"use client"` directive at the top of a file to opt into client-side interactivity (event handlers, hooks, browser APIs).
+
+**Rule of thumb:** keep components server-rendered unless they need `useState`, `useEffect`, `onClick`, or browser APIs.
+
+### Route Handlers
+
+Files named `route.ts` inside `app/` export HTTP method functions (`GET`, `POST`, `PUT`, `DELETE`). They replace the old `pages/api/` pattern and support streaming, Web API Request/Response objects, and Edge runtime.
+
+### Middleware
+
+`middleware.ts` at the project root intercepts every request before it reaches a route. Common uses include authentication redirects, locale detection, A/B testing, and rate limiting.
+
+### Route Groups
+
+Folders wrapped in parentheses like `(auth)` create **route groups** that organize routes without affecting the URL structure. `(auth)/login/page.tsx` renders at `/login`, not `/(auth)/login`.
+
+### Official Docs
+
+- [Project Structure](https://nextjs.org/docs/app/getting-started/project-structure)
+- [Routing Fundamentals](https://nextjs.org/docs/app/building-your-application/routing)
+- [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
+- [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)

@@ -1,11 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 
 Notifications.setNotificationHandler({
@@ -30,11 +24,7 @@ async function requestPermissions(): Promise<boolean> {
   return status === "granted";
 }
 
-async function scheduleNotification(
-  title: string,
-  body: string,
-  delaySeconds: number
-) {
+async function scheduleNotification(title: string, body: string, delaySeconds: number) {
   await Notifications.scheduleNotificationAsync({
     content: { title, body, sound: true },
     trigger:
@@ -66,33 +56,31 @@ export default function App() {
   useEffect(() => {
     requestPermissions().then(setHasPermission);
 
-    receivedListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        const { title, body } = notification.request.content;
-        setLogs((prev) => [
-          {
-            id: notification.request.identifier,
-            title: title ?? "Notification",
-            body: body ?? "",
-            receivedAt: new Date().toLocaleTimeString(),
-          },
-          ...prev,
-        ]);
-      });
+    receivedListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      const { title, body } = notification.request.content;
+      setLogs((prev) => [
+        {
+          id: notification.request.identifier,
+          title: title ?? "Notification",
+          body: body ?? "",
+          receivedAt: new Date().toLocaleTimeString(),
+        },
+        ...prev,
+      ]);
+    });
 
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const { title, body } = response.notification.request.content;
-        setLogs((prev) => [
-          {
-            id: response.notification.request.identifier + "-tap",
-            title: `[Tapped] ${title ?? "Notification"}`,
-            body: body ?? "",
-            receivedAt: new Date().toLocaleTimeString(),
-          },
-          ...prev,
-        ]);
-      });
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      const { title, body } = response.notification.request.content;
+      setLogs((prev) => [
+        {
+          id: response.notification.request.identifier + "-tap",
+          title: `[Tapped] ${title ?? "Notification"}`,
+          body: body ?? "",
+          receivedAt: new Date().toLocaleTimeString(),
+        },
+        ...prev,
+      ]);
+    });
 
     return () => {
       receivedListener.current?.remove();
@@ -111,22 +99,14 @@ export default function App() {
       <Text style={styles.heading}>Push Notifications</Text>
 
       <Text style={styles.status}>
-        Permission:{" "}
-        {hasPermission === null
-          ? "Checking..."
-          : hasPermission
-            ? "Granted"
-            : "Denied"}
+        Permission: {hasPermission === null ? "Checking..." : hasPermission ? "Granted" : "Denied"}
       </Text>
 
       <View style={styles.buttonRow}>
         {buttons.map((btn) => (
           <Pressable
             key={btn.label}
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={() =>
               scheduleNotification(
                 "Hello!",
@@ -142,9 +122,7 @@ export default function App() {
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>
-        Inbox {logs.length > 0 && `(${logs.length})`}
-      </Text>
+      <Text style={styles.sectionTitle}>Inbox {logs.length > 0 && `(${logs.length})`}</Text>
 
       {logs.length === 0 ? (
         <View style={styles.emptyState}>

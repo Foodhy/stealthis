@@ -10,18 +10,102 @@ interface GridItem {
 }
 
 const items: GridItem[] = [
-  { id: 1, label: "Figma", emoji: "🎨", cat: "design", bg: "rgba(168,85,247,0.2)", border: "rgba(168,85,247,0.4)" },
-  { id: 2, label: "React", emoji: "⚛️", cat: "dev", bg: "rgba(59,130,246,0.2)", border: "rgba(59,130,246,0.4)" },
-  { id: 3, label: "D3.js", emoji: "📊", cat: "data", bg: "rgba(16,185,129,0.2)", border: "rgba(16,185,129,0.4)" },
-  { id: 4, label: "Sketch", emoji: "💎", cat: "design", bg: "rgba(236,72,153,0.2)", border: "rgba(236,72,153,0.4)" },
-  { id: 5, label: "Node", emoji: "🟢", cat: "dev", bg: "rgba(34,197,94,0.2)", border: "rgba(34,197,94,0.4)" },
-  { id: 6, label: "SQL", emoji: "🗄️", cat: "data", bg: "rgba(245,158,11,0.2)", border: "rgba(245,158,11,0.4)" },
-  { id: 7, label: "Color", emoji: "🌈", cat: "design", bg: "rgba(239,68,68,0.2)", border: "rgba(239,68,68,0.4)" },
-  { id: 8, label: "TS", emoji: "📘", cat: "dev", bg: "rgba(14,165,233,0.2)", border: "rgba(14,165,233,0.4)" },
-  { id: 9, label: "Charts", emoji: "📈", cat: "data", bg: "rgba(168,85,247,0.2)", border: "rgba(168,85,247,0.4)" },
-  { id: 10, label: "Proto", emoji: "🖼️", cat: "design", bg: "rgba(109,40,217,0.2)", border: "rgba(109,40,217,0.4)" },
-  { id: 11, label: "Rust", emoji: "🦀", cat: "dev", bg: "rgba(239,68,68,0.2)", border: "rgba(239,68,68,0.4)" },
-  { id: 12, label: "ML", emoji: "🤖", cat: "data", bg: "rgba(59,130,246,0.2)", border: "rgba(59,130,246,0.4)" },
+  {
+    id: 1,
+    label: "Figma",
+    emoji: "🎨",
+    cat: "design",
+    bg: "rgba(168,85,247,0.2)",
+    border: "rgba(168,85,247,0.4)",
+  },
+  {
+    id: 2,
+    label: "React",
+    emoji: "⚛️",
+    cat: "dev",
+    bg: "rgba(59,130,246,0.2)",
+    border: "rgba(59,130,246,0.4)",
+  },
+  {
+    id: 3,
+    label: "D3.js",
+    emoji: "📊",
+    cat: "data",
+    bg: "rgba(16,185,129,0.2)",
+    border: "rgba(16,185,129,0.4)",
+  },
+  {
+    id: 4,
+    label: "Sketch",
+    emoji: "💎",
+    cat: "design",
+    bg: "rgba(236,72,153,0.2)",
+    border: "rgba(236,72,153,0.4)",
+  },
+  {
+    id: 5,
+    label: "Node",
+    emoji: "🟢",
+    cat: "dev",
+    bg: "rgba(34,197,94,0.2)",
+    border: "rgba(34,197,94,0.4)",
+  },
+  {
+    id: 6,
+    label: "SQL",
+    emoji: "🗄️",
+    cat: "data",
+    bg: "rgba(245,158,11,0.2)",
+    border: "rgba(245,158,11,0.4)",
+  },
+  {
+    id: 7,
+    label: "Color",
+    emoji: "🌈",
+    cat: "design",
+    bg: "rgba(239,68,68,0.2)",
+    border: "rgba(239,68,68,0.4)",
+  },
+  {
+    id: 8,
+    label: "TS",
+    emoji: "📘",
+    cat: "dev",
+    bg: "rgba(14,165,233,0.2)",
+    border: "rgba(14,165,233,0.4)",
+  },
+  {
+    id: 9,
+    label: "Charts",
+    emoji: "📈",
+    cat: "data",
+    bg: "rgba(168,85,247,0.2)",
+    border: "rgba(168,85,247,0.4)",
+  },
+  {
+    id: 10,
+    label: "Proto",
+    emoji: "🖼️",
+    cat: "design",
+    bg: "rgba(109,40,217,0.2)",
+    border: "rgba(109,40,217,0.4)",
+  },
+  {
+    id: 11,
+    label: "Rust",
+    emoji: "🦀",
+    cat: "dev",
+    bg: "rgba(239,68,68,0.2)",
+    border: "rgba(239,68,68,0.4)",
+  },
+  {
+    id: 12,
+    label: "ML",
+    emoji: "🤖",
+    cat: "data",
+    bg: "rgba(59,130,246,0.2)",
+    border: "rgba(59,130,246,0.4)",
+  },
 ];
 
 const filters = ["all", "design", "dev", "data"];
@@ -65,7 +149,13 @@ export default function LayoutAnimation() {
           requestAnimationFrame(() => {
             el.style.transform = "";
             el.style.transition = "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)";
-            el.addEventListener("transitionend", () => { el.style.transition = ""; }, { once: true });
+            el.addEventListener(
+              "transitionend",
+              () => {
+                el.style.transition = "";
+              },
+              { once: true }
+            );
           });
         });
       } else {
@@ -76,7 +166,13 @@ export default function LayoutAnimation() {
             el.style.transition = "opacity 0.35s, transform 0.35s cubic-bezier(0.22,1,0.36,1)";
             el.style.opacity = "1";
             el.style.transform = "scale(1)";
-            el.addEventListener("transitionend", () => { el.style.transition = ""; }, { once: true });
+            el.addEventListener(
+              "transitionend",
+              () => {
+                el.style.transition = "";
+              },
+              { once: true }
+            );
           });
         });
       }
@@ -114,9 +210,18 @@ export default function LayoutAnimation() {
         color: "#e4e4e7",
       }}
     >
-      <div style={{ width: "min(560px, 100%)", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div
+        style={{
+          width: "min(560px, 100%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.25rem",
+        }}
+      >
         <div>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#f4f4f5" }}>Layout Animation</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#f4f4f5" }}>
+            Layout Animation
+          </h2>
           <p style={{ fontSize: "0.8rem", color: "#52525b", marginTop: "0.25rem" }}>
             FLIP technique for smooth layout transitions
           </p>
@@ -187,7 +292,14 @@ export default function LayoutAnimation() {
                   willChange: "transform",
                 }}
               >
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.35rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.35rem",
+                  }}
+                >
                   <span style={{ fontSize: "1.5rem" }}>{item.emoji}</span>
                   {item.label}
                 </div>

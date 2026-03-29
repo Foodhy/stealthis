@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  Dimensions,
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Dimensions, FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -106,10 +98,7 @@ function ImagePickerGrid({
           renderItem={({ item }) => (
             <View style={styles.imageWrapper}>
               <Image source={{ uri: item }} style={styles.image} />
-              <Pressable
-                style={styles.removeButton}
-                onPress={() => removeImage(item)}
-              >
+              <Pressable style={styles.removeButton} onPress={() => removeImage(item)}>
                 <Text style={styles.removeText}>✕</Text>
               </Pressable>
             </View>
@@ -264,11 +253,7 @@ export default function App() {
         Select images from gallery or camera
       </Text>
 
-      <ImagePickerGrid
-        onImagesSelected={setSelectedUris}
-        maxSelection={8}
-        quality={0.8}
-      />
+      <ImagePickerGrid onImagesSelected={setSelectedUris} maxSelection={8} quality={0.8} />
     </View>
   );
 }

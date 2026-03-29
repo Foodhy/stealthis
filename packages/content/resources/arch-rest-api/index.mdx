@@ -1,0 +1,99 @@
+---
+slug: arch-rest-api
+title: "REST API — Clean Architecture (Node.js)"
+description: "Node.js REST API structure following Clean Architecture with separated domain, application, infrastructure, and interface layers."
+category: architectures
+type: architecture
+tags: [rest-api, clean-architecture, nodejs, express, backend]
+tech: [nodejs, express, typescript]
+difficulty: med
+targets: [html]
+labRoute: /architectures/arch-rest-api
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## REST API — Clean Architecture (Node.js)
+
+A complete reference architecture for building Node.js REST APIs using **Clean Architecture** principles. The structure enforces a strict separation of concerns across four concentric layers, ensuring that business logic remains independent of frameworks, databases, and external services.
+
+### Clean Architecture Layers
+
+1. **Domain (Entities)** — The innermost layer. Contains enterprise-wide business rules: entities, value objects, and repository _interfaces_ (not implementations). This layer has **zero dependencies** on anything external.
+
+2. **Application (Use Cases)** — Orchestrates the flow of data between the domain and the outside world. Each use case represents a single action the system can perform (e.g., `CreateUser`, `GetOrderById`). DTOs define the shape of input and output data at the boundary.
+
+3. **Infrastructure** — Implements the interfaces defined in inner layers. Database adapters (Postgres via Prisma or Drizzle), authentication providers (JWT, OAuth), HTTP frameworks (Express), and third-party integrations (S3, email services) all live here.
+
+4. **Interfaces (Adapters)** — Translates between the format the use cases expect and the format external agencies (web, CLI, tests) provide. Controllers parse HTTP requests, call use cases, and format responses. Validators (Zod schemas) guard the boundary.
+
+### The Dependency Rule
+
+> Source code dependencies must point **inward** — toward higher-level policies.
+
+Nothing in an inner layer can reference anything from an outer layer. The domain never imports Express, Prisma, or any framework. Dependency Inversion (the "D" in SOLID) makes this possible: inner layers define interfaces, outer layers provide implementations, and a composition root wires everything together at startup.
+
+### Repository Pattern
+
+Repositories abstract data access behind a clean interface:
+
+```ts
+// domain/repositories/UserRepository.ts (interface)
+export interface UserRepository {
+  findById(id: string): Promise<User | null>;
+  save(user: User): Promise<User>;
+  delete(id: string): Promise<void>;
+}
+
+// infrastructure/database/PrismaUserRepository.ts (implementation)
+export class PrismaUserRepository implements UserRepository {
+  constructor(private prisma: PrismaClient) {}
+  async findById(id: string) {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+  // ...
+}
+```
+
+### DTOs & Use Cases
+
+Use cases accept DTOs (Data Transfer Objects) rather than raw request objects, keeping them framework-agnostic:
+
+```ts
+// application/use-cases/CreateUser.ts
+export class CreateUser {
+  constructor(private userRepo: UserRepository) {}
+  async execute(dto: CreateUserDTO): Promise<UserResponseDTO> {
+    const user = User.create(dto.email, dto.name);
+    const saved = await this.userRepo.save(user);
+    return UserResponseDTO.from(saved);
+  }
+}
+```
+
+### Key Principles
+
+- **Testability** — Business logic can be unit-tested without databases, HTTP, or any I/O.
+- **Framework independence** — Swap Express for Fastify or Prisma for Drizzle without touching domain code.
+- **Screaming architecture** — The folder structure tells you what the system _does_, not what framework it uses.
+- **Single Responsibility** — Each layer has one reason to change.
+
+### When to Use
+
+| Scenario | Recommendation |
+|---|---|
+| Small CRUD API / prototype | Overkill — use a flat MVC structure |
+| Medium API with business logic | Good fit — keeps logic organized |
+| Large enterprise API / microservice | Ideal — enforces boundaries at scale |
+| Team with mixed experience levels | Beneficial — clear rules reduce ambiguity |
+
+### References
+
+- [Clean Architecture in Node.js — Mann Howie](https://mannhowie.com/clean-architecture-node)
+- [panagiop/node.js-clean-architecture](https://github.com/panagiop/node.js-clean-architecture)
+- [jbuget/nodejs-clean-architecture-app](https://github.com/jbuget/nodejs-clean-architecture-app)
+- [Robert C. Martin — Clean Architecture (book)](https://www.oreilly.com/library/view/clean-architecture/9780134494272/)

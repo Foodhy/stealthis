@@ -41,11 +41,7 @@ export async function getResourceBySlug(
   return resources.find((r) => r.slug === slug) ?? null;
 }
 
-export function readSnippet(
-  contentDir: string,
-  slug: string,
-  target: string
-): string | null {
+export function readSnippet(contentDir: string, slug: string, target: string): string | null {
   const extensions: Record<string, string> = {
     html: "html",
     style: "css",

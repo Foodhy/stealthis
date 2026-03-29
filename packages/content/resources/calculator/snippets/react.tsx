@@ -16,11 +16,20 @@ export default function CalculatorRC() {
 
   function press(key: string) {
     if (key === "C") {
-      setDisplay("0"); setPrev(null); setOp(null); setWaitNext(false);
+      setDisplay("0");
+      setPrev(null);
+      setOp(null);
+      setWaitNext(false);
       return;
     }
-    if (key === "+/-") { setDisplay((d) => String(-parseFloat(d))); return; }
-    if (key === "%") { setDisplay((d) => String(parseFloat(d) / 100)); return; }
+    if (key === "+/-") {
+      setDisplay((d) => String(-parseFloat(d)));
+      return;
+    }
+    if (key === "%") {
+      setDisplay((d) => String(parseFloat(d) / 100));
+      return;
+    }
 
     if (["÷", "×", "−", "+"].includes(key)) {
       setPrev(display);
@@ -40,7 +49,9 @@ export default function CalculatorRC() {
       else if (op === "+") result = a + b;
       const str = String(parseFloat(result.toPrecision(10)));
       setDisplay(str);
-      setPrev(null); setOp(null); setWaitNext(false);
+      setPrev(null);
+      setOp(null);
+      setWaitNext(false);
       return;
     }
 

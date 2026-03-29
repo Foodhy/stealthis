@@ -39,6 +39,8 @@ export function curateStyleForgeReferences(resources: CollectionEntry<"resources
   return { pages, components };
 }
 
-export function indexReferencesBySlug(references: StyleForgeReference[]): Map<string, StyleForgeReference> {
+export function indexReferencesBySlug(
+  references: StyleForgeReference[]
+): Map<string, StyleForgeReference> {
   return new Map(references.map((reference) => [reference.slug, reference]));
 }

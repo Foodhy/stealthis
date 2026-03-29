@@ -7,11 +7,7 @@ interface FlipTextProps {
   className?: string;
 }
 
-export function FlipText({
-  words,
-  duration = 2500,
-  className = "",
-}: FlipTextProps) {
+export function FlipText({ words, duration = 2500, className = "" }: FlipTextProps) {
   const [index, setIndex] = useState(0);
   const [animKey, setAnimKey] = useState(0);
 
@@ -95,8 +91,7 @@ export default function FlipTextDemo() {
             color: "#e0e0e0",
           }}
         >
-          We build{" "}
-          <FlipText words={["amazing", "beautiful", "fast", "modern", "stunning"]} />{" "}
+          We build <FlipText words={["amazing", "beautiful", "fast", "modern", "stunning"]} />{" "}
           products
         </h1>
         <p style={{ marginTop: "1.5rem", color: "#666", fontSize: "1rem" }}>

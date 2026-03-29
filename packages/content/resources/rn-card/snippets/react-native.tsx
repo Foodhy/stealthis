@@ -56,9 +56,7 @@ function Card({ variant = "elevated", onPress, style, children }: CardProps) {
         ? styles.outlined
         : styles.filled;
 
-  const cardContent = (
-    <View style={[styles.card, variantStyle, style]}>{children}</View>
-  );
+  const cardContent = <View style={[styles.card, variantStyle, style]}>{children}</View>;
 
   if (!onPress) return cardContent;
 
@@ -78,11 +76,7 @@ function Card({ variant = "elevated", onPress, style, children }: CardProps) {
   };
 
   return (
-    <Pressable
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-    >
+    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <View style={[styles.card, variantStyle, style]}>{children}</View>
       </Animated.View>
@@ -94,12 +88,7 @@ function Card({ variant = "elevated", onPress, style, children }: CardProps) {
 /*  Card.Header                                                                */
 /* -------------------------------------------------------------------------- */
 
-function Header({
-  imageUri,
-  height = 180,
-  overlay = false,
-  children,
-}: HeaderProps) {
+function Header({ imageUri, height = 180, overlay = false, children }: HeaderProps) {
   return (
     <View style={[styles.header, { height }]}>
       <Image
@@ -210,27 +199,17 @@ const styles = StyleSheet.create({
 
 export default function App() {
   return (
-    <ScrollView
-      style={appStyles.screen}
-      contentContainerStyle={appStyles.container}
-    >
+    <ScrollView style={appStyles.screen} contentContainerStyle={appStyles.container}>
       {/* Elevated card with image header */}
-      <Card
-        variant="elevated"
-        onPress={() => console.log("Elevated card pressed")}
-      >
-        <Card.Header
-          imageUri="https://picsum.photos/seed/mountain/600/360"
-          height={200}
-          overlay
-        >
+      <Card variant="elevated" onPress={() => console.log("Elevated card pressed")}>
+        <Card.Header imageUri="https://picsum.photos/seed/mountain/600/360" height={200} overlay>
           <Text style={appStyles.headerTitle}>Mountain Sunrise</Text>
           <Text style={appStyles.headerSubtitle}>Dolomites, Italy</Text>
         </Card.Header>
         <Card.Body>
           <Text style={appStyles.bodyText}>
-            A breathtaking sunrise captured over the jagged peaks of the
-            Dolomites. The warm golden light spills across the valleys below.
+            A breathtaking sunrise captured over the jagged peaks of the Dolomites. The warm golden
+            light spills across the valleys below.
           </Text>
         </Card.Body>
       </Card>
@@ -240,8 +219,7 @@ export default function App() {
         <Card.Body>
           <Text style={appStyles.outlinedTitle}>Weekly Summary</Text>
           <Text style={appStyles.bodyText}>
-            You completed 12 tasks this week, a 20% increase from last week.
-            Keep up the great work!
+            You completed 12 tasks this week, a 20% increase from last week. Keep up the great work!
           </Text>
           <View style={appStyles.statRow}>
             <View style={appStyles.stat}>
@@ -262,15 +240,12 @@ export default function App() {
 
       {/* Filled card with footer actions */}
       <Card variant="filled" onPress={() => console.log("Filled card pressed")}>
-        <Card.Header
-          imageUri="https://picsum.photos/seed/coastal/600/360"
-          height={160}
-        />
+        <Card.Header imageUri="https://picsum.photos/seed/coastal/600/360" height={160} />
         <Card.Body>
           <Text style={appStyles.outlinedTitle}>Coastal Path</Text>
           <Text style={appStyles.bodyText}>
-            Explore the rugged coastline with this 8-mile trail featuring
-            dramatic cliffs, hidden beaches, and abundant wildlife.
+            Explore the rugged coastline with this 8-mile trail featuring dramatic cliffs, hidden
+            beaches, and abundant wildlife.
           </Text>
         </Card.Body>
         <Card.Footer>

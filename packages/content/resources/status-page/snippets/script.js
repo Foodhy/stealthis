@@ -33,13 +33,13 @@
     database: 789,
     cdn: 55,
     email: 321,
-    auth: 999
+    auth: 999,
   };
 
   // Known incident days (days ago) that should be degraded/outage
   var knownIncidents = {
     database: { 1: "degraded", 2: "degraded" },
-    api: { 8: "outage" }
+    api: { 8: "outage" },
   };
 
   var uptimeBars = document.querySelectorAll(".uptime-bar");
@@ -55,7 +55,11 @@
 
       var date = new Date();
       date.setDate(date.getDate() - i);
-      var dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      var dateStr = date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
 
       var status;
       if (incidents[i]) {
@@ -74,9 +78,12 @@
       dayEl.classList.add("day-" + status);
       dayEl.dataset.date = dateStr;
 
-      var statusLabel = status === "operational" ? "No issues" :
-                        status === "degraded" ? "Degraded performance" :
-                        "Major outage";
+      var statusLabel =
+        status === "operational"
+          ? "No issues"
+          : status === "degraded"
+            ? "Degraded performance"
+            : "Major outage";
       dayEl.dataset.status = statusLabel;
 
       bar.appendChild(dayEl);

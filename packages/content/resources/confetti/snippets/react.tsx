@@ -23,8 +23,14 @@ interface ConfettiProps {
 }
 
 const DEFAULT_COLORS = [
-  "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4",
-  "#10b981", "#ec4899", "#fde68a", "#60a5fa",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#06b6d4",
+  "#10b981",
+  "#ec4899",
+  "#fde68a",
+  "#60a5fa",
 ];
 const SHAPES: Particle["shape"][] = ["rect", "circle", "strip"];
 

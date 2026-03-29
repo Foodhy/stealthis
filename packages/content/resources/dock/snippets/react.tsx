@@ -102,9 +102,7 @@ export default function Dock({
         const distance = Math.abs(e.clientX - centerX);
         const scale = Math.max(
           baseSize,
-          maxSize -
-            ((maxSize - baseSize) * Math.pow(distance, 2)) /
-              Math.pow(magnifyRange, 2)
+          maxSize - ((maxSize - baseSize) * Math.pow(distance, 2)) / Math.pow(magnifyRange, 2)
         );
         return Math.round(Math.min(maxSize, Math.max(baseSize, scale)));
       });
@@ -194,8 +192,7 @@ export default function Dock({
                 display: "grid",
                 placeItems: "center",
                 borderRadius: "0.75rem",
-                background:
-                  "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(168,85,247,0.3))",
+                background: "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(168,85,247,0.3))",
                 border: "1px solid rgba(255,255,255,0.1)",
                 color: "#e2e8f0",
                 transition: "width 0.2s ease, height 0.2s ease",

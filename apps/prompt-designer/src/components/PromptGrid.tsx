@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card } from '@/components/native/card';
-import { Input } from '@/components/native/input';
-import { Badge } from '@/components/native/badge';
-import { Button } from '@/components/native/button';
-import { getActiveDataProviderKind } from '@/data/providerFactory';
-import { explainSupabaseError } from '@/integrations/supabase/errorDiagnostics';
-import { listPromptSummaries, type PromptSummary } from '@/services/promptService';
-import { useI18n } from '@/i18n';
-import { Search, Plus, Filter, User, Calendar, Tag } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from "react";
+import { Card } from "@/components/native/card";
+import { Input } from "@/components/native/input";
+import { Badge } from "@/components/native/badge";
+import { Button } from "@/components/native/button";
+import { listPromptSummaries, type PromptSummary } from "@/services/promptService";
+import { useI18n } from "@/i18n";
+import { Search, Plus, Filter, User, Calendar, Tag } from "lucide-react";
 
 interface PromptGridProps {
   onSelectPrompt: (promptId: number) => void;
@@ -18,46 +16,24 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
   const { locale, t } = useI18n();
   const [prompts, setPrompts] = useState<PromptSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [authorFilter, setAuthorFilter] = useState('');
-  const [teamFilter, setTeamFilter] = useState('');
+  const [authorFilter, setAuthorFilter] = useState("");
+  const [teamFilter, setTeamFilter] = useState("");
   const [serviceWarning, setServiceWarning] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPrompts = async () => {
       setIsLoading(true);
-      const provider = getActiveDataProviderKind();
+      setServiceWarning(null);
 
       try {
-        if (provider === 'local') {
-          setServiceWarning(
-            t('promptGrid.localProviderWarning'),
-          );
-        } else {
-          setServiceWarning(null);
-        }
-
         const data = await listPromptSummaries();
         setPrompts(data || []);
       } catch (err) {
-        setServiceWarning(
-          provider === 'supabase'
-            ? explainSupabaseError(err, {
-                action: locale === 'es' ? 'cargar prompts' : 'load prompts',
-                expectedObjects: [
-                  'latest_prompts_consolidated',
-                  'prompts',
-                  'prompt_components',
-                  'prompt_tags',
-                  'prompt_tools',
-                  'prompt_variables',
-                ],
-              })
-            : t('promptGrid.localProviderError'),
-        );
-        console.error('Error fetching prompts:', err);
+        setServiceWarning(t("promptGrid.localProviderError"));
+        console.error("Error fetching prompts:", err);
       } finally {
         setIsLoading(false);
       }
@@ -68,92 +44,92 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
 
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    prompts.forEach(p => {
-      p.tags?.forEach(tag => tagSet.add(tag));
+    prompts.forEach((p) => {
+      p.tags?.forEach((tag) => tagSet.add(tag));
     });
     return Array.from(tagSet).sort();
   }, [prompts]);
 
   const allTeams = useMemo(() => {
     const teamSet = new Set<string>();
-    prompts.forEach(p => {
+    prompts.forEach((p) => {
       if (p.author_team) teamSet.add(p.author_team);
     });
     return Array.from(teamSet).sort();
   }, [prompts]);
 
   const filteredPrompts = useMemo(() => {
-    return prompts.filter(prompt => {
+    return prompts.filter((prompt) => {
       // Text search (title, description)
       const searchLower = searchQuery.toLowerCase();
-      const matchesSearch = !searchQuery ||
+      const matchesSearch =
+        !searchQuery ||
         prompt.title?.toLowerCase().includes(searchLower) ||
         prompt.description?.toLowerCase().includes(searchLower);
 
       // Tag filter
-      const matchesTags = selectedTags.length === 0 ||
-        selectedTags.every(tag => prompt.tags?.includes(tag));
+      const matchesTags =
+        selectedTags.length === 0 || selectedTags.every((tag) => prompt.tags?.includes(tag));
 
       // Author filter
-      const matchesAuthor = !authorFilter ||
-        prompt.author_name?.toLowerCase().includes(authorFilter.toLowerCase());
+      const matchesAuthor =
+        !authorFilter || prompt.author_name?.toLowerCase().includes(authorFilter.toLowerCase());
 
       // Team filter
-      const matchesTeam = !teamFilter ||
-        prompt.author_team === teamFilter;
+      const matchesTeam = !teamFilter || prompt.author_team === teamFilter;
 
       return matchesSearch && matchesTags && matchesAuthor && matchesTeam;
     });
   }, [prompts, searchQuery, selectedTags, authorFilter, teamFilter]);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag)
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
 
   const clearFilters = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     setSelectedTags([]);
-    setAuthorFilter('');
-    setTeamFilter('');
+    setAuthorFilter("");
+    setTeamFilter("");
   };
 
   const hasActiveFilters = searchQuery || selectedTags.length > 0 || authorFilter || teamFilter;
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return t('promptGrid.noDate');
-    return new Date(dateString).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
+    if (!dateString) return t("promptGrid.noDate");
+    return new Date(dateString).toLocaleDateString(locale === "es" ? "es-ES" : "en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
 
   const resultsLabel =
     filteredPrompts.length === 1
-      ? t('promptGrid.projectsFound_one', { count: filteredPrompts.length })
-      : t('promptGrid.projectsFound_other', { count: filteredPrompts.length });
+      ? t("promptGrid.projectsFound_one", { count: filteredPrompts.length })
+      : t("promptGrid.projectsFound_other", { count: filteredPrompts.length });
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">{t('promptGrid.title')}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t('promptGrid.subtitle')}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
+              {t("promptGrid.title")}
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              {t("promptGrid.subtitle")}
             </p>
           </div>
-          <Button onClick={onCreateNew} className="gap-2">
+          <Button onClick={onCreateNew} className="gap-2 shrink-0">
             <Plus className="h-4 w-4" />
-            {t('promptGrid.newMaster')}
+            <span className="hidden sm:inline">{t("promptGrid.newMaster")}</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </div>
-
 
         {serviceWarning && (
           <Card className="p-4 border-amber-500/30 bg-amber-500/10 text-amber-200">
@@ -167,23 +143,23 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t('promptGrid.searchPlaceholder')}
+                placeholder={t("promptGrid.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
             <Button
-              variant={showAdvancedFilters ? 'default' : 'outline'}
+              variant={showAdvancedFilters ? "default" : "outline"}
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
               className="gap-2"
             >
               <Filter className="h-4 w-4" />
-              {t('promptGrid.filters')}
+              {t("promptGrid.filters")}
             </Button>
             {hasActiveFilters && (
               <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground">
-                {t('promptGrid.clear')}
+                {t("promptGrid.clear")}
               </Button>
             )}
           </div>
@@ -191,10 +167,10 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
           {/* Tags filter */}
           {allTags.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {allTags.map(tag => (
+              {allTags.map((tag) => (
                 <Badge
                   key={tag}
-                  variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+                  variant={selectedTags.includes(tag) ? "default" : "outline"}
                   className="cursor-pointer hover:bg-primary/20 transition-colors"
                   onClick={() => toggleTag(tag)}
                 >
@@ -211,24 +187,28 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  {t('promptGrid.author')}
+                  {t("promptGrid.author")}
                 </label>
                 <Input
-                  placeholder={t('promptGrid.authorPlaceholder')}
+                  placeholder={t("promptGrid.authorPlaceholder")}
                   value={authorFilter}
                   onChange={(e) => setAuthorFilter(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">{t('promptGrid.team')}</label>
+                <label className="text-sm font-medium text-foreground">
+                  {t("promptGrid.team")}
+                </label>
                 <select
                   value={teamFilter}
                   onChange={(e) => setTeamFilter(e.target.value)}
                   className="w-full h-10 rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  <option value="">{t('promptGrid.allTeams')}</option>
-                  {allTeams.map(team => (
-                    <option key={team} value={team}>{team}</option>
+                  <option value="">{t("promptGrid.allTeams")}</option>
+                  {allTeams.map((team) => (
+                    <option key={team} value={team}>
+                      {team}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -238,11 +218,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
 
         {/* Results count */}
         <div className="text-sm text-muted-foreground">
-          {isLoading ? (
-            t('promptGrid.loadingProjects')
-          ) : (
-            resultsLabel
-          )}
+          {isLoading ? t("promptGrid.loadingProjects") : resultsLabel}
         </div>
 
         {/* Grid */}
@@ -261,20 +237,20 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
             <div className="text-muted-foreground">
               {prompts.length === 0 ? (
                 <>
-                  <p className="text-lg mb-2">{t('promptGrid.noProjectsTitle')}</p>
-                  <p className="text-sm">{t('promptGrid.noProjectsDescription')}</p>
+                  <p className="text-lg mb-2">{t("promptGrid.noProjectsTitle")}</p>
+                  <p className="text-sm">{t("promptGrid.noProjectsDescription")}</p>
                 </>
               ) : (
                 <>
-                  <p className="text-lg mb-2">{t('promptGrid.noResultsTitle')}</p>
-                  <p className="text-sm">{t('promptGrid.noResultsDescription')}</p>
+                  <p className="text-lg mb-2">{t("promptGrid.noResultsTitle")}</p>
+                  <p className="text-sm">{t("promptGrid.noResultsDescription")}</p>
                 </>
               )}
             </div>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredPrompts.map(prompt => (
+            {filteredPrompts.map((prompt) => (
               <Card
                 key={prompt.id}
                 className="p-5 cursor-pointer hover:border-primary/50 hover:bg-card/80 transition-all duration-200 group"
@@ -301,7 +277,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
                   {/* Tags */}
                   {prompt.tags && prompt.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {prompt.tags.slice(0, 3).map(tag => (
+                      {prompt.tags.slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
@@ -318,7 +294,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
                     <div className="flex items-center gap-1">
                       <User className="h-3 w-3" />
-                      <span>{prompt.author_name || t('promptGrid.noAuthor')}</span>
+                      <span>{prompt.author_name || t("promptGrid.noAuthor")}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
@@ -330,8 +306,8 @@ export const PromptGrid: React.FC<PromptGridProps> = ({ onSelectPrompt, onCreate
                   {prompt.variable_count !== null && prompt.variable_count > 0 && (
                     <div className="text-xs text-muted-foreground">
                       {prompt.variable_count === 1
-                        ? t('promptGrid.variables_one', { count: prompt.variable_count })
-                        : t('promptGrid.variables_other', { count: prompt.variable_count })}
+                        ? t("promptGrid.variables_one", { count: prompt.variable_count })
+                        : t("promptGrid.variables_other", { count: prompt.variable_count })}
                     </div>
                   )}
                 </div>

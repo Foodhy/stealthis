@@ -1,6 +1,6 @@
-const messages = document.getElementById('chatMessages');
-const input = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
+const messages = document.getElementById("chatMessages");
+const input = document.getElementById("chatInput");
+const sendBtn = document.getElementById("sendBtn");
 
 const RESPONSES = [
   "Sure! Here's a brief explanation:\n\nThis pattern is commonly used in React to manage state across multiple components without prop drilling. The key benefit is that it keeps your component tree clean.",
@@ -14,14 +14,14 @@ let responseIndex = 0;
 let streaming = false;
 
 function addMessage(role, text) {
-  const msg = document.createElement('div');
+  const msg = document.createElement("div");
   msg.className = `msg msg-${role}`;
-  const avatar = document.createElement('div');
-  avatar.className = 'msg-avatar';
-  avatar.textContent = role === 'user' ? 'You' : 'AI';
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  if (text) bubble.innerHTML = `<p>${text.replace(/\n/g, '</p><p>')}</p>`;
+  const avatar = document.createElement("div");
+  avatar.className = "msg-avatar";
+  avatar.textContent = role === "user" ? "You" : "AI";
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  if (text) bubble.innerHTML = `<p>${text.replace(/\n/g, "</p><p>")}</p>`;
   msg.appendChild(avatar);
   msg.appendChild(bubble);
   messages.appendChild(msg);
@@ -30,15 +30,16 @@ function addMessage(role, text) {
 }
 
 function showTyping() {
-  const msg = document.createElement('div');
-  msg.className = 'msg msg-assistant';
-  msg.id = 'typingMsg';
-  const avatar = document.createElement('div');
-  avatar.className = 'msg-avatar';
-  avatar.textContent = 'AI';
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble typing-bubble';
-  bubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  const msg = document.createElement("div");
+  msg.className = "msg msg-assistant";
+  msg.id = "typingMsg";
+  const avatar = document.createElement("div");
+  avatar.className = "msg-avatar";
+  avatar.textContent = "AI";
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble typing-bubble";
+  bubble.innerHTML =
+    '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
   msg.appendChild(avatar);
   msg.appendChild(bubble);
   messages.appendChild(msg);
@@ -46,32 +47,34 @@ function showTyping() {
 }
 
 function removeTyping() {
-  document.getElementById('typingMsg')?.remove();
+  document.getElementById("typingMsg")?.remove();
 }
 
 function streamText(bubble, text, callback) {
   // Convert newlines to <br> and **bold** to <strong>
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   let charIndex = 0;
-  let allChars = text.split('');
+  let allChars = text.split("");
 
-  bubble.innerHTML = '';
-  let p = document.createElement('p');
+  bubble.innerHTML = "";
+  let p = document.createElement("p");
   bubble.appendChild(p);
 
   function tick() {
     if (charIndex >= allChars.length) {
       // Final format
       bubble.innerHTML = text
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .split('\n').map(l => l ? `<p>${l}</p>` : '<br>').join('');
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .split("\n")
+        .map((l) => (l ? `<p>${l}</p>` : "<br>"))
+        .join("");
       callback?.();
       return;
     }
     const char = allChars[charIndex++];
-    if (char === '\n') {
-      p = document.createElement('p');
+    if (char === "\n") {
+      p = document.createElement("p");
       bubble.appendChild(p);
     } else {
       p.textContent += char;
@@ -86,37 +89,40 @@ function send() {
   const text = input.value.trim();
   if (!text || streaming) return;
 
-  addMessage('user', text);
-  input.value = '';
-  input.style.height = 'auto';
+  addMessage("user", text);
+  input.value = "";
+  input.style.height = "auto";
   sendBtn.disabled = true;
   streaming = true;
 
   showTyping();
 
-  setTimeout(() => {
-    removeTyping();
-    const response = RESPONSES[responseIndex % RESPONSES.length];
-    responseIndex++;
-    const bubble = addMessage('assistant', '');
-    streamText(bubble, response, () => {
-      streaming = false;
-      sendBtn.disabled = false;
-    });
-  }, 900 + Math.random() * 400);
+  setTimeout(
+    () => {
+      removeTyping();
+      const response = RESPONSES[responseIndex % RESPONSES.length];
+      responseIndex++;
+      const bubble = addMessage("assistant", "");
+      streamText(bubble, response, () => {
+        streaming = false;
+        sendBtn.disabled = false;
+      });
+    },
+    900 + Math.random() * 400
+  );
 }
 
-sendBtn.addEventListener('click', send);
+sendBtn.addEventListener("click", send);
 
-input.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     send();
   }
 });
 
 // Auto-resize textarea
-input.addEventListener('input', () => {
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+input.addEventListener("input", () => {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 160) + "px";
 });

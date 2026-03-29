@@ -32,10 +32,14 @@
         requestAnimationFrame(() => {
           el.style.transform = "";
           el.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)";
-          el.addEventListener("transitionend", () => {
-            el.style.transition = "";
-            el.style.transform = "";
-          }, { once: true });
+          el.addEventListener(
+            "transitionend",
+            () => {
+              el.style.transition = "";
+              el.style.transform = "";
+            },
+            { once: true }
+          );
         });
       });
     });

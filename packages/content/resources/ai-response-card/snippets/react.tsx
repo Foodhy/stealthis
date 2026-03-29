@@ -28,8 +28,11 @@ function Markdown({ text }: { text: string }) {
   const html = text
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#e6edf3] font-semibold">$1</strong>')
     .replace(/\n\n/g, '</p><p class="mt-3">')
-    .replace(/\n- /g, '\n<span class="block pl-4 before:content-[\'•\'] before:mr-2 before:text-[#58a6ff]">')
-    .replace(/\n(?!<)/g, '<br/>');
+    .replace(
+      /\n- /g,
+      "\n<span class=\"block pl-4 before:content-['•'] before:mr-2 before:text-[#58a6ff]\">"
+    )
+    .replace(/\n(?!<)/g, "<br/>");
   return (
     <p
       className="text-[13px] text-[#8b949e] leading-relaxed mt-3"
@@ -67,10 +70,7 @@ function ResponseCard({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#21262d] border-b border-[#30363d]">
         <div className="flex items-center gap-2">
-          <span
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ background: provider }}
-          />
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: provider }} />
           <span className="text-[12px] font-mono font-bold text-[#e6edf3]">{model}</span>
         </div>
         <span className="text-[10px] px-1.5 py-0.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full font-semibold">
@@ -110,12 +110,31 @@ function ResponseCard({
           >
             {copied ? (
               <>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
                 Copied
               </>
             ) : (
               <>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
                 Copy
               </>
             )}
@@ -134,8 +153,16 @@ function ResponseCard({
                   : "text-[#8b949e] border-transparent hover:border-[#30363d] hover:text-[#e6edf3]"
               }`}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={dir === "down" ? { transform: "scaleY(-1)" } : {}}>
-                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                style={dir === "down" ? { transform: "scaleY(-1)" } : {}}
+              >
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
               </svg>
             </button>
           ))}
@@ -147,9 +174,16 @@ function ResponseCard({
           disabled={regenerating}
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold border border-[#30363d] text-[#8b949e] hover:text-[#e6edf3] hover:border-[#8b949e] transition-colors disabled:opacity-30"
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="23 4 23 10 17 10"/>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
           </svg>
           Regenerate
         </button>

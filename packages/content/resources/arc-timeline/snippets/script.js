@@ -12,8 +12,8 @@
   const centerX = 300;
   const centerY = 300;
   const radius = 250;
-  const startAngle = Math.PI;       // 180 deg (left)
-  const endAngle = 0;               // 0 deg (right)
+  const startAngle = Math.PI; // 180 deg (left)
+  const endAngle = 0; // 0 deg (right)
 
   // Calculate positions along the arc
   const points = [];

@@ -18,16 +18,15 @@ export function CursorFollower({
   ringLerp = 0.1,
   color = "#38bdf8",
 }: CursorFollowerProps = {}) {
-  const dotRef  = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const mouse   = useRef({ x: -100, y: -100 });
-  const ring    = useRef({ x: -100, y: -100 });
-  const rafId   = useRef<number>(0);
-  const hidden  = useRef(true);
+  const mouse = useRef({ x: -100, y: -100 });
+  const ring = useRef({ x: -100, y: -100 });
+  const rafId = useRef<number>(0);
+  const hidden = useRef(true);
 
   const reduced =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     if (reduced) return;
@@ -43,8 +42,12 @@ export function CursorFollower({
       }
     }
 
-    function onLeave() { hidden.current = true; }
-    function onEnter() { hidden.current = false; }
+    function onLeave() {
+      hidden.current = true;
+    }
+    function onEnter() {
+      hidden.current = false;
+    }
 
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseleave", onLeave);
@@ -62,12 +65,12 @@ export function CursorFollower({
       const opacity = hidden.current ? "0" : "1";
 
       if (dotRef.current) {
-        dotRef.current.style.transform  = `translate(${mx - dotSize / 2}px, ${my - dotSize / 2}px)`;
-        dotRef.current.style.opacity    = opacity;
+        dotRef.current.style.transform = `translate(${mx - dotSize / 2}px, ${my - dotSize / 2}px)`;
+        dotRef.current.style.opacity = opacity;
       }
       if (ringRef.current) {
         ringRef.current.style.transform = `translate(${ring.current.x - ringSize / 2}px, ${ring.current.y - ringSize / 2}px)`;
-        ringRef.current.style.opacity   = opacity;
+        ringRef.current.style.opacity = opacity;
       }
 
       rafId.current = requestAnimationFrame(loop);
@@ -159,8 +162,8 @@ export default function CursorFollowerDemo() {
       <div style={{ display: "flex", gap: "1.25rem", flexWrap: "wrap", justifyContent: "center" }}>
         {[
           { label: "Hover me", emoji: "🎯", border: "rgba(56,189,248,0.2)" },
-          { label: "And me",   emoji: "✨", border: "rgba(99,102,241,0.2)" },
-          { label: "And me",   emoji: "🚀", border: "rgba(34,197,94,0.2)"  },
+          { label: "And me", emoji: "✨", border: "rgba(99,102,241,0.2)" },
+          { label: "And me", emoji: "🚀", border: "rgba(34,197,94,0.2)" },
         ].map(({ label, emoji, border }) => (
           <div
             key={label + emoji}

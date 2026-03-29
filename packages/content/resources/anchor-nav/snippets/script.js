@@ -1,17 +1,17 @@
 (function () {
-  var navLinks    = document.querySelectorAll(".anchor-nav__link");
-  var sections    = document.querySelectorAll(".section");
+  var navLinks = document.querySelectorAll(".anchor-nav__link");
+  var sections = document.querySelectorAll(".section");
   var progressFill = document.getElementById("progress-fill");
-  var content     = document.getElementById("content");
+  var content = document.getElementById("content");
 
   if (!navLinks.length || !sections.length) return;
 
   // ── Scroll progress bar ──
   function updateProgress() {
     var scrollEl = document.documentElement;
-    var scrolled  = scrollEl.scrollTop || document.body.scrollTop;
-    var total     = scrollEl.scrollHeight - scrollEl.clientHeight;
-    var pct       = total > 0 ? Math.min(100, (scrolled / total) * 100) : 0;
+    var scrolled = scrollEl.scrollTop || document.body.scrollTop;
+    var total = scrollEl.scrollHeight - scrollEl.clientHeight;
+    var pct = total > 0 ? Math.min(100, (scrolled / total) * 100) : 0;
     if (progressFill) progressFill.style.width = pct + "%";
   }
 
@@ -40,28 +40,34 @@
       var el = document.getElementById(id);
       if (el) {
         var y = el.getBoundingClientRect().top;
-        if (y < topY) { topY = y; topmost = id; }
+        if (y < topY) {
+          topY = y;
+          topmost = id;
+        }
       }
     });
     return topmost;
   }
 
-  var observer = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      var id = entry.target.id;
-      if (entry.isIntersecting) {
-        visibleSections.add(id);
-      } else {
-        visibleSections.delete(id);
-      }
-    });
+  var observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        var id = entry.target.id;
+        if (entry.isIntersecting) {
+          visibleSections.add(id);
+        } else {
+          visibleSections.delete(id);
+        }
+      });
 
-    var active = pickTopmost();
-    if (active) setActiveLink(active);
-  }, {
-    rootMargin: "-10% 0px -60% 0px",
-    threshold: 0
-  });
+      var active = pickTopmost();
+      if (active) setActiveLink(active);
+    },
+    {
+      rootMargin: "-10% 0px -60% 0px",
+      threshold: 0,
+    }
+  );
 
   sections.forEach(function (section) {
     if (section.id) observer.observe(section);
@@ -80,4 +86,4 @@
       }
     });
   });
-}());
+})();

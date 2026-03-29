@@ -1,6 +1,14 @@
 import { useState, type CSSProperties, type ReactNode, type MouseEvent } from "react";
 
-type Variant = "default" | "blue" | "purple" | "emerald" | "rose" | "slide-right" | "curtain" | "glow";
+type Variant =
+  | "default"
+  | "blue"
+  | "purple"
+  | "emerald"
+  | "rose"
+  | "slide-right"
+  | "curtain"
+  | "glow";
 
 interface InteractiveHoverButtonProps {
   children: ReactNode;
@@ -14,14 +22,62 @@ const variantConfig: Record<
   Variant,
   { fill: string; text: string; textHover: string; border: string; borderHover: string }
 > = {
-  default: { fill: "#f1f5f9", text: "#e2e8f0", textHover: "#0a0a0a", border: "#475569", borderHover: "#f1f5f9" },
-  blue: { fill: "#3b82f6", text: "#93c5fd", textHover: "#fff", border: "#3b82f6", borderHover: "#60a5fa" },
-  purple: { fill: "#8b5cf6", text: "#c4b5fd", textHover: "#fff", border: "#8b5cf6", borderHover: "#a78bfa" },
-  emerald: { fill: "#10b981", text: "#6ee7b7", textHover: "#fff", border: "#10b981", borderHover: "#34d399" },
-  rose: { fill: "#f43f5e", text: "#fda4af", textHover: "#fff", border: "#f43f5e", borderHover: "#fb7185" },
-  "slide-right": { fill: "#f1f5f9", text: "#e2e8f0", textHover: "#0a0a0a", border: "#475569", borderHover: "#f1f5f9" },
-  curtain: { fill: "#8b5cf6", text: "#c4b5fd", textHover: "#fff", border: "#8b5cf6", borderHover: "#a78bfa" },
-  glow: { fill: "#3b82f6", text: "#93c5fd", textHover: "#fff", border: "#3b82f6", borderHover: "#60a5fa" },
+  default: {
+    fill: "#f1f5f9",
+    text: "#e2e8f0",
+    textHover: "#0a0a0a",
+    border: "#475569",
+    borderHover: "#f1f5f9",
+  },
+  blue: {
+    fill: "#3b82f6",
+    text: "#93c5fd",
+    textHover: "#fff",
+    border: "#3b82f6",
+    borderHover: "#60a5fa",
+  },
+  purple: {
+    fill: "#8b5cf6",
+    text: "#c4b5fd",
+    textHover: "#fff",
+    border: "#8b5cf6",
+    borderHover: "#a78bfa",
+  },
+  emerald: {
+    fill: "#10b981",
+    text: "#6ee7b7",
+    textHover: "#fff",
+    border: "#10b981",
+    borderHover: "#34d399",
+  },
+  rose: {
+    fill: "#f43f5e",
+    text: "#fda4af",
+    textHover: "#fff",
+    border: "#f43f5e",
+    borderHover: "#fb7185",
+  },
+  "slide-right": {
+    fill: "#f1f5f9",
+    text: "#e2e8f0",
+    textHover: "#0a0a0a",
+    border: "#475569",
+    borderHover: "#f1f5f9",
+  },
+  curtain: {
+    fill: "#8b5cf6",
+    text: "#c4b5fd",
+    textHover: "#fff",
+    border: "#8b5cf6",
+    borderHover: "#a78bfa",
+  },
+  glow: {
+    fill: "#3b82f6",
+    text: "#93c5fd",
+    textHover: "#fff",
+    border: "#3b82f6",
+    borderHover: "#60a5fa",
+  },
 };
 
 const sizeStyles: Record<string, CSSProperties> = {
@@ -59,9 +115,7 @@ export function InteractiveHoverButton({
     overflow: "hidden",
     transition: "border-color 0.35s ease, box-shadow 0.35s ease",
     boxShadow:
-      isGlow && hovered
-        ? "0 0 20px rgba(59,130,246,0.4), 0 0 40px rgba(59,130,246,0.2)"
-        : "none",
+      isGlow && hovered ? "0 0 20px rgba(59,130,246,0.4), 0 0 40px rgba(59,130,246,0.2)" : "none",
     ...sizeStyles[size],
   };
 
@@ -77,27 +131,27 @@ export function InteractiveHoverButton({
         zIndex: 0,
       }
     : isCurtain
-    ? {
-        position: "absolute",
-        top: "50%",
-        left: 0,
-        width: "100%",
-        height: hovered ? "100%" : "0",
-        transform: "translateY(-50%)",
-        background: config.fill,
-        transition: "height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        zIndex: 0,
-      }
-    : {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        width: "100%",
-        height: hovered ? "100%" : "0",
-        background: config.fill,
-        transition: "height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        zIndex: 0,
-      };
+      ? {
+          position: "absolute",
+          top: "50%",
+          left: 0,
+          width: "100%",
+          height: hovered ? "100%" : "0",
+          transform: "translateY(-50%)",
+          background: config.fill,
+          transition: "height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          zIndex: 0,
+        }
+      : {
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          height: hovered ? "100%" : "0",
+          background: config.fill,
+          transition: "height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          zIndex: 0,
+        };
 
   const labelStyle: CSSProperties = {
     position: "relative",
@@ -147,8 +201,12 @@ export default function InteractiveHoverButtonDemo() {
         <InteractiveHoverButton variant="purple">Learn More</InteractiveHoverButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
-        <InteractiveHoverButton variant="emerald" size="lg">Download Now</InteractiveHoverButton>
-        <InteractiveHoverButton variant="rose" size="sm">Sign Up</InteractiveHoverButton>
+        <InteractiveHoverButton variant="emerald" size="lg">
+          Download Now
+        </InteractiveHoverButton>
+        <InteractiveHoverButton variant="rose" size="sm">
+          Sign Up
+        </InteractiveHoverButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
         <InteractiveHoverButton variant="slide-right">Slide Right</InteractiveHoverButton>

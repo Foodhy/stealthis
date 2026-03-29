@@ -59,15 +59,10 @@ function SwipeableRow({
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (
-        _e: GestureResponderEvent,
-        gs: PanResponderGestureState
-      ) => Math.abs(gs.dx) > 10 && Math.abs(gs.dx) > Math.abs(gs.dy),
+      onMoveShouldSetPanResponder: (_e: GestureResponderEvent, gs: PanResponderGestureState) =>
+        Math.abs(gs.dx) > 10 && Math.abs(gs.dx) > Math.abs(gs.dy),
 
-      onPanResponderMove: (
-        _e: GestureResponderEvent,
-        gs: PanResponderGestureState
-      ) => {
+      onPanResponderMove: (_e: GestureResponderEvent, gs: PanResponderGestureState) => {
         // Clamp: only allow left swipe if rightActions exist, right if leftActions
         let dx = gs.dx;
         if (dx < 0 && rightCount === 0) dx = 0;
@@ -75,10 +70,7 @@ function SwipeableRow({
         translateX.setValue(dx);
       },
 
-      onPanResponderRelease: (
-        _e: GestureResponderEvent,
-        gs: PanResponderGestureState
-      ) => {
+      onPanResponderRelease: (_e: GestureResponderEvent, gs: PanResponderGestureState) => {
         const width = rowWidth.current || 375;
         const fullSwipeDist = width * FULL_SWIPE_RATIO;
 
@@ -188,9 +180,7 @@ function SwipeableRow({
               action.onPress();
             }}
           >
-            {action.icon ? (
-              <Text style={styles.actionIcon}>{action.icon}</Text>
-            ) : null}
+            {action.icon ? <Text style={styles.actionIcon}>{action.icon}</Text> : null}
             <Text style={styles.actionLabel}>{action.label}</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -200,13 +190,9 @@ function SwipeableRow({
   return (
     <View style={styles.rowContainer} onLayout={onLayout}>
       {/* Left actions (revealed on swipe right) */}
-      <View style={styles.actionsContainer}>
-        {renderActions(leftActions, "left")}
-      </View>
+      <View style={styles.actionsContainer}>{renderActions(leftActions, "left")}</View>
       {/* Right actions (revealed on swipe left) */}
-      <View style={styles.actionsContainer}>
-        {renderActions(rightActions, "right")}
-      </View>
+      <View style={styles.actionsContainer}>{renderActions(rightActions, "right")}</View>
 
       {/* Foreground row */}
       <Animated.View
@@ -270,7 +256,18 @@ const EMAILS: Email[] = Array.from({ length: 10 }, (_, i) => ({
     "No critical vulnerabilities found this cycle...",
     "Early bird pricing ends this Friday...",
   ][i],
-  time: ["9:41 AM", "9:12 AM", "8:30 AM", "Yesterday", "Yesterday", "Mon", "Mon", "Sun", "Sat", "Fri"][i],
+  time: [
+    "9:41 AM",
+    "9:12 AM",
+    "8:30 AM",
+    "Yesterday",
+    "Yesterday",
+    "Mon",
+    "Mon",
+    "Sun",
+    "Sat",
+    "Fri",
+  ][i],
   starred: i === 2 || i === 4,
 }));
 
@@ -316,9 +313,7 @@ export default function App() {
   };
 
   const handleStar = (id: string) => {
-    setEmails((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, starred: !e.starred } : e))
-    );
+    setEmails((prev) => prev.map((e) => (e.id === id ? { ...e, starred: !e.starred } : e)));
   };
 
   const renderItem = ({ item }: { item: Email }) => (

@@ -1,11 +1,5 @@
 import React, { useCallback, useState } from "react";
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 
 function generateItems(count: number): { id: string; title: string; subtitle: string }[] {
   const topics = [

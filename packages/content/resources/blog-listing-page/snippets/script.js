@@ -26,10 +26,8 @@
       var title = card.querySelector(".card-title").textContent.toLowerCase();
       var excerpt = card.querySelector(".card-excerpt").textContent.toLowerCase();
 
-      var matchesCategory =
-        activeCategory === "all" || category === activeCategory;
-      var matchesSearch =
-        !query || title.indexOf(query) !== -1 || excerpt.indexOf(query) !== -1;
+      var matchesCategory = activeCategory === "all" || category === activeCategory;
+      var matchesSearch = !query || title.indexOf(query) !== -1 || excerpt.indexOf(query) !== -1;
 
       return matchesCategory && matchesSearch;
     });
@@ -115,7 +113,10 @@
     btn.addEventListener("click", function () {
       currentPage = parseInt(btn.getAttribute("data-page"), 10);
       render();
-      window.scrollTo({ top: document.querySelector(".post-grid").offsetTop - 80, behavior: "smooth" });
+      window.scrollTo({
+        top: document.querySelector(".post-grid").offsetTop - 80,
+        behavior: "smooth",
+      });
     });
   });
 
@@ -123,7 +124,10 @@
     if (currentPage > 1) {
       currentPage--;
       render();
-      window.scrollTo({ top: document.querySelector(".post-grid").offsetTop - 80, behavior: "smooth" });
+      window.scrollTo({
+        top: document.querySelector(".post-grid").offsetTop - 80,
+        behavior: "smooth",
+      });
     }
   });
 
@@ -133,7 +137,10 @@
     if (currentPage < totalPages) {
       currentPage++;
       render();
-      window.scrollTo({ top: document.querySelector(".post-grid").offsetTop - 80, behavior: "smooth" });
+      window.scrollTo({
+        top: document.querySelector(".post-grid").offsetTop - 80,
+        behavior: "smooth",
+      });
     }
   });
 

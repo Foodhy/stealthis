@@ -1,10 +1,4 @@
-import {
-  type CSSProperties,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef } from "react";
 
 interface FlickeringGridProps {
   /** Grid cell size in pixels */
@@ -88,8 +82,7 @@ export function FlickeringGrid({
 
       for (const cell of cellsRef.current) {
         if (Math.random() < flickerChance) {
-          cell.target =
-            baseOpacity + Math.random() * (maxOpacity - baseOpacity);
+          cell.target = baseOpacity + Math.random() * (maxOpacity - baseOpacity);
         }
         cell.opacity += (cell.target - cell.opacity) * lerpSpeed;
         cell.target += (baseOpacity - cell.target) * 0.01;
@@ -183,8 +176,7 @@ export default function FlickeringGridDemo() {
             width: 400,
             height: 400,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -209,8 +201,8 @@ export default function FlickeringGridDemo() {
             fontFamily: "system-ui, -apple-system, sans-serif",
           }}
         >
-          Canvas-based animated grid where cells randomly pulse opacity, creating
-          a living, breathing background.
+          Canvas-based animated grid where cells randomly pulse opacity, creating a living,
+          breathing background.
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
           {[

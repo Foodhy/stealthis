@@ -41,10 +41,13 @@
 
     // Start resolving characters left to right on a stagger
     chars.forEach((_, i) => {
-      setTimeout(() => {
-        resolvedAt[i] = true;
-        resolvedCount++;
-      }, resolveDelay * (i + 1));
+      setTimeout(
+        () => {
+          resolvedAt[i] = true;
+          resolvedCount++;
+        },
+        resolveDelay * (i + 1)
+      );
     });
 
     intervalId = setInterval(() => {

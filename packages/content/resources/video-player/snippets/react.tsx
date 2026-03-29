@@ -31,8 +31,14 @@ export default function VideoPlayerRC() {
   function togglePlay() {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); }
-    else { v.pause(); setPlaying(false); setShowControls(true); }
+    if (v.paused) {
+      v.play();
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+      setShowControls(true);
+    }
   }
 
   function seek(e: React.ChangeEvent<HTMLInputElement>) {
@@ -82,7 +88,10 @@ export default function VideoPlayerRC() {
           className="w-full aspect-video object-cover"
           onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime ?? 0)}
           onLoadedMetadata={() => setDuration(videoRef.current?.duration ?? 0)}
-          onEnded={() => { setPlaying(false); setShowControls(true); }}
+          onEnded={() => {
+            setPlaying(false);
+            setShowControls(true);
+          }}
           muted={muted}
         />
 
@@ -90,7 +99,9 @@ export default function VideoPlayerRC() {
         {!playing && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center backdrop-blur">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
             </div>
           </div>
         )}
@@ -98,28 +109,62 @@ export default function VideoPlayerRC() {
         {/* Controls */}
         <div
           className="absolute bottom-0 left-0 right-0 px-4 py-3 transition-opacity duration-300"
-          style={{ opacity: showControls ? 1 : 0, background: "linear-gradient(transparent, rgba(0,0,0,0.8))" }}
+          style={{
+            opacity: showControls ? 1 : 0,
+            background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Seek bar */}
           <input
-            type="range" min={0} max={duration || 100} step={0.1} value={currentTime}
+            type="range"
+            min={0}
+            max={duration || 100}
+            step={0.1}
+            value={currentTime}
             onChange={seek}
             className="w-full h-1 mb-2 accent-[#58a6ff] cursor-pointer"
           />
           <div className="flex items-center gap-3">
-            <button onClick={togglePlay} className="text-white hover:text-[#58a6ff] transition-colors">
-              {playing
-                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                : <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              }
+            <button
+              onClick={togglePlay}
+              className="text-white hover:text-[#58a6ff] transition-colors"
+            >
+              {playing ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              )}
             </button>
-            <button onClick={toggleMute} className="text-white hover:text-[#58a6ff] transition-colors text-xs">
+            <button
+              onClick={toggleMute}
+              className="text-white hover:text-[#58a6ff] transition-colors text-xs"
+            >
               {muted ? "🔇" : "🔊"}
             </button>
-            <input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} onChange={changeVolume} className="w-16 h-1 accent-[#58a6ff] cursor-pointer" />
-            <span className="text-white text-xs tabular-nums ml-auto">{formatTime(currentTime)} / {formatTime(duration)}</span>
-            <button onClick={toggleFS} className="text-white hover:text-[#58a6ff] text-xs transition-colors">⛶</button>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={muted ? 0 : volume}
+              onChange={changeVolume}
+              className="w-16 h-1 accent-[#58a6ff] cursor-pointer"
+            />
+            <span className="text-white text-xs tabular-nums ml-auto">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+            <button
+              onClick={toggleFS}
+              className="text-white hover:text-[#58a6ff] text-xs transition-colors"
+            >
+              ⛶
+            </button>
           </div>
         </div>
       </div>

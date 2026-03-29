@@ -93,10 +93,22 @@ export function ParticlesSystem({
         p.vy = Math.max(-maxV, Math.min(maxV, p.vy));
         p.x += p.vx;
         p.y += p.vy;
-        if (p.x < 0) { p.x = 0; p.vx *= -1; }
-        if (p.x > w) { p.x = w; p.vx *= -1; }
-        if (p.y < 0) { p.y = 0; p.vy *= -1; }
-        if (p.y > h) { p.y = h; p.vy *= -1; }
+        if (p.x < 0) {
+          p.x = 0;
+          p.vx *= -1;
+        }
+        if (p.x > w) {
+          p.x = w;
+          p.vx *= -1;
+        }
+        if (p.y < 0) {
+          p.y = 0;
+          p.vy *= -1;
+        }
+        if (p.y > h) {
+          p.y = h;
+          p.vy *= -1;
+        }
       }
     }
 
@@ -140,8 +152,12 @@ export function ParticlesSystem({
 
       if (mouse.active) {
         const gradient = ctx!.createRadialGradient(
-          mouse.x, mouse.y, 0,
-          mouse.x, mouse.y, mouseRadius
+          mouse.x,
+          mouse.y,
+          0,
+          mouse.x,
+          mouse.y,
+          mouseRadius
         );
         gradient.addColorStop(0, `rgba(${r},${g},${b},0.08)`);
         gradient.addColorStop(1, "transparent");
@@ -187,14 +203,8 @@ export function ParticlesSystem({
   }, [count, color, connectionDistance, speed, mouseRadius, createParticle]);
 
   return (
-    <div
-      className={className}
-      style={{ position: "relative", width: "100%", height: "100%" }}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{ display: "block", width: "100%", height: "100%" }}
-      />
+    <div className={className} style={{ position: "relative", width: "100%", height: "100%" }}>
+      <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%" }} />
     </div>
   );
 }
@@ -211,11 +221,7 @@ export default function ParticlesSystemDemo() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <ParticlesSystem
-        count={120}
-        color={{ r: 99, g: 102, b: 241 }}
-        connectionDistance={150}
-      />
+      <ParticlesSystem count={120} color={{ r: 99, g: 102, b: 241 }} connectionDistance={150} />
       <div
         style={{
           position: "absolute",
@@ -233,8 +239,7 @@ export default function ParticlesSystemDemo() {
             fontSize: "clamp(2rem, 5vw, 3.5rem)",
             fontWeight: 800,
             letterSpacing: "-0.03em",
-            background:
-              "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
+            background: "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

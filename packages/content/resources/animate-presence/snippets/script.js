@@ -8,20 +8,38 @@
 
   const icons = ["✦", "◆", "●", "▲", "★", "◉", "⬟", "⬡"];
   const colors = [
-    "rgba(109,40,217,0.25)", "rgba(59,130,246,0.25)", "rgba(16,185,129,0.25)",
-    "rgba(245,158,11,0.25)", "rgba(239,68,68,0.25)", "rgba(236,72,153,0.25)",
-    "rgba(14,165,233,0.25)", "rgba(168,85,247,0.25)"
+    "rgba(109,40,217,0.25)",
+    "rgba(59,130,246,0.25)",
+    "rgba(16,185,129,0.25)",
+    "rgba(245,158,11,0.25)",
+    "rgba(239,68,68,0.25)",
+    "rgba(236,72,153,0.25)",
+    "rgba(14,165,233,0.25)",
+    "rgba(168,85,247,0.25)",
   ];
   const borderColors = [
-    "rgba(109,40,217,0.5)", "rgba(59,130,246,0.5)", "rgba(16,185,129,0.5)",
-    "rgba(245,158,11,0.5)", "rgba(239,68,68,0.5)", "rgba(236,72,153,0.5)",
-    "rgba(14,165,233,0.5)", "rgba(168,85,247,0.5)"
+    "rgba(109,40,217,0.5)",
+    "rgba(59,130,246,0.5)",
+    "rgba(16,185,129,0.5)",
+    "rgba(245,158,11,0.5)",
+    "rgba(239,68,68,0.5)",
+    "rgba(236,72,153,0.5)",
+    "rgba(14,165,233,0.5)",
+    "rgba(168,85,247,0.5)",
   ];
   const names = [
-    "Design tokens updated", "New component merged", "Build pipeline passed",
-    "Sprint review scheduled", "Pull request approved", "Test coverage improved",
-    "Deployment complete", "Security audit passed", "Performance optimized",
-    "Documentation updated", "API endpoint added", "Database migrated"
+    "Design tokens updated",
+    "New component merged",
+    "Build pipeline passed",
+    "Sprint review scheduled",
+    "Pull request approved",
+    "Test coverage improved",
+    "Deployment complete",
+    "Security audit passed",
+    "Performance optimized",
+    "Documentation updated",
+    "API endpoint added",
+    "Database migrated",
   ];
 
   let counter = 0;
@@ -36,7 +54,11 @@
     counter++;
     const id = Date.now();
     const name = names[Math.floor(Math.random() * names.length)];
-    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const now = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
 
     const li = document.createElement("li");
     li.className = "item";
@@ -58,10 +80,14 @@
 
   function removeItem(li) {
     li.classList.add("exiting");
-    li.addEventListener("animationend", () => {
-      li.remove();
-      updateEmpty();
-    }, { once: true });
+    li.addEventListener(
+      "animationend",
+      () => {
+        li.remove();
+        updateEmpty();
+      },
+      { once: true }
+    );
   }
 
   list.addEventListener("click", (e) => {

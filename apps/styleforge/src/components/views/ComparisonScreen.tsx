@@ -253,7 +253,10 @@ export function ComparisonScreen({ resourceA, resourceB, onBack }: Props) {
                   <td className="p-4 border-l border-primary/10">
                     <div className="flex flex-wrap gap-1">
                       {resourceA.targets.map((t) => (
-                        <span key={t} className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">
+                        <span
+                          key={t}
+                          className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400"
+                        >
                           {t}
                         </span>
                       ))}
@@ -265,7 +268,10 @@ export function ComparisonScreen({ resourceA, resourceB, onBack }: Props) {
                   <td className="p-4 border-l border-primary/10">
                     <div className="flex flex-wrap gap-1">
                       {resourceB.targets.map((t) => (
-                        <span key={t} className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">
+                        <span
+                          key={t}
+                          className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400"
+                        >
                           {t}
                         </span>
                       ))}

@@ -73,12 +73,12 @@ const MODELS: Model[] = [
 ];
 
 const CAP_COLORS: Record<string, string> = {
-  vision:    "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  code:      "bg-[#58a6ff]/10 text-[#58a6ff] border-[#58a6ff]/20",
+  vision: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  code: "bg-[#58a6ff]/10 text-[#58a6ff] border-[#58a6ff]/20",
   reasoning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  audio:     "bg-pink-500/10 text-pink-400 border-pink-500/20",
-  fast:      "bg-green-500/10 text-green-400 border-green-500/20",
-  cheap:     "bg-teal-500/10 text-teal-400 border-teal-500/20",
+  audio: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+  fast: "bg-green-500/10 text-green-400 border-green-500/20",
+  cheap: "bg-teal-500/10 text-teal-400 border-teal-500/20",
 };
 
 export default function ModelSelectorRC() {
@@ -118,20 +118,30 @@ export default function ModelSelectorRC() {
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-[#e6edf3]">{current.name}</p>
-              <p className="text-[11px] text-[#8b949e]">{current.provider} · {current.context} context</p>
+              <p className="text-[11px] text-[#8b949e]">
+                {current.provider} · {current.context} context
+              </p>
             </div>
             <div className="flex flex-wrap gap-1 justify-end max-w-[140px]">
               {current.caps.slice(0, 2).map((c) => (
-                <span key={c} className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold uppercase tracking-wide ${CAP_COLORS[c]}`}>
+                <span
+                  key={c}
+                  className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold uppercase tracking-wide ${CAP_COLORS[c]}`}
+                >
                   {c}
                 </span>
               ))}
             </div>
             <svg
-              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" className={`text-[#8b949e] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={`text-[#8b949e] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
             >
-              <polyline points="6 9 12 15 18 9"/>
+              <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
 
@@ -163,7 +173,11 @@ export default function ModelSelectorRC() {
                       {group.map((m) => (
                         <button
                           key={m.id}
-                          onClick={() => { setSelected(m.id); setOpen(false); setSearch(""); }}
+                          onClick={() => {
+                            setSelected(m.id);
+                            setOpen(false);
+                            setSearch("");
+                          }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left hover:bg-white/[0.04] ${
                             m.id === selected ? "bg-[#58a6ff]/[0.08]" : ""
                           }`}
@@ -176,7 +190,9 @@ export default function ModelSelectorRC() {
                           </span>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={`text-[12px] font-semibold ${m.id === selected ? "text-[#58a6ff]" : "text-[#e6edf3]"}`}>
+                              <span
+                                className={`text-[12px] font-semibold ${m.id === selected ? "text-[#58a6ff]" : "text-[#e6edf3]"}`}
+                              >
                                 {m.name}
                               </span>
                               {m.badge && (
@@ -188,15 +204,25 @@ export default function ModelSelectorRC() {
                             <div className="flex items-center gap-1.5 mt-0.5">
                               <span className="text-[10px] text-[#484f58]">{m.context} ctx</span>
                               {m.caps.map((c) => (
-                                <span key={c} className={`text-[9px] px-1 py-px rounded border font-semibold ${CAP_COLORS[c]}`}>
+                                <span
+                                  key={c}
+                                  className={`text-[9px] px-1 py-px rounded border font-semibold ${CAP_COLORS[c]}`}
+                                >
                                   {c}
                                 </span>
                               ))}
                             </div>
                           </div>
                           {m.id === selected && (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" strokeWidth="2.5">
-                              <polyline points="20 6 9 17 4 12"/>
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#58a6ff"
+                              strokeWidth="2.5"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
                             </svg>
                           )}
                         </button>
@@ -205,7 +231,9 @@ export default function ModelSelectorRC() {
                   );
                 })}
                 {filtered.length === 0 && (
-                  <div className="px-3 py-6 text-center text-[12px] text-[#484f58]">No models found</div>
+                  <div className="px-3 py-6 text-center text-[12px] text-[#484f58]">
+                    No models found
+                  </div>
                 )}
               </div>
             </div>
@@ -215,7 +243,9 @@ export default function ModelSelectorRC() {
         {/* Selected info */}
         {!open && (
           <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4 space-y-2">
-            <p className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">Selected model details</p>
+            <p className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">
+              Selected model details
+            </p>
             <div className="grid grid-cols-2 gap-3 text-[12px]">
               <div>
                 <p className="text-[#484f58]">Provider</p>
@@ -230,7 +260,10 @@ export default function ModelSelectorRC() {
               <p className="text-[11px] text-[#484f58] mb-1.5">Capabilities</p>
               <div className="flex flex-wrap gap-1.5">
                 {current.caps.map((c) => (
-                  <span key={c} className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${CAP_COLORS[c]}`}>
+                  <span
+                    key={c}
+                    className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${CAP_COLORS[c]}`}
+                  >
                     {c}
                   </span>
                 ))}

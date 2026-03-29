@@ -10,8 +10,7 @@ export function useParallax<T extends HTMLElement = HTMLElement>(speed = 0.3) {
   const [offset, setOffset] = useState(0);
 
   const reduced =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     if (reduced) return;
@@ -107,12 +106,8 @@ function ParallaxCard({
       }}
     >
       <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>{emoji}</div>
-      <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#94a3b8" }}>
-        speed: {speed}
-      </p>
-      <p style={{ fontSize: "0.72rem", color: "#475569", marginTop: "0.25rem" }}>
-        {label}
-      </p>
+      <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#94a3b8" }}>speed: {speed}</p>
+      <p style={{ fontSize: "0.72rem", color: "#475569", marginTop: "0.25rem" }}>{label}</p>
     </div>
   );
 }
@@ -130,9 +125,7 @@ export default function UseParallaxDemo() {
     >
       {/* Header */}
       <div style={{ textAlign: "center", padding: "6rem 0 4rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.5rem" }}>
-          useParallax
-        </h1>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.5rem" }}>useParallax</h1>
         <p style={{ color: "#475569", fontSize: "0.875rem" }}>
           Scroll down to see the depth effect
         </p>
@@ -147,9 +140,24 @@ export default function UseParallaxDemo() {
           margin: "0 auto 6rem",
         }}
       >
-        <ParallaxLayer speed={0.05} label="BACKGROUND · speed 0.05" bg="rgba(99,102,241,0.08)" zIndex={1} />
-        <ParallaxLayer speed={0.15} label="MIDGROUND · speed 0.15" bg="rgba(56,189,248,0.06)" zIndex={2} />
-        <ParallaxLayer speed={0.3}  label="FOREGROUND · speed 0.30" bg="rgba(34,197,94,0.05)"  zIndex={3} />
+        <ParallaxLayer
+          speed={0.05}
+          label="BACKGROUND · speed 0.05"
+          bg="rgba(99,102,241,0.08)"
+          zIndex={1}
+        />
+        <ParallaxLayer
+          speed={0.15}
+          label="MIDGROUND · speed 0.15"
+          bg="rgba(56,189,248,0.06)"
+          zIndex={2}
+        />
+        <ParallaxLayer
+          speed={0.3}
+          label="FOREGROUND · speed 0.30"
+          bg="rgba(34,197,94,0.05)"
+          zIndex={3}
+        />
       </div>
 
       {/* Cards with different speeds */}
@@ -163,9 +171,9 @@ export default function UseParallaxDemo() {
         }}
       >
         <ParallaxCard speed={-0.1} label="opposite direction" emoji="🌙" />
-        <ParallaxCard speed={0.2}  label="slow depth"         emoji="🏔" />
-        <ParallaxCard speed={0.5}  label="fast depth"         emoji="⚡" />
-        <ParallaxCard speed={0.8}  label="very fast"          emoji="🚀" />
+        <ParallaxCard speed={0.2} label="slow depth" emoji="🏔" />
+        <ParallaxCard speed={0.5} label="fast depth" emoji="⚡" />
+        <ParallaxCard speed={0.8} label="very fast" emoji="🚀" />
       </div>
     </div>
   );

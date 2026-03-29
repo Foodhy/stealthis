@@ -5,12 +5,16 @@ const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
 heroTl
   .to(".hero-badge", { opacity: 1, duration: 0.8, delay: 0.3 })
-  .to(".hero-line", {
-    opacity: 1,
-    y: 0,
-    duration: 0.9,
-    stagger: 0.12,
-  }, "-=0.4")
+  .to(
+    ".hero-line",
+    {
+      opacity: 1,
+      y: 0,
+      duration: 0.9,
+      stagger: 0.12,
+    },
+    "-=0.4"
+  )
   .to(".hero-desc", { opacity: 1, duration: 0.8 }, "-=0.5")
   .to(".hero-cta", { opacity: 1, duration: 0.6 }, "-=0.4")
   .to(".terminal", { opacity: 1, y: 0, duration: 0.8 }, "-=0.3");
@@ -46,7 +50,8 @@ setTimeout(typeCmd, 2000);
 
 // --- Reveal on scroll (for non-bento elements) ---
 gsap.utils.toArray(".reveal").forEach((el) => {
-  gsap.fromTo(el,
+  gsap.fromTo(
+    el,
     { opacity: 0, y: 20 },
     {
       opacity: 1,
@@ -72,14 +77,17 @@ document.querySelectorAll(".metric-value").forEach((el) => {
     start: "top 85%",
     once: true,
     onEnter: () => {
-      gsap.to({ val: 0 }, {
-        val: target,
-        duration: 1.8,
-        ease: "power2.out",
-        onUpdate: function () {
-          el.textContent = Math.round(this.targets()[0].val);
-        },
-      });
+      gsap.to(
+        { val: 0 },
+        {
+          val: target,
+          duration: 1.8,
+          ease: "power2.out",
+          onUpdate: function () {
+            el.textContent = Math.round(this.targets()[0].val);
+          },
+        }
+      );
     },
   });
 });
@@ -87,7 +95,8 @@ document.querySelectorAll(".metric-value").forEach((el) => {
 // --- Bento stagger (no .reveal class — dedicated animation) ---
 const bentoGrid = document.querySelector(".bento-grid");
 if (bentoGrid) {
-  gsap.fromTo(".bento-card",
+  gsap.fromTo(
+    ".bento-card",
     { opacity: 0, y: 30, scale: 0.97 },
     {
       opacity: 1,
@@ -108,7 +117,8 @@ if (bentoGrid) {
 // --- Framework logos stagger ---
 const fwLogos = document.querySelector(".framework-logos");
 if (fwLogos) {
-  gsap.fromTo(".fw-logo",
+  gsap.fromTo(
+    ".fw-logo",
     { opacity: 0, y: 15 },
     {
       opacity: 1,

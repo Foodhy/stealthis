@@ -84,16 +84,21 @@ export default function ChatInterfaceRC() {
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-3.5 bg-[#21262d] border-b border-[#30363d] flex-shrink-0">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#58a6ff] to-[#bc8cff] flex items-center justify-center flex-shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-              <path d="M9 9h.01M15 9h.01M9 15s1.5 2 3 2 3-2 3-2"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2.5"
+            >
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+              <path d="M9 9h.01M15 9h.01M9 15s1.5 2 3 2 3-2 3-2" />
             </svg>
           </div>
           <div>
             <p className="text-[13px] font-bold text-[#e6edf3]">AI Assistant</p>
-            <p className="text-[11px] text-green-400">
-              {isStreaming ? "Typing…" : "Online"}
-            </p>
+            <p className="text-[11px] text-green-400">{isStreaming ? "Typing…" : "Online"}</p>
           </div>
         </div>
 
@@ -171,9 +176,18 @@ export default function ChatInterfaceRC() {
               disabled={!input.trim() || isStreaming}
               className="w-8 h-8 rounded-lg bg-[#58a6ff] flex items-center justify-center flex-shrink-0 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#79b8ff] transition-colors"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
               </svg>
             </button>
           </div>

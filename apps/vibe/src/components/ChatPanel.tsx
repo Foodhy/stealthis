@@ -78,7 +78,10 @@ function CommandLine({ command }: { command: string }) {
       }
 
       const reader = res.body?.getReader();
-      if (!reader) { setStatus("done"); return; }
+      if (!reader) {
+        setStatus("done");
+        return;
+      }
       const decoder = new TextDecoder();
 
       while (true) {
@@ -92,13 +95,22 @@ function CommandLine({ command }: { command: string }) {
           try {
             const parsed = JSON.parse(raw) as any;
             if (parsed.type === "stdout") {
-              dispatch({ type: "TERMINAL_ADD_LINE", payload: { type: "stdout", text: parsed.data } });
+              dispatch({
+                type: "TERMINAL_ADD_LINE",
+                payload: { type: "stdout", text: parsed.data },
+              });
             } else if (parsed.type === "stderr") {
-              dispatch({ type: "TERMINAL_ADD_LINE", payload: { type: "stderr", text: parsed.data } });
+              dispatch({
+                type: "TERMINAL_ADD_LINE",
+                payload: { type: "stderr", text: parsed.data },
+              });
             } else if (parsed.type === "cwd") {
               dispatch({ type: "TERMINAL_SET_CWD", payload: parsed.data });
             } else if (parsed.type === "exit" && parsed.code !== 0) {
-              dispatch({ type: "TERMINAL_ADD_LINE", payload: { type: "info", text: `Process exited with code ${parsed.code}` } });
+              dispatch({
+                type: "TERMINAL_ADD_LINE",
+                payload: { type: "info", text: `Process exited with code ${parsed.code}` },
+              });
             }
           } catch {}
         }
@@ -141,12 +153,8 @@ function AssistantMessage({ content }: { content: string }) {
             ))}
           </div>
         ) : (
-          <div
-            key={i}
-            className="chat-markdown"
-            dangerouslySetInnerHTML={{ __html: block.html }}
-          />
-        ),
+          <div key={i} className="chat-markdown" dangerouslySetInnerHTML={{ __html: block.html }} />
+        )
       )}
     </>
   );
@@ -231,29 +239,26 @@ export default function ChatPanel() {
         }
       }
     },
-    [hasVision],
+    [hasVision]
   );
 
   // Handle file input for images
-  const handleFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (!files) return;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (!file.type.startsWith("image/")) continue;
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          const base64 = result.split(",")[1];
-          setImages((prev) => [...prev, { mimeType: file.type, data: base64 }]);
-        };
-        reader.readAsDataURL(file);
-      }
-      e.target.value = "";
-    },
-    [],
-  );
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith("image/")) continue;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(",")[1];
+        setImages((prev) => [...prev, { mimeType: file.type, data: base64 }]);
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = "";
+  }, []);
 
   // Handle drop
   const handleDrop = useCallback(
@@ -273,7 +278,7 @@ export default function ChatPanel() {
         reader.readAsDataURL(file);
       }
     },
-    [hasVision],
+    [hasVision]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -316,31 +321,22 @@ export default function ChatPanel() {
         )}
 
         {state.messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`mb-3 ${msg.role === "user" ? "flex justify-end" : ""}`}
-          >
+          <div key={msg.id} className={`mb-3 ${msg.role === "user" ? "flex justify-end" : ""}`}>
             <div
               className={`max-w-[90%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-vibe-600/20 text-slate-200"
-                  : "bg-white/6 text-slate-300"
+                msg.role === "user" ? "bg-vibe-600/20 text-slate-200" : "bg-white/6 text-slate-300"
               }`}
             >
               {msg.role === "assistant" && msg.content ? (
                 <AssistantMessage content={msg.content} />
               ) : (
-                <pre className="whitespace-pre-wrap font-[inherit]">
-                  {msg.content}
-                </pre>
+                <pre className="whitespace-pre-wrap font-[inherit]">{msg.content}</pre>
               )}
               {msg.role === "user" && msg.images && msg.images.length > 0 && (
                 <MessageImages images={msg.images} />
               )}
               {msg.role === "assistant" && !msg.content && state.loading && (
-                <span className="inline-block animate-pulse text-slate-500">
-                  Thinking...
-                </span>
+                <span className="inline-block animate-pulse text-slate-500">Thinking...</span>
               )}
             </div>
           </div>
@@ -420,9 +416,7 @@ export default function ChatPanel() {
         </div>
 
         {hasVision && (
-          <p className="mt-1 text-[9px] text-slate-600">
-            Ctrl+V to paste images, or drag & drop
-          </p>
+          <p className="mt-1 text-[9px] text-slate-600">Ctrl+V to paste images, or drag & drop</p>
         )}
       </div>
     </div>

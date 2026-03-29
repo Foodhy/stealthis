@@ -1,11 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 
 interface OtpInputProps {
   length?: number;
@@ -82,31 +76,22 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Enter Verification Code</Text>
-      <Text style={styles.subtitle}>
-        We sent a 6-digit code to your device
-      </Text>
+      <Text style={styles.subtitle}>We sent a 6-digit code to your device</Text>
 
       <View style={{ marginTop: 32 }}>
         <OtpInput length={6} onComplete={handleComplete} />
       </View>
 
       <TouchableOpacity
-        style={[
-          styles.verifyButton,
-          otpCode.length < 6 && styles.verifyButtonDisabled,
-        ]}
+        style={[styles.verifyButton, otpCode.length < 6 && styles.verifyButtonDisabled]}
         onPress={handleVerify}
         disabled={otpCode.length < 6}
         activeOpacity={0.7}
       >
-        <Text style={styles.verifyText}>
-          {verified ? "✓ Verified" : "Verify"}
-        </Text>
+        <Text style={styles.verifyText}>{verified ? "✓ Verified" : "Verify"}</Text>
       </TouchableOpacity>
 
-      {verified && (
-        <Text style={styles.successText}>Code verified successfully!</Text>
-      )}
+      {verified && <Text style={styles.successText}>Code verified successfully!</Text>}
     </View>
   );
 }

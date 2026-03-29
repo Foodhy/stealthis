@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { Card } from '@/components/native/card';
-import { Input } from '@/components/native/input';
-import { Edit2, Check } from '@/components/icons';
-import { Button } from '@/components/native/button';
-import Editor from '@monaco-editor/react';
-import { MarkdownToolbar, MarkdownAction } from './MarkdownToolbar';
-import { useI18n } from '@/i18n';
+import React, { useState, useRef } from "react";
+import { Card } from "@/components/native/card";
+import { Input } from "@/components/native/input";
+import { Edit2, Check } from "@/components/icons";
+import { Button } from "@/components/native/button";
+import Editor from "@monaco-editor/react";
+import { MarkdownToolbar, MarkdownAction } from "./MarkdownToolbar";
+import { useI18n } from "@/i18n";
 
 interface PromptSectionProps {
   title: string;
@@ -20,7 +20,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   content,
   onContentChange,
   onTitleChange,
-  customMarkdownActions
+  customMarkdownActions,
 }) => {
   const { t } = useI18n();
   const editorRef = useRef<any>(null);
@@ -29,38 +29,38 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     selectOnLineNumbers: true,
     roundedSelection: false,
     readOnly: false,
-    cursorStyle: 'line' as 'line',
+    cursorStyle: "line" as "line",
     automaticLayout: true,
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
     fontSize: 14,
     lineHeight: 20,
-    wordWrap: 'on' as 'on',
-    wrappingIndent: 'indent' as 'indent',
+    wordWrap: "on" as "on",
+    wrappingIndent: "indent" as "indent",
     scrollbar: {
       vertical: "auto" as "auto",
       horizontal: "auto" as "auto",
     },
-    theme: 'vs-dark',
+    theme: "vs-dark",
   };
 
   const handleEditorDidMount = (editor: any) => {
     editorRef.current = editor;
-    
+
     // Store the editor reference and bind focus/blur events
     const handleFocus = () => {
       (window as any).currentMonacoEditor = editor;
-      console.log('Monaco editor focused');
+      console.log("Monaco editor focused");
     };
-    
+
     const handleBlur = () => {
       // Mantener la última referencia activa para permitir clic en variables
-      console.log('Monaco editor blurred');
+      console.log("Monaco editor blurred");
     };
-    
+
     editor.onDidFocusEditorText(handleFocus);
     editor.onDidBlurEditorText(handleBlur);
-    
+
     // Force layout update after a short delay to ensure proper rendering
     setTimeout(() => {
       editor.layout();
@@ -100,74 +100,91 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
 
     const editor = editorRef.current;
     const selection = editor.getSelection();
-    const selectedText = editor.getModel()?.getValueInRange(selection) || '';
-    
-    let newText = '';
-    let insertText = '';
-    
+    const selectedText = editor.getModel()?.getValueInRange(selection) || "";
+
+    let newText = "";
+    let insertText = "";
+
     switch (action) {
-      case 'bold':
-        insertText = selectedText ? `**${selectedText}**` : `**${t('markdownEditor.sample.bold')}**`;
+      case "bold":
+        insertText = selectedText
+          ? `**${selectedText}**`
+          : `**${t("markdownEditor.sample.bold")}**`;
         break;
-      case 'italic':
-        insertText = selectedText ? `*${selectedText}*` : `*${t('markdownEditor.sample.italic')}*`;
+      case "italic":
+        insertText = selectedText ? `*${selectedText}*` : `*${t("markdownEditor.sample.italic")}*`;
         break;
-      case 'strikethrough':
-        insertText = selectedText ? `~~${selectedText}~~` : `~~${t('markdownEditor.sample.strikethrough')}~~`;
+      case "strikethrough":
+        insertText = selectedText
+          ? `~~${selectedText}~~`
+          : `~~${t("markdownEditor.sample.strikethrough")}~~`;
         break;
-      case 'heading1':
-        insertText = selectedText ? `# ${selectedText}` : `# ${t('markdownEditor.sample.heading1')}`;
+      case "heading1":
+        insertText = selectedText
+          ? `# ${selectedText}`
+          : `# ${t("markdownEditor.sample.heading1")}`;
         break;
-      case 'heading2':
-        insertText = selectedText ? `## ${selectedText}` : `## ${t('markdownEditor.sample.heading2')}`;
+      case "heading2":
+        insertText = selectedText
+          ? `## ${selectedText}`
+          : `## ${t("markdownEditor.sample.heading2")}`;
         break;
-      case 'heading3':
-        insertText = selectedText ? `### ${selectedText}` : `### ${t('markdownEditor.sample.heading3')}`;
+      case "heading3":
+        insertText = selectedText
+          ? `### ${selectedText}`
+          : `### ${t("markdownEditor.sample.heading3")}`;
         break;
-      case 'bulletList':
-        insertText = selectedText ? `- ${selectedText}` : `- ${t('markdownEditor.sample.bullet')}`;
+      case "bulletList":
+        insertText = selectedText ? `- ${selectedText}` : `- ${t("markdownEditor.sample.bullet")}`;
         break;
-      case 'orderedList':
-        insertText = selectedText ? `1. ${selectedText}` : `1. ${t('markdownEditor.sample.ordered')}`;
+      case "orderedList":
+        insertText = selectedText
+          ? `1. ${selectedText}`
+          : `1. ${t("markdownEditor.sample.ordered")}`;
         break;
-      case 'codeBlock':
-        insertText = selectedText ? `\`\`\`\n${selectedText}\n\`\`\`` : `\`\`\`\n${t('markdownEditor.sample.code')}\n\`\`\``;
+      case "codeBlock":
+        insertText = selectedText
+          ? `\`\`\`\n${selectedText}\n\`\`\``
+          : `\`\`\`\n${t("markdownEditor.sample.code")}\n\`\`\``;
         break;
-      case 'blockquote':
-        insertText = selectedText ? `> ${selectedText}` : `> ${t('markdownEditor.sample.quote')}`;
+      case "blockquote":
+        insertText = selectedText ? `> ${selectedText}` : `> ${t("markdownEditor.sample.quote")}`;
         break;
-      case 'link':
-        insertText = selectedText ? `[${selectedText}](url)` : `[${t('markdownEditor.sample.link')}](url)`;
+      case "link":
+        insertText = selectedText
+          ? `[${selectedText}](url)`
+          : `[${t("markdownEditor.sample.link")}](url)`;
         break;
-      case 'image':
-        insertText = selectedText ? `![${selectedText}](url)` : '![alt text](url)';
+      case "image":
+        insertText = selectedText ? `![${selectedText}](url)` : "![alt text](url)";
         break;
-      case 'table':
-        insertText = '| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |';
+      case "table":
+        insertText =
+          "| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |";
         break;
-      case 'undo':
-        editor.trigger('keyboard', 'undo', null);
+      case "undo":
+        editor.trigger("keyboard", "undo", null);
         return;
-      case 'redo':
-        editor.trigger('keyboard', 'redo', null);
+      case "redo":
+        editor.trigger("keyboard", "redo", null);
         return;
       default:
         return;
     }
 
     if (insertText) {
-      editor.executeEdits('markdown-action', [
+      editor.executeEdits("markdown-action", [
         {
           range: selection,
           text: insertText,
-          forceMoveMarkers: true
-        }
+          forceMoveMarkers: true,
+        },
       ]);
-      
+
       // Position cursor appropriately
       const newPosition = {
         lineNumber: selection.startLineNumber,
-        column: selection.startColumn + insertText.length
+        column: selection.startColumn + insertText.length,
       };
       editor.setPosition(newPosition);
       editor.focus();
@@ -184,8 +201,8 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               onChange={(e) => setTempTitle(e.target.value)}
               className="text-sm font-medium flex-1"
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleTitleSave();
-                if (e.key === 'Escape') handleTitleCancel();
+                if (e.key === "Enter") handleTitleSave();
+                if (e.key === "Escape") handleTitleCancel();
               }}
               autoFocus
             />
@@ -195,16 +212,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           </div>
         ) : (
           <>
-            <h3 className="font-medium text-sm text-foreground truncate">
-              {title}
-            </h3>
+            <h3 className="font-medium text-sm text-foreground truncate">{title}</h3>
             {onTitleChange && (
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={handleTitleEdit}
-                className="shrink-0 ml-2"
-              >
+              <Button size="sm" variant="ghost" onClick={handleTitleEdit} className="shrink-0 ml-2">
                 <Edit2 className="h-3 w-3" />
               </Button>
             )}
@@ -212,10 +222,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         )}
       </div>
       <div className="flex-1 border rounded-md overflow-hidden flex flex-col">
-        <MarkdownToolbar 
-          onAction={handleMarkdownAction}
-          customActions={customMarkdownActions}
-        />
+        <MarkdownToolbar onAction={handleMarkdownAction} customActions={customMarkdownActions} />
         <div className="flex-1">
           <Editor
             height="100%"

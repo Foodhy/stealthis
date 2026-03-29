@@ -68,13 +68,7 @@ function getInitials(name: string): string {
 
 // --- Avatar ---
 
-function Avatar({
-  src,
-  name,
-  size = "md",
-  status,
-  color = "#6366f1",
-}: AvatarProps) {
+function Avatar({ src, name, size = "md", status, color = "#6366f1" }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
   const dim = SIZES[size];
   const fontSize = FONT_SIZES[size];
@@ -86,10 +80,7 @@ function Avatar({
       {showImage ? (
         <Image
           source={{ uri: src }}
-          style={[
-            styles.image,
-            { width: dim, height: dim, borderRadius: dim / 2 },
-          ]}
+          style={[styles.image, { width: dim, height: dim, borderRadius: dim / 2 }]}
           onError={() => setImgError(true)}
         />
       ) : (
@@ -104,9 +95,7 @@ function Avatar({
             },
           ]}
         >
-          <Text style={[styles.initialsText, { fontSize }]}>
-            {getInitials(name)}
-          </Text>
+          <Text style={[styles.initialsText, { fontSize }]}>{getInitials(name)}</Text>
         </View>
       )}
 
@@ -154,12 +143,7 @@ function AvatarGroup({ avatars, max = 3, size = "md" }: AvatarGroupProps) {
       ))}
 
       {overflow > 0 && (
-        <View
-          style={[
-            styles.groupItem,
-            { marginLeft: overlap, zIndex: 0 },
-          ]}
-        >
+        <View style={[styles.groupItem, { marginLeft: overlap, zIndex: 0 }]}>
           <View
             style={[
               styles.overflowCircle,
@@ -170,9 +154,7 @@ function AvatarGroup({ avatars, max = 3, size = "md" }: AvatarGroupProps) {
               },
             ]}
           >
-            <Text style={[styles.overflowText, { fontSize }]}>
-              +{overflow}
-            </Text>
+            <Text style={[styles.overflowText, { fontSize }]}>+{overflow}</Text>
           </View>
         </View>
       )}
@@ -207,16 +189,8 @@ export default function App() {
       {/* Image avatar */}
       <Text style={styles.label}>With Image</Text>
       <View style={styles.row}>
-        <Avatar
-          name="John Doe"
-          src="https://picsum.photos/seed/jd/200"
-          size="lg"
-        />
-        <Avatar
-          name="Jane Smith"
-          src="https://picsum.photos/seed/js/200"
-          size="lg"
-        />
+        <Avatar name="John Doe" src="https://picsum.photos/seed/jd/200" size="lg" />
+        <Avatar name="Jane Smith" src="https://picsum.photos/seed/js/200" size="lg" />
       </View>
 
       {/* Status indicators */}

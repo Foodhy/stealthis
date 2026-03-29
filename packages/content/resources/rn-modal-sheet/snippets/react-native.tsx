@@ -69,16 +69,12 @@ function BottomSheetModal({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        Math.abs(gestureState.dy) > 5,
+      onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dy) > 5,
       onPanResponderMove: (_, gestureState) => {
         const currentOffset =
           SCREEN_HEIGHT * (1 - sortedSnaps[currentSnap.current] ?? sortedSnaps[0]);
         const newY = currentOffset + gestureState.dy;
-        const clamped = Math.max(
-          SCREEN_HEIGHT * (1 - sortedSnaps[sortedSnaps.length - 1]),
-          newY
-        );
+        const clamped = Math.max(SCREEN_HEIGHT * (1 - sortedSnaps[sortedSnaps.length - 1]), newY);
         translateY.setValue(clamped);
       },
       onPanResponderRelease: (_, gestureState) => {
@@ -87,9 +83,7 @@ function BottomSheetModal({
           return;
         }
 
-        const currentPos =
-          SCREEN_HEIGHT * (1 - sortedSnaps[currentSnap.current]) +
-          gestureState.dy;
+        const currentPos = SCREEN_HEIGHT * (1 - sortedSnaps[currentSnap.current]) + gestureState.dy;
         const currentFraction = 1 - currentPos / SCREEN_HEIGHT;
 
         if (currentFraction < sortedSnaps[0] * DISMISS_FRACTION) {
@@ -149,15 +143,11 @@ function BottomSheetModal({
       onRequestClose={dismiss}
     >
       <View style={styles.container}>
-        <Animated.View
-          style={[styles.backdrop, { opacity: backdropOpacity }]}
-        >
+        <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
         </Animated.View>
 
-        <Animated.View
-          style={[styles.sheet, { transform: [{ translateY }] }]}
-        >
+        <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
           <View {...panResponder.panHandlers} style={styles.handleArea}>
             <View style={styles.handle} />
           </View>
@@ -223,10 +213,7 @@ export default function App() {
         Drag the handle, flick down, or tap the backdrop to dismiss.
       </Text>
 
-      <Pressable
-        style={appStyles.button}
-        onPress={() => setSheetOpen(true)}
-      >
+      <Pressable style={appStyles.button} onPress={() => setSheetOpen(true)}>
         <Text style={appStyles.buttonText}>Open Sheet</Text>
       </Pressable>
 

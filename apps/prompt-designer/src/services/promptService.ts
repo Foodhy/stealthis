@@ -1,6 +1,6 @@
-import { getDataProvider } from '@/data/providerFactory';
-import type { LoadedPromptData, PromptSummary } from '@/data/contracts';
-import type { PromptData } from '@/components/PromptEditor';
+import { getDataProvider } from "@/data/providerFactory";
+import type { LoadedPromptData, PromptSummary } from "@/data/contracts";
+import type { PromptData } from "@/components/PromptEditor";
 
 export type { LoadedPromptData, PromptSummary };
 
@@ -17,14 +17,14 @@ export async function savePrompt(
   previousPromptId?: number | null,
   variables?: string[],
   authorId?: number | null,
-  tagIds?: number[],
+  tagIds?: number[]
 ): Promise<number> {
   return getDataProvider().prompts.savePrompt(
     promptData,
     previousPromptId,
     variables,
     authorId,
-    tagIds,
+    tagIds
   );
 }
 

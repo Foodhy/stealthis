@@ -7,21 +7,29 @@ const heroTl = gsap.timeline({
 
 heroTl
   .to(".hero-badge", { opacity: 1, scale: 1, duration: 0.6, delay: 0.3 })
-  .to(".hero-word", {
-    opacity: 1,
-    y: 0,
-    rotation: 0,
-    duration: 0.8,
-    stagger: 0.15,
-  }, "-=0.3")
+  .to(
+    ".hero-word",
+    {
+      opacity: 1,
+      y: 0,
+      rotation: 0,
+      duration: 0.8,
+      stagger: 0.15,
+    },
+    "-=0.3"
+  )
   .to(".hero-desc", { opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.3")
   .to(".hero-actions", { opacity: 1, duration: 0.5, ease: "power2.out" }, "-=0.2")
-  .to(".console-wrapper", {
-    opacity: 1,
-    y: 0,
-    duration: 1,
-    ease: "elastic.out(1, 0.5)",
-  }, "-=0.5");
+  .to(
+    ".console-wrapper",
+    {
+      opacity: 1,
+      y: 0,
+      duration: 1,
+      ease: "elastic.out(1, 0.5)",
+    },
+    "-=0.5"
+  );
 
 // --- Console tilt on mouse ---
 const consoleEl = document.querySelector(".console");
@@ -41,8 +49,8 @@ if (consoleEl) {
 // --- Floating background shapes parallax ---
 gsap.utils.toArray(".shape").forEach((shape, i) => {
   gsap.to(shape, {
-    y: (i % 2 === 0 ? 150 : -150),
-    x: (i % 2 === 0 ? 50 : -50),
+    y: i % 2 === 0 ? 150 : -150,
+    x: i % 2 === 0 ? 50 : -50,
     scrollTrigger: {
       trigger: "body",
       start: "top top",
@@ -54,7 +62,8 @@ gsap.utils.toArray(".shape").forEach((shape, i) => {
 
 // --- Reveal on scroll with spring ease ---
 gsap.utils.toArray(".reveal").forEach((el) => {
-  gsap.fromTo(el,
+  gsap.fromTo(
+    el,
     { opacity: 0, y: 25 },
     {
       opacity: 1,
@@ -73,7 +82,8 @@ gsap.utils.toArray(".reveal").forEach((el) => {
 // --- Mode cards stagger (no .reveal — dedicated animation) ---
 const modesGrid = document.querySelector(".modes-grid");
 if (modesGrid) {
-  gsap.fromTo(".mode-card",
+  gsap.fromTo(
+    ".mode-card",
     { opacity: 0, y: 40, scale: 0.92 },
     {
       opacity: 1,
@@ -94,7 +104,8 @@ if (modesGrid) {
 // --- Game cards stagger with rotation (no .reveal — dedicated animation) ---
 const gamesRow = document.querySelector(".games-row");
 if (gamesRow) {
-  gsap.fromTo(".game-card",
+  gsap.fromTo(
+    ".game-card",
     { opacity: 0, y: 50, rotation: -5, scale: 0.88 },
     {
       opacity: 1,
@@ -115,7 +126,8 @@ if (gamesRow) {
 
 // --- Specs scale in ---
 gsap.utils.toArray(".spec").forEach((spec, i) => {
-  gsap.fromTo(spec,
+  gsap.fromTo(
+    spec,
     { opacity: 0, scale: 0.8 },
     {
       opacity: 1,
@@ -133,7 +145,8 @@ gsap.utils.toArray(".spec").forEach((spec, i) => {
 });
 
 // --- Color dots bounce on scroll ---
-gsap.fromTo(".color-dot",
+gsap.fromTo(
+  ".color-dot",
   { scale: 0 },
   {
     scale: 1,

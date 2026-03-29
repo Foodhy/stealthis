@@ -1,11 +1,5 @@
 import React, { useRef, useCallback } from "react";
-import {
-  View,
-  TouchableOpacity,
-  Animated,
-  StyleSheet,
-  Text,
-} from "react-native";
+import { View, TouchableOpacity, Animated, StyleSheet, Text } from "react-native";
 
 const TRACK_WIDTH = 52;
 const TRACK_HEIGHT = 32;
@@ -57,12 +51,8 @@ function ToggleSwitch({
       disabled={disabled}
       style={{ opacity: disabled ? 0.4 : 1 }}
     >
-      <Animated.View
-        style={[styles.track, { backgroundColor: trackColor }]}
-      >
-        <Animated.View
-          style={[styles.thumb, { transform: [{ translateX }] }]}
-        />
+      <Animated.View style={[styles.track, { backgroundColor: trackColor }]}>
+        <Animated.View style={[styles.thumb, { transform: [{ translateX }] }]} />
       </Animated.View>
     </TouchableOpacity>
   );

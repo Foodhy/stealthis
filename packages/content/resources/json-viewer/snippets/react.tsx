@@ -22,13 +22,7 @@ const SAMPLE: unknown = {
   },
 };
 
-type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [k: string]: JsonValue };
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 
 function typeColor(v: JsonValue): string {
   if (v === null) return "text-[#ff7b72]";
@@ -120,9 +114,7 @@ function JsonNode({
         )}
 
         {/* Key */}
-        {keyName !== null && (
-          <span className="text-[#7ee787] mr-0.5">{highlight(keyName)}</span>
-        )}
+        {keyName !== null && <span className="text-[#7ee787] mr-0.5">{highlight(keyName)}</span>}
         {keyName !== null && <span className="text-[#8b949e]">: </span>}
 
         {/* Value or bracket */}
@@ -217,13 +209,7 @@ export default function JsonViewerRC() {
           {error ? (
             <p className="text-red-400 text-[13px] font-mono">{error}</p>
           ) : parsed !== null ? (
-            <JsonNode
-              keyName={null}
-              value={parsed}
-              depth={0}
-              search={search}
-              path=""
-            />
+            <JsonNode keyName={null} value={parsed} depth={0} search={search} path="" />
           ) : null}
         </div>
 

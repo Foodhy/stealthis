@@ -14,10 +14,13 @@ export default function SpringPhysics() {
   const velBarRef = useRef<HTMLDivElement>(null);
 
   const stateRef = useRef({
-    posX: 0, posY: 0,
-    velX: 0, velY: 0,
+    posX: 0,
+    posY: 0,
+    velX: 0,
+    velY: 0,
     isDragging: false,
-    dragOffsetX: 0, dragOffsetY: 0,
+    dragOffsetX: 0,
+    dragOffsetY: 0,
   });
 
   const configRef = useRef(config);
@@ -42,9 +45,16 @@ export default function SpringPhysics() {
         s.posX += s.velX * dt;
         s.posY += s.velY * dt;
 
-        if (Math.abs(s.posX) < 0.01 && Math.abs(s.posY) < 0.01 &&
-            Math.abs(s.velX) < 0.01 && Math.abs(s.velY) < 0.01) {
-          s.posX = 0; s.posY = 0; s.velX = 0; s.velY = 0;
+        if (
+          Math.abs(s.posX) < 0.01 &&
+          Math.abs(s.posY) < 0.01 &&
+          Math.abs(s.velX) < 0.01 &&
+          Math.abs(s.velY) < 0.01
+        ) {
+          s.posX = 0;
+          s.posY = 0;
+          s.velX = 0;
+          s.velY = 0;
         }
       }
 
@@ -75,7 +85,8 @@ export default function SpringPhysics() {
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     const s = stateRef.current;
     s.isDragging = true;
-    s.velX = 0; s.velY = 0;
+    s.velX = 0;
+    s.velY = 0;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
     if (areaRef.current) {
@@ -93,7 +104,9 @@ export default function SpringPhysics() {
       s.posX = e.clientX - rect.left - rect.width / 2 - s.dragOffsetX;
       s.posY = e.clientY - rect.top - rect.height / 2 - s.dragOffsetY;
     };
-    const onUp = () => { stateRef.current.isDragging = false; };
+    const onUp = () => {
+      stateRef.current.isDragging = false;
+    };
 
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -122,7 +135,15 @@ export default function SpringPhysics() {
         overflow: "hidden",
       }}
     >
-      <div style={{ width: "min(520px, 100%)", display: "flex", flexDirection: "column", gap: "1.5rem", alignItems: "center" }}>
+      <div
+        style={{
+          width: "min(520px, 100%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5rem",
+          alignItems: "center",
+        }}
+      >
         <div style={{ textAlign: "center" }}>
           <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#f4f4f5" }}>Spring Physics</h2>
           <p style={{ fontSize: "0.8rem", color: "#52525b", marginTop: "0.25rem" }}>
@@ -146,10 +167,13 @@ export default function SpringPhysics() {
           <div
             style={{
               position: "absolute",
-              width: 12, height: 12, borderRadius: "50%",
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
               background: "rgba(109,40,217,0.3)",
               border: "2px solid rgba(109,40,217,0.5)",
-              top: "50%", left: "50%",
+              top: "50%",
+              left: "50%",
               transform: "translate(-50%, -50%)",
               pointerEvents: "none",
             }}
@@ -159,7 +183,8 @@ export default function SpringPhysics() {
             ref={lineRef}
             style={{
               position: "absolute",
-              top: "50%", left: "50%",
+              top: "50%",
+              left: "50%",
               transformOrigin: "0 0",
               height: 2,
               background: "linear-gradient(90deg, rgba(109,40,217,0.4), rgba(109,40,217,0.1))",
@@ -174,11 +199,13 @@ export default function SpringPhysics() {
             onPointerDown={onPointerDown}
             style={{
               position: "absolute",
-              width: 56, height: 56,
+              width: 56,
+              height: 56,
               borderRadius: "50%",
               background: "radial-gradient(circle at 35% 35%, #a78bfa, #6d28d9)",
               boxShadow: "0 0 30px rgba(109,40,217,0.4), 0 0 60px rgba(109,40,217,0.15)",
-              top: "50%", left: "50%",
+              top: "50%",
+              left: "50%",
               transform: "translate(-50%, -50%)",
               cursor: "grab",
               userSelect: "none",
@@ -196,7 +223,15 @@ export default function SpringPhysics() {
         </div>
 
         {/* Velocity bar */}
-        <div style={{ width: "100%", height: 4, background: "rgba(255,255,255,0.04)", borderRadius: 2, overflow: "hidden" }}>
+        <div
+          style={{
+            width: "100%",
+            height: 4,
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: 2,
+            overflow: "hidden",
+          }}
+        >
           <div
             ref={velBarRef}
             style={{
@@ -215,8 +250,12 @@ export default function SpringPhysics() {
             <div key={key} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
               <span
                 style={{
-                  fontSize: "0.75rem", fontWeight: 600, color: "#71717a",
-                  minWidth: 80, textTransform: "uppercase", letterSpacing: "0.06em",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "#71717a",
+                  minWidth: 80,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
                 }}
               >
                 {label}
@@ -228,15 +267,23 @@ export default function SpringPhysics() {
                 value={config[key]}
                 onChange={(e) => setConfig((c) => ({ ...c, [key]: Number(e.target.value) }))}
                 style={{
-                  flex: 1, WebkitAppearance: "none", appearance: "none" as never,
-                  height: 4, background: "rgba(255,255,255,0.08)",
-                  borderRadius: 2, outline: "none",
+                  flex: 1,
+                  WebkitAppearance: "none",
+                  appearance: "none" as never,
+                  height: 4,
+                  background: "rgba(255,255,255,0.08)",
+                  borderRadius: 2,
+                  outline: "none",
                 }}
               />
               <span
                 style={{
-                  fontSize: "0.75rem", fontWeight: 600, color: "#a78bfa",
-                  minWidth: 40, textAlign: "right", fontVariantNumeric: "tabular-nums",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "#a78bfa",
+                  minWidth: 40,
+                  textAlign: "right",
+                  fontVariantNumeric: "tabular-nums",
                 }}
               >
                 {config[key]}

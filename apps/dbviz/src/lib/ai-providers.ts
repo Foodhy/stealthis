@@ -30,7 +30,10 @@ export type ChatOptions = {
 
 // ─── Provider defaults ───────────────────────────────────────────────────────
 
-export const PROVIDER_DEFAULTS: Record<AiProvider, { baseUrl: string; keyUrl: string; label: string }> = {
+export const PROVIDER_DEFAULTS: Record<
+  AiProvider,
+  { baseUrl: string; keyUrl: string; label: string }
+> = {
   ollama: {
     baseUrl: "http://localhost:11434",
     keyUrl: "",
@@ -55,7 +58,9 @@ export const PROVIDER_DEFAULTS: Record<AiProvider, { baseUrl: string; keyUrl: st
 
 // ─── List models ─────────────────────────────────────────────────────────────
 
-export async function listModels(config: Pick<AiProviderConfig, "provider" | "baseUrl" | "apiKey">): Promise<AiModel[]> {
+export async function listModels(
+  config: Pick<AiProviderConfig, "provider" | "baseUrl" | "apiKey">
+): Promise<AiModel[]> {
   switch (config.provider) {
     case "ollama":
       return listOllamaModels(config.baseUrl);
@@ -126,7 +131,12 @@ export async function chat({ config, messages, signal, onToken }: ChatOptions): 
 
 // ─── Ollama ──────────────────────────────────────────────────────────────────
 
-async function ollamaChat(config: AiProviderConfig, messages: ChatMessage[], signal?: AbortSignal, onToken?: (t: string) => void): Promise<string> {
+async function ollamaChat(
+  config: AiProviderConfig,
+  messages: ChatMessage[],
+  signal?: AbortSignal,
+  onToken?: (t: string) => void
+): Promise<string> {
   const res = await fetch(`${config.baseUrl}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -142,7 +152,12 @@ async function ollamaChat(config: AiProviderConfig, messages: ChatMessage[], sig
 
 // ─── OpenAI ──────────────────────────────────────────────────────────────────
 
-async function openaiChat(config: AiProviderConfig, messages: ChatMessage[], signal?: AbortSignal, onToken?: (t: string) => void): Promise<string> {
+async function openaiChat(
+  config: AiProviderConfig,
+  messages: ChatMessage[],
+  signal?: AbortSignal,
+  onToken?: (t: string) => void
+): Promise<string> {
   const res = await fetch(`${config.baseUrl}/v1/chat/completions`, {
     method: "POST",
     headers: {
@@ -161,13 +176,20 @@ async function openaiChat(config: AiProviderConfig, messages: ChatMessage[], sig
 
 // ─── Claude (Anthropic) ─────────────────────────────────────────────────────
 
-async function claudeChat(config: AiProviderConfig, messages: ChatMessage[], signal?: AbortSignal, onToken?: (t: string) => void): Promise<string> {
+async function claudeChat(
+  config: AiProviderConfig,
+  messages: ChatMessage[],
+  signal?: AbortSignal,
+  onToken?: (t: string) => void
+): Promise<string> {
   // Anthropic uses a different format: system is separate, messages are user/assistant only
   const systemMsg = messages.find((m) => m.role === "system");
-  const chatMessages = messages.filter((m) => m.role !== "system").map((m) => ({
-    role: m.role as "user" | "assistant",
-    content: m.content,
-  }));
+  const chatMessages = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    }));
 
   const res = await fetch(`${config.baseUrl}/v1/messages`, {
     method: "POST",
@@ -195,13 +217,20 @@ async function claudeChat(config: AiProviderConfig, messages: ChatMessage[], sig
 
 // ─── Gemini ──────────────────────────────────────────────────────────────────
 
-async function geminiChat(config: AiProviderConfig, messages: ChatMessage[], signal?: AbortSignal, onToken?: (t: string) => void): Promise<string> {
+async function geminiChat(
+  config: AiProviderConfig,
+  messages: ChatMessage[],
+  signal?: AbortSignal,
+  onToken?: (t: string) => void
+): Promise<string> {
   // Gemini uses a different format
   const systemMsg = messages.find((m) => m.role === "system");
-  const contents = messages.filter((m) => m.role !== "system").map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
+  const contents = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
 
   const res = await fetch(
     `${config.baseUrl}/v1beta/models/${config.model}:streamGenerateContent?alt=sse&key=${config.apiKey}`,
@@ -226,7 +255,11 @@ async function geminiChat(config: AiProviderConfig, messages: ChatMessage[], sig
 
 type NdJsonExtractor = (parsed: Record<string, unknown>) => string;
 
-async function readNDJsonStream(response: Response, extractor: NdJsonExtractor, onToken?: (t: string) => void): Promise<string> {
+async function readNDJsonStream(
+  response: Response,
+  extractor: NdJsonExtractor,
+  onToken?: (t: string) => void
+): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
   const decoder = new TextDecoder();
@@ -242,8 +275,13 @@ async function readNDJsonStream(response: Response, extractor: NdJsonExtractor, 
       try {
         const parsed = JSON.parse(trimmed) as Record<string, unknown>;
         const token = extractor(parsed);
-        if (token) { full += token; onToken?.(token); }
-      } catch { /* skip */ }
+        if (token) {
+          full += token;
+          onToken?.(token);
+        }
+      } catch {
+        /* skip */
+      }
     }
   }
   return full;
@@ -266,14 +304,22 @@ async function readSSEStream(response: Response, onToken?: (t: string) => void):
       try {
         const parsed = JSON.parse(data) as { choices?: Array<{ delta?: { content?: string } }> };
         const token = parsed.choices?.[0]?.delta?.content ?? "";
-        if (token) { full += token; onToken?.(token); }
-      } catch { /* skip */ }
+        if (token) {
+          full += token;
+          onToken?.(token);
+        }
+      } catch {
+        /* skip */
+      }
     }
   }
   return full;
 }
 
-async function readClaudeSSEStream(response: Response, onToken?: (t: string) => void): Promise<string> {
+async function readClaudeSSEStream(
+  response: Response,
+  onToken?: (t: string) => void
+): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
   const decoder = new TextDecoder();
@@ -290,15 +336,23 @@ async function readClaudeSSEStream(response: Response, onToken?: (t: string) => 
         const parsed = JSON.parse(data) as { type?: string; delta?: { text?: string } };
         if (parsed.type === "content_block_delta") {
           const token = parsed.delta?.text ?? "";
-          if (token) { full += token; onToken?.(token); }
+          if (token) {
+            full += token;
+            onToken?.(token);
+          }
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
   }
   return full;
 }
 
-async function readGeminiSSEStream(response: Response, onToken?: (t: string) => void): Promise<string> {
+async function readGeminiSSEStream(
+  response: Response,
+  onToken?: (t: string) => void
+): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
   const decoder = new TextDecoder();
@@ -312,10 +366,17 @@ async function readGeminiSSEStream(response: Response, onToken?: (t: string) => 
       if (!line.startsWith("data: ")) continue;
       const data = line.slice(6).trim();
       try {
-        const parsed = JSON.parse(data) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+        const parsed = JSON.parse(data) as {
+          candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        };
         const token = parsed.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-        if (token) { full += token; onToken?.(token); }
-      } catch { /* skip */ }
+        if (token) {
+          full += token;
+          onToken?.(token);
+        }
+      } catch {
+        /* skip */
+      }
     }
   }
   return full;

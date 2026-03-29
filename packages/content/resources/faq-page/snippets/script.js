@@ -37,7 +37,9 @@
       var sectionVisible = 0;
 
       items.forEach(function (item) {
-        var question = item.querySelector(".accordion-trigger span:first-child").textContent.toLowerCase();
+        var question = item
+          .querySelector(".accordion-trigger span:first-child")
+          .textContent.toLowerCase();
         var answer = item.querySelector(".accordion-content p").textContent.toLowerCase();
 
         if (!query || question.indexOf(query) !== -1 || answer.indexOf(query) !== -1) {

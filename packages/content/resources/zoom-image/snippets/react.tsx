@@ -6,7 +6,7 @@ const IMAGES = [
   { label: "Data chart", colors: ["#021d1a", "#033028", "#065f46"], accent: "#7ee787" },
 ];
 
-function MockImage({ img }: { img: typeof IMAGES[0] }) {
+function MockImage({ img }: { img: (typeof IMAGES)[0] }) {
   return (
     <div className="w-full h-full flex flex-col gap-2 p-4" style={{ background: img.colors[0] }}>
       <div className="flex gap-1.5 mb-1">
@@ -15,18 +15,30 @@ function MockImage({ img }: { img: typeof IMAGES[0] }) {
         ))}
       </div>
       {[90, 70, 80, 60, 85].map((w, i) => (
-        <div key={i} className="h-1.5 rounded-full" style={{ width: `${w}%`, background: i % 2 === 0 ? img.accent : img.colors[2], opacity: 0.7 }} />
+        <div
+          key={i}
+          className="h-1.5 rounded-full"
+          style={{
+            width: `${w}%`,
+            background: i % 2 === 0 ? img.accent : img.colors[2],
+            opacity: 0.7,
+          }}
+        />
       ))}
       <div className="mt-2 grid grid-cols-3 gap-1.5">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-6 rounded" style={{ background: img.colors[1], border: `1px solid ${img.accent}30` }} />
+          <div
+            key={i}
+            className="h-6 rounded"
+            style={{ background: img.colors[1], border: `1px solid ${img.accent}30` }}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function ZoomCard({ img }: { img: typeof IMAGES[0] }) {
+function ZoomCard({ img }: { img: (typeof IMAGES)[0] }) {
   const [mouse, setMouse] = useState<{ x: number; y: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const LENS = 80; // lens diameter px
@@ -38,8 +50,12 @@ function ZoomCard({ img }: { img: typeof IMAGES[0] }) {
     setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   }, []);
 
-  const lensX = mouse ? Math.min(Math.max(mouse.x - LENS / 2, 0), (containerRef.current?.offsetWidth ?? 300) - LENS) : 0;
-  const lensY = mouse ? Math.min(Math.max(mouse.y - LENS / 2, 0), (containerRef.current?.offsetHeight ?? 200) - LENS) : 0;
+  const lensX = mouse
+    ? Math.min(Math.max(mouse.x - LENS / 2, 0), (containerRef.current?.offsetWidth ?? 300) - LENS)
+    : 0;
+  const lensY = mouse
+    ? Math.min(Math.max(mouse.y - LENS / 2, 0), (containerRef.current?.offsetHeight ?? 200) - LENS)
+    : 0;
 
   return (
     <div>
@@ -58,7 +74,13 @@ function ZoomCard({ img }: { img: typeof IMAGES[0] }) {
             {/* Lens highlight */}
             <div
               className="absolute rounded-full border-2 border-white/50 pointer-events-none z-10"
-              style={{ width: LENS, height: LENS, left: lensX, top: lensY, boxShadow: "0 0 0 9999px rgba(0,0,0,0.4)" }}
+              style={{
+                width: LENS,
+                height: LENS,
+                left: lensX,
+                top: lensY,
+                boxShadow: "0 0 0 9999px rgba(0,0,0,0.4)",
+              }}
             />
             {/* Zoomed preview */}
             <div
@@ -72,7 +94,14 @@ function ZoomCard({ img }: { img: typeof IMAGES[0] }) {
                   transform: `translate(-${mouse.x * ZOOM - 50}px, -${mouse.y * ZOOM - 50}px)`,
                 }}
               >
-                <div style={{ width: containerRef.current?.offsetWidth, height: containerRef.current?.offsetHeight, transform: `scale(${ZOOM})`, transformOrigin: "top left" }}>
+                <div
+                  style={{
+                    width: containerRef.current?.offsetWidth,
+                    height: containerRef.current?.offsetHeight,
+                    transform: `scale(${ZOOM})`,
+                    transformOrigin: "top left",
+                  }}
+                >
                   <MockImage img={img} />
                 </div>
               </div>
@@ -89,7 +118,9 @@ export default function ZoomImageRC() {
     <div className="min-h-screen bg-[#0d1117] flex items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-4">
         <h2 className="text-[#e6edf3] font-bold text-lg mb-4">Zoom / Magnifier</h2>
-        {IMAGES.map((img) => <ZoomCard key={img.label} img={img} />)}
+        {IMAGES.map((img) => (
+          <ZoomCard key={img.label} img={img} />
+        ))}
         <p className="text-[11px] text-center text-[#484f58]">Hover over an image to magnify</p>
       </div>
     </div>

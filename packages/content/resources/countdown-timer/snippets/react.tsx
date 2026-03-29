@@ -16,7 +16,10 @@ export default function CountdownTimerRC() {
   useEffect(() => {
     function calc() {
       const diff = new Date(targetDate).getTime() - Date.now();
-      if (diff <= 0) { setExpired(true); return; }
+      if (diff <= 0) {
+        setExpired(true);
+        return;
+      }
       setExpired(false);
       setTimeLeft({
         days: Math.floor(diff / 86400000),
@@ -56,7 +59,10 @@ export default function CountdownTimerRC() {
         ) : (
           <div className="grid grid-cols-4 gap-3">
             {units.map(({ label, value }) => (
-              <div key={label} className="bg-[#161b22] border border-[#30363d] rounded-xl p-4 text-center">
+              <div
+                key={label}
+                className="bg-[#161b22] border border-[#30363d] rounded-xl p-4 text-center"
+              >
                 <p className="text-[40px] font-mono font-bold text-[#58a6ff] tabular-nums leading-none mb-1">
                   {pad(value)}
                 </p>

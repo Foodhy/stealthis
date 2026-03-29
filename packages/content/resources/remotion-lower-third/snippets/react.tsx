@@ -13,8 +13,8 @@ import {
 const NAME = "Jane Doe";
 const TITLE = "Senior Product Designer";
 const ACCENT_COLOR = "#6366f1";
-const BG_HOLD_START = 15;   // frame when hold begins
-const BG_HOLD_END = 105;    // frame when slide-out starts
+const BG_HOLD_START = 15; // frame when hold begins
+const BG_HOLD_END = 105; // frame when slide-out starts
 const DURATION = 120;
 
 // ── Lower Third Component ─────────────────────────────────────────────

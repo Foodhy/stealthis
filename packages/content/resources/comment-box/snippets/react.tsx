@@ -1,10 +1,34 @@
 import { useState } from "react";
 
-type Comment = { id: number; user: string; avatar: string; color: string; text: string; time: string; likes: number };
+type Comment = {
+  id: number;
+  user: string;
+  avatar: string;
+  color: string;
+  text: string;
+  time: string;
+  likes: number;
+};
 
 const INITIAL: Comment[] = [
-  { id: 1, user: "Sarah Chen", avatar: "SC", color: "#bc8cff", text: "This is exactly what I was looking for! Clean API design.", time: "2h ago", likes: 12 },
-  { id: 2, user: "Alex Rivera", avatar: "AR", color: "#58a6ff", text: "Great implementation. One suggestion: add keyboard shortcut support.", time: "45m ago", likes: 7 },
+  {
+    id: 1,
+    user: "Sarah Chen",
+    avatar: "SC",
+    color: "#bc8cff",
+    text: "This is exactly what I was looking for! Clean API design.",
+    time: "2h ago",
+    likes: 12,
+  },
+  {
+    id: 2,
+    user: "Alex Rivera",
+    avatar: "AR",
+    color: "#58a6ff",
+    text: "Great implementation. One suggestion: add keyboard shortcut support.",
+    time: "45m ago",
+    likes: 7,
+  },
 ];
 
 function CommentItem({ comment, onLike }: { comment: Comment; onLike: () => void }) {
@@ -28,12 +52,17 @@ function CommentItem({ comment, onLike }: { comment: Comment; onLike: () => void
         </div>
         <div className="flex items-center gap-4 mt-1.5 ml-1">
           <button
-            onClick={() => { setLiked((l) => !l); onLike(); }}
+            onClick={() => {
+              setLiked((l) => !l);
+              onLike();
+            }}
             className={`text-xs transition-colors ${liked ? "text-[#ff6b6b]" : "text-[#484f58] hover:text-[#8b949e]"}`}
           >
             {liked ? "♥" : "♡"} {comment.likes + (liked ? 1 : 0)}
           </button>
-          <button className="text-xs text-[#484f58] hover:text-[#8b949e] transition-colors">Reply</button>
+          <button className="text-xs text-[#484f58] hover:text-[#8b949e] transition-colors">
+            Reply
+          </button>
         </div>
       </div>
     </div>
@@ -51,7 +80,15 @@ export default function CommentBoxRC() {
     setTimeout(() => {
       setComments((prev) => [
         ...prev,
-        { id: Date.now(), user: "You", avatar: "YO", color: "#7ee787", text: text.trim(), time: "just now", likes: 0 },
+        {
+          id: Date.now(),
+          user: "You",
+          avatar: "YO",
+          color: "#7ee787",
+          text: text.trim(),
+          time: "just now",
+          likes: 0,
+        },
       ]);
       setText("");
       setSubmitting(false);
@@ -65,11 +102,7 @@ export default function CommentBoxRC() {
 
         <div className="space-y-4 mb-6">
           {comments.map((c) => (
-            <CommentItem
-              key={c.id}
-              comment={c}
-              onLike={() => {}}
-            />
+            <CommentItem key={c.id} comment={c} onLike={() => {}} />
           ))}
         </div>
 
@@ -81,7 +114,9 @@ export default function CommentBoxRC() {
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
+              }}
               placeholder="Add a comment…"
               rows={3}
               className="w-full bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-3 text-[#e6edf3] placeholder-[#484f58] text-sm resize-none focus:outline-none focus:border-[#58a6ff] transition-colors"

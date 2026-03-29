@@ -10,12 +10,54 @@ interface ListItem {
 }
 
 const initialItems: ListItem[] = [
-  { id: 1, emoji: "🎨", text: "Design System", badge: "UI", bg: "rgba(168,85,247,0.2)", border: "rgba(168,85,247,0.4)" },
-  { id: 2, emoji: "⚙️", text: "API Integration", badge: "DEV", bg: "rgba(59,130,246,0.2)", border: "rgba(59,130,246,0.4)" },
-  { id: 3, emoji: "📊", text: "Analytics Dashboard", badge: "DATA", bg: "rgba(16,185,129,0.2)", border: "rgba(16,185,129,0.4)" },
-  { id: 4, emoji: "🔒", text: "Auth & Permissions", badge: "SEC", bg: "rgba(245,158,11,0.2)", border: "rgba(245,158,11,0.4)" },
-  { id: 5, emoji: "🚀", text: "CI/CD Pipeline", badge: "OPS", bg: "rgba(239,68,68,0.2)", border: "rgba(239,68,68,0.4)" },
-  { id: 6, emoji: "📝", text: "Documentation", badge: "DOCS", bg: "rgba(236,72,153,0.2)", border: "rgba(236,72,153,0.4)" },
+  {
+    id: 1,
+    emoji: "🎨",
+    text: "Design System",
+    badge: "UI",
+    bg: "rgba(168,85,247,0.2)",
+    border: "rgba(168,85,247,0.4)",
+  },
+  {
+    id: 2,
+    emoji: "⚙️",
+    text: "API Integration",
+    badge: "DEV",
+    bg: "rgba(59,130,246,0.2)",
+    border: "rgba(59,130,246,0.4)",
+  },
+  {
+    id: 3,
+    emoji: "📊",
+    text: "Analytics Dashboard",
+    badge: "DATA",
+    bg: "rgba(16,185,129,0.2)",
+    border: "rgba(16,185,129,0.4)",
+  },
+  {
+    id: 4,
+    emoji: "🔒",
+    text: "Auth & Permissions",
+    badge: "SEC",
+    bg: "rgba(245,158,11,0.2)",
+    border: "rgba(245,158,11,0.4)",
+  },
+  {
+    id: 5,
+    emoji: "🚀",
+    text: "CI/CD Pipeline",
+    badge: "OPS",
+    bg: "rgba(239,68,68,0.2)",
+    border: "rgba(239,68,68,0.4)",
+  },
+  {
+    id: 6,
+    emoji: "📝",
+    text: "Documentation",
+    badge: "DOCS",
+    bg: "rgba(236,72,153,0.2)",
+    border: "rgba(236,72,153,0.4)",
+  },
 ];
 
 export default function ReorderList() {
@@ -54,88 +96,98 @@ export default function ReorderList() {
         requestAnimationFrame(() => {
           el.style.transform = "";
           el.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)";
-          el.addEventListener("transitionend", () => { el.style.transition = ""; el.style.transform = ""; }, { once: true });
+          el.addEventListener(
+            "transitionend",
+            () => {
+              el.style.transition = "";
+              el.style.transform = "";
+            },
+            { once: true }
+          );
         });
       });
     });
   }, [items]);
 
-  const onPointerDown = useCallback((e: React.PointerEvent, index: number) => {
-    e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    setDragIndex(index);
-    startYRef.current = e.clientY;
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent, index: number) => {
+      e.preventDefault();
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      setDragIndex(index);
+      startYRef.current = e.clientY;
 
-    // Create clone
-    const itemEl = (e.target as HTMLElement).closest("[data-id]") as HTMLElement;
-    if (itemEl) {
-      const rect = itemEl.getBoundingClientRect();
-      const clone = document.createElement("div");
-      clone.innerHTML = itemEl.outerHTML;
-      clone.style.position = "fixed";
-      clone.style.left = rect.left + "px";
-      clone.style.top = rect.top + "px";
-      clone.style.width = rect.width + "px";
-      clone.style.pointerEvents = "none";
-      clone.style.zIndex = "9999";
-      clone.style.opacity = "0.92";
-      clone.style.boxShadow = "0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(109,40,217,0.3)";
-      clone.style.borderRadius = "0.75rem";
-      clone.style.transform = "scale(1.03)";
-      document.body.appendChild(clone);
-      cloneRef.current = clone;
-    }
-
-    const onMove = (ev: PointerEvent) => {
-      if (cloneRef.current) {
-        const dy = ev.clientY - startYRef.current;
-        cloneRef.current.style.transform = `translateY(${dy}px) scale(1.03)`;
+      // Create clone
+      const itemEl = (e.target as HTMLElement).closest("[data-id]") as HTMLElement;
+      if (itemEl) {
+        const rect = itemEl.getBoundingClientRect();
+        const clone = document.createElement("div");
+        clone.innerHTML = itemEl.outerHTML;
+        clone.style.position = "fixed";
+        clone.style.left = rect.left + "px";
+        clone.style.top = rect.top + "px";
+        clone.style.width = rect.width + "px";
+        clone.style.pointerEvents = "none";
+        clone.style.zIndex = "9999";
+        clone.style.opacity = "0.92";
+        clone.style.boxShadow = "0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(109,40,217,0.3)";
+        clone.style.borderRadius = "0.75rem";
+        clone.style.transform = "scale(1.03)";
+        document.body.appendChild(clone);
+        cloneRef.current = clone;
       }
 
-      // Check swap
-      if (!listRef.current) return;
-      const els = Array.from(listRef.current.querySelectorAll<HTMLElement>("[data-id]"));
-      setItems((prev) => {
-        const currentIndex = prev.findIndex((_, i) => i === index);
-        // We need to find which item is currently at the dragged position
-        let dragIdx = -1;
-        for (let i = 0; i < els.length; i++) {
-          if (Number(els[i].dataset.id) === prev[index]?.id) {
-            dragIdx = i;
-            break;
-          }
+      const onMove = (ev: PointerEvent) => {
+        if (cloneRef.current) {
+          const dy = ev.clientY - startYRef.current;
+          cloneRef.current.style.transform = `translateY(${dy}px) scale(1.03)`;
         }
 
-        for (let i = 0; i < els.length; i++) {
-          if (i === dragIdx) continue;
-          const rect = els[i].getBoundingClientRect();
-          const midY = rect.top + rect.height / 2;
-          if ((i < dragIdx && ev.clientY < midY) || (i > dragIdx && ev.clientY > midY)) {
-            captureRects();
-            const newItems = [...prev];
-            const [moved] = newItems.splice(dragIdx, 1);
-            newItems.splice(i, 0, moved);
-            index = i; // Update tracked index
-            return newItems;
+        // Check swap
+        if (!listRef.current) return;
+        const els = Array.from(listRef.current.querySelectorAll<HTMLElement>("[data-id]"));
+        setItems((prev) => {
+          const currentIndex = prev.findIndex((_, i) => i === index);
+          // We need to find which item is currently at the dragged position
+          let dragIdx = -1;
+          for (let i = 0; i < els.length; i++) {
+            if (Number(els[i].dataset.id) === prev[index]?.id) {
+              dragIdx = i;
+              break;
+            }
           }
+
+          for (let i = 0; i < els.length; i++) {
+            if (i === dragIdx) continue;
+            const rect = els[i].getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if ((i < dragIdx && ev.clientY < midY) || (i > dragIdx && ev.clientY > midY)) {
+              captureRects();
+              const newItems = [...prev];
+              const [moved] = newItems.splice(dragIdx, 1);
+              newItems.splice(i, 0, moved);
+              index = i; // Update tracked index
+              return newItems;
+            }
+          }
+          return prev;
+        });
+      };
+
+      const onUp = () => {
+        setDragIndex(null);
+        if (cloneRef.current) {
+          cloneRef.current.remove();
+          cloneRef.current = null;
         }
-        return prev;
-      });
-    };
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
 
-    const onUp = () => {
-      setDragIndex(null);
-      if (cloneRef.current) {
-        cloneRef.current.remove();
-        cloneRef.current = null;
-      }
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
-
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-  }, [captureRects]);
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    },
+    [captureRects]
+  );
 
   return (
     <div
@@ -149,7 +201,9 @@ export default function ReorderList() {
         color: "#e4e4e7",
       }}
     >
-      <div style={{ width: "min(440px, 100%)", display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div
+        style={{ width: "min(440px, 100%)", display: "flex", flexDirection: "column", gap: "1rem" }}
+      >
         <div>
           <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#f4f4f5" }}>Reorder List</h2>
           <p style={{ fontSize: "0.8rem", color: "#52525b", marginTop: "0.25rem" }}>
@@ -157,7 +211,16 @@ export default function ReorderList() {
           </p>
         </div>
 
-        <ul ref={listRef} style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.4rem", position: "relative" }}>
+        <ul
+          ref={listRef}
+          style={{
+            listStyle: "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.4rem",
+            position: "relative",
+          }}
+        >
           {items.map((item, i) => (
             <li
               key={item.id}
@@ -179,38 +242,64 @@ export default function ReorderList() {
                 borderColor: dragIndex === i ? "rgba(109,40,217,0.3)" : "rgba(255,255,255,0.08)",
               }}
             >
-              <span style={{
-                fontSize: "0.65rem", fontWeight: 700, color: "#3f3f46",
-                minWidth: 18, textAlign: "center", fontVariantNumeric: "tabular-nums",
-              }}>
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  color: "#3f3f46",
+                  minWidth: 18,
+                  textAlign: "center",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {i + 1}
               </span>
               <span
                 onPointerDown={(e) => onPointerDown(e, i)}
                 style={{
-                  color: "#3f3f46", fontSize: "1.1rem", cursor: "grab",
-                  lineHeight: 1, touchAction: "none",
-                  display: "grid", placeItems: "center", width: 24, height: 24,
+                  color: "#3f3f46",
+                  fontSize: "1.1rem",
+                  cursor: "grab",
+                  lineHeight: 1,
+                  touchAction: "none",
+                  display: "grid",
+                  placeItems: "center",
+                  width: 24,
+                  height: 24,
                 }}
               >
                 ⠿
               </span>
-              <div style={{
-                width: 32, height: 32, borderRadius: "0.5rem",
-                display: "grid", placeItems: "center", fontSize: "0.9rem", flexShrink: 0,
-                background: item.bg, border: `1px solid ${item.border}`,
-              }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "0.5rem",
+                  display: "grid",
+                  placeItems: "center",
+                  fontSize: "0.9rem",
+                  flexShrink: 0,
+                  background: item.bg,
+                  border: `1px solid ${item.border}`,
+                }}
+              >
                 {item.emoji}
               </div>
               <span style={{ flex: 1, fontSize: "0.85rem", fontWeight: 500, color: "#d4d4d8" }}>
                 {item.text}
               </span>
-              <span style={{
-                fontSize: "0.65rem", fontWeight: 700, padding: "0.15rem 0.5rem",
-                borderRadius: 999, background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.08)", color: "#71717a",
-                letterSpacing: "0.04em",
-              }}>
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  padding: "0.15rem 0.5rem",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "#71717a",
+                  letterSpacing: "0.04em",
+                }}
+              >
                 {item.badge}
               </span>
             </li>

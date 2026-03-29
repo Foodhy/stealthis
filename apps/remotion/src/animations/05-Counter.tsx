@@ -31,10 +31,10 @@ import {
 
 // --- Stats to animate ---
 const STATS = [
-  { label: "Users",    from: 0,      to: 12_500,  suffix: "",  color: "#818cf8" },
-  { label: "Revenue",  from: 0,      to: 98_432,  prefix: "$", color: "#34d399" },
-  { label: "Uptime",   from: 95,     to: 99.9,    suffix: "%", color: "#fb923c", decimals: 1 },
-  { label: "NPS",      from: 0,      to: 72,      suffix: "",  color: "#f472b6" },
+  { label: "Users", from: 0, to: 12_500, suffix: "", color: "#818cf8" },
+  { label: "Revenue", from: 0, to: 98_432, prefix: "$", color: "#34d399" },
+  { label: "Uptime", from: 95, to: 99.9, suffix: "%", color: "#fb923c", decimals: 1 },
+  { label: "NPS", from: 0, to: 72, suffix: "", color: "#f472b6" },
 ];
 
 const COUNT_DURATION_SEC = 2.5; // How long the count-up lasts (seconds)
@@ -44,9 +44,8 @@ const StatCard: React.FC<{
   frame: number;
   fps: number;
   index: number;
-  stat: typeof STATS[number];
+  stat: (typeof STATS)[number];
 }> = ({ frame, fps, index, stat }) => {
-
   // Stagger card entrance: each card springs in with a delay
   const entranceProgress = spring({
     frame: frame - index * 8,
@@ -55,16 +54,11 @@ const StatCard: React.FC<{
   });
 
   // Count-up: interpolate from `from` to `to` over COUNT_DURATION_SEC seconds
-  const rawValue = interpolate(
-    frame,
-    [0, COUNT_DURATION_SEC * fps],
-    [stat.from, stat.to],
-    {
-      easing: Easing.out(Easing.quad), // Starts fast, decelerates to a stop
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",       // Freeze at target value after animation ends
-    },
-  );
+  const rawValue = interpolate(frame, [0, COUNT_DURATION_SEC * fps], [stat.from, stat.to], {
+    easing: Easing.out(Easing.quad), // Starts fast, decelerates to a stop
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp", // Freeze at target value after animation ends
+  });
 
   // Format the number
   const formatted =
@@ -96,7 +90,9 @@ const StatCard: React.FC<{
           lineHeight: 1,
         }}
       >
-        {stat.prefix ?? ""}{formatted}{stat.suffix ?? ""}
+        {stat.prefix ?? ""}
+        {formatted}
+        {stat.suffix ?? ""}
       </span>
       <span
         style={{

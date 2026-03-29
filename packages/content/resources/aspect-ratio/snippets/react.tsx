@@ -7,11 +7,7 @@ interface AspectRatioProps {
   style?: CSSProperties;
 }
 
-function AspectRatioBox({
-  ratio = 16 / 9,
-  children,
-  style,
-}: AspectRatioProps) {
+function AspectRatioBox({ ratio = 16 / 9, children, style }: AspectRatioProps) {
   return (
     <div
       style={{
@@ -69,14 +65,28 @@ function DemoContent({
 }
 
 const MonitorIcon = (
-  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+  <svg
+    width="40"
+    height="40"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
     <rect x="2" y="3" width="20" height="14" rx="2" />
     <path d="M8 21h8M12 17v4" />
   </svg>
 );
 
 const ImageIcon = (
-  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+  <svg
+    width="40"
+    height="40"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
     <rect x="3" y="3" width="18" height="18" rx="3" />
     <circle cx="8.5" cy="8.5" r="1.5" />
     <path d="m21 15-5-5L5 21" />
@@ -84,35 +94,65 @@ const ImageIcon = (
 );
 
 const CircleIcon = (
-  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+  <svg
+    width="40"
+    height="40"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
     <circle cx="12" cy="12" r="10" />
     <path d="m9 12 2 2 4-4" />
   </svg>
 );
 
-const demos: { label: string; ratio: number; gradient: string; icon: ReactNode; wide?: boolean }[] = [
-  { label: "Widescreen", ratio: 16 / 9, gradient: "linear-gradient(135deg, #1e1b4b, #312e81)", icon: MonitorIcon },
-  { label: "Classic", ratio: 4 / 3, gradient: "linear-gradient(135deg, #0c4a6e, #164e63)", icon: ImageIcon },
-  { label: "Square", ratio: 1, gradient: "linear-gradient(135deg, #14532d, #1a2e05)", icon: CircleIcon },
-  {
-    label: "Ultra-Wide",
-    ratio: 21 / 9,
-    gradient: "linear-gradient(135deg, #4c1d95, #701a75)",
-    icon: MonitorIcon,
-    wide: true,
-  },
-  {
-    label: "Portrait",
-    ratio: 9 / 16,
-    gradient: "linear-gradient(135deg, #78350f, #7c2d12)",
-    icon: (
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-        <rect x="5" y="2" width="14" height="20" rx="3" />
-        <path d="M12 18h.01" />
-      </svg>
-    ),
-  },
-];
+const demos: { label: string; ratio: number; gradient: string; icon: ReactNode; wide?: boolean }[] =
+  [
+    {
+      label: "Widescreen",
+      ratio: 16 / 9,
+      gradient: "linear-gradient(135deg, #1e1b4b, #312e81)",
+      icon: MonitorIcon,
+    },
+    {
+      label: "Classic",
+      ratio: 4 / 3,
+      gradient: "linear-gradient(135deg, #0c4a6e, #164e63)",
+      icon: ImageIcon,
+    },
+    {
+      label: "Square",
+      ratio: 1,
+      gradient: "linear-gradient(135deg, #14532d, #1a2e05)",
+      icon: CircleIcon,
+    },
+    {
+      label: "Ultra-Wide",
+      ratio: 21 / 9,
+      gradient: "linear-gradient(135deg, #4c1d95, #701a75)",
+      icon: MonitorIcon,
+      wide: true,
+    },
+    {
+      label: "Portrait",
+      ratio: 9 / 16,
+      gradient: "linear-gradient(135deg, #78350f, #7c2d12)",
+      icon: (
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <rect x="5" y="2" width="14" height="20" rx="3" />
+          <path d="M12 18h.01" />
+        </svg>
+      ),
+    },
+  ];
 
 export default function AspectRatio({ ratio }: { ratio?: number }) {
   return (
@@ -127,10 +167,10 @@ export default function AspectRatio({ ratio }: { ratio?: number }) {
         color: "#f1f5f9",
       }}
     >
-      <div style={{ width: "min(700px, 100%)", display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <h2 style={{ fontSize: "1.375rem", fontWeight: 700 }}>
-          Aspect Ratio Containers
-        </h2>
+      <div
+        style={{ width: "min(700px, 100%)", display: "flex", flexDirection: "column", gap: "1rem" }}
+      >
+        <h2 style={{ fontSize: "1.375rem", fontWeight: 700 }}>Aspect Ratio Containers</h2>
         <p style={{ fontSize: "0.875rem", color: "#64748b", marginBottom: "0.5rem" }}>
           Resize the browser to see them maintain their proportions
         </p>
@@ -162,9 +202,7 @@ export default function AspectRatio({ ratio }: { ratio?: number }) {
                   fontFamily: '"Fira Code", monospace',
                 }}
               >
-                {Math.round(demo.ratio * 100) / 100 === demo.ratio
-                  ? `${demo.ratio}`
-                  : demo.label}
+                {Math.round(demo.ratio * 100) / 100 === demo.ratio ? `${demo.ratio}` : demo.label}
               </span>
               <AspectRatioBox ratio={ratio || demo.ratio}>
                 <DemoContent label={demo.label} gradient={demo.gradient} icon={demo.icon} />

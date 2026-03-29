@@ -3,15 +3,44 @@
 
   /* ── Config ── */
   const TODAY = new Date(2026, 2, 2); // Mar 2, 2026
-  const MONTHS = ["January","February","March","April","May","June",
-                  "July","August","September","October","November","December"];
-  const LONG_DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const SHORT_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const LONG_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const SHORT_MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   // Blocked specific dates (0-indexed month, day): unavailable weekdays
   const BLOCKED = [
-    "2026-02-13", "2026-02-20", "2026-03-06",
-    "2026-03-13", "2026-03-20", "2026-03-27",
+    "2026-02-13",
+    "2026-02-20",
+    "2026-03-06",
+    "2026-03-13",
+    "2026-03-20",
+    "2026-03-27",
   ];
 
   // Pre-booked time slots (stored in UTC-5 base)
@@ -26,7 +55,7 @@
     "2026-03-18": ["11:00", "16:00"],
   };
 
-  let calYear  = 2026;
+  let calYear = 2026;
   let calMonth = 2; // March
   let selectedDate = null;
   let selectedSlot = null;
@@ -34,7 +63,7 @@
 
   /* ── Screens ── */
   function showScreen(id) {
-    ["screen-slots","screen-form","screen-success"].forEach(s => {
+    ["screen-slots", "screen-form", "screen-success"].forEach((s) => {
       const el = document.getElementById(s);
       el.style.display = s === id ? "block" : "none";
     });
@@ -99,11 +128,19 @@
     renderCalendar();
 
     const slotsCol = document.getElementById("av-slots-col");
-    const divider  = document.getElementById("av-divider");
+    const divider = document.getElementById("av-divider");
     slotsCol.style.display = "flex";
     divider.style.display = "block";
 
-    const DAYS_LONG = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const DAYS_LONG = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
     document.getElementById("av-slots-day").textContent =
       `${DAYS_LONG[d.getDay()]}, ${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`;
 
@@ -125,18 +162,18 @@
         const baseM = min;
 
         // Apply tz offset (tzOffset relative to -5 base)
-        const diff = tzOffset - (-5);
+        const diff = tzOffset - -5;
         let displayH = baseH + diff;
         let displayM = baseM;
-        if (displayH < 0)  displayH += 24;
+        if (displayH < 0) displayH += 24;
         if (displayH >= 24) displayH -= 24;
 
-        const slotKey = `${String(baseH).padStart(2,"0")}:${String(baseM).padStart(2,"0")}`;
+        const slotKey = `${String(baseH).padStart(2, "0")}:${String(baseM).padStart(2, "0")}`;
         const isBooked = booked.includes(slotKey);
 
         const ampm = displayH < 12 ? "AM" : "PM";
         const h12 = displayH % 12 || 12;
-        const displayLabel = `${h12}:${String(displayM).padStart(2,"0")} ${ampm}`;
+        const displayLabel = `${h12}:${String(displayM).padStart(2, "0")} ${ampm}`;
 
         const slotWrap = document.createElement("div");
         slotWrap.className = "av-slot";
@@ -159,8 +196,12 @@
         if (!isBooked) {
           slotBtn.addEventListener("click", () => {
             // Deselect all other slots
-            document.querySelectorAll(".av-slot-btn").forEach(b => b.classList.remove("selected"));
-            document.querySelectorAll(".av-slot-confirm").forEach(c => c.classList.remove("visible"));
+            document
+              .querySelectorAll(".av-slot-btn")
+              .forEach((b) => b.classList.remove("selected"));
+            document
+              .querySelectorAll(".av-slot-confirm")
+              .forEach((c) => c.classList.remove("visible"));
 
             const alreadySelected = selectedSlot === slotKey;
             if (alreadySelected) {
@@ -187,7 +228,15 @@
   /* ── Booking form ── */
   function openBookingForm(slotLabel) {
     const info = document.getElementById("av-booking-info");
-    const DAYS_LONG = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const DAYS_LONG = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
     const dateLabel = selectedDate
       ? `${DAYS_LONG[selectedDate.getDay()]}, ${SHORT_MONTHS[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`
       : "";
@@ -207,7 +256,7 @@
   }
 
   /* ── Form submit ── */
-  document.getElementById("av-form").addEventListener("submit", e => {
+  document.getElementById("av-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const name = document.getElementById("av-name").value.trim();
     const email = document.getElementById("av-email").value.trim();
@@ -220,12 +269,21 @@
 
   /* ── Success screen ── */
   function showSuccessScreen(name) {
-    const DAYS_LONG = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const DAYS_LONG = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
     const dateLabel = selectedDate
       ? `${DAYS_LONG[selectedDate.getDay()]}, ${SHORT_MONTHS[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`
       : "";
 
-    const slotLabel = document.querySelector(".av-slot-btn.selected")?.dataset.label || selectedSlot || "";
+    const slotLabel =
+      document.querySelector(".av-slot-btn.selected")?.dataset.label || selectedSlot || "";
 
     const details = document.getElementById("av-success-details");
     details.innerHTML = `
@@ -265,30 +323,38 @@
   /* ── Navigation ── */
   document.getElementById("av-prev").addEventListener("click", () => {
     calMonth--;
-    if (calMonth < 0) { calMonth = 11; calYear--; }
+    if (calMonth < 0) {
+      calMonth = 11;
+      calYear--;
+    }
     renderCalendar();
   });
   document.getElementById("av-next").addEventListener("click", () => {
     calMonth++;
-    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth > 11) {
+      calMonth = 0;
+      calYear++;
+    }
     renderCalendar();
   });
 
   /* ── Timezone ── */
-  document.getElementById("av-tz-select").addEventListener("change", e => {
+  document.getElementById("av-tz-select").addEventListener("change", (e) => {
     tzOffset = parseInt(e.target.value);
     if (selectedDate) renderSlots();
   });
 
   /* ── Helpers ── */
   function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-           a.getMonth() === b.getMonth() &&
-           a.getDate() === b.getDate();
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
   }
 
   function formatDateISO(d) {
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
   /* ── Init ── */

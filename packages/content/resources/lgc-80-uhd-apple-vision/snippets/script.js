@@ -33,7 +33,7 @@ tl.to(".hero-title", {
       y: -20,
       duration: 1.5,
     },
-    "-=2",
+    "-=2"
   )
   .to(
     ".scroll-indicator",
@@ -42,7 +42,7 @@ tl.to(".hero-title", {
       y: 0,
       duration: 1,
     },
-    "-=1",
+    "-=1"
   );
 
 // Parallax for Background Blobs
@@ -84,7 +84,7 @@ revealElements.forEach((el) => {
         start: "top 85%",
         toggleActions: "play none none none",
       },
-    },
+    }
   );
 });
 
@@ -120,7 +120,8 @@ if (deviceCard) {
 // Staggered reveal for feature boxes
 const featureGrid = document.querySelector(".feature-grid");
 if (featureGrid) {
-  gsap.fromTo(".feature-box",
+  gsap.fromTo(
+    ".feature-box",
     { opacity: 0, y: 40, scale: 0.95 },
     {
       opacity: 1,
@@ -166,7 +167,7 @@ gsap.utils.toArray(".ring").forEach((ring, i) => {
         start: "top 80%",
         toggleActions: "play none none none",
       },
-    },
+    }
   );
 });
 
@@ -194,7 +195,7 @@ specNumbers.forEach((el) => {
             onUpdate: function () {
               el.textContent = Math.round(this.targets()[0].val) + suffix;
             },
-          },
+          }
         );
       },
     });

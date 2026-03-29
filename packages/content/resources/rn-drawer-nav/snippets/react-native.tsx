@@ -120,7 +120,7 @@ function DrawerNavigator({ children, drawerContent, drawerWidth = 280 }: DrawerN
       setActiveItem(key);
       closeDrawer();
     },
-    [closeDrawer],
+    [closeDrawer]
   );
 
   const panResponder = useRef(
@@ -128,7 +128,7 @@ function DrawerNavigator({ children, drawerContent, drawerWidth = 280 }: DrawerN
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (
         _evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
+        gestureState: PanResponderGestureState
       ) => {
         const { dx, moveX } = gestureState;
         if (!isOpen.current && moveX - dx < EDGE_THRESHOLD && dx > 10) {
@@ -139,10 +139,7 @@ function DrawerNavigator({ children, drawerContent, drawerWidth = 280 }: DrawerN
         }
         return false;
       },
-      onPanResponderMove: (
-        _evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => {
+      onPanResponderMove: (_evt: GestureResponderEvent, gestureState: PanResponderGestureState) => {
         const { dx } = gestureState;
         let newX: number;
         if (isOpen.current) {
@@ -154,7 +151,7 @@ function DrawerNavigator({ children, drawerContent, drawerWidth = 280 }: DrawerN
       },
       onPanResponderRelease: (
         _evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
+        gestureState: PanResponderGestureState
       ) => {
         const { dx, vx } = gestureState;
         if (vx > VELOCITY_THRESHOLD || dx > SWIPE_THRESHOLD) {
@@ -167,7 +164,7 @@ function DrawerNavigator({ children, drawerContent, drawerWidth = 280 }: DrawerN
           closeDrawer();
         }
       },
-    }),
+    })
   ).current;
 
   const overlayOpacity = translateX.interpolate({

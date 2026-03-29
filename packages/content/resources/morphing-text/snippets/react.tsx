@@ -7,11 +7,7 @@ interface MorphingTextProps {
   className?: string;
 }
 
-export function MorphingText({
-  texts,
-  morphDuration = 2000,
-  className = "",
-}: MorphingTextProps) {
+export function MorphingText({ texts, morphDuration = 2000, className = "" }: MorphingTextProps) {
   const [index, setIndex] = useState(0);
   const [showingA, setShowingA] = useState(true);
   const [aText, setAText] = useState(texts[0] || "");
@@ -117,7 +113,15 @@ export default function MorphingTextDemo() {
     >
       <div>
         <MorphingText texts={["Innovative", "Creative", "Powerful", "Beautiful", "Seamless"]} />
-        <p style={{ marginTop: "1.5rem", color: "#666", fontSize: "1rem", position: "relative", zIndex: 1 }}>
+        <p
+          style={{
+            marginTop: "1.5rem",
+            color: "#666",
+            fontSize: "1rem",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
           Text morphs smoothly between words via SVG blur
         </p>
       </div>

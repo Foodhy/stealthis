@@ -38,9 +38,7 @@
   document.querySelectorAll(".sidebar-link").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      document
-        .querySelectorAll(".sidebar-link")
-        .forEach((l) => l.classList.remove("active"));
+      document.querySelectorAll(".sidebar-link").forEach((l) => l.classList.remove("active"));
       link.classList.add("active");
       closeMobileSidebar();
     });
@@ -68,8 +66,7 @@
         if (isFloat) {
           valueEl.textContent = prefix + current.toFixed(1) + suffix;
         } else {
-          valueEl.textContent =
-            prefix + Math.floor(current).toLocaleString() + suffix;
+          valueEl.textContent = prefix + Math.floor(current).toLocaleString() + suffix;
         }
 
         if (progress < 1) {
@@ -104,9 +101,7 @@
     const canvas = document.getElementById(id);
     const values = canvas.dataset.values.split(",").map(Number);
     const labels = canvas.dataset.labels.split(",");
-    const colors = canvas.dataset.colors
-      ? canvas.dataset.colors.split(",")
-      : [];
+    const colors = canvas.dataset.colors ? canvas.dataset.colors.split(",") : [];
     return { canvas, values, labels, colors };
   }
 
@@ -218,11 +213,7 @@
       dots.forEach((d) => {
         const dist = Math.sqrt((mx - d.x) ** 2 + (my - d.y) ** 2);
         if (dist < 16) {
-          showTooltip(
-            e.clientX,
-            e.clientY,
-            d.label + ": $" + d.value.toLocaleString()
-          );
+          showTooltip(e.clientX, e.clientY, d.label + ": $" + d.value.toLocaleString());
           found = true;
         }
       });
@@ -254,7 +245,7 @@
     const chartH = h - padTop - padBottom;
 
     const maxVal = Math.max(...values) * 1.15;
-    const barWidth = chartW / values.length * 0.55;
+    const barWidth = (chartW / values.length) * 0.55;
     const gap = chartW / values.length;
 
     /* Grid */
@@ -318,17 +309,8 @@
       let found = false;
 
       bars.forEach((b) => {
-        if (
-          mx >= b.x &&
-          mx <= b.x + b.w &&
-          my >= b.y &&
-          my <= padTop + chartH
-        ) {
-          showTooltip(
-            e.clientX,
-            e.clientY,
-            b.label + ": $" + b.value.toLocaleString()
-          );
+        if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= padTop + chartH) {
+          showTooltip(e.clientX, e.clientY, b.label + ": $" + b.value.toLocaleString());
           found = true;
         }
       });
@@ -425,11 +407,7 @@
 
         const seg = segments.find((s) => angle >= s.start && angle < s.end);
         if (seg) {
-          showTooltip(
-            e.clientX,
-            e.clientY,
-            seg.label + ": " + seg.pct + "% (" + seg.value + ")"
-          );
+          showTooltip(e.clientX, e.clientY, seg.label + ": " + seg.pct + "% (" + seg.value + ")");
           return;
         }
       }
@@ -448,8 +426,7 @@
     headers.forEach((th, colIndex) => {
       th.addEventListener("click", () => {
         const type = th.dataset.sort;
-        const asc =
-          currentSort.col === colIndex ? !currentSort.asc : true;
+        const asc = currentSort.col === colIndex ? !currentSort.asc : true;
         currentSort = { col: colIndex, asc };
 
         /* Update classes */

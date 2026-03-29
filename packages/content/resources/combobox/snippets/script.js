@@ -21,7 +21,9 @@
     }
 
     function clearActive() {
-      options.forEach(function (o) { o.classList.remove("is-active"); });
+      options.forEach(function (o) {
+        o.classList.remove("is-active");
+      });
     }
 
     function setActive(idx) {
@@ -34,13 +36,17 @@
     }
 
     function getVisible() {
-      return options.filter(function (o) { return !o.classList.contains("is-hidden"); });
+      return options.filter(function (o) {
+        return !o.classList.contains("is-hidden");
+      });
     }
 
     function selectOption(opt) {
       selectedValue = opt.getAttribute("data-value");
       input.value = opt.textContent;
-      options.forEach(function (o) { o.classList.remove("is-selected"); });
+      options.forEach(function (o) {
+        o.classList.remove("is-selected");
+      });
       opt.classList.add("is-selected");
       close();
     }
@@ -91,13 +97,19 @@
 
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        if (!root.classList.contains("is-open")) { open(); filter(); }
+        if (!root.classList.contains("is-open")) {
+          open();
+          filter();
+        }
         var next = activeIndex + 1;
         if (next >= visible.length) next = 0;
         setActive(next);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        if (!root.classList.contains("is-open")) { open(); filter(); }
+        if (!root.classList.contains("is-open")) {
+          open();
+          filter();
+        }
         var prev = activeIndex - 1;
         if (prev < 0) prev = visible.length - 1;
         setActive(prev);
@@ -128,4 +140,4 @@
       if (!root.contains(e.target)) close();
     });
   }
-}());
+})();

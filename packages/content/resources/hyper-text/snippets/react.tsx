@@ -14,9 +14,7 @@ export default function HyperText({
   resolveDelay = 80,
 }: HyperTextProps) {
   const [displayChars, setDisplayChars] = useState<string[]>(text.split(""));
-  const [resolvedFlags, setResolvedFlags] = useState<boolean[]>(
-    new Array(text.length).fill(true)
-  );
+  const [resolvedFlags, setResolvedFlags] = useState<boolean[]>(new Array(text.length).fill(true));
   const isAnimating = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -34,10 +32,13 @@ export default function HyperText({
 
     // Stagger resolve
     text.split("").forEach((_, i) => {
-      const tid = setTimeout(() => {
-        resolved[i] = true;
-        setResolvedFlags([...resolved]);
-      }, resolveDelay * (i + 1));
+      const tid = setTimeout(
+        () => {
+          resolved[i] = true;
+          setResolvedFlags([...resolved]);
+        },
+        resolveDelay * (i + 1)
+      );
       timeoutRefs.current.push(tid);
     });
 
@@ -85,8 +86,7 @@ export default function HyperText({
       <div
         onMouseEnter={scramble}
         style={{
-          fontFamily:
-            '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+          fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
           fontSize: "clamp(2rem, 6vw, 4.5rem)",
           fontWeight: 700,
           letterSpacing: "0.05em",

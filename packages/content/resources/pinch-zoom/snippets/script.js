@@ -1,9 +1,9 @@
-const container = document.getElementById('zoomContainer');
-const target = document.getElementById('zoomTarget');
-const zoomLevelEl = document.getElementById('zoomLevel');
-const zoomInBtn = document.getElementById('zoomIn');
-const zoomOutBtn = document.getElementById('zoomOut');
-const resetBtn = document.getElementById('resetBtn');
+const container = document.getElementById("zoomContainer");
+const target = document.getElementById("zoomTarget");
+const zoomLevelEl = document.getElementById("zoomLevel");
+const zoomInBtn = document.getElementById("zoomIn");
+const zoomOutBtn = document.getElementById("zoomOut");
+const resetBtn = document.getElementById("resetBtn");
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
@@ -20,13 +20,17 @@ let lastTy = 0;
 let lastTap = 0;
 
 function applyTransform(animated = false) {
-  target.style.transition = animated ? 'transform 0.25s ease' : 'none';
+  target.style.transition = animated ? "transform 0.25s ease" : "none";
   target.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
   zoomLevelEl.textContent = `${scale.toFixed(1)}×`;
 }
 
 function clampPan() {
-  if (scale <= 1) { tx = 0; ty = 0; return; }
+  if (scale <= 1) {
+    tx = 0;
+    ty = 0;
+    return;
+  }
   const rect = container.getBoundingClientRect();
   const maxTx = (rect.width * (scale - 1)) / 2;
   const maxTy = (rect.height * (scale - 1)) / 2;
@@ -61,62 +65,70 @@ let panStartX = 0;
 let panStartY = 0;
 let isPanning = false;
 
-container.addEventListener('touchstart', e => {
-  if (e.touches.length === 2) {
-    // Pinch start
-    isPanning = false;
-    initialPinchDist = getTouchDist(e.touches);
-    lastScale = scale;
-    lastTx = tx;
-    lastTy = ty;
-  } else if (e.touches.length === 1) {
-    // Pan start or double-tap detection
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      // Double tap — reset
-      resetZoom();
-      lastTap = 0;
-      return;
+container.addEventListener(
+  "touchstart",
+  (e) => {
+    if (e.touches.length === 2) {
+      // Pinch start
+      isPanning = false;
+      initialPinchDist = getTouchDist(e.touches);
+      lastScale = scale;
+      lastTx = tx;
+      lastTy = ty;
+    } else if (e.touches.length === 1) {
+      // Pan start or double-tap detection
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        // Double tap — reset
+        resetZoom();
+        lastTap = 0;
+        return;
+      }
+      lastTap = now;
+
+      if (scale > 1) {
+        isPanning = true;
+        panStartX = e.touches[0].clientX - tx;
+        panStartY = e.touches[0].clientY - ty;
+      }
     }
-    lastTap = now;
+  },
+  { passive: true }
+);
 
-    if (scale > 1) {
-      isPanning = true;
-      panStartX = e.touches[0].clientX - tx;
-      panStartY = e.touches[0].clientY - ty;
+container.addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+
+    if (e.touches.length === 2) {
+      // Pinch zoom
+      const dist = getTouchDist(e.touches);
+      scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, lastScale * (dist / initialPinchDist)));
+      clampPan();
+      applyTransform();
+    } else if (e.touches.length === 1 && isPanning) {
+      // Pan
+      tx = e.touches[0].clientX - panStartX;
+      ty = e.touches[0].clientY - panStartY;
+      clampPan();
+      applyTransform();
     }
-  }
-}, { passive: true });
+  },
+  { passive: false }
+);
 
-container.addEventListener('touchmove', e => {
-  e.preventDefault();
-
-  if (e.touches.length === 2) {
-    // Pinch zoom
-    const dist = getTouchDist(e.touches);
-    scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, lastScale * (dist / initialPinchDist)));
-    clampPan();
-    applyTransform();
-  } else if (e.touches.length === 1 && isPanning) {
-    // Pan
-    tx = e.touches[0].clientX - panStartX;
-    ty = e.touches[0].clientY - panStartY;
-    clampPan();
-    applyTransform();
-  }
-}, { passive: false });
-
-container.addEventListener('touchend', () => {
+container.addEventListener("touchend", () => {
   isPanning = false;
 });
 
 // Keyboard zoom
-document.addEventListener('keydown', e => {
-  if (e.key === '+' || e.key === '=') {
+document.addEventListener("keydown", (e) => {
+  if (e.key === "+" || e.key === "=") {
     scale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
     clampPan();
     applyTransform(true);
-  } else if (e.key === '-') {
+  } else if (e.key === "-") {
     scale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
     clampPan();
     applyTransform(true);
@@ -124,16 +136,16 @@ document.addEventListener('keydown', e => {
 });
 
 // Button controls
-zoomInBtn.addEventListener('click', () => {
+zoomInBtn.addEventListener("click", () => {
   scale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
   clampPan();
   applyTransform(true);
 });
 
-zoomOutBtn.addEventListener('click', () => {
+zoomOutBtn.addEventListener("click", () => {
   scale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
   clampPan();
   applyTransform(true);
 });
 
-resetBtn.addEventListener('click', resetZoom);
+resetBtn.addEventListener("click", resetZoom);

@@ -22,9 +22,9 @@ import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remo
 // --- Constants (tweak these to change the feel) ---
 const FULL_TEXT = "Remotion makes video creation fun.";
 const PAUSE_AFTER = "Remotion makes video"; // Text to pause at
-const CHAR_FRAMES = 2;      // Frames per character — lower = faster typing
-const CURSOR_BLINK = 16;    // Frames per blink cycle
-const PAUSE_SECONDS = 0.8;  // How long to pause mid-sentence
+const CHAR_FRAMES = 2; // Frames per character — lower = faster typing
+const CURSOR_BLINK = 16; // Frames per blink cycle
+const PAUSE_SECONDS = 0.8; // How long to pause mid-sentence
 
 // --- Helper: compute how many characters to show at a given frame ---
 const getTypedText = (
@@ -32,7 +32,7 @@ const getTypedText = (
   fullText: string,
   pauseAfter: string,
   charFrames: number,
-  pauseFrames: number,
+  pauseFrames: number
 ): string => {
   // Find where the mid-pause happens (end of first sentence)
   const pauseIndex = fullText.indexOf(pauseAfter);
@@ -62,7 +62,7 @@ const Cursor: React.FC<{ frame: number }> = ({ frame }) => {
     frame % CURSOR_BLINK,
     [0, CURSOR_BLINK / 2, CURSOR_BLINK],
     [1, 0, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 
   return <span style={{ opacity }}>▌</span>;
@@ -70,8 +70,8 @@ const Cursor: React.FC<{ frame: number }> = ({ frame }) => {
 
 // --- Main composition ---
 export const TypewriterAnimation: React.FC = () => {
-  const frame = useCurrentFrame();           // Current frame from Remotion's timeline
-  const { fps } = useVideoConfig();          // FPS from composition settings
+  const frame = useCurrentFrame(); // Current frame from Remotion's timeline
+  const { fps } = useVideoConfig(); // FPS from composition settings
 
   const pauseFrames = Math.round(fps * PAUSE_SECONDS);
 

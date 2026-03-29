@@ -1,0 +1,126 @@
+---
+slug: arch-t3-stack
+title: "T3 Stack Architecture"
+description: "Full-stack T3 architecture with end-to-end type safety — Next.js App Router, tRPC, Prisma/Drizzle, NextAuth, and type-safe environment variables."
+category: architectures
+type: architecture
+tags: [t3-stack, nextjs, trpc, prisma, drizzle, fullstack, typesafe]
+tech: [nextjs, trpc, prisma, typescript]
+difficulty: hard
+targets: [html]
+labRoute: /architectures/arch-t3-stack
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## T3 Stack Architecture
+
+The **T3 Stack** is a full-stack web application architecture built around a single principle: **end-to-end type safety**. Types flow from your database schema through the API layer all the way to your React components — no manual type definitions, no codegen, no runtime surprises.
+
+### The Stack
+
+| Layer | Technology | Role |
+|---|---|---|
+| **Framework** | Next.js (App Router) | SSR, routing, React Server Components |
+| **API** | tRPC | End-to-end typesafe API without REST or GraphQL |
+| **Database** | Prisma or Drizzle | Type-safe ORM / query builder |
+| **Auth** | NextAuth.js (Auth.js) | Authentication with providers (GitHub, Google, etc.) |
+| **Validation** | Zod | Runtime schema validation + type inference |
+| **Env** | @t3-oss/env-nextjs | Type-safe environment variable validation |
+
+### Type Safety Chain
+
+The core innovation of T3 is that types propagate automatically through every layer:
+
+```
+Database Schema (Prisma)
+    ↓ generates
+Prisma Client (typed queries)
+    ↓ used by
+tRPC Router (input: Zod, output: inferred)
+    ↓ consumed by
+tRPC Client hooks (fully typed)
+    ↓ rendered in
+React Component (autocomplete everywhere)
+```
+
+There is **no codegen step** between tRPC and your frontend. The TypeScript compiler infers the entire chain. Change a database column, and your IDE immediately shows every component that needs updating.
+
+### tRPC — The API Layer
+
+tRPC eliminates the traditional API boundary. Instead of defining REST endpoints or GraphQL schemas, you write TypeScript functions that are directly callable from the client with full type inference:
+
+```ts
+// server/api/routers/post.ts
+export const postRouter = createTRPCRouter({
+  getAll: publicProcedure.query(({ ctx }) => {
+    return ctx.db.post.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }),
+
+  create: protectedProcedure
+    .input(z.object({ title: z.string().min(1) }))
+    .mutation(({ ctx, input }) => {
+      return ctx.db.post.create({
+        data: { title: input.title, authorId: ctx.session.user.id },
+      });
+    }),
+});
+```
+
+On the client side, you call these procedures as if they were local functions:
+
+```tsx
+// In a React component
+const { data: posts } = api.post.getAll.useQuery();
+const createPost = api.post.create.useMutation();
+// posts is typed as Post[] — no manual typing needed
+```
+
+### Environment Variables
+
+T3 uses `@t3-oss/env-nextjs` to validate environment variables at build time with Zod schemas, catching misconfigurations before deployment:
+
+```ts
+// env.js
+export const env = createEnv({
+  server: { DATABASE_URL: z.string().url() },
+  client: { NEXT_PUBLIC_APP_URL: z.string().url() },
+  runtimeEnv: { DATABASE_URL: process.env.DATABASE_URL, ... },
+});
+```
+
+### CLI Setup
+
+```bash
+npm create t3-app@latest
+# or
+pnpm create t3-app@latest
+# or
+bun create t3-app@latest
+```
+
+The CLI scaffolds the project with your choice of tRPC, Prisma/Drizzle, NextAuth, and Tailwind CSS.
+
+### When to Use
+
+| Scenario | Recommendation |
+|---|---|
+| Full-stack app with complex data flows | Ideal — type safety prevents entire classes of bugs |
+| Solo developer or small team | Great DX — autocomplete and type errors catch issues early |
+| API consumed by multiple clients (mobile, third-party) | Not ideal — tRPC is coupled to TypeScript clients |
+| Rapid prototyping | Excellent — scaffolding is fast, iteration is safe |
+| Large enterprise with REST/GraphQL standards | May not fit — tRPC is opinionated and TS-only |
+
+### References
+
+- [create.t3.gg — Official Documentation](https://create.t3.gg/)
+- [t3-oss/create-t3-app (28.7k stars)](https://github.com/t3-oss/create-t3-app)
+- [tRPC Documentation](https://trpc.io/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Theo Browne — T3 Stack Tutorial (YouTube)](https://www.youtube.com/c/TheoBrowne1017)

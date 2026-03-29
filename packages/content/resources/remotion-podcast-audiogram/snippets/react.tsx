@@ -45,10 +45,7 @@ const WaveformBar: React.FC<{
   );
 };
 
-const ProgressBar: React.FC<{ frame: number; total: number }> = ({
-  frame,
-  total,
-}) => {
+const ProgressBar: React.FC<{ frame: number; total: number }> = ({ frame, total }) => {
   const progress = interpolate(frame, [0, total], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",

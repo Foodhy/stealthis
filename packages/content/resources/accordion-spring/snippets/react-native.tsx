@@ -66,15 +66,9 @@ function AccordionItem({
 
   return (
     <View style={styles.item}>
-      <TouchableOpacity
-        style={styles.itemHeader}
-        onPress={toggle}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={styles.itemHeader} onPress={toggle} activeOpacity={0.7}>
         <Text style={styles.itemTitle}>{item.title}</Text>
-        <Animated.Text style={[styles.chevron, { transform: [{ rotate }] }]}>
-          ▼
-        </Animated.Text>
+        <Animated.Text style={[styles.chevron, { transform: [{ rotate }] }]}>▼</Animated.Text>
       </TouchableOpacity>
 
       <Animated.View style={[styles.panelClip, { height: animatedHeight }]}>

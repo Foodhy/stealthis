@@ -14,62 +14,62 @@ const SHORTCUTS: Group[] = [
   {
     category: "Navigation",
     shortcuts: [
-      { description: "Command palette",  keys: ["⌘", "K"] },
-      { description: "Quick open file",  keys: ["⌘", "P"] },
-      { description: "Go to line",       keys: ["⌃", "G"] },
-      { description: "Go to symbol",     keys: ["⌘", "⇧", "O"] },
-      { description: "Toggle sidebar",   keys: ["⌘", "B"] },
+      { description: "Command palette", keys: ["⌘", "K"] },
+      { description: "Quick open file", keys: ["⌘", "P"] },
+      { description: "Go to line", keys: ["⌃", "G"] },
+      { description: "Go to symbol", keys: ["⌘", "⇧", "O"] },
+      { description: "Toggle sidebar", keys: ["⌘", "B"] },
     ],
   },
   {
     category: "Editing",
     shortcuts: [
-      { description: "Duplicate line",   keys: ["⌘", "⇧", "D"] },
-      { description: "Delete line",      keys: ["⌘", "⇧", "K"] },
-      { description: "Move line up",     keys: ["⌥", "↑"] },
-      { description: "Move line down",   keys: ["⌥", "↓"] },
-      { description: "Comment line",     keys: ["⌘", "/"] },
-      { description: "Format document",  keys: ["⌥", "⇧", "F"] },
+      { description: "Duplicate line", keys: ["⌘", "⇧", "D"] },
+      { description: "Delete line", keys: ["⌘", "⇧", "K"] },
+      { description: "Move line up", keys: ["⌥", "↑"] },
+      { description: "Move line down", keys: ["⌥", "↓"] },
+      { description: "Comment line", keys: ["⌘", "/"] },
+      { description: "Format document", keys: ["⌥", "⇧", "F"] },
     ],
   },
   {
     category: "Selection",
     shortcuts: [
-      { description: "Select word",      keys: ["⌘", "D"] },
-      { description: "Select line",      keys: ["⌘", "L"] },
-      { description: "Select all",       keys: ["⌘", "A"] },
-      { description: "Multi-cursor",     keys: ["⌥", "Click"] },
+      { description: "Select word", keys: ["⌘", "D"] },
+      { description: "Select line", keys: ["⌘", "L"] },
+      { description: "Select all", keys: ["⌘", "A"] },
+      { description: "Multi-cursor", keys: ["⌥", "Click"] },
       { description: "Expand selection", keys: ["⌃", "⇧", "→"] },
     ],
   },
   {
     category: "Terminal",
     shortcuts: [
-      { description: "New terminal",     keys: ["⌃", "`"] },
-      { description: "Kill terminal",    keys: ["⌃", "C"] },
-      { description: "Clear",            keys: ["⌃", "K"] },
+      { description: "New terminal", keys: ["⌃", "`"] },
+      { description: "Kill terminal", keys: ["⌃", "C"] },
+      { description: "Clear", keys: ["⌃", "K"] },
       { description: "Previous command", keys: ["↑"] },
     ],
   },
 ];
 
 const KEY_MAP: Record<string, string> = {
-  Meta:      "⌘",
-  Control:   "⌃",
-  Alt:       "⌥",
-  Shift:     "⇧",
-  ArrowUp:   "↑",
+  Meta: "⌘",
+  Control: "⌃",
+  Alt: "⌥",
+  Shift: "⇧",
+  ArrowUp: "↑",
   ArrowDown: "↓",
   ArrowLeft: "←",
-  ArrowRight:"→",
+  ArrowRight: "→",
   Backquote: "`",
-  Slash:     "/",
-  Enter:     "↩",
-  Escape:    "⎋",
-  Tab:       "⇥",
+  Slash: "/",
+  Enter: "↩",
+  Escape: "⎋",
+  Tab: "⇥",
   Backspace: "⌫",
-  Delete:    "⌦",
-  " ":       "Space",
+  Delete: "⌦",
+  " ": "Space",
 };
 
 function normalizeKey(key: string, code: string): string {
@@ -104,8 +104,7 @@ export default function KeyboardShortcutRC() {
     };
   }, []);
 
-  const isActive = (keys: string[]) =>
-    keys.length > 0 && keys.every((k) => pressed.has(k));
+  const isActive = (keys: string[]) => keys.length > 0 && keys.every((k) => pressed.has(k));
 
   const q = search.toLowerCase();
   const filtered = SHORTCUTS.map((g) => ({

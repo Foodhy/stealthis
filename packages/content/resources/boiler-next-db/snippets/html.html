@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Next.js + Prisma + PostgreSQL Starter</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: linear-gradient(135deg, rgba(34,211,238,0.04) 0%, rgba(59,130,246,0.04) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+    .header { display: flex; align-items: center; gap: 1rem; }
+    .icon-box {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; font-weight: 700; color: #0a0a0f;
+    }
+    .header h1 { font-size: 1.35rem; font-weight: 700; color: #f1f5f9; }
+    .header p { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #22d3ee;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Quick Start */
+    .steps { display: flex; flex-direction: column; gap: 0.5rem; }
+    .step {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+    }
+    .step-num {
+      width: 22px; height: 22px;
+      background: rgba(34,211,238,0.15);
+      color: #22d3ee;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Tree */
+    .tree {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.75rem;
+      line-height: 1.7;
+      color: #94a3b8;
+    }
+    .tree .file { color: #e2e8f0; }
+    .tree .dir { color: #3b82f6; }
+    .tree .highlight { color: #22d3ee; font-weight: 600; }
+
+    /* Key Files */
+    .key-files { display: flex; flex-direction: column; gap: 0.5rem; }
+    .key-file {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+    }
+    .key-file-name {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.78rem;
+      color: #22d3ee;
+      font-weight: 600;
+    }
+    .key-file-desc {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 0.2rem;
+    }
+
+    /* Flow */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+      padding: 0.5rem 0;
+    }
+    .flow-step {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #93c5fd;
+      white-space: nowrap;
+    }
+    .flow-arrow {
+      color: #475569;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    /* Links */
+    .links { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .link {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .link:hover { border-color: #22d3ee; color: #e2e8f0; }
+    .link svg { width: 13px; height: 13px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="icon-box">P</div>
+      <div>
+        <h1>Next.js + Prisma + PostgreSQL</h1>
+        <p>Full-stack starter with typed DB access &amp; migrations</p>
+      </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div>
+      <div class="section-title">Quick Start</div>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span> npx create-next-app@latest my-app --ts</div>
+        <div class="step"><span class="step-num">2</span> npm i prisma @prisma/client</div>
+        <div class="step"><span class="step-num">3</span> npx prisma init</div>
+      </div>
+    </div>
+
+    <!-- Generated Tree -->
+    <div>
+      <div class="section-title">Generated Structure</div>
+      <div class="tree">
+        <span class="dir">prisma/</span><br />
+        &nbsp;&nbsp;<span class="highlight">schema.prisma</span> &mdash; data model &amp; DB connection<br />
+        &nbsp;&nbsp;<span class="dir">migrations/</span> &mdash; version-controlled SQL<br />
+        <span class="dir">src/</span><br />
+        &nbsp;&nbsp;<span class="dir">lib/</span><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight">prisma.ts</span> &mdash; singleton client instance<br />
+        &nbsp;&nbsp;<span class="dir">app/</span><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">api/</span><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span> &mdash; typed API handlers<br />
+        <span class="file">.env</span> &mdash; DATABASE_URL
+      </div>
+    </div>
+
+    <!-- Key Files -->
+    <div>
+      <div class="section-title">Key Files</div>
+      <div class="key-files">
+        <div class="key-file">
+          <div class="key-file-name">prisma/schema.prisma</div>
+          <div class="key-file-desc">Declarative data model. Define your tables, relations, and enums. Prisma generates types and SQL migrations from this file.</div>
+        </div>
+        <div class="key-file">
+          <div class="key-file-name">src/lib/prisma.ts</div>
+          <div class="key-file-desc">Singleton pattern using globalThis to prevent connection pool exhaustion during Next.js hot reloads in development.</div>
+        </div>
+        <div class="key-file">
+          <div class="key-file-name">src/app/api/*/route.ts</div>
+          <div class="key-file-desc">App Router API routes. Import the singleton client and get full autocompletion for all queries, including relations.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Setup Flow -->
+    <div>
+      <div class="section-title">Setup Flow</div>
+      <div class="flow">
+        <span class="flow-step">Install</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-step">Init</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-step">Define Schema</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-step">Migrate</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-step">Seed</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-step">Use Client</span>
+      </div>
+    </div>
+
+    <!-- Source Links -->
+    <div>
+      <div class="section-title">Sources</div>
+      <div class="links">
+        <a class="link" href="https://www.prisma.io/docs/guides/frameworks/nextjs" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Prisma + Next.js Guide
+        </a>
+        <a class="link" href="https://vercel.com/templates/next.js/postgres-prisma" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Vercel Postgres Template
+        </a>
+        <a class="link" href="https://github.com/nemanjam/nextjs-prisma-boilerplate" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          nemanjam/nextjs-prisma-boilerplate
+        </a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

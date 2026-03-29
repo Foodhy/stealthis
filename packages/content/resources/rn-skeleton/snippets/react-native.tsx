@@ -1,11 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import {
-  Animated,
-  StyleSheet,
-  View,
-  type DimensionValue,
-  type ViewStyle,
-} from "react-native";
+import { Animated, StyleSheet, View, type DimensionValue, type ViewStyle } from "react-native";
 
 /* ------------------------------------------------------------------ */
 /*  Pulse hook                                                         */
@@ -27,7 +21,7 @@ function usePulse(): Animated.Value {
           duration: 500,
           useNativeDriver: true,
         }),
-      ]),
+      ])
     );
     loop.start();
     return () => loop.stop();
@@ -59,11 +53,7 @@ interface LineProps {
 }
 
 function Line({ width = "100%", height = 16 }: LineProps) {
-  return (
-    <SkeletonBase
-      style={{ width, height, borderRadius: height / 2 }}
-    />
-  );
+  return <SkeletonBase style={{ width, height, borderRadius: height / 2 }} />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -75,11 +65,7 @@ interface CircleProps {
 }
 
 function Circle({ size = 48 }: CircleProps) {
-  return (
-    <SkeletonBase
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-    />
-  );
+  return <SkeletonBase style={{ width: size, height: size, borderRadius: size / 2 }} />;
 }
 
 /* ------------------------------------------------------------------ */

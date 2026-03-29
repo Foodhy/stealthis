@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
 interface IconProps {
   className?: string;
   size?: number;
 }
 
-export const Copy: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Copy: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -22,7 +22,7 @@ export const Copy: React.FC<IconProps> = ({ className = '', size = 16 }) => (
   </svg>
 );
 
-export const Save: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Save: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -40,7 +40,7 @@ export const Save: React.FC<IconProps> = ({ className = '', size = 16 }) => (
   </svg>
 );
 
-export const Plus: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Plus: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -57,7 +57,7 @@ export const Plus: React.FC<IconProps> = ({ className = '', size = 16 }) => (
   </svg>
 );
 
-export const Maximize2: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Maximize2: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -76,7 +76,7 @@ export const Maximize2: React.FC<IconProps> = ({ className = '', size = 16 }) =>
   </svg>
 );
 
-export const Upload: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Upload: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -94,7 +94,7 @@ export const Upload: React.FC<IconProps> = ({ className = '', size = 16 }) => (
   </svg>
 );
 
-export const Play: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Play: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -110,7 +110,7 @@ export const Play: React.FC<IconProps> = ({ className = '', size = 16 }) => (
   </svg>
 );
 
-export const ArrowLeft: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const ArrowLeft: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -127,7 +127,7 @@ export const ArrowLeft: React.FC<IconProps> = ({ className = '', size = 16 }) =>
   </svg>
 );
 
-export const Trash: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Trash: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -146,7 +146,7 @@ export const Trash: React.FC<IconProps> = ({ className = '', size = 16 }) => (
   </svg>
 );
 
-export const Loader: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const Loader: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}
@@ -162,7 +162,7 @@ export const Loader: React.FC<IconProps> = ({ className = '', size = 16 }) => (
   </svg>
 );
 
-export const X: React.FC<IconProps> = ({ className = '', size = 16 }) => (
+export const X: React.FC<IconProps> = ({ className = "", size = 16 }) => (
   <svg
     width={size}
     height={size}

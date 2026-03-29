@@ -42,19 +42,10 @@ const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const MAP_W = SCREEN_W;
 const MAP_H = SCREEN_H * 0.65;
 
-function latLngToXY(
-  lat: number,
-  lng: number,
-  region: Region
-): { x: number; y: number } {
+function latLngToXY(lat: number, lng: number, region: Region): { x: number; y: number } {
   const x =
-    ((lng - (region.longitude - region.longitudeDelta / 2)) /
-      region.longitudeDelta) *
-    MAP_W;
-  const y =
-    ((region.latitude + region.latitudeDelta / 2 - lat) /
-      region.latitudeDelta) *
-    MAP_H;
+    ((lng - (region.longitude - region.longitudeDelta / 2)) / region.longitudeDelta) * MAP_W;
+  const y = ((region.latitude + region.latitudeDelta / 2 - lat) / region.latitudeDelta) * MAP_H;
   return { x, y };
 }
 
@@ -85,7 +76,10 @@ function PulsingDot({ x, y }: { x: number; y: number }) {
       <Animated.View
         style={[
           styles.userLocRing,
-          { transform: [{ scale: pulse }], opacity: pulse.interpolate({ inputRange: [1, 2.2], outputRange: [0.5, 0] }) },
+          {
+            transform: [{ scale: pulse }],
+            opacity: pulse.interpolate({ inputRange: [1, 2.2], outputRange: [0.5, 0] }),
+          },
         ]}
       />
       <View style={styles.userLocDot} />
@@ -117,9 +111,7 @@ function Marker({
       <View style={[styles.markerPin, { backgroundColor: color }]}>
         <View style={styles.markerInner} />
       </View>
-      <View
-        style={[styles.markerTail, { borderTopColor: color }]}
-      />
+      <View style={[styles.markerTail, { borderTopColor: color }]} />
     </TouchableOpacity>
   );
 }
@@ -160,17 +152,11 @@ function CoordinateGrid({ region }: { region: Region }) {
     const frac = i / gridCount;
     // horizontal
     lines.push(
-      <View
-        key={`h${i}`}
-        style={[styles.gridLine, styles.gridH, { top: `${frac * 100}%` }]}
-      />
+      <View key={`h${i}`} style={[styles.gridLine, styles.gridH, { top: `${frac * 100}%` }]} />
     );
     // vertical
     lines.push(
-      <View
-        key={`v${i}`}
-        style={[styles.gridLine, styles.gridV, { left: `${frac * 100}%` }]}
-      />
+      <View key={`v${i}`} style={[styles.gridLine, styles.gridV, { left: `${frac * 100}%` }]} />
     );
   }
 
@@ -184,15 +170,9 @@ function CoordinateGrid({ region }: { region: Region }) {
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {lines}
       <Text style={[styles.coordLabel, { top: 4, left: 4 }]}>{latTop}°</Text>
-      <Text style={[styles.coordLabel, { bottom: 4, left: 4 }]}>
-        {latBot}°
-      </Text>
-      <Text style={[styles.coordLabel, { bottom: 4, right: 4 }]}>
-        {lngRight}°
-      </Text>
-      <Text style={[styles.coordLabel, { top: 4, right: 4 }]}>
-        {lngLeft}°
-      </Text>
+      <Text style={[styles.coordLabel, { bottom: 4, left: 4 }]}>{latBot}°</Text>
+      <Text style={[styles.coordLabel, { bottom: 4, right: 4 }]}>{lngRight}°</Text>
+      <Text style={[styles.coordLabel, { top: 4, right: 4 }]}>{lngLeft}°</Text>
     </View>
   );
 }
@@ -221,8 +201,7 @@ function MapView({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, g) =>
-        Math.abs(g.dx) > 4 || Math.abs(g.dy) > 4,
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 4 || Math.abs(g.dy) > 4,
       onPanResponderMove: (_, g) => {
         const r = regionRef.current;
         const dLng = (-g.dx / MAP_W) * r.longitudeDelta * 0.15;
@@ -251,8 +230,7 @@ function MapView({
         {/* Markers */}
         {markers.map((m) => {
           const { x, y } = latLngToXY(m.latitude, m.longitude, region);
-          if (x < -20 || x > MAP_W + 20 || y < -40 || y > MAP_H + 20)
-            return null;
+          if (x < -20 || x > MAP_W + 20 || y < -40 || y > MAP_H + 20) return null;
           return (
             <Marker
               key={m.id}
@@ -265,31 +243,20 @@ function MapView({
         })}
 
         {/* User location */}
-        {showUserLocation && (() => {
-          const { x, y } = latLngToXY(
-            region.latitude,
-            region.longitude,
-            region
-          );
-          return <PulsingDot x={x} y={y} />;
-        })()}
+        {showUserLocation &&
+          (() => {
+            const { x, y } = latLngToXY(region.latitude, region.longitude, region);
+            return <PulsingDot x={x} y={y} />;
+          })()}
 
         {/* Callout */}
-        {selectedMarker && (() => {
-          const { x, y } = latLngToXY(
-            selectedMarker.latitude,
-            selectedMarker.longitude,
-            region
-          );
-          return (
-            <Callout
-              marker={selectedMarker}
-              x={x}
-              y={y}
-              onClose={() => setSelectedId(null)}
-            />
-          );
-        })()}
+        {selectedMarker &&
+          (() => {
+            const { x, y } = latLngToXY(selectedMarker.latitude, selectedMarker.longitude, region);
+            return (
+              <Callout marker={selectedMarker} x={x} y={y} onClose={() => setSelectedId(null)} />
+            );
+          })()}
       </View>
 
       {/* Zoom controls */}

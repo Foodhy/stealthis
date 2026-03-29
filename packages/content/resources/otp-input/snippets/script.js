@@ -7,7 +7,7 @@
   });
 
   function initOTP(group) {
-    const len     = parseInt(group.dataset.length, 10) || 6;
+    const len = parseInt(group.dataset.length, 10) || 6;
     const prefill = group.dataset.prefill || "";
 
     // Build boxes (with optional separator for 6-digit at position 3)
@@ -55,8 +55,16 @@
           return;
         }
 
-        if (e.key === "ArrowLeft" && i > 0)  { boxes[i - 1].focus(); e.preventDefault(); return; }
-        if (e.key === "ArrowRight" && i < boxes.length - 1) { boxes[i + 1].focus(); e.preventDefault(); return; }
+        if (e.key === "ArrowLeft" && i > 0) {
+          boxes[i - 1].focus();
+          e.preventDefault();
+          return;
+        }
+        if (e.key === "ArrowRight" && i < boxes.length - 1) {
+          boxes[i + 1].focus();
+          e.preventDefault();
+          return;
+        }
 
         // Block non-digit printable characters before input fires
         if (e.key.length === 1 && !/[0-9]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
@@ -98,11 +106,17 @@
   // ── Completion handler ──────────────────────────────────────────────────────
 
   function checkComplete(group, boxes) {
-    const value = boxes.map(function (b) { return b.value; }).join("");
+    const value = boxes
+      .map(function (b) {
+        return b.value;
+      })
+      .join("");
     if (value.length === boxes.length && !/[^0-9]/.test(value)) {
       group.classList.add("otp-group--filled");
       // Dispatch custom event
-      group.dispatchEvent(new CustomEvent("otp:complete", { detail: { value: value }, bubbles: true }));
+      group.dispatchEvent(
+        new CustomEvent("otp:complete", { detail: { value: value }, bubbles: true })
+      );
       console.log("[OTP complete]", value);
     } else {
       group.classList.remove("otp-group--filled");

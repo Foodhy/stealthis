@@ -6,7 +6,7 @@ const PROFILES = [
   { name: "Jordan Kim", handle: "@jordankim", avatar: "JK", color: "#7ee787", followers: "3.2K" },
 ];
 
-function ProfileCard({ name, handle, avatar, color, followers }: typeof PROFILES[0]) {
+function ProfileCard({ name, handle, avatar, color, followers }: (typeof PROFILES)[0]) {
   const [following, setFollowing] = useState(false);
   const [hover, setHover] = useState(false);
 
@@ -20,7 +20,9 @@ function ProfileCard({ name, handle, avatar, color, followers }: typeof PROFILES
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[#e6edf3] font-semibold text-sm truncate">{name}</p>
-        <p className="text-[#8b949e] text-xs">{handle} · {followers} followers</p>
+        <p className="text-[#8b949e] text-xs">
+          {handle} · {followers} followers
+        </p>
       </div>
       <button
         onClick={() => setFollowing((f) => !f)}

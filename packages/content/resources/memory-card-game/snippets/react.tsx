@@ -14,7 +14,12 @@ function shuffle<T>(arr: T[]): T[] {
 type Card = { id: number; emoji: string; flipped: boolean; matched: boolean };
 
 function makeCards(): Card[] {
-  return shuffle([...EMOJIS, ...EMOJIS]).map((emoji, i) => ({ id: i, emoji, flipped: false, matched: false }));
+  return shuffle([...EMOJIS, ...EMOJIS]).map((emoji, i) => ({
+    id: i,
+    emoji,
+    flipped: false,
+    matched: false,
+  }));
 }
 
 export default function MemoryCardGameRC() {
@@ -26,39 +31,44 @@ export default function MemoryCardGameRC() {
 
   const matched = cards.filter((c) => c.matched).length / 2;
 
-  const flip = useCallback((id: number) => {
-    if (locked) return;
-    const card = cards.find((c) => c.id === id);
-    if (!card || card.flipped || card.matched) return;
-    if (flipped.length === 2) return;
+  const flip = useCallback(
+    (id: number) => {
+      if (locked) return;
+      const card = cards.find((c) => c.id === id);
+      if (!card || card.flipped || card.matched) return;
+      if (flipped.length === 2) return;
 
-    const newFlipped = [...flipped, id];
-    setCards((prev) => prev.map((c) => (c.id === id ? { ...c, flipped: true } : c)));
-    setFlipped(newFlipped);
+      const newFlipped = [...flipped, id];
+      setCards((prev) => prev.map((c) => (c.id === id ? { ...c, flipped: true } : c)));
+      setFlipped(newFlipped);
 
-    if (newFlipped.length === 2) {
-      setMoves((m) => m + 1);
-      const [a, b] = newFlipped.map((fid) => cards.find((c) => c.id === fid)!);
-      if (a.emoji === b.emoji) {
-        setTimeout(() => {
-          setCards((prev) =>
-            prev.map((c) => (newFlipped.includes(c.id) ? { ...c, matched: true, flipped: true } : c))
-          );
-          setFlipped([]);
-          setWon(cards.filter((c) => c.matched).length + 2 === cards.length);
-        }, 400);
-      } else {
-        setLocked(true);
-        setTimeout(() => {
-          setCards((prev) =>
-            prev.map((c) => (newFlipped.includes(c.id) ? { ...c, flipped: false } : c))
-          );
-          setFlipped([]);
-          setLocked(false);
-        }, 900);
+      if (newFlipped.length === 2) {
+        setMoves((m) => m + 1);
+        const [a, b] = newFlipped.map((fid) => cards.find((c) => c.id === fid)!);
+        if (a.emoji === b.emoji) {
+          setTimeout(() => {
+            setCards((prev) =>
+              prev.map((c) =>
+                newFlipped.includes(c.id) ? { ...c, matched: true, flipped: true } : c
+              )
+            );
+            setFlipped([]);
+            setWon(cards.filter((c) => c.matched).length + 2 === cards.length);
+          }, 400);
+        } else {
+          setLocked(true);
+          setTimeout(() => {
+            setCards((prev) =>
+              prev.map((c) => (newFlipped.includes(c.id) ? { ...c, flipped: false } : c))
+            );
+            setFlipped([]);
+            setLocked(false);
+          }, 900);
+        }
       }
-    }
-  }, [cards, flipped, locked]);
+    },
+    [cards, flipped, locked]
+  );
 
   useEffect(() => {
     if (cards.every((c) => c.matched)) setWon(true);
@@ -77,10 +87,19 @@ export default function MemoryCardGameRC() {
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex gap-4 text-sm">
-            <span className="text-[#8b949e]">Moves: <strong className="text-[#e6edf3]">{moves}</strong></span>
-            <span className="text-[#8b949e]">Matches: <strong className="text-[#7ee787]">{matched}/{EMOJIS.length}</strong></span>
+            <span className="text-[#8b949e]">
+              Moves: <strong className="text-[#e6edf3]">{moves}</strong>
+            </span>
+            <span className="text-[#8b949e]">
+              Matches:{" "}
+              <strong className="text-[#7ee787]">
+                {matched}/{EMOJIS.length}
+              </strong>
+            </span>
           </div>
-          <button onClick={restart} className="text-xs text-[#58a6ff] hover:underline">New game</button>
+          <button onClick={restart} className="text-xs text-[#58a6ff] hover:underline">
+            New game
+          </button>
         </div>
 
         <div className="grid grid-cols-4 gap-2">
@@ -107,7 +126,10 @@ export default function MemoryCardGameRC() {
               <p className="text-4xl mb-3">🎉</p>
               <h2 className="text-[#e6edf3] font-bold text-xl mb-1">You won!</h2>
               <p className="text-[#8b949e] text-sm mb-6">Completed in {moves} moves</p>
-              <button onClick={restart} className="px-6 py-2.5 bg-[#238636] border border-[#2ea043] text-white rounded-xl font-semibold text-sm hover:bg-[#2ea043] transition-colors">
+              <button
+                onClick={restart}
+                className="px-6 py-2.5 bg-[#238636] border border-[#2ea043] text-white rounded-xl font-semibold text-sm hover:bg-[#2ea043] transition-colors"
+              >
                 Play Again
               </button>
             </div>

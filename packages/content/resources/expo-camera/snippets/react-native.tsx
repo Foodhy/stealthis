@@ -1,11 +1,5 @@
 import React, { useRef, useState } from "react";
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions, CameraType, FlashMode } from "expo-camera";
 
 /* ------------------------------------------------------------------ */
@@ -72,8 +66,7 @@ function CameraCapture({
   }
 
   /* ---- Camera view ---- */
-  const toggleFacing = () =>
-    setFacing((prev) => (prev === "back" ? "front" : "back"));
+  const toggleFacing = () => setFacing((prev) => (prev === "back" ? "front" : "back"));
 
   const toggleFlash = () => setFlash((prev) => !prev);
 
@@ -254,11 +247,7 @@ export default function App() {
   if (lastPhoto) {
     return (
       <View style={styles.container}>
-        <Image
-          source={{ uri: lastPhoto }}
-          style={{ flex: 1 }}
-          resizeMode="contain"
-        />
+        <Image source={{ uri: lastPhoto }} style={{ flex: 1 }} resizeMode="contain" />
         <Pressable
           style={{
             position: "absolute",
@@ -271,17 +260,11 @@ export default function App() {
           }}
           onPress={() => setLastPhoto(null)}
         >
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            Back to Camera
-          </Text>
+          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>Back to Camera</Text>
         </Pressable>
       </View>
     );
   }
 
-  return (
-    <CameraCapture
-      onPhotoTaken={(uri) => setLastPhoto(uri)}
-    />
-  );
+  return <CameraCapture onPhotoTaken={(uri) => setLastPhoto(uri)} />;
 }

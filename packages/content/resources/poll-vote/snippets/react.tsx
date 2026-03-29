@@ -19,9 +19,7 @@ export default function PollVoteRC() {
 
   function vote() {
     if (selected === null) return;
-    setOptions((prev) =>
-      prev.map((o, i) => (i === selected ? { ...o, votes: o.votes + 1 } : o))
-    );
+    setOptions((prev) => prev.map((o, i) => (i === selected ? { ...o, votes: o.votes + 1 } : o)));
     setVoted(true);
   }
 
@@ -33,7 +31,9 @@ export default function PollVoteRC() {
     <div className="min-h-screen bg-[#0d1117] flex items-center justify-center p-6">
       <div className="bg-[#161b22] border border-[#30363d] rounded-2xl p-6 w-full max-w-sm">
         <h2 className="text-[#e6edf3] font-bold text-base mb-1">{POLL.question}</h2>
-        <p className="text-[#484f58] text-xs mb-5">{(total + (voted ? 1 : 0)).toLocaleString()} total votes</p>
+        <p className="text-[#484f58] text-xs mb-5">
+          {(total + (voted ? 1 : 0)).toLocaleString()} total votes
+        </p>
 
         {!voted ? (
           <>
@@ -52,7 +52,16 @@ export default function PollVoteRC() {
                   <span className="font-medium">{o.label}</span>
                   {selected === i && (
                     <span className="ml-auto w-4 h-4 rounded-full bg-[#58a6ff] flex items-center justify-center">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                      <svg
+                        width="8"
+                        height="8"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="3"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     </span>
                   )}
                 </button>
@@ -76,7 +85,11 @@ export default function PollVoteRC() {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <span>{o.emoji}</span>
-                      <span className={`text-sm font-medium ${isWinner ? "text-[#f1e05a]" : "text-[#8b949e]"}`}>{o.label}</span>
+                      <span
+                        className={`text-sm font-medium ${isWinner ? "text-[#f1e05a]" : "text-[#8b949e]"}`}
+                      >
+                        {o.label}
+                      </span>
                       {isWinner && <span className="text-xs">👑</span>}
                     </div>
                     <span className="text-xs font-bold text-[#e6edf3] tabular-nums">{pct}%</span>
@@ -87,12 +100,17 @@ export default function PollVoteRC() {
                       style={{ width: `${pct}%`, background: isWinner ? "#f1e05a" : "#30363d" }}
                     />
                   </div>
-                  <p className="text-[10px] text-[#484f58] mt-0.5">{o.votes.toLocaleString()} votes</p>
+                  <p className="text-[10px] text-[#484f58] mt-0.5">
+                    {o.votes.toLocaleString()} votes
+                  </p>
                 </div>
               );
             })}
             <button
-              onClick={() => { setVoted(false); setSelected(null); }}
+              onClick={() => {
+                setVoted(false);
+                setSelected(null);
+              }}
               className="w-full mt-2 py-2 text-sm text-[#484f58] hover:text-[#8b949e] transition-colors"
             >
               Vote again

@@ -21,16 +21,19 @@
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   resize();
-  window.addEventListener("resize", () => { resize(); initOrbs(); });
+  window.addEventListener("resize", () => {
+    resize();
+    initOrbs();
+  });
 
   const ORB_CONFIGS = [
     // Red orbs — Tesla accent
-    { color: "rgba(232,33,39,0.25)",   fx: 0.20, fy: 0.18, ax: 0.30, ay: 0.25, px: 0.0, py: 0.0 },
-    { color: "rgba(232,33,39,0.12)",   fx: 0.15, fy: 0.30, ax: 0.35, ay: 0.28, px: 1.4, py: 0.9 },
+    { color: "rgba(232,33,39,0.25)", fx: 0.2, fy: 0.18, ax: 0.3, ay: 0.25, px: 0.0, py: 0.0 },
+    { color: "rgba(232,33,39,0.12)", fx: 0.15, fy: 0.3, ax: 0.35, ay: 0.28, px: 1.4, py: 0.9 },
     // Blue orb — energy accent
-    { color: "rgba(62,104,255,0.18)",  fx: 0.35, fy: 0.12, ax: 0.28, ay: 0.35, px: 2.8, py: 1.6 },
+    { color: "rgba(62,104,255,0.18)", fx: 0.35, fy: 0.12, ax: 0.28, ay: 0.35, px: 2.8, py: 1.6 },
     // Dim red orb
-    { color: "rgba(232,33,39,0.08)",   fx: 0.12, fy: 0.40, ax: 0.40, ay: 0.20, px: 0.6, py: 3.2 },
+    { color: "rgba(232,33,39,0.08)", fx: 0.12, fy: 0.4, ax: 0.4, ay: 0.2, px: 0.6, py: 3.2 },
   ];
 
   let orbs = [];
@@ -114,24 +117,40 @@ heroTl
     opacity: 1,
     duration: dur(1),
   })
-  .to(".hero-title", {
-    opacity: 1,
-    duration: dur(2),
-  }, "-=0.6")
-  .to(".hero-subtitle", {
-    opacity: 1,
-    y: -10,
-    duration: dur(1.2),
-  }, "-=1.5")
-  .to(".hero-actions", {
-    opacity: 1,
-    y: -5,
-    duration: dur(1),
-  }, "-=0.8")
-  .to(".scroll-indicator", {
-    opacity: 1,
-    duration: dur(0.8),
-  }, "-=0.4");
+  .to(
+    ".hero-title",
+    {
+      opacity: 1,
+      duration: dur(2),
+    },
+    "-=0.6"
+  )
+  .to(
+    ".hero-subtitle",
+    {
+      opacity: 1,
+      y: -10,
+      duration: dur(1.2),
+    },
+    "-=1.5"
+  )
+  .to(
+    ".hero-actions",
+    {
+      opacity: 1,
+      y: -5,
+      duration: dur(1),
+    },
+    "-=0.8"
+  )
+  .to(
+    ".scroll-indicator",
+    {
+      opacity: 1,
+      duration: dur(0.8),
+    },
+    "-=0.4"
+  );
 
 // ═══════════════════════════════════════════════════════════════════════
 // HERO PARALLAX ON SCROLL
@@ -165,7 +184,8 @@ gsap.to(".hero-actions", {
 // ═══════════════════════════════════════════════════════════════════════
 
 gsap.utils.toArray(".reveal").forEach((el) => {
-  gsap.fromTo(el,
+  gsap.fromTo(
+    el,
     { opacity: 0, y: reduced ? 0 : 40 },
     {
       opacity: 1,
@@ -187,7 +207,8 @@ gsap.utils.toArray(".reveal").forEach((el) => {
 
 const modelCards = document.querySelectorAll(".model-card");
 if (modelCards.length) {
-  gsap.fromTo(modelCards,
+  gsap.fromTo(
+    modelCards,
     { opacity: 0, y: reduced ? 0 : 30, scale: reduced ? 1 : 0.96 },
     {
       opacity: 1,
@@ -259,15 +280,18 @@ document.querySelectorAll(".stat-number").forEach((el) => {
     start: "top 85%",
     once: true,
     onEnter: () => {
-      gsap.to({ val: 0 }, {
-        val: target,
-        duration: dur(2),
-        ease: "power2.out",
-        onUpdate: function () {
-          const current = Math.round(this.targets()[0].val);
-          el.textContent = current.toLocaleString() + suffix;
-        },
-      });
+      gsap.to(
+        { val: 0 },
+        {
+          val: target,
+          duration: dur(2),
+          ease: "power2.out",
+          onUpdate: function () {
+            const current = Math.round(this.targets()[0].val);
+            el.textContent = current.toLocaleString() + suffix;
+          },
+        }
+      );
     },
   });
 });
@@ -278,7 +302,8 @@ document.querySelectorAll(".stat-number").forEach((el) => {
 
 const safetyFeatures = document.querySelectorAll(".safety-feature");
 if (safetyFeatures.length) {
-  gsap.fromTo(safetyFeatures,
+  gsap.fromTo(
+    safetyFeatures,
     { opacity: 0, x: reduced ? 0 : -20 },
     {
       opacity: 1,
@@ -335,7 +360,8 @@ if (dashboardScreen && !reduced) {
 // ═══════════════════════════════════════════════════════════════════════
 
 gsap.utils.toArray(".ring").forEach((ring, i) => {
-  gsap.fromTo(ring,
+  gsap.fromTo(
+    ring,
     { scale: 0.5, opacity: 0 },
     {
       scale: 1,

@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  Animated,
-  StyleSheet,
-} from "react-native";
+import { View, Text, Animated, StyleSheet } from "react-native";
 
 interface CountdownTimerProps {
   targetDate: Date;
@@ -109,13 +104,8 @@ export default function App() {
 
       <View style={styles.divider} />
 
-      <Text style={styles.sectionLabel}>
-        5-minute countdown {fiveMinDone ? "(Done!)" : ""}
-      </Text>
-      <CountdownTimer
-        targetDate={fiveMinutesFromNow}
-        onComplete={() => setFiveMinDone(true)}
-      />
+      <Text style={styles.sectionLabel}>5-minute countdown {fiveMinDone ? "(Done!)" : ""}</Text>
+      <CountdownTimer targetDate={fiveMinutesFromNow} onComplete={() => setFiveMinDone(true)} />
     </View>
   );
 }

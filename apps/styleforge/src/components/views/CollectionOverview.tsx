@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
-import type { StyleForgeCollectionGroup, CollectionResource } from "../../lib/styleforge/collections";
+import type {
+  StyleForgeCollectionGroup,
+  CollectionResource,
+} from "../../lib/styleforge/collections";
 
 interface Props {
   explicit: StyleForgeCollectionGroup[];
@@ -29,7 +32,12 @@ const ICON_MAP: Record<string, string> = {
   effects: "auto_awesome",
 };
 
-export function CollectionOverview({ explicit, byCategory, onSelectCollection, onNewCollection }: Props) {
+export function CollectionOverview({
+  explicit,
+  byCategory,
+  onSelectCollection,
+  onNewCollection,
+}: Props) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"items" | "name">("items");
   const [showExplicit, setShowExplicit] = useState(true);
@@ -43,7 +51,7 @@ export function CollectionOverview({ explicit, byCategory, onSelectCollection, o
         (c) =>
           c.name.toLowerCase().includes(q) ||
           c.description.toLowerCase().includes(q) ||
-          c.tags.some((t) => t.toLowerCase().includes(q)),
+          c.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
     if (sortBy === "name") {

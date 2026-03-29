@@ -64,9 +64,18 @@ export const remotionCodeById = {
   "remotion-counter": { file: "remotion-counter.tsx", code: remotionCounterCode },
   "remotion-timeline": { file: "remotion-timeline.tsx", code: remotionTimelineCode },
   "remotion-kinetic-text": { file: "remotion-kinetic-text.tsx", code: remotionKineticTextCode },
-  "remotion-podcast-audiogram": { file: "remotion-podcast-audiogram.tsx", code: remotionPodcastAudiogramCode },
-  "remotion-product-showcase": { file: "remotion-product-showcase.tsx", code: remotionProductShowcaseCode },
-  "remotion-code-walkthrough": { file: "remotion-code-walkthrough.tsx", code: remotionCodeWalkthroughCode },
+  "remotion-podcast-audiogram": {
+    file: "remotion-podcast-audiogram.tsx",
+    code: remotionPodcastAudiogramCode,
+  },
+  "remotion-product-showcase": {
+    file: "remotion-product-showcase.tsx",
+    code: remotionProductShowcaseCode,
+  },
+  "remotion-code-walkthrough": {
+    file: "remotion-code-walkthrough.tsx",
+    code: remotionCodeWalkthroughCode,
+  },
   "remotion-countdown": { file: "remotion-countdown.tsx", code: remotionCountdownCode },
   "remotion-split-screen": { file: "remotion-split-screen.tsx", code: remotionSplitScreenCode },
   "remotion-news-ticker": { file: "remotion-news-ticker.tsx", code: remotionNewsTickerCode },

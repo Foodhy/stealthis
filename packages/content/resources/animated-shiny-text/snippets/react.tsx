@@ -5,6 +5,7 @@ interface AnimatedShinyTextProps {
   shineColor?: string;
   speed?: string;
   className?: string;
+  style?: CSSProperties;
 }
 
 export function AnimatedShinyText({
@@ -12,6 +13,7 @@ export function AnimatedShinyText({
   shineColor = "rgba(255, 255, 255, 0.9)",
   speed = "3s",
   className = "",
+  style = {},
 }: AnimatedShinyTextProps) {
   const shinyStyle: CSSProperties = {
     backgroundImage: `linear-gradient(120deg, #555 0%, #555 40%, ${shineColor} 50%, #555 60%, #555 100%)`,
@@ -21,6 +23,8 @@ export function AnimatedShinyText({
     backgroundClip: "text",
     WebkitTextFillColor: "transparent",
     animation: `shine-sweep ${speed} ease-in-out infinite`,
+    lineHeight: 1.1,
+    ...style,
   };
 
   return (
@@ -58,10 +62,14 @@ export default function AnimatedShinyTextDemo() {
     >
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2rem" }}>
         <h1>
-          <AnimatedShinyText>
-            <span style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 800, letterSpacing: "-0.03em" }}>
-              Animated Shiny Text
-            </span>
+          <AnimatedShinyText
+            style={{
+              fontSize: "clamp(2.5rem, 6vw, 5rem)",
+              fontWeight: 800,
+              letterSpacing: "-0.03em",
+            }}
+          >
+            Animated Shiny Text
           </AnimatedShinyText>
         </h1>
         <p style={{ color: "#666", fontSize: "1rem" }}>

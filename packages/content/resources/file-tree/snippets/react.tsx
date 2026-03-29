@@ -1,6 +1,17 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
-type FileType = "folder" | "ts" | "tsx" | "js" | "jsx" | "json" | "css" | "md" | "env" | "git" | "lock";
+type FileType =
+  | "folder"
+  | "ts"
+  | "tsx"
+  | "js"
+  | "jsx"
+  | "json"
+  | "css"
+  | "md"
+  | "env"
+  | "git"
+  | "lock";
 
 interface TreeNode {
   id: string;
@@ -22,10 +33,10 @@ const TREE: TreeNode[] = [
         name: "components",
         type: "folder",
         children: [
-          { id: "button", name: "Button.tsx",       type: "tsx" },
-          { id: "input",  name: "Input.tsx",        type: "tsx", modified: true },
-          { id: "modal",  name: "Modal.tsx",        type: "tsx" },
-          { id: "nav",    name: "Navbar.tsx",       type: "tsx" },
+          { id: "button", name: "Button.tsx", type: "tsx" },
+          { id: "input", name: "Input.tsx", type: "tsx", modified: true },
+          { id: "modal", name: "Modal.tsx", type: "tsx" },
+          { id: "nav", name: "Navbar.tsx", type: "tsx" },
         ],
       },
       {
@@ -33,8 +44,8 @@ const TREE: TreeNode[] = [
         name: "hooks",
         type: "folder",
         children: [
-          { id: "useauth",  name: "useAuth.ts",   type: "ts" },
-          { id: "usefetch", name: "useFetch.ts",  type: "ts", untracked: true },
+          { id: "useauth", name: "useAuth.ts", type: "ts" },
+          { id: "usefetch", name: "useFetch.ts", type: "ts", untracked: true },
         ],
       },
       {
@@ -42,12 +53,12 @@ const TREE: TreeNode[] = [
         name: "lib",
         type: "folder",
         children: [
-          { id: "utils",  name: "utils.ts",     type: "ts" },
-          { id: "api",    name: "api.ts",        type: "ts", modified: true },
+          { id: "utils", name: "utils.ts", type: "ts" },
+          { id: "api", name: "api.ts", type: "ts", modified: true },
         ],
       },
-      { id: "apptsx",  name: "App.tsx",        type: "tsx" },
-      { id: "maintsx", name: "main.tsx",       type: "tsx" },
+      { id: "apptsx", name: "App.tsx", type: "tsx" },
+      { id: "maintsx", name: "main.tsx", type: "tsx" },
     ],
   },
   {
@@ -56,29 +67,29 @@ const TREE: TreeNode[] = [
     type: "folder",
     children: [
       { id: "indexhtml", name: "index.html", type: "md" },
-      { id: "favicon",   name: "favicon.svg", type: "env" },
+      { id: "favicon", name: "favicon.svg", type: "env" },
     ],
   },
-  { id: "pkgjson",     name: "package.json",     type: "json" },
-  { id: "tsconfigjson",name: "tsconfig.json",    type: "json" },
+  { id: "pkgjson", name: "package.json", type: "json" },
+  { id: "tsconfigjson", name: "tsconfig.json", type: "json" },
   { id: "tailwindcfg", name: "tailwind.config.js", type: "js" },
-  { id: "envlocal",    name: ".env.local",       type: "env", untracked: true },
-  { id: "gitignore",   name: ".gitignore",       type: "git" },
-  { id: "readme",      name: "README.md",        type: "md", modified: true },
+  { id: "envlocal", name: ".env.local", type: "env", untracked: true },
+  { id: "gitignore", name: ".gitignore", type: "git" },
+  { id: "readme", name: "README.md", type: "md", modified: true },
 ];
 
 const TYPE_ICON: Record<FileType, { color: string; label: string }> = {
   folder: { color: "#e3b341", label: "📁" },
-  ts:     { color: "#3178c6", label: "TS" },
-  tsx:    { color: "#61dafb", label: "TSX"},
-  js:     { color: "#f7df1e", label: "JS" },
-  jsx:    { color: "#61dafb", label: "JSX"},
-  json:   { color: "#ffca28", label: "{}" },
-  css:    { color: "#264de4", label: "CS" },
-  md:     { color: "#ffffff", label: "MD" },
-  env:    { color: "#7ee787", label: "EN" },
-  git:    { color: "#f05032", label: "GI" },
-  lock:   { color: "#8b949e", label: "LK" },
+  ts: { color: "#3178c6", label: "TS" },
+  tsx: { color: "#61dafb", label: "TSX" },
+  js: { color: "#f7df1e", label: "JS" },
+  jsx: { color: "#61dafb", label: "JSX" },
+  json: { color: "#ffca28", label: "{}" },
+  css: { color: "#264de4", label: "CS" },
+  md: { color: "#ffffff", label: "MD" },
+  env: { color: "#7ee787", label: "EN" },
+  git: { color: "#f05032", label: "GI" },
+  lock: { color: "#8b949e", label: "LK" },
 };
 
 function FileIcon({ type }: { type: FileType }) {
@@ -86,14 +97,21 @@ function FileIcon({ type }: { type: FileType }) {
   if (type === "folder") {
     return (
       <svg width="14" height="14" viewBox="0 0 24 24" fill={color} stroke="none" opacity="0.9">
-        <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+        <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
       </svg>
     );
   }
   return (
     <span
       className="text-[8px] font-bold rounded px-0.5 leading-none flex items-center"
-      style={{ color, background: color + "22", border: `1px solid ${color}44`, minWidth: 16, height: 14, justifyContent: "center" }}
+      style={{
+        color,
+        background: color + "22",
+        border: `1px solid ${color}44`,
+        minWidth: 16,
+        height: 14,
+        justifyContent: "center",
+      }}
     >
       {label}
     </span>
@@ -173,10 +191,15 @@ function TreeItem({
         {/* Chevron (folders) */}
         {isFolder ? (
           <svg
-            width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
             className={`flex-shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""} text-[#484f58]`}
           >
-            <polyline points="9 18 15 12 9 6"/>
+            <polyline points="9 18 15 12 9 6" />
           </svg>
         ) : (
           <span className="w-2.5 flex-shrink-0" />
@@ -189,12 +212,8 @@ function TreeItem({
         </span>
 
         {/* Git indicators */}
-        {node.modified && (
-          <span className="text-[9px] font-bold text-[#e3b341] ml-auto">M</span>
-        )}
-        {node.untracked && (
-          <span className="text-[9px] font-bold text-green-400 ml-auto">U</span>
-        )}
+        {node.modified && <span className="text-[9px] font-bold text-[#e3b341] ml-auto">M</span>}
+        {node.untracked && <span className="text-[9px] font-bold text-green-400 ml-auto">U</span>}
       </div>
 
       {isFolder && node.children && (
@@ -230,9 +249,7 @@ function getInitialExpanded(nodes: TreeNode[], max = 1, depth = 0): string[] {
 
 export default function FileTreeRC() {
   const [activeId, setActiveId] = useState<string | null>("apptsx");
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(
-    new Set(getInitialExpanded(TREE))
-  );
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(getInitialExpanded(TREE)));
 
   const toggle = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -265,16 +282,27 @@ export default function FileTreeRC() {
         <div className="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 bg-[#21262d] border-b border-[#30363d]">
-            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">Explorer</span>
+            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">
+              Explorer
+            </span>
             <div className="flex gap-1">
               <button
                 onClick={expandAll}
                 title="Expand all"
                 className="p-1 rounded text-[#484f58] hover:text-[#e6edf3] transition-colors"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                  <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
                 </svg>
               </button>
               <button
@@ -282,9 +310,18 @@ export default function FileTreeRC() {
                 title="Collapse all"
                 className="p-1 rounded text-[#484f58] hover:text-[#e6edf3] transition-colors"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
-                  <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="4 14 10 14 10 20" />
+                  <polyline points="20 10 14 10 14 4" />
+                  <line x1="10" y1="14" x2="3" y2="21" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
                 </svg>
               </button>
             </div>
@@ -317,8 +354,12 @@ export default function FileTreeRC() {
 
         {/* Legend */}
         <div className="flex gap-3 mt-2 text-[10px] text-[#484f58]">
-          <span className="flex items-center gap-1"><span className="text-[#e3b341] font-bold">M</span> Modified</span>
-          <span className="flex items-center gap-1"><span className="text-green-400 font-bold">U</span> Untracked</span>
+          <span className="flex items-center gap-1">
+            <span className="text-[#e3b341] font-bold">M</span> Modified
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-green-400 font-bold">U</span> Untracked
+          </span>
         </div>
       </div>
     </div>

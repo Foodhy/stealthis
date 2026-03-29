@@ -69,9 +69,21 @@ export function MagicCard({
 // Demo usage
 export default function MagicCardDemo() {
   const items = [
-    { icon: "\u2666", title: "Interactive", body: "Move your mouse over this card to see the spotlight follow your cursor." },
-    { icon: "\u2733", title: "Responsive", body: "Each card tracks the cursor independently with its own radial gradient." },
-    { icon: "\u2726", title: "Customizable", body: "Adjust colors, radius, and intensity using simple props." },
+    {
+      icon: "\u2666",
+      title: "Interactive",
+      body: "Move your mouse over this card to see the spotlight follow your cursor.",
+    },
+    {
+      icon: "\u2733",
+      title: "Responsive",
+      body: "Each card tracks the cursor independently with its own radial gradient.",
+    },
+    {
+      icon: "\u2726",
+      title: "Customizable",
+      body: "Adjust colors, radius, and intensity using simple props.",
+    },
   ];
 
   return (

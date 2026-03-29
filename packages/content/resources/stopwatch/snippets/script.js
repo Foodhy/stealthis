@@ -3,13 +3,13 @@ let swElapsedTime = 0;
 let swTimerInterval;
 let swLaps = [];
 
-const swMinutesEl = document.getElementById('sw-minutes');
-const swSecondsEl = document.getElementById('sw-seconds');
-const swMsEl = document.getElementById('sw-ms');
-const swStartBtn = document.getElementById('sw-start');
-const swLapBtn = document.getElementById('sw-lap');
-const swResetBtn = document.getElementById('sw-reset');
-const swLapsList = document.getElementById('sw-laps-list');
+const swMinutesEl = document.getElementById("sw-minutes");
+const swSecondsEl = document.getElementById("sw-seconds");
+const swMsEl = document.getElementById("sw-ms");
+const swStartBtn = document.getElementById("sw-start");
+const swLapBtn = document.getElementById("sw-lap");
+const swResetBtn = document.getElementById("sw-reset");
+const swLapsList = document.getElementById("sw-laps-list");
 
 function timeToString(time) {
   let diffInMin = time / (1000 * 60);
@@ -41,7 +41,7 @@ function startStopwatch() {
     swElapsedTime = Date.now() - swStartTime;
     print(timeToString(swElapsedTime));
   }, 10);
-  
+
   showButton("STOP");
   swLapBtn.disabled = false;
 }
@@ -56,7 +56,7 @@ function resetStopwatch() {
   print("00:00.000");
   swElapsedTime = 0;
   swLaps = [];
-  swLapsList.innerHTML = '';
+  swLapsList.innerHTML = "";
   showButton("START");
   swLapBtn.disabled = true;
 }
@@ -64,8 +64,8 @@ function resetStopwatch() {
 function recordLap() {
   const lapTime = timeToString(swElapsedTime);
   swLaps.unshift(lapTime);
-  
-  const li = document.createElement('li');
+
+  const li = document.createElement("li");
   li.innerHTML = `
     <span class="lap-num">Lap ${swLaps.length}</span>
     <span class="lap-time">${lapTime}</span>
@@ -85,7 +85,7 @@ function showButton(buttonKey) {
 
 // Event Listeners
 if (swStartBtn) {
-  swStartBtn.addEventListener("click", function() {
+  swStartBtn.addEventListener("click", function () {
     if (swStartBtn.innerHTML === "Start") {
       startStopwatch();
     } else {

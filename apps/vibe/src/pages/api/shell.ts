@@ -27,10 +27,10 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       await mkdir(cwd, { recursive: true });
     } catch {
-      return new Response(
-        JSON.stringify({ error: `Cannot access directory: ${cwd}` }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: `Cannot access directory: ${cwd}` }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
   }
 
@@ -105,7 +105,9 @@ export const POST: APIRoute = async ({ request }) => {
         try {
           if (child.pid) process.kill(-child.pid, "SIGTERM");
         } catch {
-          try { child.kill("SIGTERM"); } catch {}
+          try {
+            child.kill("SIGTERM");
+          } catch {}
         }
       }
 

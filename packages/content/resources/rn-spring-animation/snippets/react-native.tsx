@@ -1,12 +1,5 @@
 import React, { useRef, useCallback, useEffect } from "react";
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 /* ------------------------------------------------------------------ */
 /*  Spring Presets                                                     */
@@ -90,11 +83,7 @@ function SpringBox({ preset, label, color, style }: SpringBoxProps) {
           styles.box,
           { backgroundColor: color },
           {
-            transform: [
-              { scale },
-              { translateY },
-              { rotate: rotateInterpolation },
-            ],
+            transform: [{ scale }, { translateY }, { rotate: rotateInterpolation }],
           },
           style,
         ]}
@@ -135,9 +124,7 @@ function PulseBox({ color, label }: { color: string; label: string }) {
   }, [scale]);
 
   return (
-    <Animated.View
-      style={[styles.box, { backgroundColor: color, transform: [{ scale }] }]}
-    >
+    <Animated.View style={[styles.box, { backgroundColor: color, transform: [{ scale }] }]}>
       <Text style={styles.boxLabel}>{label}</Text>
       <Text style={styles.presetLabel}>pulse (loop)</Text>
     </Animated.View>
@@ -161,12 +148,7 @@ function ElasticSlideIn({ color, label }: { color: string; label: string }) {
   }, [translateX]);
 
   return (
-    <Animated.View
-      style={[
-        styles.box,
-        { backgroundColor: color, transform: [{ translateX }] },
-      ]}
-    >
+    <Animated.View style={[styles.box, { backgroundColor: color, transform: [{ translateX }] }]}>
       <Text style={styles.boxLabel}>{label}</Text>
       <Text style={styles.presetLabel}>elastic slide-in</Text>
     </Animated.View>

@@ -124,9 +124,9 @@
     const maxPrice = parseInt(priceMax.value, 10) || 500;
     const stockOnly = stockToggle.getAttribute("aria-checked") === "true";
 
-    const selectedBrands = Array.from(
-      sidebar.querySelectorAll('.check-label input:checked')
-    ).map((cb) => cb.value);
+    const selectedBrands = Array.from(sidebar.querySelectorAll(".check-label input:checked")).map(
+      (cb) => cb.value
+    );
 
     let visibleCount = 0;
 
@@ -258,10 +258,7 @@
     }
 
     pagination.querySelectorAll(".page-btn[data-page]").forEach((p) => {
-      p.classList.toggle(
-        "active",
-        parseInt(p.getAttribute("data-page"), 10) === currentPage
-      );
+      p.classList.toggle("active", parseInt(p.getAttribute("data-page"), 10) === currentPage);
     });
 
     pagination.querySelector(".prev").disabled = currentPage <= 1;
@@ -277,7 +274,8 @@
     const full = Math.floor(rating);
     const half = rating % 1 >= 0.5 ? 1 : 0;
     const empty = 5 - full - half;
-    el.textContent = "\u2605".repeat(full) + (half ? "\u2605" : "") + "\u2606".repeat(empty - (half ? 0 : 0));
+    el.textContent =
+      "\u2605".repeat(full) + (half ? "\u2605" : "") + "\u2606".repeat(empty - (half ? 0 : 0));
     /* Re-render with proper full/empty */
     let stars = "";
     for (let i = 0; i < full; i++) stars += "\u2605";

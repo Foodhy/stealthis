@@ -18,7 +18,7 @@ interface Table {
 }
 
 interface Relation {
-  from: string;      // tableId.columnName
+  from: string; // tableId.columnName
   to: string;
   label?: string;
 }
@@ -31,10 +31,10 @@ const TABLES: Table[] = [
     x: 60,
     y: 80,
     columns: [
-      { name: "id",         type: "uuid",      pk: true },
-      { name: "email",      type: "text",      nullable: false },
-      { name: "name",       type: "text",      nullable: true },
-      { name: "role",       type: "enum",      nullable: false },
+      { name: "id", type: "uuid", pk: true },
+      { name: "email", type: "text", nullable: false },
+      { name: "name", type: "text", nullable: true },
+      { name: "role", type: "enum", nullable: false },
       { name: "created_at", type: "timestamp" },
     ],
   },
@@ -45,11 +45,11 @@ const TABLES: Table[] = [
     x: 400,
     y: 60,
     columns: [
-      { name: "id",         type: "uuid",  pk: true },
-      { name: "user_id",    type: "uuid",  fk: true },
-      { name: "title",      type: "text" },
-      { name: "body",       type: "text",  nullable: true },
-      { name: "published",  type: "bool" },
+      { name: "id", type: "uuid", pk: true },
+      { name: "user_id", type: "uuid", fk: true },
+      { name: "title", type: "text" },
+      { name: "body", type: "text", nullable: true },
+      { name: "published", type: "bool" },
       { name: "created_at", type: "timestamp" },
     ],
   },
@@ -60,10 +60,10 @@ const TABLES: Table[] = [
     x: 400,
     y: 330,
     columns: [
-      { name: "id",         type: "uuid", pk: true },
-      { name: "post_id",    type: "uuid", fk: true },
-      { name: "user_id",    type: "uuid", fk: true },
-      { name: "body",       type: "text" },
+      { name: "id", type: "uuid", pk: true },
+      { name: "post_id", type: "uuid", fk: true },
+      { name: "user_id", type: "uuid", fk: true },
+      { name: "body", type: "text" },
       { name: "created_at", type: "timestamp" },
     ],
   },
@@ -74,7 +74,7 @@ const TABLES: Table[] = [
     x: 720,
     y: 60,
     columns: [
-      { name: "id",   type: "uuid", pk: true },
+      { name: "id", type: "uuid", pk: true },
       { name: "name", type: "text" },
       { name: "slug", type: "text" },
     ],
@@ -87,17 +87,17 @@ const TABLES: Table[] = [
     y: 280,
     columns: [
       { name: "post_id", type: "uuid", pk: true, fk: true },
-      { name: "tag_id",  type: "uuid", pk: true, fk: true },
+      { name: "tag_id", type: "uuid", pk: true, fk: true },
     ],
   },
 ];
 
 const RELATIONS: Relation[] = [
-  { from: "posts.user_id",       to: "users.id",        label: "N:1" },
-  { from: "comments.post_id",    to: "posts.id",        label: "N:1" },
-  { from: "comments.user_id",    to: "users.id",        label: "N:1" },
-  { from: "post_tags.post_id",   to: "posts.id",        label: "N:1" },
-  { from: "post_tags.tag_id",    to: "tags.id",         label: "N:1" },
+  { from: "posts.user_id", to: "users.id", label: "N:1" },
+  { from: "comments.post_id", to: "posts.id", label: "N:1" },
+  { from: "comments.user_id", to: "users.id", label: "N:1" },
+  { from: "post_tags.post_id", to: "posts.id", label: "N:1" },
+  { from: "post_tags.tag_id", to: "tags.id", label: "N:1" },
 ];
 
 const TABLE_W = 200;
@@ -255,7 +255,13 @@ function TableNode({
             )}
             {/* PK/FK indicator */}
             {(col.pk || col.fk) && (
-              <text x={10} y={cy + ROW_H / 2 + 4} fill={col.pk ? "#e3b341" : "#bc8cff"} fontSize={9} fontFamily="monospace">
+              <text
+                x={10}
+                y={cy + ROW_H / 2 + 4}
+                fill={col.pk ? "#e3b341" : "#bc8cff"}
+                fontSize={9}
+                fontFamily="monospace"
+              >
                 {col.pk ? "PK" : "FK"}
               </text>
             )}
@@ -291,9 +297,7 @@ export default function SchemaDiagramRC() {
   const [animated, setAnimated] = useState(true);
 
   const handleDrag = useCallback((id: string, dx: number, dy: number) => {
-    setTables((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t))
-    );
+    setTables((prev) => prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t)));
   }, []);
 
   const canvasH = Math.max(...tables.map((t) => t.y + tableHeight(t))) + 80;
@@ -331,12 +335,7 @@ export default function SchemaDiagramRC() {
         </div>
 
         <div className="bg-[#0d1117] border border-[#30363d] rounded-xl overflow-auto">
-          <svg
-            width={canvasW}
-            height={canvasH}
-            className="block"
-            onClick={() => setSelected(null)}
-          >
+          <svg width={canvasW} height={canvasH} className="block" onClick={() => setSelected(null)}>
             {/* Grid */}
             <defs>
               <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
@@ -389,7 +388,8 @@ export default function SchemaDiagramRC() {
             <span className="font-mono font-bold text-[#bc8cff]">FK</span> Foreign key
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-6 h-px border-t-2 border-dashed border-[#30363d] inline-block" /> Relation
+            <span className="w-6 h-px border-t-2 border-dashed border-[#30363d] inline-block" />{" "}
+            Relation
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-6 h-px border-t-2 border-[#58a6ff] inline-block" /> Selected relation

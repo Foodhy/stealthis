@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, useCallback, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 interface ScrollVelocityTextProps {
   text: string | string[];
@@ -169,15 +176,47 @@ export default function ScrollVelocityTextDemo() {
   };
 
   return (
-    <div style={{ background: "#0a0a0a", minHeight: "400vh", fontFamily: "system-ui, -apple-system, sans-serif", color: "#e2e8f0" }}>
-      <section style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1rem", textAlign: "center", padding: "2rem", position: "relative", zIndex: 2 }}>
-        <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 800, letterSpacing: "-0.03em", background: "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+    <div
+      style={{
+        background: "#0a0a0a",
+        minHeight: "400vh",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        color: "#e2e8f0",
+      }}
+    >
+      <section
+        style={{
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "1rem",
+          textAlign: "center",
+          padding: "2rem",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(2rem, 5vw, 3.5rem)",
+            fontWeight: 800,
+            letterSpacing: "-0.03em",
+            background: "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
           Scroll Velocity Text
         </h1>
         <p style={{ color: "rgba(148, 163, 184, 0.8)", fontSize: "1.125rem" }}>
           Marquee speed reacts to how fast you scroll
         </p>
-        <span style={{ marginTop: "2rem", color: "rgba(148, 163, 184, 0.5)", fontSize: "0.875rem" }}>
+        <span
+          style={{ marginTop: "2rem", color: "rgba(148, 163, 184, 0.5)", fontSize: "0.875rem" }}
+        >
           Scroll to see the speed change
         </span>
       </section>
@@ -192,10 +231,14 @@ export default function ScrollVelocityTextDemo() {
       </div>
 
       <div style={blockStyle}>
-        <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#f1f5f9", marginBottom: "1rem" }}>Velocity-Driven Animation</h2>
+        <h2
+          style={{ fontSize: "1.75rem", fontWeight: 700, color: "#f1f5f9", marginBottom: "1rem" }}
+        >
+          Velocity-Driven Animation
+        </h2>
         <p style={{ color: "rgba(148,163,184,0.8)", lineHeight: 1.8 }}>
-          The marquee text responds to your scroll speed in real time.
-          Scroll faster and the text accelerates.
+          The marquee text responds to your scroll speed in real time. Scroll faster and the text
+          accelerates.
         </p>
       </div>
 
@@ -209,10 +252,14 @@ export default function ScrollVelocityTextDemo() {
       </div>
 
       <div style={blockStyle}>
-        <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#f1f5f9", marginBottom: "1rem" }}>Smooth Interpolation</h2>
+        <h2
+          style={{ fontSize: "1.75rem", fontWeight: 700, color: "#f1f5f9", marginBottom: "1rem" }}
+        >
+          Smooth Interpolation
+        </h2>
         <p style={{ color: "rgba(148,163,184,0.8)", lineHeight: 1.8 }}>
-          Linear interpolation ensures smooth transitions. Velocity decays naturally
-          when scrolling stops.
+          Linear interpolation ensures smooth transitions. Velocity decays naturally when scrolling
+          stops.
         </p>
       </div>
 
@@ -225,8 +272,26 @@ export default function ScrollVelocityTextDemo() {
         />
       </div>
 
-      <div style={{ position: "fixed", bottom: "2rem", right: "2rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "0.75rem 1.25rem", fontSize: "0.8rem", color: "rgba(148,163,184,0.7)", zIndex: 100, backdropFilter: "blur(12px)", fontVariantNumeric: "tabular-nums" }}>
-        Speed: <span style={{ color: "#818cf8", fontWeight: 700, fontSize: "1rem" }}>{speed.toFixed(1)}</span>
+      <div
+        style={{
+          position: "fixed",
+          bottom: "2rem",
+          right: "2rem",
+          background: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 12,
+          padding: "0.75rem 1.25rem",
+          fontSize: "0.8rem",
+          color: "rgba(148,163,184,0.7)",
+          zIndex: 100,
+          backdropFilter: "blur(12px)",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        Speed:{" "}
+        <span style={{ color: "#818cf8", fontWeight: 700, fontSize: "1rem" }}>
+          {speed.toFixed(1)}
+        </span>
       </div>
     </div>
   );

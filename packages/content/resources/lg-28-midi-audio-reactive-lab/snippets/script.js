@@ -74,8 +74,8 @@ async function enableMidi() {
         const velocity = event.data[2] || 0;
         const normalized = velocity / 127;
         nodes.forEach((el, i) => {
-          const wave = Math.sin((performance.now() * 0.002) + i) * 0.3 + 0.7;
-          el.style.height = `${Math.max(10, (normalized * wave) * 100)}%`;
+          const wave = Math.sin(performance.now() * 0.002 + i) * 0.3 + 0.7;
+          el.style.height = `${Math.max(10, normalized * wave * 100)}%`;
         });
       };
     });
@@ -89,7 +89,7 @@ function animateAudio() {
   if (sound && sound.supported) {
     const level = sound.getLevel();
     nodes.forEach((el, i) => {
-      const wave = Math.sin((performance.now() * 0.003) + i * 0.4) * 0.25 + 0.75;
+      const wave = Math.sin(performance.now() * 0.003 + i * 0.4) * 0.25 + 0.75;
       el.style.height = `${Math.max(10, level * wave * 100)}%`;
     });
   }

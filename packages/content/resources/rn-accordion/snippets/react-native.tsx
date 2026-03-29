@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   Animated,
   Pressable,
@@ -45,14 +38,8 @@ interface AccordionItemProps {
   index?: number; // injected by Accordion
 }
 
-function AccordionItem({
-  title,
-  children,
-  defaultOpen = false,
-  index = 0,
-}: AccordionItemProps) {
-  const { allowMultiple, openIndex, toggle, register } =
-    useContext(AccordionContext);
+function AccordionItem({ title, children, defaultOpen = false, index = 0 }: AccordionItemProps) {
+  const { allowMultiple, openIndex, toggle, register } = useContext(AccordionContext);
 
   const [contentHeight, setContentHeight] = useState(0);
   const animValue = useRef(new Animated.Value(defaultOpen ? 1 : 0)).current;
@@ -119,9 +106,7 @@ function AccordionItem({
       {/* Header */}
       <Pressable onPress={handlePress} style={styles.header}>
         <Text style={styles.headerText}>{title}</Text>
-        <Animated.Text
-          style={[styles.chevron, { transform: [{ rotate: rotateAnim }] }]}
-        >
+        <Animated.Text style={[styles.chevron, { transform: [{ rotate: rotateAnim }] }]}>
           ▶
         </Animated.Text>
       </Pressable>
@@ -149,11 +134,7 @@ interface AccordionProps {
   style?: ViewStyle;
 }
 
-function Accordion({
-  allowMultiple = false,
-  children,
-  style,
-}: AccordionProps) {
+function Accordion({ allowMultiple = false, children, style }: AccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const register = useCallback(
@@ -162,15 +143,12 @@ function Accordion({
         setOpenIndex(index);
       }
     },
-    [allowMultiple],
+    [allowMultiple]
   );
 
-  const toggle = useCallback(
-    (index: number) => {
-      setOpenIndex((prev) => (prev === index ? null : index));
-    },
-    [],
-  );
+  const toggle = useCallback((index: number) => {
+    setOpenIndex((prev) => (prev === index ? null : index));
+  }, []);
 
   const ctx: AccordionCtx = {
     allowMultiple,
@@ -223,11 +201,7 @@ export default function App() {
       <Text style={styles.title}>Frequently Asked Questions</Text>
       <Accordion allowMultiple={false}>
         {FAQ.map((item, i) => (
-          <AccordionItem
-            key={item.q}
-            title={item.q}
-            defaultOpen={i === 1}
-          >
+          <AccordionItem key={item.q} title={item.q} defaultOpen={i === 1}>
             <Text style={styles.answer}>{item.a}</Text>
           </AccordionItem>
         ))}

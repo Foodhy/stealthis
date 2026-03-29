@@ -19,19 +19,19 @@
       trackEl.parentElement.appendChild(c);
     }
 
-    const speed    = parseFloat(trackEl.dataset.speed) || 1;
-    const reverse  = trackEl.dataset.reverse === "true";
+    const speed = parseFloat(trackEl.dataset.speed) || 1;
+    const reverse = trackEl.dataset.reverse === "true";
     const baseSpeed = speed * (reverse ? 1 : -1);
 
-    let xPos  = 0;
-    let vel   = baseSpeed;
+    let xPos = 0;
+    let vel = baseSpeed;
     const singleW = origWidth;
 
     gsap.ticker.add(() => {
       xPos += vel;
       // Loop: when offset > 0 or < -singleW, reset
       if (vel < 0 && xPos <= -singleW) xPos = 0;
-      if (vel > 0 && xPos >= 0)        xPos = -singleW;
+      if (vel > 0 && xPos >= 0) xPos = -singleW;
       trackEl.parentElement.style.transform = `translateX(${xPos}px)`;
     });
 

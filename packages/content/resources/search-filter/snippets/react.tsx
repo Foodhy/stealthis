@@ -137,7 +137,8 @@ export default function SearchFilterPattern() {
           </button>
 
           <p className="text-xs text-[#6e7681]">
-            URL sync works outside `srcdoc`: <code className="text-[#9fb3c8]">?q=&status=active</code>
+            URL sync works outside `srcdoc`:{" "}
+            <code className="text-[#9fb3c8]">?q=&status=active</code>
           </p>
         </aside>
 

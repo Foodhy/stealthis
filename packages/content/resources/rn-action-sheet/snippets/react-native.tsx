@@ -35,14 +35,7 @@ interface ActionSheetProps {
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
-function ActionSheet({
-  visible,
-  onClose,
-  title,
-  message,
-  actions,
-  cancelLabel,
-}: ActionSheetProps) {
+function ActionSheet({ visible, onClose, title, message, actions, cancelLabel }: ActionSheetProps) {
   const backdrop = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const [mounted, setMounted] = useState(visible);
@@ -151,11 +144,7 @@ function ActionSheet({
         </View>
 
         {/* Cancel button */}
-        <TouchableOpacity
-          style={styles.cancelButton}
-          activeOpacity={0.6}
-          onPress={onClose}
-        >
+        <TouchableOpacity style={styles.cancelButton} activeOpacity={0.6} onPress={onClose}>
           <Text style={styles.cancelText}>{cancelLabel}</Text>
         </TouchableOpacity>
       </Animated.View>

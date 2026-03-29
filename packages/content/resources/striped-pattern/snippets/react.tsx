@@ -38,9 +38,7 @@ export function StripedPattern({
         ${color2} ${stripeWidth}px
       )`,
       backgroundSize: `${hyp}px ${hyp}px`,
-      animation: animate
-        ? `stripe-drift-react ${animationDuration}s linear infinite`
-        : "none",
+      animation: animate ? `stripe-drift-react ${animationDuration}s linear infinite` : "none",
     };
   }, [angle, color1, color2, stripeWidth, animate, animationDuration]);
 
@@ -60,9 +58,7 @@ export function StripedPattern({
         }
       `}</style>
       <div style={bgStyle} aria-hidden="true" />
-      {children && (
-        <div style={{ position: "relative", zIndex: 1 }}>{children}</div>
-      )}
+      {children && <div style={{ position: "relative", zIndex: 1 }}>{children}</div>}
     </div>
   );
 }
@@ -74,10 +70,31 @@ function DiagonalStripes() {
       angle={135}
       color1="rgba(139, 92, 246, 0.08)"
       stripeWidth={16}
-      style={{ borderRadius: "1.25rem", minHeight: 280, border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{
+        borderRadius: "1.25rem",
+        minHeight: 280,
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
     >
-      <div style={{ padding: "1.75rem", marginTop: "auto", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 280 }}>
-        <span style={labelStyle("rgba(139, 92, 246, 0.9)", "rgba(139, 92, 246, 0.1)", "rgba(139, 92, 246, 0.2)")}>Diagonal</span>
+      <div
+        style={{
+          padding: "1.75rem",
+          marginTop: "auto",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          minHeight: 280,
+        }}
+      >
+        <span
+          style={labelStyle(
+            "rgba(139, 92, 246, 0.9)",
+            "rgba(139, 92, 246, 0.1)",
+            "rgba(139, 92, 246, 0.2)"
+          )}
+        >
+          Diagonal
+        </span>
         <h2 style={titleStyle}>135&deg; Stripes</h2>
         <p style={descStyle}>Classic diagonal striped pattern with subtle animation</p>
       </div>
@@ -91,10 +108,30 @@ function HorizontalStripes() {
       angle={0}
       color1="rgba(56, 189, 248, 0.06)"
       stripeWidth={12}
-      style={{ borderRadius: "1.25rem", minHeight: 280, border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{
+        borderRadius: "1.25rem",
+        minHeight: 280,
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
     >
-      <div style={{ padding: "1.75rem", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 280 }}>
-        <span style={labelStyle("rgba(56, 189, 248, 0.9)", "rgba(56, 189, 248, 0.1)", "rgba(56, 189, 248, 0.2)")}>Horizontal</span>
+      <div
+        style={{
+          padding: "1.75rem",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          minHeight: 280,
+        }}
+      >
+        <span
+          style={labelStyle(
+            "rgba(56, 189, 248, 0.9)",
+            "rgba(56, 189, 248, 0.1)",
+            "rgba(56, 189, 248, 0.2)"
+          )}
+        >
+          Horizontal
+        </span>
         <h2 style={titleStyle}>0&deg; Stripes</h2>
         <p style={descStyle}>Clean horizontal bands with dual-color layering</p>
       </div>
@@ -109,10 +146,30 @@ function FineStripes() {
       color1="rgba(34, 211, 238, 0.1)"
       stripeWidth={6}
       animationDuration={20}
-      style={{ borderRadius: "1.25rem", minHeight: 280, border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{
+        borderRadius: "1.25rem",
+        minHeight: 280,
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
     >
-      <div style={{ padding: "1.75rem", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 280 }}>
-        <span style={labelStyle("rgba(34, 211, 238, 0.9)", "rgba(34, 211, 238, 0.1)", "rgba(34, 211, 238, 0.2)")}>Fine</span>
+      <div
+        style={{
+          padding: "1.75rem",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          minHeight: 280,
+        }}
+      >
+        <span
+          style={labelStyle(
+            "rgba(34, 211, 238, 0.9)",
+            "rgba(34, 211, 238, 0.1)",
+            "rgba(34, 211, 238, 0.2)"
+          )}
+        >
+          Fine
+        </span>
         <h2 style={titleStyle}>Thin Stripes</h2>
         <p style={descStyle}>Narrow stripes with neon accent overlay</p>
       </div>
@@ -150,8 +207,26 @@ function CrosshatchStripes() {
           animation: "stripe-cross-react 40s linear infinite",
         }}
       />
-      <div style={{ position: "relative", zIndex: 1, padding: "1.75rem", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 280 }}>
-        <span style={labelStyle("rgba(244, 63, 94, 0.9)", "rgba(244, 63, 94, 0.1)", "rgba(244, 63, 94, 0.2)")}>Crosshatch</span>
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          padding: "1.75rem",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          minHeight: 280,
+        }}
+      >
+        <span
+          style={labelStyle(
+            "rgba(244, 63, 94, 0.9)",
+            "rgba(244, 63, 94, 0.1)",
+            "rgba(244, 63, 94, 0.2)"
+          )}
+        >
+          Crosshatch
+        </span>
         <h2 style={titleStyle}>Layered</h2>
         <p style={descStyle}>Two diagonal gradients composited into a crosshatch</p>
       </div>
@@ -196,21 +271,28 @@ export default function StripedPatternDemo() {
       style={{
         minHeight: "100vh",
         background: "#0a0a0a",
-        padding: "2rem",
-        display: "grid",
-        placeItems: "center",
+        padding: "1.5rem",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "1.5rem",
-          width: "100%",
-          maxWidth: 1200,
-        }}
-      >
+      <style>{`
+        .stripe-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+          width: 100%;
+          max-width: 1200px;
+        }
+        @media (max-width: 768px) {
+          .stripe-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+      <div className="stripe-grid">
         <DiagonalStripes />
         <HorizontalStripes />
         <CrosshatchStripes />

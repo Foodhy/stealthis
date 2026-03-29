@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Event Sourcing + CQRS Architecture</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .card {
+    max-width: 780px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(34,211,238,0.04), rgba(59,130,246,0.04));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    overflow: hidden;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(34,211,238,0.12);
+    color: #22d3ee;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, #22d3ee, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #22d3ee;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(34,211,238,0.15);
+  }
+  .tree {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+  }
+  .tree .file { color: #e2e8f0; }
+  .tree .comment { color: #64748b; }
+  .tree .dir { color: #22d3ee; }
+  .tree .accent { color: #3b82f6; }
+  .cqrs-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .cqrs-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .cqrs-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    width: 55px;
+    flex-shrink: 0;
+  }
+  .cqrs-label.write { color: #f87171; }
+  .cqrs-label.read { color: #4ade80; }
+  .c-node {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'SF Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 7px;
+    white-space: nowrap;
+  }
+  .c-node.cmd {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #f87171;
+  }
+  .c-node.handler {
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.25);
+    color: #fbbf24;
+  }
+  .c-node.agg {
+    background: rgba(168,85,247,0.12);
+    border: 1px solid rgba(168,85,247,0.25);
+    color: #c084fc;
+  }
+  .c-node.store {
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: #93c5fd;
+  }
+  .c-node.bus {
+    background: rgba(34,211,238,0.12);
+    border: 1px solid rgba(34,211,238,0.25);
+    color: #22d3ee;
+  }
+  .c-node.proj {
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #4ade80;
+  }
+  .c-node.read {
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.2);
+    color: #86efac;
+  }
+  .c-node.query {
+    background: rgba(34,197,94,0.15);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: #4ade80;
+    font-weight: 600;
+  }
+  .c-arrow {
+    color: #475569;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .concepts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .concept-card {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 0.85rem;
+  }
+  .concept-card h4 {
+    font-size: 0.78rem;
+    margin-bottom: 0.3rem;
+  }
+  .concept-card h4.events { color: #3b82f6; }
+  .concept-card h4.aggregates { color: #c084fc; }
+  .concept-card h4.projections { color: #4ade80; }
+  .concept-card h4.snapshots { color: #fbbf24; }
+  .concept-card p {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+  .event-list {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .event-tag {
+    font-family: 'SF Mono', monospace;
+    font-size: 0.68rem;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    color: #93c5fd;
+    padding: 0.25rem 0.55rem;
+    border-radius: 5px;
+  }
+  .event-tag .num {
+    color: #475569;
+    margin-right: 0.3rem;
+  }
+  .source {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .source a {
+    color: #64748b;
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .source a:hover { color: #22d3ee; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Architecture</div>
+  <h1>Event Sourcing + CQRS</h1>
+  <p class="subtitle">Append-only event store, aggregate roots, projections, and read/write separation.</p>
+
+  <div class="section-title">Project Structure</div>
+  <div class="tree">
+<span class="dir">src/</span>
+<span class="dir">  domain/</span>
+<span class="accent">    ├── events/</span>           <span class="comment">(OrderCreated, ItemAdded, OrderShipped)</span>
+<span class="accent">    ├── aggregates/</span>       <span class="comment">(OrderAggregate &mdash; applies events)</span>
+<span class="accent">    └── commands/</span>         <span class="comment">(CreateOrder, AddItem, ShipOrder)</span>
+<span class="dir">  application/</span>
+<span class="accent">    ├── command-handlers/</span> <span class="comment">(Validate &rarr; Load &rarr; Apply &rarr; Store)</span>
+<span class="accent">    └── query-handlers/</span>   <span class="comment">(Read from projections)</span>
+<span class="dir">  infrastructure/</span>
+<span class="accent">    ├── event-store/</span>      <span class="comment">(Append-only log &mdash; PostgreSQL/EventStoreDB)</span>
+<span class="accent">    ├── projections/</span>      <span class="comment">(OrderSummary, UserActivity read models)</span>
+<span class="accent">    └── snapshots/</span>        <span class="comment">(Periodic state snapshots)</span>
+<span class="dir">  read-models/</span>
+<span class="accent">    ├── order-list.ts</span>     <span class="comment">(Queryable view)</span>
+<span class="accent">    └── analytics.ts</span>      <span class="comment">(Aggregated data)</span>
+  </div>
+
+  <div class="section-title">Event Stream (Order Aggregate)</div>
+  <div class="event-list">
+    <span class="event-tag"><span class="num">#1</span>OrderCreated</span>
+    <span class="event-tag"><span class="num">#2</span>ItemAdded</span>
+    <span class="event-tag"><span class="num">#3</span>ItemAdded</span>
+    <span class="event-tag"><span class="num">#4</span>ItemRemoved</span>
+    <span class="event-tag"><span class="num">#5</span>OrderConfirmed</span>
+    <span class="event-tag"><span class="num">#6</span>PaymentReceived</span>
+    <span class="event-tag"><span class="num">#7</span>OrderShipped</span>
+  </div>
+
+  <div class="section-title">CQRS Flow</div>
+  <div class="cqrs-flow">
+    <div class="cqrs-row">
+      <span class="cqrs-label write">Write</span>
+      <span class="c-node cmd">Command</span>
+      <span class="c-arrow">&rarr;</span>
+      <span class="c-node handler">Handler</span>
+      <span class="c-arrow">&rarr;</span>
+      <span class="c-node agg">Aggregate</span>
+      <span class="c-arrow">&rarr;</span>
+      <span class="c-node store">Event Store</span>
+      <span class="c-arrow">&rarr;</span>
+      <span class="c-node bus">Event Bus</span>
+    </div>
+    <div class="cqrs-row" style="padding-left: 55px;">
+      <span class="c-arrow" style="transform: rotate(90deg);">&darr;</span>
+    </div>
+    <div class="cqrs-row">
+      <span class="cqrs-label read">Read</span>
+      <span class="c-node query">Query</span>
+      <span class="c-arrow">&larr;</span>
+      <span class="c-node read">Read Model</span>
+      <span class="c-arrow">&larr;</span>
+      <span class="c-node proj">Projection</span>
+      <span class="c-arrow">&larr;</span>
+      <span class="c-node bus">Event Bus</span>
+    </div>
+  </div>
+
+  <div class="section-title">Key Concepts</div>
+  <div class="concepts">
+    <div class="concept-card">
+      <h4 class="events">Event Store</h4>
+      <p>Append-only log of immutable events. State is derived by replaying events. Complete audit trail.</p>
+    </div>
+    <div class="concept-card">
+      <h4 class="aggregates">Aggregates</h4>
+      <p>Consistency boundaries that receive commands, validate rules, and produce events.</p>
+    </div>
+    <div class="concept-card">
+      <h4 class="projections">Projections</h4>
+      <p>Disposable read models built from events. Delete and rebuild any time by replaying.</p>
+    </div>
+    <div class="concept-card">
+      <h4 class="snapshots">Snapshots</h4>
+      <p>Periodic state cache. Restore snapshot + replay only recent events for fast loading.</p>
+    </div>
+  </div>
+
+  <div class="source">
+    <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing" target="_blank" rel="noopener">Source: Microsoft Event Sourcing</a>
+    <a href="https://microservices.io/patterns/data/event-sourcing.html" target="_blank" rel="noopener">microservices.io</a>
+    <a href="https://github.com/oskardudycz/EventSourcing.NodeJS" target="_blank" rel="noopener">EventSourcing.NodeJS</a>
+  </div>
+</div>
+</body>
+</html>

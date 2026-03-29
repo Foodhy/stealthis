@@ -1,7 +1,7 @@
 (function () {
   var THRESHOLD = 300; // px before button appears
 
-  var btn      = document.getElementById("btt-btn");
+  var btn = document.getElementById("btt-btn");
   var ringFill = document.getElementById("btt-ring-fill");
 
   if (!btn) return;
@@ -11,7 +11,7 @@
   var circumference = 2 * Math.PI * radius; // ~144.51
 
   if (ringFill) {
-    ringFill.style.strokeDasharray  = circumference;
+    ringFill.style.strokeDasharray = circumference;
     ringFill.style.strokeDashoffset = circumference; // fully hidden
   }
 
@@ -50,4 +50,4 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   });
-}());
+})();

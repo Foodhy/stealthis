@@ -3,37 +3,65 @@
 
   /* ── State ── */
   const TODAY = new Date(2026, 2, 2); // March 2, 2026 for demo
-  let leftYear  = TODAY.getFullYear();
+  let leftYear = TODAY.getFullYear();
   let leftMonth = TODAY.getMonth() - 1; // Feb
-  if (leftMonth < 0) { leftMonth = 11; leftYear--; }
-  let rightYear  = TODAY.getFullYear();
+  if (leftMonth < 0) {
+    leftMonth = 11;
+    leftYear--;
+  }
+  let rightYear = TODAY.getFullYear();
   let rightMonth = TODAY.getMonth(); // Mar
 
   let startDate = null;
-  let endDate   = null;
+  let endDate = null;
   let hoverDate = null;
   let selecting = false; // true = waiting for end date
 
   // Pre-select a default range for demo
   startDate = new Date(2026, 1, 15); // Feb 15
-  endDate   = new Date(2026, 1, 22); // Feb 22
+  endDate = new Date(2026, 1, 22); // Feb 22
 
   /* ── Elements ── */
-  const trigger      = document.getElementById("drp-trigger");
-  const triggerText  = document.getElementById("drp-trigger-text");
-  const dropdown     = document.getElementById("drp-dropdown");
-  const leftGrid     = document.getElementById("drp-left-grid");
-  const rightGrid    = document.getElementById("drp-right-grid");
-  const leftTitle    = document.getElementById("drp-left-title");
-  const rightTitle   = document.getElementById("drp-right-title");
-  const footerRange  = document.getElementById("drp-footer-range");
-  const MONTHS = ["January","February","March","April","May","June",
-                  "July","August","September","October","November","December"];
-  const SHORT_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const trigger = document.getElementById("drp-trigger");
+  const triggerText = document.getElementById("drp-trigger-text");
+  const dropdown = document.getElementById("drp-dropdown");
+  const leftGrid = document.getElementById("drp-left-grid");
+  const rightGrid = document.getElementById("drp-right-grid");
+  const leftTitle = document.getElementById("drp-left-title");
+  const rightTitle = document.getElementById("drp-right-title");
+  const footerRange = document.getElementById("drp-footer-range");
+  const MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const SHORT_MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   /* ── Open/close ── */
   trigger.addEventListener("click", toggleDropdown);
-  document.addEventListener("click", e => {
+  document.addEventListener("click", (e) => {
     if (!dropdown.contains(e.target) && e.target !== trigger && !trigger.contains(e.target)) {
       closeDropdown();
     }
@@ -69,25 +97,37 @@
   /* ── Navigation ── */
   document.getElementById("drp-prev").addEventListener("click", () => {
     leftMonth--;
-    if (leftMonth < 0) { leftMonth = 11; leftYear--; }
+    if (leftMonth < 0) {
+      leftMonth = 11;
+      leftYear--;
+    }
     rightMonth = leftMonth + 1;
     rightYear = leftYear;
-    if (rightMonth > 11) { rightMonth = 0; rightYear++; }
+    if (rightMonth > 11) {
+      rightMonth = 0;
+      rightYear++;
+    }
     renderBoth();
   });
 
   document.getElementById("drp-next").addEventListener("click", () => {
     rightMonth++;
-    if (rightMonth > 11) { rightMonth = 0; rightYear++; }
+    if (rightMonth > 11) {
+      rightMonth = 0;
+      rightYear++;
+    }
     leftMonth = rightMonth - 1;
     leftYear = rightYear;
-    if (leftMonth < 0) { leftMonth = 11; leftYear--; }
+    if (leftMonth < 0) {
+      leftMonth = 11;
+      leftYear--;
+    }
     renderBoth();
   });
 
   /* ── Grid-level hover delegation (survives DOM rebuilds) ── */
   function attachGridHover(grid) {
-    grid.addEventListener("mouseover", e => {
+    grid.addEventListener("mouseover", (e) => {
       const btn = e.target.closest(".drp-day");
       if (!btn || btn.classList.contains("other-month") || btn.disabled) return;
       const ts = parseInt(btn.dataset.ts);
@@ -155,12 +195,11 @@
   function applyRangeClasses(btn, d) {
     const rangeStart = startDate;
     // Guard: only use hoverDate for preview when a start date is already selected
-    const rangeEnd = selecting && hoverDate && startDate
-      ? (hoverDate >= startDate ? hoverDate : null)
-      : endDate;
+    const rangeEnd =
+      selecting && hoverDate && startDate ? (hoverDate >= startDate ? hoverDate : null) : endDate;
 
     if (rangeStart && isSameDay(d, rangeStart)) btn.classList.add("range-start");
-    if (rangeEnd   && isSameDay(d, rangeEnd))   btn.classList.add("range-end");
+    if (rangeEnd && isSameDay(d, rangeEnd)) btn.classList.add("range-end");
 
     if (rangeStart && rangeEnd && d > rangeStart && d < rangeEnd) {
       btn.classList.add("in-range");
@@ -192,7 +231,7 @@
     }
 
     // Mark custom preset as active
-    document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
     const customBtn = document.querySelector('[data-preset="custom"]');
     if (customBtn) customBtn.classList.add("active");
 
@@ -222,11 +261,11 @@
   }
 
   /* ── Presets ── */
-  document.getElementById("drp-presets").addEventListener("click", e => {
+  document.getElementById("drp-presets").addEventListener("click", (e) => {
     const btn = e.target.closest(".preset-btn");
     if (!btn) return;
 
-    document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
 
     const preset = btn.dataset.preset;
@@ -245,29 +284,43 @@
 
     switch (preset) {
       case "today":
-        startDate = new Date(now); endDate = new Date(now); break;
+        startDate = new Date(now);
+        endDate = new Date(now);
+        break;
       case "yesterday": {
-        const y = new Date(now); y.setDate(y.getDate() - 1);
-        startDate = y; endDate = new Date(y); break;
+        const y = new Date(now);
+        y.setDate(y.getDate() - 1);
+        startDate = y;
+        endDate = new Date(y);
+        break;
       }
       case "last7": {
-        const s = new Date(now); s.setDate(s.getDate() - 6);
-        startDate = s; endDate = new Date(now); break;
+        const s = new Date(now);
+        s.setDate(s.getDate() - 6);
+        startDate = s;
+        endDate = new Date(now);
+        break;
       }
       case "last30": {
-        const s = new Date(now); s.setDate(s.getDate() - 29);
-        startDate = s; endDate = new Date(now); break;
+        const s = new Date(now);
+        s.setDate(s.getDate() - 29);
+        startDate = s;
+        endDate = new Date(now);
+        break;
       }
       case "thisMonth":
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate   = new Date(now.getFullYear(), now.getMonth() + 1, 0); break;
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
       case "lastMonth":
         startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        endDate   = new Date(now.getFullYear(), now.getMonth(), 0); break;
+        endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+        break;
       case "thisQuarter": {
         const qStart = Math.floor(now.getMonth() / 3) * 3;
         startDate = new Date(now.getFullYear(), qStart, 1);
-        endDate   = new Date(now.getFullYear(), qStart + 3, 0); break;
+        endDate = new Date(now.getFullYear(), qStart + 3, 0);
+        break;
       }
     }
 
@@ -279,21 +332,26 @@
       leftMonth = startDate.getMonth();
       rightMonth = leftMonth + 1;
       rightYear = leftYear;
-      if (rightMonth > 11) { rightMonth = 0; rightYear++; }
+      if (rightMonth > 11) {
+        rightMonth = 0;
+        rightYear++;
+      }
     }
     renderBoth();
   });
 
   /* ── Keyboard ── */
-  document.addEventListener("keydown", e => {
+  document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeDropdown();
   });
 
   /* ── Helpers ── */
   function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-           a.getMonth() === b.getMonth() &&
-           a.getDate() === b.getDate();
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
   }
 
   function fmtShort(d) {

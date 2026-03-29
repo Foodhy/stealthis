@@ -13,7 +13,12 @@ const variantStyles: Record<string, CSSProperties> = {
   purple: { background: "#8b5cf6", color: "#fff", boxShadow: "0 4px 14px rgba(139,92,246,0.3)" },
   emerald: { background: "#10b981", color: "#fff", boxShadow: "0 4px 14px rgba(16,185,129,0.3)" },
   rose: { background: "#f43f5e", color: "#fff", boxShadow: "0 4px 14px rgba(244,63,94,0.3)" },
-  dark: { background: "#1e293b", color: "#fff", border: "1px solid #334155", boxShadow: "0 4px 14px rgba(0,0,0,0.3)" },
+  dark: {
+    background: "#1e293b",
+    color: "#fff",
+    border: "1px solid #334155",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+  },
   outline: { background: "transparent", color: "#94a3b8", border: "1.5px solid #334155" },
 };
 
@@ -109,9 +114,7 @@ export default function ShimmerButtonDemo() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>
-        Shimmer Buttons
-      </h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>Shimmer Buttons</h2>
       <p style={{ color: "#525252", fontSize: "0.875rem" }}>
         Watch the light sweep across each button
       </p>
@@ -121,8 +124,12 @@ export default function ShimmerButtonDemo() {
         <ShimmerButton variant="dark">Learn More</ShimmerButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
-        <ShimmerButton variant="emerald" size="lg">Get Started Free</ShimmerButton>
-        <ShimmerButton variant="rose" size="sm">Buy Now</ShimmerButton>
+        <ShimmerButton variant="emerald" size="lg">
+          Get Started Free
+        </ShimmerButton>
+        <ShimmerButton variant="rose" size="sm">
+          Buy Now
+        </ShimmerButton>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
         <ShimmerButton variant="outline">View Details</ShimmerButton>

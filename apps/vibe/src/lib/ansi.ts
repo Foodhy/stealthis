@@ -3,16 +3,34 @@
 type Span = { text: string; style: React.CSSProperties };
 
 const ANSI_COLORS: Record<number, string> = {
-  30: "#1e1e1e", 31: "#f87171", 32: "#4ade80", 33: "#facc15",
-  34: "#60a5fa", 35: "#c084fc", 36: "#22d3ee", 37: "#e2e8f0",
+  30: "#1e1e1e",
+  31: "#f87171",
+  32: "#4ade80",
+  33: "#facc15",
+  34: "#60a5fa",
+  35: "#c084fc",
+  36: "#22d3ee",
+  37: "#e2e8f0",
   // Bright
-  90: "#6b7280", 91: "#fca5a5", 92: "#86efac", 93: "#fde047",
-  94: "#93c5fd", 95: "#d8b4fe", 96: "#67e8f9", 97: "#f8fafc",
+  90: "#6b7280",
+  91: "#fca5a5",
+  92: "#86efac",
+  93: "#fde047",
+  94: "#93c5fd",
+  95: "#d8b4fe",
+  96: "#67e8f9",
+  97: "#f8fafc",
 };
 
 const ANSI_BG: Record<number, string> = {
-  40: "#1e1e1e", 41: "#991b1b", 42: "#166534", 43: "#854d0e",
-  44: "#1e40af", 45: "#6b21a8", 46: "#155e75", 47: "#d1d5db",
+  40: "#1e1e1e",
+  41: "#991b1b",
+  42: "#166534",
+  43: "#854d0e",
+  44: "#1e40af",
+  45: "#6b21a8",
+  46: "#155e75",
+  47: "#d1d5db",
 };
 
 /** Strip all ANSI escape sequences from a string */
@@ -101,8 +119,22 @@ export function parseAnsi(raw: string): Span[] {
 function color256(n: number): string {
   if (n < 16) {
     const basic = [
-      "#1e1e1e","#f87171","#4ade80","#facc15","#60a5fa","#c084fc","#22d3ee","#e2e8f0",
-      "#6b7280","#fca5a5","#86efac","#fde047","#93c5fd","#d8b4fe","#67e8f9","#f8fafc",
+      "#1e1e1e",
+      "#f87171",
+      "#4ade80",
+      "#facc15",
+      "#60a5fa",
+      "#c084fc",
+      "#22d3ee",
+      "#e2e8f0",
+      "#6b7280",
+      "#fca5a5",
+      "#86efac",
+      "#fde047",
+      "#93c5fd",
+      "#d8b4fe",
+      "#67e8f9",
+      "#f8fafc",
     ];
     return basic[n] ?? "#e2e8f0";
   }

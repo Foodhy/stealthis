@@ -102,8 +102,8 @@ export default function BorderBeamDemo() {
               margin: 0,
             }}
           >
-            An animated beam of light travels around the card border using a
-            rotating conic-gradient and CSS keyframes.
+            An animated beam of light travels around the card border using a rotating conic-gradient
+            and CSS keyframes.
           </p>
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
             {["CSS", "Animation", "Gradient"].map((tag) => (

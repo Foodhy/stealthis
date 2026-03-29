@@ -1,12 +1,5 @@
 import React, { useRef, useState } from "react";
-import {
-  Animated,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
 
 interface HapticButton {
@@ -52,9 +45,7 @@ function HapticCard({ button }: { button: HapticButton }) {
           },
         ]}
       >
-        <View
-          style={[styles.cardIndicator, { backgroundColor: button.color }]}
-        />
+        <View style={[styles.cardIndicator, { backgroundColor: button.color }]} />
         <View style={{ flex: 1 }}>
           <Text style={styles.cardLabel}>{button.label}</Text>
           <Text style={styles.cardDesc}>{button.description}</Text>
@@ -71,24 +62,21 @@ export default function App() {
       description: "Subtle tap — good for small UI elements",
       color: "#38bdf8",
       flashColor: "#0c4a6e",
-      onPress: () =>
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+      onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
     },
     {
       label: "Medium",
       description: "Standard tap — buttons and toggles",
       color: "#6366f1",
       flashColor: "#312e81",
-      onPress: () =>
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+      onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
     },
     {
       label: "Heavy",
       description: "Strong tap — confirmations and emphasis",
       color: "#a78bfa",
       flashColor: "#4c1d95",
-      onPress: () =>
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
+      onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
     },
   ];
 
@@ -98,30 +86,21 @@ export default function App() {
       description: "Positive outcome — task completed",
       color: "#34d399",
       flashColor: "#064e3b",
-      onPress: () =>
-        Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success
-        ),
+      onPress: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
     },
     {
       label: "Warning",
       description: "Caution — requires attention",
       color: "#fbbf24",
       flashColor: "#78350f",
-      onPress: () =>
-        Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Warning
-        ),
+      onPress: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
     },
     {
       label: "Error",
       description: "Failure — something went wrong",
       color: "#f87171",
       flashColor: "#7f1d1d",
-      onPress: () =>
-        Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Error
-        ),
+      onPress: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error),
     },
   ];
 
@@ -136,14 +115,9 @@ export default function App() {
   ];
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-    >
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>Haptic Feedback</Text>
-      <Text style={styles.subtitle}>
-        Tap each button to feel the haptic pattern
-      </Text>
+      <Text style={styles.subtitle}>Tap each button to feel the haptic pattern</Text>
 
       <Text style={styles.sectionTitle}>Impact</Text>
       {impactButtons.map((btn) => (

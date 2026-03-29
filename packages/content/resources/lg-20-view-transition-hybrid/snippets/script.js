@@ -44,8 +44,8 @@ const entries = [
     bullets: [
       "Shared thumbnail becomes hero media.",
       "JS panel fade/slide runs after state swap.",
-      "Fallback preserves content without animated dependency."
-    ]
+      "Fallback preserves content without animated dependency.",
+    ],
   },
   {
     id: "h2",
@@ -55,8 +55,8 @@ const entries = [
     bullets: [
       "Card identity retained through view-transition-name.",
       "UI controls animate with WAAPI after render.",
-      "Close action reverses panel choreography first."
-    ]
+      "Close action reverses panel choreography first.",
+    ],
   },
   {
     id: "h3",
@@ -66,9 +66,9 @@ const entries = [
     bullets: [
       "Transition wraps only state mutation.",
       "JS animation coordinates secondary detail elements.",
-      "Reduced motion path disables timeline effects."
-    ]
-  }
+      "Reduced motion path disables timeline effects.",
+    ],
+  },
 ];
 
 const reduced = window.MotionPreference.prefersReducedMotion();
@@ -99,7 +99,7 @@ function animateDetailIn() {
   panel.animate(
     [
       { opacity: 0, transform: "translateY(14px) scale(0.99)" },
-      { opacity: 1, transform: "translateY(0px) scale(1)" }
+      { opacity: 1, transform: "translateY(0px) scale(1)" },
     ],
     { duration: 260, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
   );
@@ -173,7 +173,7 @@ function closeDetail() {
     .animate(
       [
         { opacity: 1, transform: "translateY(0px) scale(1)" },
-        { opacity: 0, transform: "translateY(12px) scale(0.99)" }
+        { opacity: 0, transform: "translateY(12px) scale(0.99)" },
       ],
       { duration: 180, easing: "ease-out" }
     )

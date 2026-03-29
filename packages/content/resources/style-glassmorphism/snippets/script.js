@@ -4,21 +4,21 @@
    ============================================================ */
 
 (function () {
-  'use strict';
+  "use strict";
 
   // ── Mouse parallax on background blobs ─────────────────────
-  const blob1 = document.querySelector('.blob-1');
-  const blob2 = document.querySelector('.blob-2');
-  const blob3 = document.querySelector('.blob-3');
+  const blob1 = document.querySelector(".blob-1");
+  const blob2 = document.querySelector(".blob-2");
+  const blob3 = document.querySelector(".blob-3");
 
   let ticking = false;
 
-  document.addEventListener('mousemove', (e) => {
+  document.addEventListener("mousemove", (e) => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
-      const xRatio = (e.clientX / window.innerWidth) - 0.5;
-      const yRatio = (e.clientY / window.innerHeight) - 0.5;
+      const xRatio = e.clientX / window.innerWidth - 0.5;
+      const yRatio = e.clientY / window.innerHeight - 0.5;
 
       if (blob1) blob1.style.transform = `translate(${xRatio * 30}px, ${yRatio * 20}px)`;
       if (blob2) blob2.style.transform = `translate(${xRatio * -25}px, ${yRatio * -18}px)`;
@@ -29,19 +29,19 @@
   });
 
   // ── Badge toggle ────────────────────────────────────────────
-  const badges = document.querySelectorAll('.badge');
-  badges.forEach(badge => {
-    badge.addEventListener('click', () => {
-      badge.classList.toggle('badge-active');
+  const badges = document.querySelectorAll(".badge");
+  badges.forEach((badge) => {
+    badge.addEventListener("click", () => {
+      badge.classList.toggle("badge-active");
     });
   });
 
   // ── Shimmer effect on solid button ─────────────────────────
-  const primaryBtn = document.getElementById('btn-primary');
+  const primaryBtn = document.getElementById("btn-primary");
 
   if (primaryBtn) {
     // Inject shimmer styles
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       .btn-solid {
         position: relative;
@@ -73,18 +73,18 @@
     `;
     document.head.appendChild(style);
 
-    primaryBtn.addEventListener('mouseenter', function () {
-      primaryBtn.classList.remove('shimmer-run');
+    primaryBtn.addEventListener("mouseenter", function () {
+      primaryBtn.classList.remove("shimmer-run");
       void primaryBtn.offsetWidth; // force reflow
-      primaryBtn.classList.add('shimmer-run');
+      primaryBtn.classList.add("shimmer-run");
     });
   }
 
   // ── Glass card tilt on hover ────────────────────────────────
-  const cards = document.querySelectorAll('.glass-card');
+  const cards = document.querySelectorAll(".glass-card");
 
-  cards.forEach(card => {
-    card.addEventListener('mousemove', (e) => {
+  cards.forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
       const rect = card.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
@@ -93,9 +93,8 @@
       card.style.transform = `perspective(700px) rotateX(${-dy * 3}deg) rotateY(${dx * 3}deg)`;
     });
 
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "";
     });
   });
-
 })();

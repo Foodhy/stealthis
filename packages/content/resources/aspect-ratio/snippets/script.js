@@ -15,7 +15,7 @@
       var w = parseFloat(getComputedStyle(el).getPropertyValue("--ar-w")) || 16;
       var h = parseFloat(getComputedStyle(el).getPropertyValue("--ar-h")) || 9;
       el.style.height = "0";
-      el.style.paddingBottom = (h / w * 100) + "%";
+      el.style.paddingBottom = (h / w) * 100 + "%";
 
       var child = el.firstElementChild;
       if (child) {

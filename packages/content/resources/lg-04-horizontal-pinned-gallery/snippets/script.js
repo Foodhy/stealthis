@@ -51,9 +51,10 @@ if (!window.gsap || !window.ScrollTrigger || reduced) {
       pin: true,
       scrub: 1,
       start: "top top",
-      end: () => `+=${Math.max(1, track.scrollWidth - window.innerWidth + window.innerHeight * 0.9)}`,
-      invalidateOnRefresh: true
-    }
+      end: () =>
+        `+=${Math.max(1, track.scrollWidth - window.innerWidth + window.innerHeight * 0.9)}`,
+      invalidateOnRefresh: true,
+    },
   });
 
   window.addEventListener("resize", () => {

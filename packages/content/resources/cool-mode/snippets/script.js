@@ -3,9 +3,21 @@
   "use strict";
 
   var EMOJIS = [
-    "\u2728", "\u2B50", "\u2764\uFE0F", "\u{1F525}", "\u{1F389}",
-    "\u{1F31F}", "\u{1F4AB}", "\u{1F308}", "\u{1F680}", "\u{1F388}",
-    "\u{1F381}", "\u{1F382}", "\u{1F386}", "\u{1F387}", "\u2604\uFE0F",
+    "\u2728",
+    "\u2B50",
+    "\u2764\uFE0F",
+    "\u{1F525}",
+    "\u{1F389}",
+    "\u{1F31F}",
+    "\u{1F4AB}",
+    "\u{1F308}",
+    "\u{1F680}",
+    "\u{1F388}",
+    "\u{1F381}",
+    "\u{1F382}",
+    "\u{1F386}",
+    "\u{1F387}",
+    "\u2604\uFE0F",
   ];
   var PARTICLE_COUNT = 15;
   var GRAVITY = 0.12;
@@ -22,7 +34,7 @@
       el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
       el.style.left = x + "px";
       el.style.top = y + "px";
-      el.style.fontSize = (14 + Math.random() * 16) + "px";
+      el.style.fontSize = 14 + Math.random() * 16 + "px";
       document.body.appendChild(el);
 
       var angle = Math.random() * Math.PI * 2;
@@ -66,11 +78,7 @@
       }
 
       p.el.style.transform =
-        "translate(-50%, -50%) rotate(" +
-        p.rotation +
-        "deg) scale(" +
-        p.scale +
-        ")";
+        "translate(-50%, -50%) rotate(" + p.rotation + "deg) scale(" + p.scale + ")";
       p.el.style.left = p.x + "px";
       p.el.style.top = p.y + "px";
       p.el.style.opacity = p.opacity;

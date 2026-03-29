@@ -23,11 +23,12 @@ interface ButtonProps {
   children: React.ReactNode;
 }
 
-const SIZES: Record<Size, { height: number; paddingH: number; fontSize: number; radius: number }> = {
-  sm: { height: 32, paddingH: 12, fontSize: 13, radius: 8 },
-  md: { height: 44, paddingH: 20, fontSize: 15, radius: 10 },
-  lg: { height: 52, paddingH: 28, fontSize: 17, radius: 12 },
-};
+const SIZES: Record<Size, { height: number; paddingH: number; fontSize: number; radius: number }> =
+  {
+    sm: { height: 32, paddingH: 12, fontSize: 13, radius: 8 },
+    md: { height: 44, paddingH: 20, fontSize: 15, radius: 10 },
+    lg: { height: 52, paddingH: 28, fontSize: 17, radius: 12 },
+  };
 
 async function triggerHaptic() {
   try {
@@ -103,8 +104,7 @@ export function Button({
     containerStyle.push({ opacity: 0.5 });
   }
 
-  const textColor =
-    variant === "solid" ? "#ffffff" : color;
+  const textColor = variant === "solid" ? "#ffffff" : color;
 
   const textStyle: TextStyle = {
     fontSize: s.fontSize,
@@ -148,7 +148,16 @@ import { View, Alert } from "react-native";
 
 export default function App() {
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f172a", justifyContent: "center", alignItems: "center", gap: 16, padding: 24 }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#0f172a",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 16,
+        padding: 24,
+      }}
+    >
       <Button variant="solid" onPress={() => Alert.alert("Solid pressed")}>
         Solid Button
       </Button>
@@ -165,9 +174,15 @@ export default function App() {
         Disabled
       </Button>
       <View style={{ flexDirection: "row", gap: 12 }}>
-        <Button variant="solid" size="sm">SM</Button>
-        <Button variant="solid" size="md">MD</Button>
-        <Button variant="solid" size="lg">LG</Button>
+        <Button variant="solid" size="sm">
+          SM
+        </Button>
+        <Button variant="solid" size="md">
+          MD
+        </Button>
+        <Button variant="solid" size="lg">
+          LG
+        </Button>
       </View>
       <Button variant="icon" size="lg" onPress={() => Alert.alert("Icon!")}>
         <Text style={{ fontSize: 20 }}>♥</Text>

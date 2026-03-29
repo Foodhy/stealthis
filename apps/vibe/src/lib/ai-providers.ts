@@ -34,7 +34,10 @@ export type ChatOptions = {
 
 // ─── Provider defaults ───────────────────────────────────────────────────────
 
-export const PROVIDER_DEFAULTS: Record<AiProvider, { baseUrl: string; keyUrl: string; label: string }> = {
+export const PROVIDER_DEFAULTS: Record<
+  AiProvider,
+  { baseUrl: string; keyUrl: string; label: string }
+> = {
   ollama: {
     baseUrl: "http://localhost:11434",
     keyUrl: "",
@@ -66,11 +69,24 @@ export const PROVIDER_DEFAULTS: Record<AiProvider, { baseUrl: string; keyUrl: st
 
 const VISION_PATTERNS = [
   // Ollama vision models
-  /vision/i, /llava/i, /moondream/i, /bakllava/i, /cogvlm/i,
+  /vision/i,
+  /llava/i,
+  /moondream/i,
+  /bakllava/i,
+  /cogvlm/i,
   // OpenAI
-  /gpt-4o/i, /gpt-4-turbo/i, /gpt-4-vision/i, /gpt-5/i, /o1/i, /o3/i, /o4/i,
+  /gpt-4o/i,
+  /gpt-4-turbo/i,
+  /gpt-4-vision/i,
+  /gpt-5/i,
+  /o1/i,
+  /o3/i,
+  /o4/i,
   // Claude — all Claude 3+ support vision
-  /claude-3/i, /claude-sonnet/i, /claude-opus/i, /claude-haiku/i,
+  /claude-3/i,
+  /claude-sonnet/i,
+  /claude-opus/i,
+  /claude-haiku/i,
   // Gemini — all support vision
   /gemini/i,
 ];
@@ -82,7 +98,7 @@ export function isVisionModel(modelId: string): boolean {
 // ─── List models ─────────────────────────────────────────────────────────────
 
 export async function listModels(
-  config: Pick<AiProviderConfig, "provider" | "baseUrl" | "apiKey">,
+  config: Pick<AiProviderConfig, "provider" | "baseUrl" | "apiKey">
 ): Promise<AiModel[]> {
   switch (config.provider) {
     case "ollama":
@@ -207,7 +223,7 @@ async function ollamaChat(
   config: AiProviderConfig,
   messages: ChatMessage[],
   signal?: AbortSignal,
-  onToken?: (t: string) => void,
+  onToken?: (t: string) => void
 ): Promise<string> {
   const ollamaMessages = messages.map((m) => {
     const images = getImageParts(m.content);
@@ -240,7 +256,7 @@ async function openaiChat(
   config: AiProviderConfig,
   messages: ChatMessage[],
   signal?: AbortSignal,
-  onToken?: (t: string) => void,
+  onToken?: (t: string) => void
 ): Promise<string> {
   const openaiMessages = messages.map((m) => {
     const images = getImageParts(m.content);
@@ -279,7 +295,7 @@ async function openaiCodexChat(
   config: AiProviderConfig,
   messages: ChatMessage[],
   signal?: AbortSignal,
-  onToken?: (t: string) => void,
+  onToken?: (t: string) => void
 ): Promise<string> {
   // Convert multimodal messages to plain text for the CLI
   const plainMessages = messages.map((m) => ({
@@ -306,7 +322,7 @@ async function claudeChat(
   config: AiProviderConfig,
   messages: ChatMessage[],
   signal?: AbortSignal,
-  onToken?: (t: string) => void,
+  onToken?: (t: string) => void
 ): Promise<string> {
   const systemMsg = messages.find((m) => m.role === "system");
   const chatMessages = messages
@@ -357,7 +373,7 @@ async function geminiChat(
   config: AiProviderConfig,
   messages: ChatMessage[],
   signal?: AbortSignal,
-  onToken?: (t: string) => void,
+  onToken?: (t: string) => void
 ): Promise<string> {
   const systemMsg = messages.find((m) => m.role === "system");
   const contents = messages
@@ -384,10 +400,12 @@ async function geminiChat(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents,
-        systemInstruction: systemMsg ? { parts: [{ text: getTextContent(systemMsg.content) }] } : undefined,
+        systemInstruction: systemMsg
+          ? { parts: [{ text: getTextContent(systemMsg.content) }] }
+          : undefined,
       }),
       signal,
-    },
+    }
   );
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -401,7 +419,7 @@ async function geminiChat(
 async function readNDJsonStream(
   response: Response,
   extractor: (parsed: Record<string, unknown>) => string,
-  onToken?: (t: string) => void,
+  onToken?: (t: string) => void
 ): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
@@ -417,7 +435,10 @@ async function readNDJsonStream(
       try {
         const parsed = JSON.parse(trimmed);
         const token = extractor(parsed);
-        if (token) { full += token; onToken?.(token); }
+        if (token) {
+          full += token;
+          onToken?.(token);
+        }
       } catch {}
     }
   }
@@ -440,14 +461,20 @@ async function readSSEStream(response: Response, onToken?: (t: string) => void):
       try {
         const parsed = JSON.parse(data);
         const token = parsed.choices?.[0]?.delta?.content ?? "";
-        if (token) { full += token; onToken?.(token); }
+        if (token) {
+          full += token;
+          onToken?.(token);
+        }
       } catch {}
     }
   }
   return full;
 }
 
-async function readClaudeSSEStream(response: Response, onToken?: (t: string) => void): Promise<string> {
+async function readClaudeSSEStream(
+  response: Response,
+  onToken?: (t: string) => void
+): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
   const decoder = new TextDecoder();
@@ -463,7 +490,10 @@ async function readClaudeSSEStream(response: Response, onToken?: (t: string) => 
         const parsed = JSON.parse(data);
         if (parsed.type === "content_block_delta") {
           const token = parsed.delta?.text ?? "";
-          if (token) { full += token; onToken?.(token); }
+          if (token) {
+            full += token;
+            onToken?.(token);
+          }
         }
       } catch {}
     }
@@ -471,7 +501,10 @@ async function readClaudeSSEStream(response: Response, onToken?: (t: string) => 
   return full;
 }
 
-async function readGeminiSSEStream(response: Response, onToken?: (t: string) => void): Promise<string> {
+async function readGeminiSSEStream(
+  response: Response,
+  onToken?: (t: string) => void
+): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
   const decoder = new TextDecoder();
@@ -486,14 +519,20 @@ async function readGeminiSSEStream(response: Response, onToken?: (t: string) => 
       try {
         const parsed = JSON.parse(data);
         const token = parsed.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-        if (token) { full += token; onToken?.(token); }
+        if (token) {
+          full += token;
+          onToken?.(token);
+        }
       } catch {}
     }
   }
   return full;
 }
 
-async function readCodexSSEStream(response: Response, onToken?: (t: string) => void): Promise<string> {
+async function readCodexSSEStream(
+  response: Response,
+  onToken?: (t: string) => void
+): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
   const decoder = new TextDecoder();
@@ -510,7 +549,10 @@ async function readCodexSSEStream(response: Response, onToken?: (t: string) => v
         const parsed = JSON.parse(data);
         if (parsed.error) throw new Error(parsed.error);
         const token = parsed.token ?? "";
-        if (token) { full += token; onToken?.(token); }
+        if (token) {
+          full += token;
+          onToken?.(token);
+        }
       } catch (e) {
         if (e instanceof Error && e.message !== data) throw e;
       }

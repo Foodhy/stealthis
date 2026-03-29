@@ -1,0 +1,57 @@
+---
+slug: arch-monorepo-nx
+title: Nx Monorepo Architecture
+description: Nx monorepo with project graph, affected commands, computation caching, and the 80/20 apps-to-libs split pattern.
+category: architectures
+type: architecture
+tags: [nx, monorepo, nrwl, project-graph, affected]
+tech: [nx, typescript]
+difficulty: hard
+targets: [html]
+labRoute: /architectures/arch-monorepo-nx
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## Nx Monorepo Architecture
+
+Nx is an advanced build system with first-class monorepo support. It uses a **project graph** to understand the relationships between your apps and libraries, then leverages that knowledge for affected commands, computation caching, and intelligent task scheduling.
+
+### The 80/20 Pattern
+
+The recommended Nx architecture follows an 80/20 split:
+
+- **Apps (~20% of code)**: Thin shells that compose features. They wire up routing, layouts, and configuration but contain minimal business logic.
+- **Libs (~80% of code)**: Domain logic, feature modules, shared UI, data access, and utilities. Each lib has clear boundaries and a well-defined public API.
+
+This pattern enforces separation of concerns and makes code reusable across apps.
+
+### Project Graph
+
+Run `nx graph` to visualize the dependency relationships between all projects. Nx builds this graph by analyzing imports and `project.json` targets. The graph is the foundation for:
+
+- **Affected commands**: `nx affected -t test` runs tests only for projects changed in the current PR and their dependents.
+- **Task orchestration**: Nx uses the graph to determine the optimal execution order and parallelization.
+
+### Computation Caching
+
+Nx caches the results of every task. If the inputs (source files, dependencies, environment) haven't changed, Nx replays the cached output. With **Nx Cloud**, this cache is shared across your entire team and CI.
+
+### Library Types
+
+Nx recommends categorizing libraries by type:
+
+- **feature-\***: Smart components, pages, containers with business logic
+- **data-access-\***: API clients, state management, services
+- **ui-\***: Presentational/dumb components
+- **util-\***: Pure utility functions, helpers
+
+### Learn More
+
+- [Nx Documentation](https://nx.dev/docs)
+- [Folder Structure Decisions](https://nx.dev/docs/concepts/decisions/folder-structure)
+- [Nx Project Graph](https://nx.dev/features/explore-graph)

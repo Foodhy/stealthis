@@ -32,17 +32,14 @@ export const POST: APIRoute = async ({ request }) => {
     start(controller) {
       const encoder = new TextEncoder();
 
-      const proc = spawn("codex", [
-        "exec",
-        "--json",
-        "-m", model,
-        "--skip-git-repo-check",
-        "--sandbox", "read-only",
-        prompt,
-      ], {
-        stdio: ["pipe", "pipe", "pipe"],
-        env: { ...process.env, NO_COLOR: "1" },
-      });
+      const proc = spawn(
+        "codex",
+        ["exec", "--json", "-m", model, "--skip-git-repo-check", "--sandbox", "read-only", prompt],
+        {
+          stdio: ["pipe", "pipe", "pipe"],
+          env: { ...process.env, NO_COLOR: "1" },
+        }
+      );
 
       proc.stdout.on("data", (data: Buffer) => {
         const text = data.toString();
@@ -55,9 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
             if (event.msg?.type === "agent_message") {
               const token = event.msg.message ?? "";
               if (token) {
-                controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ token })}\n\n`),
-                );
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token })}\n\n`));
               }
             }
           } catch {
@@ -76,11 +71,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
 
       proc.on("error", (err) => {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ error: err.message })}\n\n`,
-          ),
-        );
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: err.message })}\n\n`));
         controller.close();
       });
 

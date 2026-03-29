@@ -1,15 +1,15 @@
-const emojis = ['🚀', '🎨', '🎮', '💡', '🎵', '⚡', '🔥', '🌈'];
+const emojis = ["🚀", "🎨", "🎮", "💡", "🎵", "⚡", "🔥", "🌈"];
 const cards = [...emojis, ...emojis];
 let flippedCards = [];
 let matchedCount = 0;
 let moves = 0;
 let isAnimating = false;
 
-const grid = document.getElementById('card-grid');
-const moveCountEl = document.getElementById('move-count');
-const matchCountEl = document.getElementById('match-count');
-const winOverlay = document.getElementById('win-overlay');
-const finalMovesEl = document.getElementById('final-moves');
+const grid = document.getElementById("card-grid");
+const moveCountEl = document.getElementById("move-count");
+const matchCountEl = document.getElementById("match-count");
+const winOverlay = document.getElementById("win-overlay");
+const finalMovesEl = document.getElementById("final-moves");
 
 function shuffle(array) {
   const arr = [...array];
@@ -22,18 +22,18 @@ function shuffle(array) {
 
 function initGame() {
   const shuffled = shuffle(cards);
-  grid.innerHTML = '';
+  grid.innerHTML = "";
   flippedCards = [];
   matchedCount = 0;
   moves = 0;
-  moveCountEl.textContent = '0';
+  moveCountEl.textContent = "0";
   matchCountEl.textContent = `0/${emojis.length}`;
-  winOverlay.style.display = 'none';
+  winOverlay.style.display = "none";
   isAnimating = false;
 
   shuffled.forEach((emoji, index) => {
-    const card = document.createElement('div');
-    card.className = 'memory-card';
+    const card = document.createElement("div");
+    card.className = "memory-card";
     card.dataset.id = index;
     card.dataset.value = emoji;
 
@@ -42,7 +42,7 @@ function initGame() {
       <div class="card-face card-front">${emoji}</div>
     `;
 
-    card.addEventListener('click', () => flipCard(card));
+    card.addEventListener("click", () => flipCard(card));
     grid.appendChild(card);
   });
 }
@@ -50,12 +50,13 @@ function initGame() {
 function flipCard(card) {
   if (
     isAnimating ||
-    card.classList.contains('flipped') ||
-    card.classList.contains('matched') ||
+    card.classList.contains("flipped") ||
+    card.classList.contains("matched") ||
     flippedCards.length >= 2
-  ) return;
+  )
+    return;
 
-  card.classList.add('flipped');
+  card.classList.add("flipped");
   flippedCards.push(card);
 
   if (flippedCards.length === 2) {
@@ -76,8 +77,8 @@ function checkMatch() {
 
     // Add matched class for styling
     setTimeout(() => {
-      card1.classList.add('matched');
-      card2.classList.add('matched');
+      card1.classList.add("matched");
+      card2.classList.add("matched");
     }, 300);
 
     flippedCards = [];
@@ -88,8 +89,8 @@ function checkMatch() {
     }
   } else {
     setTimeout(() => {
-      card1.classList.remove('flipped');
-      card2.classList.remove('flipped');
+      card1.classList.remove("flipped");
+      card2.classList.remove("flipped");
       flippedCards = [];
       isAnimating = false;
     }, 1000);
@@ -98,12 +99,12 @@ function checkMatch() {
 
 function showWin() {
   setTimeout(() => {
-    winOverlay.style.display = 'flex';
+    winOverlay.style.display = "flex";
     if (finalMovesEl) finalMovesEl.textContent = moves;
   }, 500);
 }
 
-document.getElementById('reset-game').addEventListener('click', initGame);
-document.getElementById('play-again-btn').addEventListener('click', initGame);
+document.getElementById("reset-game").addEventListener("click", initGame);
+document.getElementById("play-again-btn").addEventListener("click", initGame);
 
 initGame();

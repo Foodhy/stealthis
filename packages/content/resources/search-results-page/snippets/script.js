@@ -54,17 +54,14 @@
     const cards = getCards();
     cards.forEach((card) => {
       const cardType = card.getAttribute("data-type");
-      card.style.display =
-        activeType === "all" || cardType === activeType ? "" : "none";
+      card.style.display = activeType === "all" || cardType === activeType ? "" : "none";
     });
   }
 
   /* ── Filter by Category Checkboxes ─────────── */
 
   function getActiveCategories() {
-    const checks = filterSidebar.querySelectorAll(
-      '.filter-check input[type="checkbox"]'
-    );
+    const checks = filterSidebar.querySelectorAll('.filter-check input[type="checkbox"]');
     return Array.from(checks)
       .filter((c) => c.checked)
       .map((c) => c.value);
@@ -90,16 +87,10 @@
 
     cards.sort((a, b) => {
       if (val === "newest") {
-        return (
-          new Date(b.getAttribute("data-date")) -
-          new Date(a.getAttribute("data-date"))
-        );
+        return new Date(b.getAttribute("data-date")) - new Date(a.getAttribute("data-date"));
       }
       if (val === "popular") {
-        return (
-          parseInt(b.getAttribute("data-pop"), 10) -
-          parseInt(a.getAttribute("data-pop"), 10)
-        );
+        return parseInt(b.getAttribute("data-pop"), 10) - parseInt(a.getAttribute("data-pop"), 10);
       }
       return 0; /* relevance = original order */
     });
@@ -161,18 +152,14 @@
   });
 
   /* Category checkboxes */
-  filterSidebar
-    .querySelectorAll('.filter-check input[type="checkbox"]')
-    .forEach((cb) => {
-      cb.addEventListener("change", () => updateResults());
-    });
+  filterSidebar.querySelectorAll('.filter-check input[type="checkbox"]').forEach((cb) => {
+    cb.addEventListener("change", () => updateResults());
+  });
 
   /* Date radios (simulated filter) */
-  filterSidebar
-    .querySelectorAll('.filter-radio input[type="radio"]')
-    .forEach((r) => {
-      r.addEventListener("change", () => updateResults());
-    });
+  filterSidebar.querySelectorAll('.filter-radio input[type="radio"]').forEach((r) => {
+    r.addEventListener("change", () => updateResults());
+  });
 
   /* Sort */
   sortSelect.addEventListener("change", () => updateResults());
@@ -192,10 +179,7 @@
 
     /* Update active state */
     pagination.querySelectorAll(".page-btn[data-page]").forEach((p) => {
-      p.classList.toggle(
-        "active",
-        parseInt(p.getAttribute("data-page"), 10) === currentPage
-      );
+      p.classList.toggle("active", parseInt(p.getAttribute("data-page"), 10) === currentPage);
     });
 
     const prevBtn = pagination.querySelector(".prev");

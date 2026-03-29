@@ -13,8 +13,7 @@
     width: "500px",
     height: "500px",
     borderRadius: "50%",
-    background:
-      "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
+    background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
     pointerEvents: "none",
     transform: "translate(-50%, -50%)",
     transition: "opacity 0.3s ease",

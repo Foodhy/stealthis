@@ -179,7 +179,10 @@ function DraggableList<T>({ data, renderItem, onReorder, itemHeight }: Draggable
   ).current;
 
   return (
-    <View style={[styles.listContainer, { height: data.length * itemHeight }]} {...panResponder.panHandlers}>
+    <View
+      style={[styles.listContainer, { height: data.length * itemHeight }]}
+      {...panResponder.panHandlers}
+    >
       {data.map((item, index) => {
         const isDraggedItem = index === draggingIndex;
 
@@ -269,7 +272,9 @@ export default function App() {
             <View style={styles.taskContent}>
               <Text style={styles.taskTitle}>{task.title}</Text>
               <View style={styles.taskMeta}>
-                <View style={[styles.priorityDot, { backgroundColor: PRIORITY_COLORS[task.priority] }]} />
+                <View
+                  style={[styles.priorityDot, { backgroundColor: PRIORITY_COLORS[task.priority] }]}
+                />
                 <Text style={styles.priorityLabel}>{task.priority}</Text>
               </View>
             </View>

@@ -9,9 +9,9 @@
 
   const colorSchemes = {
     purple: { base: [167, 139, 250], glow: "rgba(139,92,246,0.4)" },
-    cyan:   { base: [34, 211, 238],  glow: "rgba(34,211,238,0.4)" },
-    rose:   { base: [251, 113, 133], glow: "rgba(251,113,133,0.4)" },
-    green:  { base: [74, 222, 128],  glow: "rgba(74,222,128,0.4)" },
+    cyan: { base: [34, 211, 238], glow: "rgba(34,211,238,0.4)" },
+    rose: { base: [251, 113, 133], glow: "rgba(251,113,133,0.4)" },
+    green: { base: [74, 222, 128], glow: "rgba(74,222,128,0.4)" },
   };
 
   let currentColor = "purple";
@@ -83,7 +83,8 @@
     for (let i = 0; i < dots.length; i++) {
       const t = i / dots.length;
       const size = baseSize * (1 - t * 0.7);
-      dots[i].el.style.transform = `translate(${points[i].x - size / 2}px, ${points[i].y - size / 2}px)`;
+      dots[i].el.style.transform =
+        `translate(${points[i].x - size / 2}px, ${points[i].y - size / 2}px)`;
     }
 
     requestAnimationFrame(animate);

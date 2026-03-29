@@ -5,6 +5,7 @@ interface AnimatedGradientTextProps {
   colors?: string[];
   speed?: string;
   className?: string;
+  style?: CSSProperties;
 }
 
 export function AnimatedGradientText({
@@ -12,6 +13,7 @@ export function AnimatedGradientText({
   colors = ["#ff6b6b", "#feca57", "#48dbfb", "#ff9ff3", "#54a0ff", "#5f27cd", "#ff6b6b"],
   speed = "3s",
   className = "",
+  style = {},
 }: AnimatedGradientTextProps) {
   const gradientStyle: CSSProperties = {
     backgroundImage: `linear-gradient(90deg, ${colors.join(", ")})`,
@@ -20,6 +22,8 @@ export function AnimatedGradientText({
     backgroundClip: "text",
     WebkitTextFillColor: "transparent",
     animation: `gradient-flow ${speed} linear infinite`,
+    lineHeight: 1.1,
+    ...style,
   };
 
   return (
@@ -55,13 +59,30 @@ export default function AnimatedGradientTextDemo() {
       }}
     >
       <div>
-        <h1>
-          <AnimatedGradientText>
-            <span style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 800, letterSpacing: "-0.03em" }}>
-              Animated Gradient Text
-            </span>
-          </AnimatedGradientText>
+        <h1
+          className="animated-gradient-text"
+          style={{
+            fontSize: "clamp(2.5rem, 6vw, 5rem)",
+            fontWeight: 800,
+            letterSpacing: "-0.03em",
+            lineHeight: 1.1,
+            backgroundImage:
+              "linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd, #ff6b6b)",
+            backgroundSize: "200% auto",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            animation: "gradient-flow 3s linear infinite",
+          }}
+        >
+          Animated Gradient Text
         </h1>
+        <style>{`
+          @keyframes gradient-flow {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+          }
+        `}</style>
         <p style={{ marginTop: "1.25rem", color: "#666", fontSize: "1rem" }}>
           Pure CSS animated gradient flowing through text
         </p>

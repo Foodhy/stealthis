@@ -81,12 +81,19 @@
         const finalIntensity = Math.min(1, smoothIntensity + smoothTrail);
 
         // Base: dim grid line / Lit: bright emerald
-        const baseR = 255, baseG = 255, baseB = 255, baseA = 0.04;
-        const glowR = 52, glowG = 211, glowB = 153;
+        const baseR = 255,
+          baseG = 255,
+          baseB = 255,
+          baseA = 0.04;
+        const glowR = 52,
+          glowG = 211,
+          glowB = 153;
 
         const alpha = baseA + finalIntensity * 0.55;
         const red = Math.round(lerp(baseR * baseA, glowR, finalIntensity) / Math.max(alpha, 0.01));
-        const green = Math.round(lerp(baseG * baseA, glowG, finalIntensity) / Math.max(alpha, 0.01));
+        const green = Math.round(
+          lerp(baseG * baseA, glowG, finalIntensity) / Math.max(alpha, 0.01)
+        );
         const blue = Math.round(lerp(baseB * baseA, glowB, finalIntensity) / Math.max(alpha, 0.01));
 
         ctx.fillStyle = `rgba(${glowR}, ${glowG}, ${glowB}, ${alpha.toFixed(3)})`;
@@ -133,11 +140,15 @@
   });
 
   // Touch support
-  canvas.parentElement.addEventListener("touchmove", (e) => {
-    const touch = e.touches[0];
-    targetX = touch.clientX;
-    targetY = touch.clientY;
-  }, { passive: true });
+  canvas.parentElement.addEventListener(
+    "touchmove",
+    (e) => {
+      const touch = e.touches[0];
+      targetX = touch.clientX;
+      targetY = touch.clientY;
+    },
+    { passive: true }
+  );
 
   canvas.parentElement.addEventListener("touchend", () => {
     targetX = -1000;

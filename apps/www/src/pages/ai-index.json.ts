@@ -63,6 +63,7 @@ export const GET: APIRoute = async ({ site }) => {
     urls: {
       home: `${origin}/`,
       library: `${origin}/library/`,
+      libraryAr: `${origin}/ar/library/`,
       showcase: `${origin}/showcase/`,
       libraryEs: `${origin}/es/library/`,
       libraryFr: `${origin}/fr/library/`,

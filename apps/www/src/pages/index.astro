@@ -14,8 +14,7 @@ const allResources = await getCollection("resources");
 const labExamples = allResources.filter(
   (resource: any) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0
 );
-const byNewest = (a: any, b: any) =>
-  (b.data.createdAt ?? "").localeCompare(a.data.createdAt ?? "");
+const byNewest = (a: any, b: any) => (b.data.createdAt ?? "").localeCompare(a.data.createdAt ?? "");
 
 const easyMarquee = labExamples
   .filter((resource: any) => resource.data.difficulty === "easy")
@@ -104,24 +103,17 @@ const categoryCards = [
     comingSoon: false,
   },
   {
-    slug: "skills",
-    icon: "☀",
-    label: t("category.skills"),
-    desc: t("home.categories.desc.skills"),
-    comingSoon: false,
-  },
-  {
-    slug: "mcp-servers",
-    icon: "⛶",
-    label: t("category.mcp-servers"),
-    desc: t("home.categories.desc.mcpServers"),
-    comingSoon: false,
-  },
-  {
     slug: "architectures",
     icon: "⚙",
     label: t("category.architectures"),
     desc: t("home.categories.desc.architectures"),
+    comingSoon: false,
+  },
+  {
+    slug: "boilerplates",
+    icon: "▦",
+    label: t("category.boilerplates"),
+    desc: t("home.categories.desc.boilerplates"),
     comingSoon: false,
   },
   {
@@ -137,6 +129,13 @@ const categoryCards = [
     label: t("category.3d-interactions"),
     desc: t("home.categories.desc.3dInteractions"),
     comingSoon: true,
+  },
+  {
+    slug: "plugins",
+    icon: "⊞",
+    label: t("category.plugins"),
+    desc: t("home.categories.desc.plugins"),
+    comingSoon: false,
   },
 ] as const;
 const scramblePhrases = (t("home.scramble.phrases") as string)
@@ -154,6 +153,7 @@ const homeDescriptionByLocale = {
   en: "Steal production-ready web animations, pages, components, and database schemas. Copy the code, open Lab demos, and ship faster.",
   es: "Copia animaciones, páginas, componentes y esquemas de base de datos listos para producción. Abre demos en Lab y publica más rápido.",
   fr: "Copiez des animations, pages, composants et schémas de base de données prêts pour la production. Lancez des démos dans Lab et livrez plus vite.",
+  ar: "انسخ حركات الويب والصفحات والمكوّنات ومخططات قواعد البيانات الجاهزة للإنتاج. انسخ الكود وافتح عروض Lab وانشر أسرع.",
   ja: "本番で使えるアニメーション、ページ、コンポーネント、データベーススキーマをそのままコピー。Labでデモを試して素早く実装できます。",
   ms: "Salin animasi web, halaman, komponen, dan skema pangkalan data sedia produksi. Salin kod, buka demo di Lab, dan lancarkan lebih cepat.",
   hi: "प्रोडक्शन-रेडी वेब एनीमेशन, पेज, कंपोनेंट और डेटाबेस स्कीमा कॉपी करें। कोड कॉपी करें, Lab डेमो खोलें और तेज़ी से शिप करें।",
@@ -164,7 +164,8 @@ const homeDescriptionByLocale = {
     "Copie animações web, páginas, componentes e esquemas de banco de dados prontos para produção. Copie o código, abra demos no Lab e entregue mais rápido.",
   "zh-hk":
     "複製可直接上線的 Web 動畫、頁面、元件與資料庫結構。複製程式碼、打開 Lab 範例，並更快交付。",
-  "zh-cn": "复制可直接用于生产的 Web 动画、页面、组件和数据库结构。复制代码，打开 Lab 示例，更快发布。",
+  "zh-cn":
+    "复制可直接用于生产的 Web 动画、页面、组件和数据库结构。复制代码，打开 Lab 示例，更快发布。",
   it: "Copia animazioni web, pagine, componenti e schemi database pronti per la produzione. Copia il codice, apri i demo in Lab e rilascia più velocemente.",
   pl: "Kopiuj gotowe do produkcji animacje webowe, strony, komponenty i schematy baz danych. Kopiuj kod, otwieraj dema w Lab i wdrażaj szybciej.",
   uk: "Копіюй готові до продакшену веб-анімації, сторінки, компоненти й схеми баз даних. Копіюй код, відкривай демо в Lab і випускай швидше.",
@@ -232,21 +233,8 @@ const structuredData = [
 
   <!-- Hero -->
   <section class="hero-stage relative overflow-hidden pt-20 pb-16 min-w-0">
-    <!-- Retro grids – left & right -->
-    <div class="hero-retro-grid hero-retro-grid--left" aria-hidden="true">
-      <canvas class="hero-retro-canvas" data-side="left"></canvas>
-      <div class="hero-retro-glow hero-retro-glow--a"></div>
-      <div class="hero-retro-glow hero-retro-glow--b"></div>
-      <div class="hero-retro-glow hero-retro-glow--c"></div>
-      <div class="hero-retro-sweep"></div>
-    </div>
-    <div class="hero-retro-grid hero-retro-grid--right" aria-hidden="true">
-      <canvas class="hero-retro-canvas" data-side="right"></canvas>
-      <div class="hero-retro-glow hero-retro-glow--a"></div>
-      <div class="hero-retro-glow hero-retro-glow--b"></div>
-      <div class="hero-retro-glow hero-retro-glow--c"></div>
-      <div class="hero-retro-sweep"></div>
-    </div>
+    <!-- Flickering grid background -->
+    <canvas class="hero-flicker-canvas" aria-hidden="true"></canvas>
 
     <div class="container-xl text-center hero-container min-w-0 relative">
       <div class="hero-cta-shell mx-auto max-w-5xl px-5 py-9 sm:px-10 sm:py-12">
@@ -791,142 +779,113 @@ const structuredData = [
     });
   </script>
 
-  <!-- Interactive grid canvas for retro panels -->
+  <!-- Flickering grid canvas -->
   <script>
     (function () {
       "use strict";
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-      const CELL = 28;
+      const canvas = document.querySelector<HTMLCanvasElement>(".hero-flicker-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const CELL_SIZE = 24;
       const GAP = 2;
-      const RADIUS = 3;
-      const ILLUM_R = 180;
-      const TRAIL_R = 100;
-      const GLOW_R = 34, GLOW_G = 211, GLOW_B = 238;
-      const BASE_ALPHA = 0.045;
+      const BASE_OPACITY = 0.06;
+      const MAX_OPACITY = 0.35;
+      const FLICKER_CHANCE = 0.005;
+      const LERP_SPEED = 0.04;
+      const COLOR = { r: 59, g: 130, b: 246 }; // blue
 
-      const panels: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; cols: number; rows: number; mx: number; my: number; tx: number; ty: number; dpr: number; animId: number }[] = [];
-
-      document.querySelectorAll<HTMLCanvasElement>(".hero-retro-canvas").forEach((canvas) => {
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        panels.push({ canvas, ctx, cols: 0, rows: 0, mx: -9999, my: -9999, tx: -9999, ty: -9999, dpr: 1, animId: 0 });
-      });
-
-      if (!panels.length) return;
+      let cols = 0;
+      let rows = 0;
+      let cells: { x: number; y: number; opacity: number; target: number }[] = [];
+      let animId = 0;
+      let dpr = 1;
 
       function resize() {
-        for (const p of panels) {
-          const rect = p.canvas.parentElement!.getBoundingClientRect();
-          p.dpr = window.devicePixelRatio || 1;
-          p.canvas.width = rect.width * p.dpr;
-          p.canvas.height = rect.height * p.dpr;
-          p.canvas.style.width = rect.width + "px";
-          p.canvas.style.height = rect.height + "px";
-          p.cols = Math.ceil(rect.width / (CELL + GAP)) + 1;
-          p.rows = Math.ceil(rect.height / (CELL + GAP)) + 1;
-        }
-      }
+        dpr = window.devicePixelRatio || 1;
+        const rect = canvas!.parentElement!.getBoundingClientRect();
+        canvas!.width = rect.width * dpr;
+        canvas!.height = rect.height * dpr;
+        canvas!.style.width = rect.width + "px";
+        canvas!.style.height = rect.height + "px";
+        ctx!.scale(dpr, dpr);
 
-      function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+        cols = Math.ceil(rect.width / (CELL_SIZE + GAP));
+        rows = Math.ceil(rect.height / (CELL_SIZE + GAP));
 
-      function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-      }
-
-      function draw() {
-        for (const p of panels) {
-          p.mx = lerp(p.mx, p.tx, 0.12);
-          p.my = lerp(p.my, p.ty, 0.12);
-          const { ctx, cols, rows, dpr, mx, my } = p;
-          const w = p.canvas.width / dpr;
-          const h = p.canvas.height / dpr;
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          ctx.clearRect(0, 0, w, h);
-
-          for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-              const x = c * (CELL + GAP);
-              const y = r * (CELL + GAP);
-              const cx = x + CELL / 2;
-              const cy = y + CELL / 2;
-              const dx = cx - mx;
-              const dy = cy - my;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              const intensity = Math.max(0, 1 - dist / ILLUM_R);
-              const si = intensity * intensity;
-              const trail = Math.max(0, 1 - dist / (ILLUM_R + TRAIL_R));
-              const st = trail * trail * 0.25;
-              const fi = Math.min(1, si + st);
-              const alpha = BASE_ALPHA + fi * 0.5;
-
-              ctx.fillStyle = `rgba(${GLOW_R},${GLOW_G},${GLOW_B},${alpha.toFixed(3)})`;
-
-              if (fi > 0.01) {
-                ctx.shadowColor = `rgba(${GLOW_R},${GLOW_G},${GLOW_B},${(fi * 0.5).toFixed(3)})`;
-                ctx.shadowBlur = fi * 10;
-              } else {
-                ctx.fillStyle = `rgba(255,255,255,${BASE_ALPHA})`;
-                ctx.shadowColor = "transparent";
-                ctx.shadowBlur = 0;
-              }
-
-              roundRect(ctx, x, y, CELL, CELL, RADIUS);
-              ctx.fill();
-              ctx.shadowColor = "transparent";
-              ctx.shadowBlur = 0;
-
-              if (fi > 0.1) {
-                ctx.strokeStyle = `rgba(${GLOW_R},${GLOW_G},${GLOW_B},${(fi * 0.25).toFixed(3)})`;
-                ctx.lineWidth = 0.5;
-                roundRect(ctx, x, y, CELL, CELL, RADIUS);
-                ctx.stroke();
-              }
-            }
+        cells = [];
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            cells.push({
+              x: c * (CELL_SIZE + GAP),
+              y: r * (CELL_SIZE + GAP),
+              opacity: BASE_OPACITY + Math.random() * 0.03,
+              target: BASE_OPACITY,
+            });
           }
         }
-        requestAnimationFrame(draw);
       }
 
-      for (const p of panels) {
-        const parent = p.canvas.parentElement!;
-        parent.addEventListener("mousemove", (e: MouseEvent) => {
-          const rect = parent.getBoundingClientRect();
-          p.tx = e.clientX - rect.left;
-          p.ty = e.clientY - rect.top;
-        });
-        parent.addEventListener("mouseleave", () => {
-          p.tx = -9999;
-          p.ty = -9999;
-        });
-        parent.addEventListener("touchmove", (e: TouchEvent) => {
-          const rect = parent.getBoundingClientRect();
-          const t = e.touches[0];
-          p.tx = t.clientX - rect.left;
-          p.ty = t.clientY - rect.top;
-        }, { passive: true });
-        parent.addEventListener("touchend", () => {
-          p.tx = -9999;
-          p.ty = -9999;
-        });
+      function animate() {
+        const w = canvas!.width / dpr;
+        const h = canvas!.height / dpr;
+        ctx!.clearRect(0, 0, w, h);
+
+        for (let i = 0; i < cells.length; i++) {
+          const cell = cells[i];
+
+          if (Math.random() < FLICKER_CHANCE) {
+            cell.target = BASE_OPACITY + Math.random() * (MAX_OPACITY - BASE_OPACITY);
+          }
+
+          cell.opacity += (cell.target - cell.opacity) * LERP_SPEED;
+          cell.target += (BASE_OPACITY - cell.target) * 0.01;
+
+          ctx!.fillStyle = `rgba(${COLOR.r}, ${COLOR.g}, ${COLOR.b}, ${cell.opacity})`;
+          ctx!.beginPath();
+          ctx!.roundRect(cell.x, cell.y, CELL_SIZE, CELL_SIZE, 2);
+          ctx!.fill();
+        }
+
+        animId = requestAnimationFrame(animate);
       }
 
       resize();
-      requestAnimationFrame(draw);
+      animate();
 
-      let rt: ReturnType<typeof setTimeout>;
-      window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(resize, 150); });
+      let resizeTimer: ReturnType<typeof setTimeout>;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          cancelAnimationFrame(animId);
+          ctx!.setTransform(1, 0, 0, 1, 0, 0);
+          resize();
+          animate();
+        }, 100);
+      });
+
+      window.addEventListener("beforeunload", () => {
+        cancelAnimationFrame(animId);
+      });
     })();
+  </script>
+
+  <script>
+    // CMD+K / Ctrl+K → focus hero search input + dynamic placeholder
+    const isMac = navigator.platform?.toUpperCase().includes("MAC") || navigator.userAgent?.includes("Mac");
+    const heroInput = document.getElementById("hero-home-search") as HTMLInputElement | null;
+    if (heroInput) {
+      heroInput.placeholder = isMac ? "Press ⌘+K to search..." : "Press Ctrl+K to search...";
+    }
+    document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        heroInput?.focus({ preventScroll: true });
+      }
+    });
   </script>
 
   <style>
@@ -1002,105 +961,16 @@ const structuredData = [
       z-index: 1;
     }
 
-    /* --- Retro grid – left & right panels --- */
-    .hero-retro-grid {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 45%;
-      overflow: hidden;
-      z-index: 0;
-    }
-    .hero-retro-grid--left {
-      left: 0;
-      -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 85%);
-      mask-image: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 85%);
-    }
-    .hero-retro-grid--right {
-      right: 0;
-      -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.7) 0%, transparent 85%);
-      mask-image: linear-gradient(to left, rgba(0,0,0,0.7) 0%, transparent 85%);
-    }
-    .hero-retro-canvas {
+    /* --- Flickering grid canvas --- */
+    .hero-flicker-canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       display: block;
-    }
-
-    /* --- Floating glow orbs (ocean-like) --- */
-    .hero-retro-glow {
-      position: absolute;
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, transparent 70%);
-      filter: blur(30px);
-      opacity: 0;
-      z-index: 1;
-      mix-blend-mode: screen;
-    }
-    .hero-retro-glow--a {
-      animation: retro-float-a 7s ease-in-out infinite;
-    }
-    .hero-retro-glow--b {
-      width: 120px;
-      height: 120px;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
-      animation: retro-float-b 9s ease-in-out infinite 2s;
-    }
-    .hero-retro-glow--c {
-      width: 90px;
-      height: 90px;
-      background: radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, transparent 70%);
-      filter: blur(20px);
-      animation: retro-float-c 11s ease-in-out infinite 4s;
-    }
-    @keyframes retro-float-a {
-      0%   { opacity: 0;   top: 70%;  left: 10%; }
-      15%  { opacity: 0.8; }
-      50%  { opacity: 0.4; top: 20%;  left: 55%; }
-      85%  { opacity: 0.7; }
-      100% { opacity: 0;   top: 70%;  left: 10%; }
-    }
-    @keyframes retro-float-b {
-      0%   { opacity: 0;   top: 15%;  left: 60%; }
-      20%  { opacity: 0.6; }
-      50%  { opacity: 0.3; top: 65%;  left: 20%; }
-      80%  { opacity: 0.7; }
-      100% { opacity: 0;   top: 15%;  left: 60%; }
-    }
-    @keyframes retro-float-c {
-      0%   { opacity: 0;   top: 45%;  left: 30%; }
-      25%  { opacity: 0.5; }
-      50%  { opacity: 0.2; top: 10%;  left: 70%; }
-      75%  { opacity: 0.6; top: 80%;  left: 45%; }
-      100% { opacity: 0;   top: 45%;  left: 30%; }
-    }
-
-    /* --- Sweep highlight that travels across the grid --- */
-    .hero-retro-sweep {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      background: linear-gradient(
-        180deg,
-        transparent 0%,
-        rgba(34, 211, 238, 0.12) 45%,
-        rgba(59, 130, 246, 0.08) 55%,
-        transparent 100%
-      );
-      background-size: 100% 300%;
-      animation: retro-sweep 6s ease-in-out infinite;
-    }
-    .hero-retro-grid--right .hero-retro-sweep {
-      animation-delay: -3s;
-    }
-    @keyframes retro-sweep {
-      0%   { background-position: 0 100%; }
-      50%  { background-position: 0 0%; }
-      100% { background-position: 0 100%; }
+      z-index: 0;
+      -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 25%, rgba(0,0,0,0.7) 70%);
+      mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 25%, rgba(0,0,0,0.7) 70%);
     }
     .hero-title-gradient > span {
       background: linear-gradient(to bottom, white, rgb(148 163 184));
@@ -1827,7 +1697,7 @@ const structuredData = [
     }
   </style>
 
-  <section class="container-xl pb-20 examples-marquee-section" aria-labelledby="featured-resources-title">
+  <section class="container-xl pt-12 pb-20 examples-marquee-section" aria-labelledby="featured-resources-title">
     <div class="examples-marquee-head">
       <div>
         <h2 id="featured-resources-title" class="text-xl font-semibold text-white">{t("home.featured.title")}</h2>

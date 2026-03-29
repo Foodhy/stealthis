@@ -30,10 +30,10 @@
   }
 
   const ORB_CONFIGS = [
-    { color: "rgba(0,113,227,0.22)",   fx: 0.22, fy: 0.18, ax: 0.28, ay: 0.22, px: 0.0,  py: 0.0  },
-    { color: "rgba(175,82,222,0.16)",   fx: 0.16, fy: 0.28, ax: 0.32, ay: 0.26, px: 1.3,  py: 0.7  },
-    { color: "rgba(0,113,227,0.12)",    fx: 0.35, fy: 0.14, ax: 0.26, ay: 0.32, px: 2.6,  py: 1.4  },
-    { color: "rgba(52,199,89,0.10)",    fx: 0.12, fy: 0.38, ax: 0.38, ay: 0.18, px: 0.5,  py: 3.0  },
+    { color: "rgba(0,113,227,0.22)", fx: 0.22, fy: 0.18, ax: 0.28, ay: 0.22, px: 0.0, py: 0.0 },
+    { color: "rgba(175,82,222,0.16)", fx: 0.16, fy: 0.28, ax: 0.32, ay: 0.26, px: 1.3, py: 0.7 },
+    { color: "rgba(0,113,227,0.12)", fx: 0.35, fy: 0.14, ax: 0.26, ay: 0.32, px: 2.6, py: 1.4 },
+    { color: "rgba(52,199,89,0.10)", fx: 0.12, fy: 0.38, ax: 0.38, ay: 0.18, px: 0.5, py: 3.0 },
   ];
 
   let orbs = [];
@@ -78,10 +78,7 @@
     ctx.globalCompositeOperation = "source-over";
 
     /* Vignette */
-    const vignette = ctx.createRadialGradient(
-      W / 2, H / 2, H * 0.15,
-      W / 2, H / 2, H * 0.85
-    );
+    const vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.15, W / 2, H / 2, H * 0.85);
     vignette.addColorStop(0, "transparent");
     vignette.addColorStop(1, "rgba(0,0,0,0.6)");
     ctx.fillStyle = vignette;
@@ -94,7 +91,10 @@
   resize();
   initOrbs();
   draw();
-  window.addEventListener("resize", () => { resize(); initOrbs(); });
+  window.addEventListener("resize", () => {
+    resize();
+    initOrbs();
+  });
 
   /* ============================================
      2. Lenis Smooth Scroll + GSAP ticker

@@ -126,9 +126,7 @@ export default function NumberTicker({
 
           <div style={{ display: "flex", alignItems: "baseline" }}>
             {prefix && (
-              <span style={{ fontSize: "2rem", fontWeight: 700, color: "#e2e8f0" }}>
-                {prefix}
-              </span>
+              <span style={{ fontSize: "2rem", fontWeight: 700, color: "#e2e8f0" }}>{prefix}</span>
             )}
 
             <div
@@ -144,8 +142,7 @@ export default function NumberTicker({
               }}
             >
               {digits.map((digit, i) => {
-                const needsSep =
-                  separator && i > 0 && (digits.length - i) % 3 === 0;
+                const needsSep = separator && i > 0 && (digits.length - i) % 3 === 0;
 
                 return (
                   <span key={i} style={{ display: "contents" }}>

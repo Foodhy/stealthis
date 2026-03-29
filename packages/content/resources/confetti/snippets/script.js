@@ -10,8 +10,14 @@
   const GRAVITY = 0.25;
   const DRAG = 0.98;
   const COLORS = [
-    "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4",
-    "#10b981", "#ec4899", "#fde68a", "#60a5fa",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#06b6d4",
+    "#10b981",
+    "#ec4899",
+    "#fde68a",
+    "#60a5fa",
   ];
   const SHAPES = ["rect", "circle", "strip"];
 

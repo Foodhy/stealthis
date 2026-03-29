@@ -2,9 +2,9 @@
   "use strict";
 
   const container = document.getElementById("fab-container");
-  const btn       = document.getElementById("fab-btn");
-  const backdrop  = document.getElementById("fab-backdrop");
-  const snackbar  = document.getElementById("snackbar");
+  const btn = document.getElementById("fab-btn");
+  const backdrop = document.getElementById("fab-backdrop");
+  const snackbar = document.getElementById("snackbar");
 
   let snackTimer = null;
 
@@ -38,11 +38,19 @@
   /** Keyboard navigation within the dial */
   document.getElementById("fab-actions").addEventListener("keydown", (e) => {
     const items = [...document.querySelectorAll(".fab-action__btn")];
-    const idx   = items.indexOf(document.activeElement);
+    const idx = items.indexOf(document.activeElement);
 
-    if (e.key === "ArrowUp"   && idx > 0)              { e.preventDefault(); items[idx - 1].focus(); }
-    if (e.key === "ArrowDown" && idx < items.length - 1){ e.preventDefault(); items[idx + 1].focus(); }
-    if (e.key === "Tab")      { toggleDial(false); }
+    if (e.key === "ArrowUp" && idx > 0) {
+      e.preventDefault();
+      items[idx - 1].focus();
+    }
+    if (e.key === "ArrowDown" && idx < items.length - 1) {
+      e.preventDefault();
+      items[idx + 1].focus();
+    }
+    if (e.key === "Tab") {
+      toggleDial(false);
+    }
   });
 
   /** Show a temporary snackbar message */

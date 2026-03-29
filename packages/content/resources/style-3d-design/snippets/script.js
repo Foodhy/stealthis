@@ -1,9 +1,9 @@
 // 3D Design — Mouse-tracking tilt effect
-document.querySelectorAll('.tilt-container, .card-section').forEach((container) => {
-  const card = container.querySelector('.card-3d');
+document.querySelectorAll(".tilt-container, .card-section").forEach((container) => {
+  const card = container.querySelector(".card-3d");
   if (!card) return;
 
-  container.addEventListener('mousemove', (e) => {
+  container.addEventListener("mousemove", (e) => {
     const rect = container.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
@@ -18,9 +18,9 @@ document.querySelectorAll('.tilt-container, .card-section').forEach((container) 
     `;
 
     // Move shine
-    const shine = card.querySelector('.card-3d__shine');
+    const shine = card.querySelector(".card-3d__shine");
     if (shine) {
-      shine.style.opacity = '1';
+      shine.style.opacity = "1";
       shine.style.background = `linear-gradient(
         ${105 + (x - 0.5) * 40}deg,
         transparent 35%,
@@ -32,22 +32,22 @@ document.querySelectorAll('.tilt-container, .card-section').forEach((container) 
     }
   });
 
-  container.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-    card.style.boxShadow = '';
-    const shine = card.querySelector('.card-3d__shine');
+  container.addEventListener("mouseleave", () => {
+    card.style.transform = "";
+    card.style.boxShadow = "";
+    const shine = card.querySelector(".card-3d__shine");
     if (shine) {
-      shine.style.opacity = '0';
+      shine.style.opacity = "0";
     }
   });
 });
 
 // Stat hover 3D pop
-document.querySelectorAll('.stat-3d').forEach((stat) => {
-  stat.addEventListener('mouseenter', () => {
-    stat.style.transform = 'translateY(-4px) translateZ(16px) scale(1.03)';
+document.querySelectorAll(".stat-3d").forEach((stat) => {
+  stat.addEventListener("mouseenter", () => {
+    stat.style.transform = "translateY(-4px) translateZ(16px) scale(1.03)";
   });
-  stat.addEventListener('mouseleave', () => {
-    stat.style.transform = '';
+  stat.addEventListener("mouseleave", () => {
+    stat.style.transform = "";
   });
 });

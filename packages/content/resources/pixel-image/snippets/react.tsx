@@ -89,7 +89,10 @@ export function PixelImage({
     for (let y = 0; y < height; y += pixelSize) {
       for (let x = 0; x < width; x += pixelSize) {
         const i = (y * width + x) * 4;
-        const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+        const r = data[i],
+          g = data[i + 1],
+          b = data[i + 2],
+          a = data[i + 3];
         if (a < 10) continue;
         pixels.push({
           targetX: x,
@@ -219,8 +222,7 @@ export default function PixelImageDemo() {
             fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
             fontWeight: 800,
             letterSpacing: "-0.03em",
-            background:
-              "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
+            background: "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

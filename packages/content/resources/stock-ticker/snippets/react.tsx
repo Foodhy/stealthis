@@ -21,7 +21,11 @@ export default function StockTickerRC() {
         prev.map((s) => {
           const movement = (Math.random() - 0.48) * 2;
           const newPrice = Math.max(0.01, s.price + movement);
-          return { ...s, price: newPrice, change: parseFloat((s.change + (Math.random() - 0.5) * 0.1).toFixed(2)) };
+          return {
+            ...s,
+            price: newPrice,
+            change: parseFloat((s.change + (Math.random() - 0.5) * 0.1).toFixed(2)),
+          };
         })
       );
     }, 2000);
@@ -49,18 +53,29 @@ export default function StockTickerRC() {
       <div className="w-full max-w-2xl bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
         <div className="grid grid-cols-4 px-4 py-2 border-b border-[#30363d]">
           {["Symbol", "Name", "Price", "Change"].map((h) => (
-            <span key={h} className="text-[11px] text-[#484f58] uppercase tracking-wider">{h}</span>
+            <span key={h} className="text-[11px] text-[#484f58] uppercase tracking-wider">
+              {h}
+            </span>
           ))}
         </div>
         <div className="divide-y divide-[#21262d]">
           {stocks.map((s) => (
-            <div key={s.symbol} className="grid grid-cols-4 px-4 py-3 hover:bg-white/[0.02] transition-colors">
+            <div
+              key={s.symbol}
+              className="grid grid-cols-4 px-4 py-3 hover:bg-white/[0.02] transition-colors"
+            >
               <span className="font-bold text-sm text-[#e6edf3]">{s.symbol}</span>
               <span className="text-sm text-[#8b949e]">{s.name}</span>
               <span className="font-mono text-sm text-[#e6edf3] tabular-nums">
-                ${s.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                $
+                {s.price.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </span>
-              <span className={`text-sm font-semibold tabular-nums ${s.change >= 0 ? "text-[#7ee787]" : "text-[#f85149]"}`}>
+              <span
+                className={`text-sm font-semibold tabular-nums ${s.change >= 0 ? "text-[#7ee787]" : "text-[#f85149]"}`}
+              >
                 {s.change >= 0 ? "▴" : "▾"} {Math.abs(s.change).toFixed(2)}%
               </span>
             </div>

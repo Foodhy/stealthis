@@ -21,13 +21,16 @@
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   resize();
-  window.addEventListener("resize", () => { resize(); initOrbs(); });
+  window.addEventListener("resize", () => {
+    resize();
+    initOrbs();
+  });
 
   const ORB_CONFIGS = [
-    { color: "rgba(6,193,103,0.30)",  fx: 0.25, fy: 0.20, ax: 0.30, ay: 0.25, px: 0.0, py: 0.0 },
-    { color: "rgba(6,193,103,0.15)",  fx: 0.18, fy: 0.35, ax: 0.35, ay: 0.30, px: 1.2, py: 0.8 },
-    { color: "rgba(20,184,166,0.20)", fx: 0.40, fy: 0.15, ax: 0.25, ay: 0.35, px: 2.5, py: 1.5 },
-    { color: "rgba(6,193,103,0.12)",  fx: 0.15, fy: 0.45, ax: 0.40, ay: 0.20, px: 0.7, py: 3.1 },
+    { color: "rgba(6,193,103,0.30)", fx: 0.25, fy: 0.2, ax: 0.3, ay: 0.25, px: 0.0, py: 0.0 },
+    { color: "rgba(6,193,103,0.15)", fx: 0.18, fy: 0.35, ax: 0.35, ay: 0.3, px: 1.2, py: 0.8 },
+    { color: "rgba(20,184,166,0.20)", fx: 0.4, fy: 0.15, ax: 0.25, ay: 0.35, px: 2.5, py: 1.5 },
+    { color: "rgba(6,193,103,0.12)", fx: 0.15, fy: 0.45, ax: 0.4, ay: 0.2, px: 0.7, py: 3.1 },
   ];
 
   let orbs = [];
@@ -111,23 +114,36 @@ heroTl
     opacity: 1,
     duration: dur(2),
   })
-  .to(".hero-subtitle", {
-    opacity: 1,
-    y: -10,
-    duration: dur(1.2),
-  }, "-=1.5")
-  .fromTo(".hero-booking", {
-    opacity: 0,
-    y: reduced ? 0 : 40,
-  }, {
-    opacity: 1,
-    y: 0,
-    duration: dur(1),
-  }, "-=0.8")
-  .to(".scroll-indicator", {
-    opacity: 1,
-    duration: dur(0.8),
-  }, "-=0.4");
+  .to(
+    ".hero-subtitle",
+    {
+      opacity: 1,
+      y: -10,
+      duration: dur(1.2),
+    },
+    "-=1.5"
+  )
+  .fromTo(
+    ".hero-booking",
+    {
+      opacity: 0,
+      y: reduced ? 0 : 40,
+    },
+    {
+      opacity: 1,
+      y: 0,
+      duration: dur(1),
+    },
+    "-=0.8"
+  )
+  .to(
+    ".scroll-indicator",
+    {
+      opacity: 1,
+      duration: dur(0.8),
+    },
+    "-=0.4"
+  );
 
 // Hero parallax on scroll
 gsap.to(".hero-content", {
@@ -158,7 +174,8 @@ gsap.to(".hero-booking", {
 // ═══════════════════════════════════════════════════════════════════════
 
 gsap.utils.toArray(".reveal").forEach((el) => {
-  gsap.fromTo(el,
+  gsap.fromTo(
+    el,
     { opacity: 0, y: reduced ? 0 : 40 },
     {
       opacity: 1,
@@ -180,7 +197,8 @@ gsap.utils.toArray(".reveal").forEach((el) => {
 
 const rideCards = document.querySelectorAll(".ride-card");
 if (rideCards.length) {
-  gsap.fromTo(rideCards,
+  gsap.fromTo(
+    rideCards,
     { opacity: 0, y: reduced ? 0 : 30, scale: reduced ? 1 : 0.96 },
     {
       opacity: 1,
@@ -252,15 +270,18 @@ document.querySelectorAll(".stat-number").forEach((el) => {
     start: "top 85%",
     once: true,
     onEnter: () => {
-      gsap.to({ val: 0 }, {
-        val: target,
-        duration: dur(2),
-        ease: "power2.out",
-        onUpdate: function () {
-          const current = Math.round(this.targets()[0].val);
-          el.textContent = current.toLocaleString() + suffix;
-        },
-      });
+      gsap.to(
+        { val: 0 },
+        {
+          val: target,
+          duration: dur(2),
+          ease: "power2.out",
+          onUpdate: function () {
+            const current = Math.round(this.targets()[0].val);
+            el.textContent = current.toLocaleString() + suffix;
+          },
+        }
+      );
     },
   });
 });
@@ -271,7 +292,8 @@ document.querySelectorAll(".stat-number").forEach((el) => {
 
 const safetyFeatures = document.querySelectorAll(".safety-feature");
 if (safetyFeatures.length) {
-  gsap.fromTo(safetyFeatures,
+  gsap.fromTo(
+    safetyFeatures,
     { opacity: 0, x: reduced ? 0 : -20 },
     {
       opacity: 1,
@@ -328,7 +350,8 @@ if (devicePhone && !reduced) {
 // ═══════════════════════════════════════════════════════════════════════
 
 gsap.utils.toArray(".ring").forEach((ring, i) => {
-  gsap.fromTo(ring,
+  gsap.fromTo(
+    ring,
     { scale: 0.5, opacity: 0 },
     {
       scale: 1,

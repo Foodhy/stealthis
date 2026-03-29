@@ -1,19 +1,23 @@
 const DATA = [
-  { label: 'Electronics',    value: 3400, color: '#1e3a5f' },
-  { label: 'Clothing',       value: 2600, color: '#2563eb' },
-  { label: 'Home & Garden',  value: 1800, color: '#60a5fa' },
-  { label: 'Books & Media',  value: 1200, color: '#93c5fd' },
-  { label: 'Sports',         value:  900, color: '#bfdbfe' },
+  { label: "Electronics", value: 3400, color: "#1e3a5f" },
+  { label: "Clothing", value: 2600, color: "#2563eb" },
+  { label: "Home & Garden", value: 1800, color: "#60a5fa" },
+  { label: "Books & Media", value: 1200, color: "#93c5fd" },
+  { label: "Sports", value: 900, color: "#bfdbfe" },
 ];
 const total = DATA.reduce((a, d) => a + d.value, 0);
 
-const donutSvg  = document.getElementById('donutSvg');
-const legend     = document.getElementById('legend');
-const centerVal  = document.getElementById('donutCenterVal');
-const tooltip    = document.getElementById('chartTooltip');
-const headerIcon = document.getElementById('headerIcon');
+const donutSvg = document.getElementById("donutSvg");
+const legend = document.getElementById("legend");
+const centerVal = document.getElementById("donutCenterVal");
+const tooltip = document.getElementById("chartTooltip");
+const headerIcon = document.getElementById("headerIcon");
 
-const SIZE = 240, CX = SIZE / 2, CY = SIZE / 2, R = 100, INNER_R = 62;
+const SIZE = 240,
+  CX = SIZE / 2,
+  CY = SIZE / 2,
+  R = 100,
+  INNER_R = 62;
 const GAP = 0.02; // small gap between slices in radians
 
 /* Header icon — inline SVG package/box icon */
@@ -41,38 +45,40 @@ function arcPath(cx, cy, r, innerR, startAngle, endAngle) {
 }
 
 function draw() {
-  donutSvg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
-  donutSvg.setAttribute('width', SIZE);
-  donutSvg.setAttribute('height', SIZE);
-  donutSvg.innerHTML = '';
+  donutSvg.setAttribute("viewBox", `0 0 ${SIZE} ${SIZE}`);
+  donutSvg.setAttribute("width", SIZE);
+  donutSvg.setAttribute("height", SIZE);
+  donutSvg.innerHTML = "";
 
   let angle = -Math.PI / 2;
 
   DATA.forEach((d, i) => {
     const share = (d.value / total) * 2 * Math.PI;
     const startAngle = angle + GAP / 2;
-    const endAngle   = angle + share - GAP / 2;
+    const endAngle = angle + share - GAP / 2;
     angle += share;
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', arcPath(CX, CY, R, INNER_R, startAngle, endAngle));
-    path.setAttribute('fill', d.color);
-    path.setAttribute('class', 'donut-slice');
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", arcPath(CX, CY, R, INNER_R, startAngle, endAngle));
+    path.setAttribute("fill", d.color);
+    path.setAttribute("class", "donut-slice");
     path.style.animation = `sliceReveal .5s ${i * 0.08}s ease both`;
 
-    path.addEventListener('mouseenter', (e) => showTooltip(e, d));
-    path.addEventListener('mousemove',  (e) => posTooltip(e));
-    path.addEventListener('mouseleave', () => { tooltip.hidden = true; });
+    path.addEventListener("mouseenter", (e) => showTooltip(e, d));
+    path.addEventListener("mousemove", (e) => posTooltip(e));
+    path.addEventListener("mouseleave", () => {
+      tooltip.hidden = true;
+    });
 
     donutSvg.appendChild(path);
   });
 
   /* Build legend */
-  legend.innerHTML = '';
-  DATA.forEach(d => {
+  legend.innerHTML = "";
+  DATA.forEach((d) => {
     const pct = ((d.value / total) * 100).toFixed(1);
-    const item = document.createElement('div');
-    item.className = 'legend-item';
+    const item = document.createElement("div");
+    item.className = "legend-item";
     item.innerHTML = `
       <span class="legend-swatch" style="background:${d.color}"></span>
       <span class="legend-label">${d.label}</span>
@@ -89,12 +95,12 @@ function showTooltip(e, d) {
 }
 
 function posTooltip(e) {
-  tooltip.style.left = (e.clientX + 14) + 'px';
-  tooltip.style.top  = (e.clientY - 42) + 'px';
+  tooltip.style.left = e.clientX + 14 + "px";
+  tooltip.style.top = e.clientY - 42 + "px";
 }
 
 /* Inject animation keyframes */
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
 @keyframes sliceReveal {
   from { opacity: 0; transform: scale(.85); }

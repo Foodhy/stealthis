@@ -1,14 +1,14 @@
 /* Aurora / Gradient Mesh — Interactive JS */
 
 (function () {
-  'use strict';
+  "use strict";
 
   // ── Slow parallax on aurora streaks with mouse position ──
   const streaks = [
-    { el: document.getElementById('streak1'), depth: 0.8 },
-    { el: document.getElementById('streak2'), depth: -0.6 },
-    { el: document.getElementById('streak3'), depth: 0.5 },
-    { el: document.getElementById('streak4'), depth: -0.9 },
+    { el: document.getElementById("streak1"), depth: 0.8 },
+    { el: document.getElementById("streak2"), depth: -0.6 },
+    { el: document.getElementById("streak3"), depth: 0.5 },
+    { el: document.getElementById("streak4"), depth: -0.9 },
   ];
 
   let targetX = 0;
@@ -17,7 +17,7 @@
   let currentY = 0;
   let rafId = null;
 
-  document.addEventListener('mousemove', (e) => {
+  document.addEventListener("mousemove", (e) => {
     // Normalize to -1 → 1
     targetX = (e.clientX / window.innerWidth - 0.5) * 2;
     targetY = (e.clientY / window.innerHeight - 0.5) * 2;
@@ -43,9 +43,7 @@
     });
 
     // Continue until settled
-    const settled =
-      Math.abs(targetX - currentX) < 0.001 &&
-      Math.abs(targetY - currentY) < 0.001;
+    const settled = Math.abs(targetX - currentX) < 0.001 && Math.abs(targetY - currentY) < 0.001;
 
     if (!settled) {
       rafId = requestAnimationFrame(animateStreaks);
@@ -53,12 +51,12 @@
   }
 
   // ── Entrance: slide up with stagger ──
-  const page = document.querySelector('.page');
+  const page = document.querySelector(".page");
   const sections = page ? Array.from(page.children) : [];
 
   sections.forEach((section, i) => {
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(30px)';
+    section.style.opacity = "0";
+    section.style.transform = "translateY(30px)";
     section.style.transition = `
       opacity 0.6s ease ${i * 0.15}s,
       transform 0.7s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.15}s
@@ -68,8 +66,8 @@
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       sections.forEach((section) => {
-        section.style.opacity = '1';
-        section.style.transform = '';
+        section.style.opacity = "1";
+        section.style.transform = "";
       });
     });
   });
@@ -77,9 +75,9 @@
   // ── Stat counter animation ──
   function animateCounter(el, targetStr, duration = 1000) {
     const start = performance.now();
-    const isFloat = targetStr.includes('.');
-    const numStr = targetStr.replace(/[^0-9.]/g, '');
-    const suffix = targetStr.replace(/[0-9.]/g, '');
+    const isFloat = targetStr.includes(".");
+    const numStr = targetStr.replace(/[^0-9.]/g, "");
+    const suffix = targetStr.replace(/[0-9.]/g, "");
     const target = parseFloat(numStr);
 
     requestAnimationFrame(function tick(now) {
@@ -94,25 +92,25 @@
   }
 
   setTimeout(() => {
-    document.querySelectorAll('.stat__value').forEach((el) => {
+    document.querySelectorAll(".stat__value").forEach((el) => {
       const raw = el.textContent.trim();
-      el.textContent = '0';
+      el.textContent = "0";
       animateCounter(el, raw, 1200);
     });
   }, 600);
 
   // ── Button: ripple on click ──
-  document.querySelectorAll('.btn').forEach((btn) => {
-    btn.style.position = 'relative';
-    btn.style.overflow = 'hidden';
+  document.querySelectorAll(".btn").forEach((btn) => {
+    btn.style.position = "relative";
+    btn.style.overflow = "hidden";
 
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener("click", (e) => {
       const rect = btn.getBoundingClientRect();
       const size = Math.max(rect.width, rect.height) * 2;
       const x = e.clientX - rect.left - size / 2;
       const y = e.clientY - rect.top - size / 2;
 
-      const ripple = document.createElement('span');
+      const ripple = document.createElement("span");
       ripple.style.cssText = `
         position: absolute;
         width: ${size}px;
@@ -127,9 +125,9 @@
         z-index: 0;
       `;
 
-      if (!document.getElementById('aurora-ripple-style')) {
-        const style = document.createElement('style');
-        style.id = 'aurora-ripple-style';
+      if (!document.getElementById("aurora-ripple-style")) {
+        const style = document.createElement("style");
+        style.id = "aurora-ripple-style";
         style.textContent = `
           @keyframes auroraRipple {
             to { transform: scale(1); opacity: 0; }
@@ -144,13 +142,13 @@
   });
 
   // ── Input focus: shimmer ──
-  const input = document.getElementById('auroraInput');
+  const input = document.getElementById("auroraInput");
   if (input) {
-    input.addEventListener('focus', () => {
-      input.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.12), 0 0 30px rgba(255,255,255,0.08)';
+    input.addEventListener("focus", () => {
+      input.style.boxShadow = "0 0 0 3px rgba(255,255,255,0.12), 0 0 30px rgba(255,255,255,0.08)";
     });
-    input.addEventListener('blur', () => {
-      input.style.boxShadow = '';
+    input.addEventListener("blur", () => {
+      input.style.boxShadow = "";
     });
   }
 })();

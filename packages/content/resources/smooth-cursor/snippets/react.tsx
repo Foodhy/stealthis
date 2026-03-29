@@ -80,9 +80,7 @@ export function SmoothCursor({
     // Hover detection
     const handleOverCapture = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (
-        target.closest("a, button, [role='button'], .hoverable")
-      ) {
+      if (target.closest("a, button, [role='button'], .hoverable")) {
         setHovering(true);
       }
     };
@@ -199,8 +197,7 @@ export default function SmoothCursorDemo() {
               fontSize: "clamp(2rem, 5vw, 3.5rem)",
               fontWeight: 800,
               letterSpacing: "-0.03em",
-              background:
-                "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
+              background: "linear-gradient(135deg, #e0e7ff 0%, #818cf8 50%, #6366f1 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -236,7 +233,14 @@ export default function SmoothCursorDemo() {
                 cursor: "none",
               }}
             >
-              <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e0e7ff", marginBottom: "0.25rem" }}>
+              <h3
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  color: "#e0e7ff",
+                  marginBottom: "0.25rem",
+                }}
+              >
                 {title}
               </h3>
               <p style={{ fontSize: "0.8rem", color: "rgba(148,163,184,0.6)" }}>

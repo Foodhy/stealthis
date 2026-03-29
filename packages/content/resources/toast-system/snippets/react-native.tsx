@@ -1,17 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Animated,
-  StyleSheet,
-} from "react-native";
+import React, { createContext, useContext, useCallback, useRef, useState } from "react";
+import { View, Text, TouchableOpacity, Animated, StyleSheet } from "react-native";
 
 /* ── Types ────────────────────────────────────────────── */
 
@@ -87,10 +75,7 @@ function ToastItem({
 
   return (
     <Animated.View
-      style={[
-        styles.toast,
-        { backgroundColor: v.bg, transform: [{ translateY }], opacity },
-      ]}
+      style={[styles.toast, { backgroundColor: v.bg, transform: [{ translateY }], opacity }]}
     >
       <Text style={styles.icon}>{v.icon}</Text>
       <Text style={styles.message}>{toast.message}</Text>

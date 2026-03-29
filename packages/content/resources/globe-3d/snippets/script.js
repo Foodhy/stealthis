@@ -78,8 +78,12 @@
 
     // Draw glow behind globe
     const gradient = ctx.createRadialGradient(
-      width / 2, height / 2 + 60, radius * 0.2,
-      width / 2, height / 2 + 60, radius * 1.2
+      width / 2,
+      height / 2 + 60,
+      radius * 0.2,
+      width / 2,
+      height / 2 + 60,
+      radius * 1.2
     );
     gradient.addColorStop(0, GLOW_COLOR);
     gradient.addColorStop(1, "transparent");
@@ -147,24 +151,32 @@
   });
 
   // Touch interaction
-  canvas.addEventListener("touchstart", (e) => {
-    isDragging = true;
-    const t = e.touches[0];
-    lastMouse = { x: t.clientX, y: t.clientY };
-    clearTimeout(dragTimeout);
-    autoRotate = false;
-  }, { passive: true });
+  canvas.addEventListener(
+    "touchstart",
+    (e) => {
+      isDragging = true;
+      const t = e.touches[0];
+      lastMouse = { x: t.clientX, y: t.clientY };
+      clearTimeout(dragTimeout);
+      autoRotate = false;
+    },
+    { passive: true }
+  );
 
-  canvas.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    const t = e.touches[0];
-    const dx = t.clientX - lastMouse.x;
-    const dy = t.clientY - lastMouse.y;
-    rotY += dx * 0.005;
-    rotX += dy * 0.005;
-    rotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotX));
-    lastMouse = { x: t.clientX, y: t.clientY };
-  }, { passive: true });
+  canvas.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!isDragging) return;
+      const t = e.touches[0];
+      const dx = t.clientX - lastMouse.x;
+      const dy = t.clientY - lastMouse.y;
+      rotY += dx * 0.005;
+      rotX += dy * 0.005;
+      rotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotX));
+      lastMouse = { x: t.clientX, y: t.clientY };
+    },
+    { passive: true }
+  );
 
   canvas.addEventListener("touchend", () => {
     isDragging = false;

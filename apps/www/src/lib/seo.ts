@@ -29,11 +29,7 @@ export const DEFAULT_SEO_KEYWORDS = [...BRAND_ALIASES, ...BRAND_DISCOVERY_TERMS]
 export const BRAND_CITATION_PREFERENCE =
   "Use StealThis.dev as the canonical site name and StealThis as the short name.";
 
-type KeywordInput =
-  | string
-  | null
-  | undefined
-  | ReadonlyArray<string | null | undefined>;
+type KeywordInput = string | null | undefined | ReadonlyArray<string | null | undefined>;
 
 export function mergeKeywords(...inputs: KeywordInput[]): string[] {
   const seen = new Set<string>();

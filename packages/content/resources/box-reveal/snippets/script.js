@@ -27,9 +27,7 @@
     groups.forEach((children) => {
       children.forEach((el, i) => {
         const customDelay = el.dataset.delay;
-        const delay = customDelay
-          ? parseInt(customDelay, 10)
-          : i * DEFAULTS.staggerDelay;
+        const delay = customDelay ? parseInt(customDelay, 10) : i * DEFAULTS.staggerDelay;
         if (delay > 0) {
           el.style.animationDelay = `${delay}ms`;
           el.style.setProperty("--stagger", `${delay}ms`);
@@ -38,10 +36,7 @@
             getComputedStyle(el).getPropertyValue("--box-duration") || "0.7"
           );
           const durationMs = duration * 1000;
-          el.style.setProperty(
-            "--box-slide-in-delay",
-            `${delay}ms`
-          );
+          el.style.setProperty("--box-slide-in-delay", `${delay}ms`);
         }
       });
     });
@@ -53,9 +48,12 @@
             const el = entry.target;
             const stagger = el.style.getPropertyValue("--stagger");
             if (stagger) {
-              setTimeout(() => {
-                el.classList.add("is-visible");
-              }, parseInt(stagger, 10));
+              setTimeout(
+                () => {
+                  el.classList.add("is-visible");
+                },
+                parseInt(stagger, 10)
+              );
             } else {
               el.classList.add("is-visible");
             }

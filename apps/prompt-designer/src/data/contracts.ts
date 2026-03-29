@@ -1,4 +1,4 @@
-import { InformationSource, InformationSourceInput } from '@/types/dataSource';
+import { InformationSource, InformationSourceInput } from "@/types/dataSource";
 
 export interface Author {
   id: number;
@@ -68,14 +68,14 @@ export interface PromptProvider {
     previousPromptId?: number | null,
     variables?: string[],
     authorId?: number | null,
-    tagIds?: number[],
+    tagIds?: number[]
   ): Promise<number>;
   deletePrompt(id: number): Promise<void>;
 }
 
 export interface ValuesProvider {
   getAuthors(): Promise<Author[]>;
-  createAuthor(author: Omit<Author, 'id'>): Promise<Author>;
+  createAuthor(author: Omit<Author, "id">): Promise<Author>;
   updateAuthor(id: number, updates: Partial<Author>): Promise<Author>;
   deleteAuthor(id: number): Promise<void>;
 
@@ -84,12 +84,14 @@ export interface ValuesProvider {
   deleteTag(id: number): Promise<void>;
 
   getTools(): Promise<Tool[]>;
-  createTool(tool: Omit<Tool, 'id'>): Promise<Tool>;
+  createTool(tool: Omit<Tool, "id">): Promise<Tool>;
   updateTool(id: number, updates: Partial<Tool>): Promise<Tool>;
   deleteTool(id: number): Promise<void>;
 
   getGlobalVariables(): Promise<PromptVariable[]>;
-  createGlobalVariable(variable: Pick<PromptVariable, 'variable_name' | 'description' | 'variable_type'>): Promise<PromptVariable>;
+  createGlobalVariable(
+    variable: Pick<PromptVariable, "variable_name" | "description" | "variable_type">
+  ): Promise<PromptVariable>;
   deleteGlobalVariable(id: number): Promise<void>;
 }
 
@@ -102,7 +104,7 @@ export interface SourcesProvider {
 }
 
 export interface DataProvider {
-  kind: 'local' | 'supabase';
+  kind: "local";
   prompts: PromptProvider;
   values: ValuesProvider;
   sources: SourcesProvider;

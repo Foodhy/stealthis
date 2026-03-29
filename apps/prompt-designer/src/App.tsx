@@ -30,8 +30,14 @@ const App = () => (
             <Route path={routes.changelog} element={<Changelog />} />
 
             {/* Spanish/legacy aliases kept for backward compatibility */}
-            <Route path={legacyRouteAliases.promptsNew[0]} element={<PromptWorkspacePage mode="new" />} />
-            <Route path={legacyRouteAliases.promptsEdit[0]} element={<PromptWorkspacePage mode="edit" />} />
+            <Route
+              path={legacyRouteAliases.promptsNew[0]}
+              element={<PromptWorkspacePage mode="new" />}
+            />
+            <Route
+              path={legacyRouteAliases.promptsEdit[0]}
+              element={<PromptWorkspacePage mode="edit" />}
+            />
             <Route path={legacyRouteAliases.newSource[0]} element={<NewDataSource />} />
             <Route path={legacyRouteAliases.testEndpoints[0]} element={<TestEndpoints />} />
             <Route path={legacyRouteAliases.values[0]} element={<Values />} />

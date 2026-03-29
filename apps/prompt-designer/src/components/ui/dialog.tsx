@@ -1,6 +1,6 @@
-import React from 'react';
-import { cn } from '@/lib/cn';
-import { X } from '@/components/icons';
+import React from "react";
+import { cn } from "@/lib/cn";
+import { X } from "@/components/icons";
 
 interface DialogProps {
   open?: boolean;
@@ -29,22 +29,16 @@ export const Dialog: React.FC<DialogProps> = ({ open = false, onOpenChange, chil
         className="fixed inset-0 bg-background/80 backdrop-blur-sm"
         onClick={() => onOpenChange?.(false)}
       />
-      <div className="relative z-50">
-        {children}
-      </div>
+      <div className="relative z-50">{children}</div>
     </div>
   );
 };
 
-export const DialogContent: React.FC<DialogContentProps> = ({
-  children,
-  className,
-  ...props
-}) => {
+export const DialogContent: React.FC<DialogContentProps> = ({ children, className, ...props }) => {
   return (
     <div
       className={cn(
-        "relative grid w-[90vw] max-w-[90vw] gap-4 border bg-background p-6 shadow-lg duration-200 sm:max-w-[800px] sm:p-8 sm:rounded-lg lg:max-w-[1200px]",
+        "relative grid w-[90vw] max-w-[90vw] gap-4 border border-border/60 bg-background p-5 shadow-xl duration-200 sm:max-w-[800px] sm:p-6 sm:rounded-2xl lg:max-w-[1200px]",
         className
       )}
       {...props}
@@ -54,31 +48,17 @@ export const DialogContent: React.FC<DialogContentProps> = ({
   );
 };
 
-export const DialogHeader: React.FC<DialogHeaderProps> = ({
-  children,
-  className,
-  ...props
-}) => {
+export const DialogHeader: React.FC<DialogHeaderProps> = ({ children, className, ...props }) => {
   return (
-    <div
-      className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
-      {...props}
-    >
+    <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props}>
       {children}
     </div>
   );
 };
 
-export const DialogTitle: React.FC<DialogTitleProps> = ({
-  children,
-  className,
-  ...props
-}) => {
+export const DialogTitle: React.FC<DialogTitleProps> = ({ children, className, ...props }) => {
   return (
-    <h2
-      className={cn("text-lg font-semibold leading-none tracking-tight", className)}
-      {...props}
-    >
+    <h2 className={cn("text-lg font-semibold leading-none tracking-tight", className)} {...props}>
       {children}
     </h2>
   );

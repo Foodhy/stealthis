@@ -1,9 +1,4 @@
-import {
-  type CSSProperties,
-  type ReactNode,
-  useCallback,
-  useRef,
-} from "react";
+import { type CSSProperties, type ReactNode, useCallback, useRef } from "react";
 
 interface RetroGridProps {
   /** Grid line color */
@@ -30,17 +25,14 @@ export function RetroGrid({
 }: RetroGridProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      wrapper.style.perspectiveOrigin = `${50 + x * 10}% ${y * 8}%`;
-    },
-    [],
-  );
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    wrapper.style.perspectiveOrigin = `${50 + x * 10}% ${y * 8}%`;
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
     const wrapper = wrapperRef.current;
@@ -154,8 +146,7 @@ export default function RetroGridDemo() {
             lineHeight: 1,
             color: "#fafafa",
             fontFamily: "system-ui, -apple-system, sans-serif",
-            textShadow:
-              "0 0 40px rgba(139,92,246,0.3), 0 0 80px rgba(139,92,246,0.1)",
+            textShadow: "0 0 40px rgba(139,92,246,0.3), 0 0 80px rgba(139,92,246,0.1)",
           }}
         >
           RETRO<span style={{ color: "#a78bfa" }}>GRID</span>
@@ -176,8 +167,7 @@ export default function RetroGridDemo() {
           style={{
             width: 80,
             height: 2,
-            background:
-              "linear-gradient(90deg, transparent, #8b5cf6, transparent)",
+            background: "linear-gradient(90deg, transparent, #8b5cf6, transparent)",
             marginTop: "0.5rem",
           }}
         />

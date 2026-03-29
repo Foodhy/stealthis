@@ -213,13 +213,7 @@ export const ProductShowcase: React.FC = () => {
         }}
       >
         {FEATURES.map((feature, i) => (
-          <FeatureCard
-            key={i}
-            feature={feature}
-            index={i}
-            frame={frame}
-            fps={fps}
-          />
+          <FeatureCard key={i} feature={feature} index={i} frame={frame} fps={fps} />
         ))}
       </div>
     </AbsoluteFill>

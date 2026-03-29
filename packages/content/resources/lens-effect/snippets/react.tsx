@@ -129,7 +129,8 @@ export function LensEffect({
             position: "absolute",
             inset: 0,
             borderRadius: "50%",
-            background: "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.1) 0%, transparent 50%)",
+            background:
+              "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.1) 0%, transparent 50%)",
             pointerEvents: "none",
             zIndex: 10,
           }}
@@ -187,7 +188,14 @@ export default function LensEffectDemo() {
               textAlign: "center",
             }}
           >
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0", marginBottom: "0.75rem" }}>
+            <h2
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "#e2e8f0",
+                marginBottom: "0.75rem",
+              }}
+            >
               Hover to Magnify
             </h2>
             <p

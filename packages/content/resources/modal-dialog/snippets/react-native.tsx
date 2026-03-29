@@ -1,12 +1,5 @@
 import React, { useRef, useEffect, useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Animated,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Text, TouchableOpacity, Animated, StyleSheet, Dimensions } from "react-native";
 
 /* ── Modal component ──────────────────────────────────── */
 
@@ -82,38 +75,21 @@ function ModalDialog({
 
   return (
     <View style={StyleSheet.absoluteFill}>
-      <Animated.View
-        style={[styles.backdrop, { opacity: backdropOpacity }]}
-      >
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          activeOpacity={1}
-          onPress={onCancel}
-        />
+      <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onCancel} />
       </Animated.View>
 
       <View style={styles.center} pointerEvents="box-none">
-        <Animated.View
-          style={[
-            styles.dialog,
-            { opacity: contentOpacity, transform: [{ scale }] },
-          ]}
-        >
+        <Animated.View style={[styles.dialog, { opacity: contentOpacity, transform: [{ scale }] }]}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
 
           <View style={styles.actions}>
-            <TouchableOpacity
-              style={[styles.btn, styles.cancelBtn]}
-              onPress={onCancel}
-            >
+            <TouchableOpacity style={[styles.btn, styles.cancelBtn]} onPress={onCancel}>
               <Text style={styles.cancelText}>{cancelLabel}</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.btn,
-                destructive ? styles.destructiveBtn : styles.confirmBtn,
-              ]}
+              style={[styles.btn, destructive ? styles.destructiveBtn : styles.confirmBtn]}
               onPress={onConfirm}
             >
               <Text style={styles.confirmText}>{confirmLabel}</Text>
@@ -197,10 +173,7 @@ export default function App() {
     <View style={demo.container}>
       <Text style={demo.heading}>Modal Dialog</Text>
 
-      <TouchableOpacity
-        style={demo.btn}
-        onPress={() => setShowConfirm(true)}
-      >
+      <TouchableOpacity style={demo.btn} onPress={() => setShowConfirm(true)}>
         <Text style={demo.btnText}>Open Confirmation</Text>
       </TouchableOpacity>
 

@@ -7,7 +7,9 @@ const DEFAULT_SITE = "https://stealthis.dev";
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site ?? new URL(DEFAULT_SITE)).toString().replace(/\/$/, "");
   const resources = await getCollection("resources");
-  const showcaseCount = resources.filter((resource) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0).length;
+  const showcaseCount = resources.filter(
+    (resource) => typeof resource.data.labRoute === "string" && resource.data.labRoute.length > 0
+  ).length;
 
   const categoryCounts = new Map<string, number>();
   for (const resource of resources) {
@@ -50,6 +52,7 @@ export const GET: APIRoute = async ({ site }) => {
     `- German library: ${origin}/de/library/`,
     `- Brazilian Portuguese library: ${origin}/pt-br/library/`,
     `- French library: ${origin}/fr/library/`,
+    `- Arabic library: ${origin}/ar/library/`,
     `- Japanese library: ${origin}/ja/library/`,
     `- Italian library: ${origin}/it/library/`,
     `- Polish library: ${origin}/pl/library/`,
@@ -71,6 +74,7 @@ export const GET: APIRoute = async ({ site }) => {
     `- English: ${origin}/r/<slug>`,
     `- Spanish: ${origin}/es/r/<slug>`,
     `- French: ${origin}/fr/r/<slug>`,
+    `- Arabic: ${origin}/ar/r/<slug>`,
     `- Japanese: ${origin}/ja/r/<slug>`,
     `- Malay: ${origin}/ms/r/<slug>`,
     `- Hindi: ${origin}/hi/r/<slug>`,

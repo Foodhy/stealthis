@@ -40,9 +40,16 @@ function OrbitRing() {
         <div className="absolute inset-0 rounded-full border-2 border-[#30363d]" />
         <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#58a6ff] animate-spin" />
         <div className="absolute inset-1 rounded-full bg-[#58a6ff]/10 flex items-center justify-center">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" strokeWidth="2.5">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-            <path d="M12 8v4l3 3"/>
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#58a6ff"
+            strokeWidth="2.5"
+          >
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+            <path d="M12 8v4l3 3" />
           </svg>
         </div>
       </div>
@@ -68,7 +75,7 @@ function WaveBars() {
         ))}
       </div>
       <span className="text-[13px] text-[#8b949e]">Analyzing…</span>
-      <style>{`@keyframes wave{0%,100%{transform:scaleY(0.4)}50%{transform:scaleY(1.2)}}` }</style>
+      <style>{`@keyframes wave{0%,100%{transform:scaleY(0.4)}50%{transform:scaleY(1.2)}}`}</style>
     </div>
   );
 }
@@ -92,11 +99,18 @@ function BrainPulse() {
     <div className="flex items-center gap-3">
       <div className="relative">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#58a6ff]/20 to-[#bc8cff]/20 border border-[#58a6ff]/20 flex items-center justify-center animate-pulse">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" strokeWidth="1.5">
-            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-5 0v-15A2.5 2.5 0 0 1 9.5 2z"/>
-            <path d="M14.5 2A2.5 2.5 0 0 1 17 4.5v15a2.5 2.5 0 0 1-5 0v-15A2.5 2.5 0 0 1 14.5 2z"/>
-            <path d="M5 8.5a2.5 2.5 0 1 1 4 2"/>
-            <path d="M15 8.5a2.5 2.5 0 1 0-4 2"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#58a6ff"
+            strokeWidth="1.5"
+          >
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-5 0v-15A2.5 2.5 0 0 1 9.5 2z" />
+            <path d="M14.5 2A2.5 2.5 0 0 1 17 4.5v15a2.5 2.5 0 0 1-5 0v-15A2.5 2.5 0 0 1 14.5 2z" />
+            <path d="M5 8.5a2.5 2.5 0 1 1 4 2" />
+            <path d="M15 8.5a2.5 2.5 0 1 0-4 2" />
           </svg>
         </div>
       </div>
@@ -157,7 +171,16 @@ function StepProgress() {
             }}
           >
             {i < 2 ? (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7ee787" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#7ee787"
+                strokeWidth="2.5"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
             ) : i === 2 ? (
               <div className="w-3 h-3 rounded-full border-2 border-[#e3b341] border-t-transparent animate-spin" />
             ) : (
@@ -178,13 +201,13 @@ function StepProgress() {
 }
 
 const LOADERS = [
-  { label: "Dots Pulse",    comp: DotsPulse },
-  { label: "Shimmer Bar",   comp: ShimmerBar },
-  { label: "Orbit Ring",    comp: OrbitRing },
-  { label: "Wave Bars",     comp: WaveBars },
+  { label: "Dots Pulse", comp: DotsPulse },
+  { label: "Shimmer Bar", comp: ShimmerBar },
+  { label: "Orbit Ring", comp: OrbitRing },
+  { label: "Wave Bars", comp: WaveBars },
   { label: "Typing Cursor", comp: TypingCursor },
-  { label: "Brain Pulse",   comp: BrainPulse },
-  { label: "Token Stream",  comp: TokenStream },
+  { label: "Brain Pulse", comp: BrainPulse },
+  { label: "Token Stream", comp: TokenStream },
   { label: "Step Progress", comp: StepProgress },
 ];
 
@@ -203,7 +226,9 @@ export default function AiThinkingLoaderRC() {
               }`}
               onClick={() => setActive(active === i ? null : i)}
             >
-              <p className="text-[10px] font-bold text-[#484f58] uppercase tracking-wider mb-3">{label}</p>
+              <p className="text-[10px] font-bold text-[#484f58] uppercase tracking-wider mb-3">
+                {label}
+              </p>
               <Comp />
             </div>
           ))}

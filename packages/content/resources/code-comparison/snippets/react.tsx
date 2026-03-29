@@ -25,11 +25,7 @@ function computeDiff(
   let ni = 0;
 
   while (oi < oldLines.length || ni < newLines.length) {
-    if (
-      oi < oldLines.length &&
-      ni < newLines.length &&
-      oldLines[oi] === newLines[ni]
-    ) {
+    if (oi < oldLines.length && ni < newLines.length && oldLines[oi] === newLines[ni]) {
       oldResult.push({ text: oldLines[oi], type: "same", num: oi + 1 });
       newResult.push({ text: newLines[ni], type: "same", num: ni + 1 });
       oi++;
@@ -38,10 +34,7 @@ function computeDiff(
       const oldInNew = newLines.indexOf(oldLines[oi], ni);
       const newInOld = oldLines.indexOf(newLines[ni], oi);
 
-      if (
-        oi < oldLines.length &&
-        (oldInNew === -1 || (newInOld !== -1 && newInOld <= oi + 2))
-      ) {
+      if (oi < oldLines.length && (oldInNew === -1 || (newInOld !== -1 && newInOld <= oi + 2))) {
         oldResult.push({ text: oldLines[oi], type: "removed", num: oi + 1 });
         newResult.push({ text: "", type: "empty", num: null });
         oi++;
@@ -150,10 +143,7 @@ function DiffPanel({
             letterSpacing: "0.05em",
             padding: "0.15rem 0.5rem",
             borderRadius: 999,
-            background:
-              labelType === "before"
-                ? "rgba(239,68,68,0.15)"
-                : "rgba(34,197,94,0.15)",
+            background: labelType === "before" ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
             color: labelType === "before" ? "#f87171" : "#4ade80",
           }}
         >
@@ -191,12 +181,7 @@ function DiffPanel({
             empty: "transparent",
             same: "#475569",
           };
-          const prefix =
-            line.type === "removed"
-              ? "- "
-              : line.type === "added"
-                ? "+ "
-                : "  ";
+          const prefix = line.type === "removed" ? "- " : line.type === "added" ? "+ " : "  ";
 
           return (
             <div
@@ -253,18 +238,15 @@ export default function CodeComparison({
     return computeDiff(before.split("\n"), after.split("\n"));
   }, [before, after]);
 
-  const handleScroll = useCallback(
-    (source: "before" | "after", scrollTop: number) => {
-      if (syncing.current) return;
-      syncing.current = true;
-      const target = source === "before" ? afterRef.current : beforeRef.current;
-      if (target) target.scrollTop = scrollTop;
-      requestAnimationFrame(() => {
-        syncing.current = false;
-      });
-    },
-    []
-  );
+  const handleScroll = useCallback((source: "before" | "after", scrollTop: number) => {
+    if (syncing.current) return;
+    syncing.current = true;
+    const target = source === "before" ? afterRef.current : beforeRef.current;
+    if (target) target.scrollTop = scrollTop;
+    requestAnimationFrame(() => {
+      syncing.current = false;
+    });
+  }, []);
 
   return (
     <div
@@ -278,7 +260,9 @@ export default function CodeComparison({
         color: "#f1f5f9",
       }}
     >
-      <div style={{ width: "min(900px, 100%)", display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div
+        style={{ width: "min(900px, 100%)", display: "flex", flexDirection: "column", gap: "1rem" }}
+      >
         <h2 style={{ fontSize: "1.375rem", fontWeight: 700 }}>Code Changes</h2>
         <div
           style={{

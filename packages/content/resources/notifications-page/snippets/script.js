@@ -41,11 +41,8 @@
     }
     /* Hide date-group headers when all children hidden */
     list.querySelectorAll(".date-group").forEach((group) => {
-      const visibleChildren = Array.from(
-        group.querySelectorAll(".notification-item")
-      ).filter(
-        (el) =>
-          !el.classList.contains("removing") && el.style.display !== "none"
+      const visibleChildren = Array.from(group.querySelectorAll(".notification-item")).filter(
+        (el) => !el.classList.contains("removing") && el.style.display !== "none"
       );
       group.style.display = visibleChildren.length === 0 ? "none" : "";
     });
@@ -132,9 +129,7 @@
   /* ── Action Menu ──────────────────────────── */
 
   function closeAllMenus() {
-    document
-      .querySelectorAll(".action-menu.open")
-      .forEach((m) => m.classList.remove("open"));
+    document.querySelectorAll(".action-menu.open").forEach((m) => m.classList.remove("open"));
   }
 
   list.addEventListener("click", (e) => {

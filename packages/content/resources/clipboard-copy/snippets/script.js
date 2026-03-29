@@ -9,7 +9,7 @@
    */
   async function handleCopy(btn) {
     const targetId = btn.dataset.copy;
-    const source   = document.getElementById(targetId);
+    const source = document.getElementById(targetId);
     if (!source) return;
 
     const text = source.textContent ?? "";

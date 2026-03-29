@@ -157,10 +157,7 @@ function LottiePlayer({
       },
       onPanResponderMove: (_, gestureState) => {
         const barWidth = SCREEN_WIDTH - 80;
-        const newProgress = Math.min(
-          1,
-          Math.max(0, gestureState.moveX - 40) / barWidth
-        );
+        const newProgress = Math.min(1, Math.max(0, gestureState.moveX - 40) / barWidth);
         progress.setValue(newProgress);
       },
       onPanResponderRelease: () => {},
@@ -172,22 +169,14 @@ function LottiePlayer({
       {/* Animation canvas */}
       <View style={styles.canvas}>
         {/* Rotating square */}
-        <Animated.View
-          style={[
-            styles.square,
-            { transform: [{ rotate: squareRotate }] },
-          ]}
-        />
+        <Animated.View style={[styles.square, { transform: [{ rotate: squareRotate }] }]} />
 
         {/* Bouncing circle */}
         <Animated.View
           style={[
             styles.circle,
             {
-              transform: [
-                { translateY: circleTranslateY },
-                { scale: circleScale },
-              ],
+              transform: [{ translateY: circleTranslateY }, { scale: circleScale }],
             },
           ]}
         />
@@ -198,10 +187,7 @@ function LottiePlayer({
             styles.star,
             {
               opacity: starOpacity,
-              transform: [
-                { scale: starScale },
-                { rotate: starRotate },
-              ],
+              transform: [{ scale: starScale }, { rotate: starRotate }],
             },
           ]}
         />
@@ -257,9 +243,7 @@ function LottiePlayer({
           style={[styles.controlButton, loop && styles.controlButtonActive]}
           onPress={() => setLoop((l) => !l)}
         >
-          <Text style={[styles.controlText, loop && styles.controlTextActive]}>
-            Loop
-          </Text>
+          <Text style={[styles.controlText, loop && styles.controlTextActive]}>Loop</Text>
         </Pressable>
       </View>
     </View>

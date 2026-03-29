@@ -60,10 +60,7 @@ const CodeLine: React.FC<{
   charOffset: number;
   totalTyped: number;
 }> = ({ line, lineIndex, charOffset, totalTyped }) => {
-  const lineCharsTyped = Math.max(
-    0,
-    Math.min(line.text.length, totalTyped - charOffset),
-  );
+  const lineCharsTyped = Math.max(0, Math.min(line.text.length, totalTyped - charOffset));
   const visibleText = line.text.slice(0, lineCharsTyped);
 
   if (!line.text) return <div style={{ height: 24 }} />;

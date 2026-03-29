@@ -1,5 +1,5 @@
-import { getDataProvider } from '@/data/providerFactory';
-import { InformationSource, InformationSourceInput } from '@/types/dataSource';
+import { getDataProvider } from "@/data/providerFactory";
+import { InformationSource, InformationSourceInput } from "@/types/dataSource";
 
 export const informationSourceService = {
   getAll: async (): Promise<InformationSource[]> => getDataProvider().sources.getAllSources(),

@@ -25,16 +25,16 @@
         return !c.classList.contains("resize-handle");
       });
       const handles = Array.from(container.querySelectorAll(".resize-handle"));
-      const hIdx   = handles.indexOf(handle);
+      const hIdx = handles.indexOf(handle);
       return { before: children[hIdx], after: children[hIdx + 1] };
     }
 
     let startPos = 0;
     let startBefore = 0;
-    let startAfter  = 0;
-    let collapsed   = false;
+    let startAfter = 0;
+    let collapsed = false;
     let savedBefore = 0;
-    let dragging    = false;
+    let dragging = false;
 
     // ── Drag ──────────────────────────────────────────────────────────────────
 
@@ -44,14 +44,14 @@
       handle.classList.add("dragging");
 
       const { before, after } = getPanels();
-      startPos    = isH ? getClientX(e) : getClientY(e);
-      startBefore = isH ? before.offsetWidth  : before.offsetHeight;
-      startAfter  = isH ? after.offsetWidth   : after.offsetHeight;
+      startPos = isH ? getClientX(e) : getClientY(e);
+      startBefore = isH ? before.offsetWidth : before.offsetHeight;
+      startAfter = isH ? after.offsetWidth : after.offsetHeight;
 
       document.addEventListener("mousemove", onMove);
       document.addEventListener("touchmove", onMove, { passive: false });
-      document.addEventListener("mouseup",   onUp);
-      document.addEventListener("touchend",  onUp);
+      document.addEventListener("mouseup", onUp);
+      document.addEventListener("touchend", onUp);
     }
 
     function onMove(e) {
@@ -59,21 +59,21 @@
       e.preventDefault();
 
       const { before, after } = getPanels();
-      const pos   = isH ? getClientX(e) : getClientY(e);
+      const pos = isH ? getClientX(e) : getClientY(e);
       const delta = pos - startPos;
       const total = startBefore + startAfter;
 
       let newBefore = Math.max(MIN, Math.min(total - MIN, startBefore + delta));
-      let newAfter  = total - newBefore;
+      let newAfter = total - newBefore;
 
       if (isH) {
         before.style.flexBasis = newBefore + "px";
-        before.style.flex      = "0 0 " + newBefore + "px";
-        after.style.flex       = "1";
+        before.style.flex = "0 0 " + newBefore + "px";
+        after.style.flex = "1";
       } else {
         before.style.flexBasis = newBefore + "px";
-        before.style.flex      = "0 0 " + newBefore + "px";
-        after.style.flex       = "1";
+        before.style.flex = "0 0 " + newBefore + "px";
+        after.style.flex = "1";
       }
 
       // Update ARIA
@@ -85,11 +85,11 @@
       handle.classList.remove("dragging");
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("touchmove", onMove);
-      document.removeEventListener("mouseup",   onUp);
-      document.removeEventListener("touchend",  onUp);
+      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("touchend", onUp);
     }
 
-    handle.addEventListener("mousedown",  onDown);
+    handle.addEventListener("mousedown", onDown);
     handle.addEventListener("touchstart", onDown, { passive: false });
 
     // ── Double-click to collapse/restore ──────────────────────────────────────
@@ -99,13 +99,13 @@
       if (collapsed) {
         // Restore
         before.style.flex = "0 0 " + savedBefore + "px";
-        after.style.flex  = "1";
+        after.style.flex = "1";
         collapsed = false;
       } else {
         // Collapse
         savedBefore = isH ? before.offsetWidth : before.offsetHeight;
         before.style.flex = "0 0 0px";
-        after.style.flex  = "1";
+        after.style.flex = "1";
         collapsed = true;
       }
     });
@@ -119,17 +119,19 @@
       let next = current;
 
       if (isH) {
-        if (e.key === "ArrowLeft")  next = Math.max(MIN, current - step);
-        if (e.key === "ArrowRight") next = Math.min(before.offsetWidth + after.offsetWidth - MIN, current + step);
+        if (e.key === "ArrowLeft") next = Math.max(MIN, current - step);
+        if (e.key === "ArrowRight")
+          next = Math.min(before.offsetWidth + after.offsetWidth - MIN, current + step);
       } else {
-        if (e.key === "ArrowUp")   next = Math.max(MIN, current - step);
-        if (e.key === "ArrowDown") next = Math.min(before.offsetHeight + after.offsetHeight - MIN, current + step);
+        if (e.key === "ArrowUp") next = Math.max(MIN, current - step);
+        if (e.key === "ArrowDown")
+          next = Math.min(before.offsetHeight + after.offsetHeight - MIN, current + step);
       }
 
       if (next !== current) {
         e.preventDefault();
         before.style.flex = "0 0 " + next + "px";
-        after.style.flex  = "1";
+        after.style.flex = "1";
         handle.setAttribute("aria-valuenow", next);
       }
     });
@@ -137,6 +139,10 @@
 
   // ── Pointer helpers ──────────────────────────────────────────────────────────
 
-  function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
-  function getClientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+  function getClientX(e) {
+    return e.touches ? e.touches[0].clientX : e.clientX;
+  }
+  function getClientY(e) {
+    return e.touches ? e.touches[0].clientY : e.clientY;
+  }
 })();

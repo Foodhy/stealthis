@@ -47,7 +47,9 @@ export const POST: APIRoute = async ({ request }) => {
       warnings.push(`Missing page references ignored: ${missingPageReferences.join(", ")}`);
     }
     if (missingComponentReferences.length > 0) {
-      warnings.push(`Missing component references ignored: ${missingComponentReferences.join(", ")}`);
+      warnings.push(
+        `Missing component references ignored: ${missingComponentReferences.join(", ")}`
+      );
     }
 
     const draft = StyleForgeDraftSchema.parse({

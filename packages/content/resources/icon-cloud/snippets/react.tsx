@@ -15,10 +15,26 @@ interface Point3D {
 }
 
 const DEFAULT_ICONS = [
-  "\u269B\uFE0F", "\u{1F310}", "\u26A1", "\u{1F4E6}", "\u{1F680}",
-  "\u{1F3A8}", "\u{1F527}", "\u{1F4BB}", "\u2728", "\u{1F50D}",
-  "\u{1F4CA}", "\u{1F512}", "\u2601\uFE0F", "\u{1F916}", "\u{1F9E9}",
-  "\u{1F4A1}", "\u{1F525}", "\u{1F48E}", "\u{1F3AF}", "\u{1F30A}",
+  "\u269B\uFE0F",
+  "\u{1F310}",
+  "\u26A1",
+  "\u{1F4E6}",
+  "\u{1F680}",
+  "\u{1F3A8}",
+  "\u{1F527}",
+  "\u{1F4BB}",
+  "\u2728",
+  "\u{1F50D}",
+  "\u{1F4CA}",
+  "\u{1F512}",
+  "\u2601\uFE0F",
+  "\u{1F916}",
+  "\u{1F9E9}",
+  "\u{1F4A1}",
+  "\u{1F525}",
+  "\u{1F48E}",
+  "\u{1F3AF}",
+  "\u{1F30A}",
 ];
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -131,7 +147,9 @@ export function IconCloud({
       {icons.map((icon, i) => (
         <div
           key={i}
-          ref={(el) => { if (el) elementsRef.current[i] = el; }}
+          ref={(el) => {
+            if (el) elementsRef.current[i] = el;
+          }}
           style={{
             position: "absolute",
             left: "50%",

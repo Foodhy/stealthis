@@ -33,8 +33,7 @@
       vx: (Math.random() - 0.5) * CONFIG.speed * 2,
       vy: (Math.random() - 0.5) * CONFIG.speed * 2,
       size:
-        CONFIG.particleSizeMin +
-        Math.random() * (CONFIG.particleSizeMax - CONFIG.particleSizeMin),
+        CONFIG.particleSizeMin + Math.random() * (CONFIG.particleSizeMax - CONFIG.particleSizeMin),
       opacity: 0.3 + Math.random() * 0.5,
     };
   }
@@ -76,10 +75,22 @@
       p.y += p.vy;
 
       // Bounce off edges
-      if (p.x < 0) { p.x = 0; p.vx *= -1; }
-      if (p.x > width) { p.x = width; p.vx *= -1; }
-      if (p.y < 0) { p.y = 0; p.vy *= -1; }
-      if (p.y > height) { p.y = height; p.vy *= -1; }
+      if (p.x < 0) {
+        p.x = 0;
+        p.vx *= -1;
+      }
+      if (p.x > width) {
+        p.x = width;
+        p.vx *= -1;
+      }
+      if (p.y < 0) {
+        p.y = 0;
+        p.vy *= -1;
+      }
+      if (p.y > height) {
+        p.y = height;
+        p.vy *= -1;
+      }
     }
   }
 
@@ -126,8 +137,12 @@
     // Mouse glow
     if (mouse.active) {
       const gradient = ctx.createRadialGradient(
-        mouse.x, mouse.y, 0,
-        mouse.x, mouse.y, CONFIG.mouseRadius
+        mouse.x,
+        mouse.y,
+        0,
+        mouse.x,
+        mouse.y,
+        CONFIG.mouseRadius
       );
       gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.08)`);
       gradient.addColorStop(1, "transparent");

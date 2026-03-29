@@ -101,8 +101,8 @@ export default function ShineBorderDemo() {
               margin: 0,
             }}
           >
-            A glowing animated border using a rotating gradient that sweeps light
-            around the container edge for a premium look.
+            A glowing animated border using a rotating gradient that sweeps light around the
+            container edge for a premium look.
           </p>
           <div
             style={{

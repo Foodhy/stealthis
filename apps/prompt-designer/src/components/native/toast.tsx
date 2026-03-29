@@ -1,23 +1,23 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { cn } from '@/lib/cn';
+import React, { createContext, useContext, useState, useCallback } from "react";
+import { cn } from "@/lib/cn";
 
 interface Toast {
   id: string;
   title?: string;
   description?: string;
-  variant?: 'default' | 'destructive';
+  variant?: "default" | "destructive";
 }
 
 interface ToastContextValue {
   toasts: Toast[];
-  toast: (toast: Omit<Toast, 'id'>) => void;
+  toast: (toast: Omit<Toast, "id">) => void;
   dismiss: (id: string) => void;
 }
 
 const ToastContext = createContext<ToastContextValue>({
   toasts: [],
   toast: () => {},
-  dismiss: () => {}
+  dismiss: () => {},
 });
 
 export const useToast = () => {
@@ -27,26 +27,24 @@ export const useToast = () => {
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const toast = useCallback((newToast: Omit<Toast, 'id'>) => {
+  const toast = useCallback((newToast: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).substr(2, 9);
     const toastWithId = { ...newToast, id };
-    
-    setToasts(prev => [...prev, toastWithId]);
-    
+
+    setToasts((prev) => [...prev, toastWithId]);
+
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 5000);
   }, []);
 
   const dismiss = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   return (
-    <ToastContext.Provider value={{ toasts, toast, dismiss }}>
-      {children}
-    </ToastContext.Provider>
+    <ToastContext.Provider value={{ toasts, toast, dismiss }}>{children}</ToastContext.Provider>
   );
 };
 
@@ -59,22 +57,17 @@ export const Toaster: React.FC = () => {
         <div
           key={toast.id}
           className={cn(
-            "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all",
+            "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-xl border border-border/60 p-4 pr-6 shadow-xl transition-all",
             "bg-background text-foreground",
-            toast.variant === 'destructive' && "destructive border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
+            toast.variant === "destructive" &&
+              "destructive border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
           )}
         >
           <div className="grid gap-1">
             {toast.title && (
-              <div className="text-sm font-semibold [&+div]:text-xs">
-                {toast.title}
-              </div>
+              <div className="text-sm font-semibold [&+div]:text-xs">{toast.title}</div>
             )}
-            {toast.description && (
-              <div className="text-sm opacity-90">
-                {toast.description}
-              </div>
-            )}
+            {toast.description && <div className="text-sm opacity-90">{toast.description}</div>}
           </div>
           <button
             onClick={() => dismiss(toast.id)}

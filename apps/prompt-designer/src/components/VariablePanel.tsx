@@ -1,21 +1,36 @@
-import React from 'react';
-import { Card } from '@/components/native/card';
-import { Badge } from '@/components/native/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/native/button';
-import { Search, X, User, Package, Clock, Settings, Hash, ChevronRight, ChevronLeft } from '@/components/icons';
-import { Input } from '@/components/native/input';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Switch } from '@/components/ui/switch';
+import React from "react";
+import { Card } from "@/components/native/card";
+import { Badge } from "@/components/native/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/native/button";
+import {
+  Search,
+  X,
+  User,
+  Package,
+  Clock,
+  Settings,
+  Hash,
+  ChevronRight,
+  ChevronLeft,
+} from "@/components/icons";
+import { Input } from "@/components/native/input";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from '@/components/native/select';
-import { PromptVariable } from '@/services/valuesService';
-import { useI18n } from '@/i18n';
+  SelectValue,
+} from "@/components/native/select";
+import { PromptVariable } from "@/services/valuesService";
+import { useI18n } from "@/i18n";
 
 interface VariablePanelProps {
   variables: PromptVariable[];
@@ -38,31 +53,38 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
   onToggleTool,
   isVisible,
   setIsVisible,
-  onInsertVariable
+  onInsertVariable,
 }) => {
   const { t } = useI18n();
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [panelMode, setPanelMode] = React.useState<'tools' | 'variables'>('tools');
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [panelMode, setPanelMode] = React.useState<"tools" | "variables">("tools");
   // State for open accordion items
-  const [openItems, setOpenItems] = React.useState<string[]>(['usuario', 'producto', 'fecha', 'sistema', 'personalizada']);
+  const [openItems, setOpenItems] = React.useState<string[]>([
+    "usuario",
+    "producto",
+    "fecha",
+    "sistema",
+    "personalizada",
+  ]);
 
   // Update openItems when categories change (optional, to ensure new categories are visible or keep existing behavior)
-  // For now, let's just initialize it once or let the user control it. 
+  // For now, let's just initialize it once or let the user control it.
   // If we want new categories to auto-open, we'd need an effect, but that might annoy the user.
   // We'll stick to user control + initial defaults.
 
   // Organizar variables por categorías (variable_type)
   const categorizedVariables = React.useMemo(() => {
-    const filteredVars = variables.filter(variable =>
-      variable.variable_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      variable.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredVars = variables.filter(
+      (variable) =>
+        variable.variable_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        variable.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const categories: Record<string, PromptVariable[]> = {};
 
-    filteredVars.forEach(variable => {
+    filteredVars.forEach((variable) => {
       // Normalize category key
-      const category = (variable.variable_type || 'General').toLowerCase();
+      const category = (variable.variable_type || "General").toLowerCase();
       if (!categories[category]) {
         categories[category] = [];
       }
@@ -72,7 +94,7 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
     return categories;
   }, [variables, searchTerm]);
 
-  // Update open items if we have a search term to show results? 
+  // Update open items if we have a search term to show results?
   // Or just keep it simple. controlled state fixes the reported bug.
 
   const handleVariableClick = (variable: string) => {
@@ -82,10 +104,10 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
   };
 
   const getCategoryIcon = (category: string) => {
-    if (category.includes('user') || category.includes('usuario')) return User;
-    if (category.includes('product') || category.includes('producto')) return Package;
-    if (category.includes('date') || category.includes('fecha')) return Clock;
-    if (category.includes('system') || category.includes('sistema')) return Settings;
+    if (category.includes("user") || category.includes("usuario")) return User;
+    if (category.includes("product") || category.includes("producto")) return Package;
+    if (category.includes("date") || category.includes("fecha")) return Clock;
+    if (category.includes("system") || category.includes("sistema")) return Settings;
     return Hash;
   };
 
@@ -95,152 +117,185 @@ export const VariablePanel: React.FC<VariablePanelProps> = ({
   };
 
   return (
-    <Card className={`${isVisible ? 'w-64' : 'w-12'} m-4 p-4 flex flex-col transition-all duration-300`}>
-      {isVisible ? (
-        <>
-          <div className="flex items-center justify-between mb-4">
-            <Select value={panelMode} onValueChange={(value) => setPanelMode(value as 'tools' | 'variables')}>
-              <SelectTrigger className="h-9 w-full min-w-[180px] text-sm font-medium">
-                <SelectValue placeholder={t('variablePanel.selectView')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tools">{t('variablePanel.tools')}</SelectItem>
-                <SelectItem value="variables">{t('variablePanel.variables')}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsVisible(false)}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </div>
+    <>
+      {/* Mobile overlay backdrop */}
+      {isVisible && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setIsVisible(false)}
+        />
+      )}
 
-          {panelMode === 'variables' ? (
-            <>
-              <div className="space-y-3 mb-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={t('variablePanel.searchVariable')}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-
-              <ScrollArea className="flex-1 pr-1">
-                <Accordion
-                  type="multiple"
-                  value={openItems}
-                  onValueChange={setOpenItems}
-                  className="w-full"
-                >
-                  {Object.entries(categorizedVariables).map(([category, categoryVars]) => {
-                    const Icon = getCategoryIcon(category);
-                    return (
-                      <AccordionItem key={category} value={category} className="border-b border-border/50">
-                        <AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-muted-foreground" />
-                            <span>{getCategoryLabel(category)}</span>
-                            <Badge variant="outline" className="ml-auto text-xs">
-                              {categoryVars.length}
-                            </Badge>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pt-0 pb-3">
-                          <div className="space-y-2">
-                            {categoryVars.map(variable => (
-                              <div key={variable.variable_name} className="group relative">
-                                <Badge
-                                  variant="secondary"
-                                  className="block w-full cursor-pointer px-3 py-2 pr-8 text-xs bg-variable-bg text-variable-text hover:bg-accent transition-colors"
-                                  onClick={() => handleVariableClick(variable.variable_name)}
-                                  title={variable.description}
-                                >
-                                  {`{{${variable.variable_name}}}`}
-                                </Badge>
-                                {/* Only allow removing if it's strictly local/personal? Or just allow removing from list view? 
-                                      The previous logic allowed removal. We usually only want to 'hide' global ones or remove local ones. 
-                                      For now, keep remove button but it only removes from view state */}
-                                <Button
-                                  onClick={() => onRemoveVariable(variable.variable_name)}
-                                  size="sm"
-                                  variant="ghost"
-                                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20"
-                                >
-                                  <X className="h-3 w-3 text-destructive" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    );
-                  })}
-                </Accordion>
-              </ScrollArea>
-
-              <div className="mt-4 text-xs text-muted-foreground">
-                <p>{t('variablePanel.clickToInsert')}</p>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Tool rendering section remains same */}
-              <div className="mb-4 space-y-1 text-xs text-muted-foreground">
-                <p>{t('variablePanel.toolsAvailable')}</p>
-              </div>
-
-              <ScrollArea className="flex-1 pr-1">
-                <div className="space-y-3">
-                  {availableTools.map(tool => {
-                    const isEnabled = !!tools[tool.name];
-                    return (
-                      <div key={tool.name} className="rounded-md border border-border/60 p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-medium">{tool.display_name}</p>
-                            <p className="mt-1 text-xs text-muted-foreground">{tool.info}</p>
-                          </div>
-                          <Switch
-                            checked={isEnabled}
-                            onCheckedChange={(checked) => onToggleTool(tool.name, checked)}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-              <div className="mt-4 text-xs text-muted-foreground">
-                <p>{t('variablePanel.toolsInSummary')}</p>
-              </div>
-            </>
-          )}
-        </>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-full space-y-2">
+      {/* Collapsed toggle — desktop only */}
+      {!isVisible && (
+        <div className="hidden lg:flex shrink-0 w-10 m-2 flex-col items-center justify-center gap-2 border border-border rounded-lg bg-card">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsVisible(true)}
             className="h-8 w-8 p-0"
-            title={t('variablePanel.showPanel')}
+            title={t("variablePanel.showPanel")}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <div className="writing-mode-vertical-rl text-center">
-            <span className="text-xs font-medium text-foreground">
-              {panelMode === 'tools' ? t('variablePanel.tools') : t('variablePanel.variables')}
-            </span>
-          </div>
+          <span className="writing-mode-vertical-rl text-xs font-medium text-muted-foreground">
+            {panelMode === "tools" ? t("variablePanel.tools") : t("variablePanel.variables")}
+          </span>
         </div>
       )}
-    </Card>
+
+      {/* Mobile toggle button — fixed bottom-left */}
+      {!isVisible && (
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => setIsVisible(true)}
+          className="fixed bottom-4 left-4 z-30 lg:hidden gap-2 shadow-lg"
+        >
+          <ChevronRight className="h-4 w-4" />
+          {panelMode === "tools" ? t("variablePanel.tools") : t("variablePanel.variables")}
+        </Button>
+      )}
+
+      <Card
+        className={`${
+          isVisible
+            ? "fixed inset-y-0 left-0 w-72 z-40 lg:relative lg:inset-auto lg:w-64 lg:z-auto lg:m-2 lg:my-2"
+            : "hidden"
+        } p-4 flex flex-col shrink-0 overflow-hidden transition-all duration-300`}
+      >
+        <div className="flex items-center justify-between mb-4 gap-2">
+          <Select
+            value={panelMode}
+            onValueChange={(value) => setPanelMode(value as "tools" | "variables")}
+          >
+            <SelectTrigger className="h-9 w-full min-w-0 text-sm font-medium">
+              <SelectValue placeholder={t("variablePanel.selectView")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="tools">{t("variablePanel.tools")}</SelectItem>
+              <SelectItem value="variables">{t("variablePanel.variables")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsVisible(false)}
+            className="h-8 w-8 p-0 shrink-0"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {panelMode === "variables" ? (
+          <>
+            <div className="space-y-3 mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t("variablePanel.searchVariable")}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <ScrollArea className="flex-1 pr-1">
+              <Accordion
+                type="multiple"
+                value={openItems}
+                onValueChange={setOpenItems}
+                className="w-full"
+              >
+                {Object.entries(categorizedVariables).map(([category, categoryVars]) => {
+                  const Icon = getCategoryIcon(category);
+                  return (
+                    <AccordionItem
+                      key={category}
+                      value={category}
+                      className="border-b border-border/50"
+                    >
+                      <AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          <span>{getCategoryLabel(category)}</span>
+                          <Badge variant="outline" className="ml-auto text-xs">
+                            {categoryVars.length}
+                          </Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pt-0 pb-3">
+                        <div className="space-y-2">
+                          {categoryVars.map((variable) => (
+                            <div key={variable.variable_name} className="group relative">
+                              <Badge
+                                variant="secondary"
+                                className="block w-full cursor-pointer px-3 py-2 pr-8 text-xs bg-variable-bg text-variable-text hover:bg-accent transition-colors"
+                                onClick={() => handleVariableClick(variable.variable_name)}
+                                title={variable.description}
+                              >
+                                {`{{${variable.variable_name}}}`}
+                              </Badge>
+                              {/* Only allow removing if it's strictly local/personal? Or just allow removing from list view? 
+                                      The previous logic allowed removal. We usually only want to 'hide' global ones or remove local ones. 
+                                      For now, keep remove button but it only removes from view state */}
+                              <Button
+                                onClick={() => onRemoveVariable(variable.variable_name)}
+                                size="sm"
+                                variant="ghost"
+                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20"
+                              >
+                                <X className="h-3 w-3 text-destructive" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+            </ScrollArea>
+
+            <div className="mt-4 text-xs text-muted-foreground">
+              <p>{t("variablePanel.clickToInsert")}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Tool rendering section remains same */}
+            <div className="mb-4 space-y-1 text-xs text-muted-foreground">
+              <p>{t("variablePanel.toolsAvailable")}</p>
+            </div>
+
+            <ScrollArea className="flex-1 pr-1">
+              <div className="space-y-3">
+                {availableTools.map((tool) => {
+                  const isEnabled = !!tools[tool.name];
+                  return (
+                    <div key={tool.name} className="rounded-md border border-border/60 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium">{tool.display_name}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">{tool.info}</p>
+                        </div>
+                        <Switch
+                          checked={isEnabled}
+                          onCheckedChange={(checked) => onToggleTool(tool.name, checked)}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+            <div className="mt-4 text-xs text-muted-foreground">
+              <p>{t("variablePanel.toolsInSummary")}</p>
+            </div>
+          </>
+        )}
+      </Card>
+    </>
   );
 };

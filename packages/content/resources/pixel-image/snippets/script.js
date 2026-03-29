@@ -46,7 +46,10 @@
       const cy = h * (0.15 + Math.random() * 0.7);
       const r = 20 + Math.random() * 60;
       const grad = tctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      grad.addColorStop(0, `rgba(${167 + Math.random()*60}, ${139 + Math.random()*60}, 250, 0.6)`);
+      grad.addColorStop(
+        0,
+        `rgba(${167 + Math.random() * 60}, ${139 + Math.random() * 60}, 250, 0.6)`
+      );
       grad.addColorStop(1, "transparent");
       tctx.beginPath();
       tctx.arc(cx, cy, r, 0, Math.PI * 2);

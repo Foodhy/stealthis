@@ -102,8 +102,7 @@ export function OrbitingCircles({
           display: "grid",
           placeItems: "center",
           color: "white",
-          boxShadow:
-            "0 0 30px rgba(99,102,241,0.4), 0 0 60px rgba(99,102,241,0.2)",
+          boxShadow: "0 0 30px rgba(99,102,241,0.4), 0 0 60px rgba(99,102,241,0.2)",
           zIndex: 10,
         }}
       >
@@ -207,8 +206,7 @@ export default function OrbitingCirclesDemo() {
             fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
             fontWeight: 800,
             letterSpacing: "-0.03em",
-            background:
-              "linear-gradient(135deg, #e0e7ff 0%, #a78bfa 50%, #8b5cf6 100%)",
+            background: "linear-gradient(135deg, #e0e7ff 0%, #a78bfa 50%, #8b5cf6 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

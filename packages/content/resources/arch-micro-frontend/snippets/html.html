@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Micro-Frontend Architecture (Module Federation)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(59,130,246,0.04) 100%);
+    }
+
+    .card-header .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.12);
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      margin-bottom: 12px;
+    }
+
+    .card-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .card-header p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .card-body { padding: 0; }
+
+    .section {
+      padding: 24px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #22d3ee;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: #22d3ee;
+      border-radius: 2px;
+    }
+
+    .tree {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+    }
+
+    .tree .dir { color: #3b82f6; font-weight: 500; }
+    .tree .file { color: #e2e8f0; }
+    .tree .comment { color: #64748b; font-style: italic; }
+    .tree .special { color: #22d3ee; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      body { padding: 16px; }
+      .section { padding: 20px 20px; }
+      .card-header { padding: 20px 20px 16px; }
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .info-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .info-card p {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .info-card .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #3b82f6;
+      background: rgba(59,130,246,0.1);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+
+    .key-files {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .key-file {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .key-file code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .key-file span {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .links a {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: none;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 8px;
+      padding: 8px 14px;
+      transition: all 0.2s;
+    }
+
+    .links a:hover {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.3);
+      color: #60a5fa;
+    }
+
+    /* Diagram specific styles */
+    .diagram {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .diagram-box {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #93c5fd;
+      text-align: center;
+      min-width: 130px;
+    }
+
+    .diagram-box.host {
+      background: rgba(34,211,238,0.1);
+      border-color: rgba(34,211,238,0.3);
+      color: #22d3ee;
+      min-width: 200px;
+      font-size: 13px;
+    }
+
+    .diagram-box .sub {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .diagram-arrow {
+      color: #475569;
+      font-size: 18px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .diagram-arrows-down {
+      display: flex;
+      gap: 80px;
+      color: #475569;
+      font-size: 18px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge">Architecture</span>
+    <h1>Micro-Frontend (Module Federation)</h1>
+    <p>Independent host/remote applications sharing dependencies at runtime via Webpack 5</p>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Folder Tree -->
+    <div class="section">
+      <div class="section-title">Folder Structure</div>
+      <div class="tree"><span class="dir">monorepo/</span>
+<span class="dir">&#9500;&#9472;&#9472; host-app/</span>             <span class="comment">(Shell application)</span>
+<span class="special">&#9474;   &#9500;&#9472;&#9472; webpack.config.js</span> <span class="comment">(ModuleFederationPlugin)</span>
+<span class="dir">&#9474;   &#9500;&#9472;&#9472; src/</span>
+<span class="file">&#9474;   &#9474;   &#9500;&#9472;&#9472; App.tsx</span>       <span class="comment">(Lazy-loads remotes)</span>
+<span class="file">&#9474;   &#9474;   &#9492;&#9472;&#9472; bootstrap.tsx</span> <span class="comment">(Async boundary)</span>
+<span class="file">&#9474;   &#9492;&#9472;&#9472; package.json</span>
+<span class="dir">&#9500;&#9472;&#9472; remote-dashboard/</span>     <span class="comment">(Independent micro-app)</span>
+<span class="special">&#9474;   &#9500;&#9472;&#9472; webpack.config.js</span> <span class="comment">(Exposes modules)</span>
+<span class="dir">&#9474;   &#9500;&#9472;&#9472; src/</span>
+<span class="file">&#9474;   &#9474;   &#9500;&#9472;&#9472; Dashboard.tsx</span> <span class="comment">(Exposed component)</span>
+<span class="file">&#9474;   &#9474;   &#9492;&#9472;&#9472; bootstrap.tsx</span>
+<span class="file">&#9474;   &#9492;&#9472;&#9472; package.json</span>
+<span class="dir">&#9500;&#9472;&#9472; remote-settings/</span>      <span class="comment">(Another micro-app)</span>
+<span class="file">&#9474;   &#9492;&#9472;&#9472; ...</span>
+<span class="dir">&#9492;&#9472;&#9472; shared/</span>               <span class="comment">(Shared types &amp; utils)</span></div>
+    </div>
+
+    <!-- How It Works Diagram -->
+    <div class="section">
+      <div class="section-title">How It Works</div>
+      <div class="diagram">
+        <div class="diagram-box host">Host (Shell App)<span class="sub">Loads remotes at runtime</span></div>
+        <div class="diagram-arrows-down">
+          <span>&#9474;</span>
+          <span>&#9474;</span>
+        </div>
+        <div class="diagram-row">
+          <div class="diagram-arrow">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</div>
+        </div>
+        <div class="diagram-row">
+          <div class="diagram-box">remote-dashboard<span class="sub">remoteEntry.js</span></div>
+          <div class="diagram-box">remote-settings<span class="sub">remoteEntry.js</span></div>
+        </div>
+        <div class="diagram-row" style="margin-top: 8px;">
+          <div class="diagram-box" style="background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.25); color: #c084fc; min-width: 280px;">
+            Shared: react, react-dom, router
+            <span class="sub">Single copy negotiated at runtime</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Dependencies & Deployment -->
+    <div class="section">
+      <div class="section-title">Shared Dependencies</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Version Negotiation</h4>
+          <p>When host and remotes declare the same shared dependency, Module Federation loads only one copy using semver rules to pick the best version.</p>
+          <span class="tag">shared config</span>
+        </div>
+        <div class="info-card">
+          <h4>Async Boundary</h4>
+          <p>Each app uses a bootstrap.tsx that dynamically imports the root. This ensures federated modules are resolved before React mounts.</p>
+          <span class="tag">bootstrap.tsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Independent Deployment</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Separate CI/CD</h4>
+          <p>Each micro-app has its own pipeline and deployment. Updating a remote does not require rebuilding or redeploying the host.</p>
+          <span class="tag">Independent deploys</span>
+        </div>
+        <div class="info-card">
+          <h4>Runtime Integration</h4>
+          <p>The host fetches each remote's remoteEntry.js manifest at runtime and dynamically loads the requested modules on demand.</p>
+          <span class="tag">remoteEntry.js</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- When to Use -->
+    <div class="section">
+      <div class="section-title">When to Use</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Good Fit</h4>
+          <p>Multiple teams shipping independently, large apps needing runtime integration, different framework versions coexisting.</p>
+          <span class="tag">Scale</span>
+        </div>
+        <div class="info-card">
+          <h4>Avoid When</h4>
+          <p>Small teams, simple applications, or when build-time composition (monorepo imports) is sufficient. The operational overhead is significant.</p>
+          <span class="tag">Complexity cost</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="section">
+      <div class="section-title">Official Links</div>
+      <div class="links">
+        <a href="https://module-federation.io/" target="_blank" rel="noopener">Module Federation</a>
+        <a href="https://webpack.js.org/concepts/module-federation/" target="_blank" rel="noopener">Webpack Docs</a>
+        <a href="https://module-federation.io/guide/start/quick-start.html" target="_blank" rel="noopener">Quick Start</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

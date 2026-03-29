@@ -37,7 +37,9 @@ function ChatGptOAuthSection() {
     }
   }, []);
 
-  useEffect(() => { checkStatus(); }, [checkStatus]);
+  useEffect(() => {
+    checkStatus();
+  }, [checkStatus]);
 
   const handleSync = async () => {
     setActionLoading(true);
@@ -75,7 +77,8 @@ function ChatGptOAuthSection() {
       } else {
         setError("Refresh failed. Run 'codex' to re-authenticate.");
       }
-    } catch {} finally {
+    } catch {
+    } finally {
       setActionLoading(false);
     }
   };
@@ -89,7 +92,8 @@ function ChatGptOAuthSection() {
         body: JSON.stringify({ action: "logout" }),
       });
       setStatus({ loggedIn: false });
-    } catch {} finally {
+    } catch {
+    } finally {
       setActionLoading(false);
     }
   };
@@ -104,12 +108,8 @@ function ChatGptOAuthSection() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-emerald-400">Signed in via ChatGPT</p>
-            {status.email && (
-              <p className="mt-0.5 text-[10px] text-slate-400">{status.email}</p>
-            )}
-            {status.expired && (
-              <p className="mt-0.5 text-[10px] text-amber-400">Token expired</p>
-            )}
+            {status.email && <p className="mt-0.5 text-[10px] text-slate-400">{status.email}</p>}
+            {status.expired && <p className="mt-0.5 text-[10px] text-amber-400">Token expired</p>}
           </div>
           <div className="flex gap-1.5">
             {status.expired && (
@@ -150,8 +150,14 @@ function ChatGptOAuthSection() {
       <div className="rounded-lg border border-white/8 bg-white/[0.02] p-3">
         <p className="text-xs font-medium text-slate-300">How to connect ChatGPT</p>
         <ol className="mt-2 space-y-1 text-[10px] text-slate-400">
-          <li>1. Install the Codex CLI: <code className="rounded bg-white/6 px-1 text-slate-300">npm i -g @openai/codex</code></li>
-          <li>2. Run <code className="rounded bg-white/6 px-1 text-slate-300">codex</code> and sign in with your ChatGPT account</li>
+          <li>
+            1. Install the Codex CLI:{" "}
+            <code className="rounded bg-white/6 px-1 text-slate-300">npm i -g @openai/codex</code>
+          </li>
+          <li>
+            2. Run <code className="rounded bg-white/6 px-1 text-slate-300">codex</code> and sign in
+            with your ChatGPT account
+          </li>
           <li>3. Click "Sync from Codex CLI" below</li>
         </ol>
       </div>
@@ -164,12 +170,11 @@ function ChatGptOAuthSection() {
         {actionLoading ? "Syncing..." : "Sync from Codex CLI"}
       </button>
 
-      {error && (
-        <p className="text-[10px] text-red-400">{error}</p>
-      )}
+      {error && <p className="text-[10px] text-red-400">{error}</p>}
 
       <p className="text-[10px] text-slate-500">
-        Vibe reads your ChatGPT tokens from <code className="text-slate-400">~/.codex/auth.json</code> and auto-refreshes them.
+        Vibe reads your ChatGPT tokens from{" "}
+        <code className="text-slate-400">~/.codex/auth.json</code> and auto-refreshes them.
       </p>
     </div>
   );
@@ -198,9 +203,7 @@ export default function SettingsPanel() {
       <div className="w-full max-w-md rounded-xl border border-white/8 bg-slate-900 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/8 px-5 py-3">
-          <h2 className="text-sm font-medium text-slate-200">
-            Provider Settings
-          </h2>
+          <h2 className="text-sm font-medium text-slate-200">Provider Settings</h2>
           <button
             onClick={() => dispatch({ type: "SET_SETTINGS_OPEN", payload: false })}
             className="text-xs text-slate-500 hover:text-slate-300"
@@ -212,9 +215,7 @@ export default function SettingsPanel() {
         <div className="space-y-5 p-5">
           {/* Provider tabs */}
           <div>
-            <label className="mb-2 block text-xs font-medium text-slate-300">
-              Provider
-            </label>
+            <label className="mb-2 block text-xs font-medium text-slate-300">Provider</label>
             <div className="flex flex-wrap rounded-md border border-white/8">
               {(Object.keys(PROVIDER_DEFAULTS) as AiProvider[]).map((p) => (
                 <button
@@ -245,9 +246,7 @@ export default function SettingsPanel() {
           {/* Base URL (not for ChatGPT OAuth) */}
           {provider !== "openai-codex" && (
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-300">
-                Base URL
-              </label>
+              <label className="mb-1 block text-xs font-medium text-slate-300">Base URL</label>
               <input
                 value={cfg.baseUrl}
                 onChange={(e) => update({ baseUrl: e.target.value })}
@@ -260,13 +259,13 @@ export default function SettingsPanel() {
           {/* API Key */}
           {needsApiKey && (
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-300">
-                API Key
-              </label>
+              <label className="mb-1 block text-xs font-medium text-slate-300">API Key</label>
               <input
                 value={cfg.apiKey}
                 onChange={(e) => update({ apiKey: e.target.value })}
-                placeholder={provider === "openai" ? "sk-..." : provider === "claude" ? "sk-ant-..." : "AI..."}
+                placeholder={
+                  provider === "openai" ? "sk-..." : provider === "claude" ? "sk-ant-..." : "AI..."
+                }
                 type="password"
                 className="w-full rounded-lg border border-white/8 bg-slate-950 px-3 py-2 font-mono text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-vibe-500/50"
               />

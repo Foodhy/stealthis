@@ -1,0 +1,66 @@
+---
+slug: arch-react-vite
+title: React + Vite Architecture
+description: Modern React + Vite project structure with feature-based organization, path aliases, and optimal dev/build configuration.
+category: architectures
+type: architecture
+tags: [react, vite, architecture, typescript, feature-based]
+tech: [react, vite, typescript]
+difficulty: easy
+targets: [html]
+labRoute: /architectures/arch-react-vite
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## React + Vite Architecture
+
+Vite is a next-generation build tool that leverages native ES modules during development for instant server start and lightning-fast HMR. For production, it bundles with Rollup, producing highly optimized output.
+
+### Why Vite over CRA
+
+- **Native ESM dev server** — no bundling during development, modules are served on demand.
+- **Instant HMR** — only the changed module is replaced, regardless of app size.
+- **Rollup production builds** — tree-shaking, code-splitting, and asset optimization out of the box.
+- **First-class TypeScript** — transpiles `.ts`/`.tsx` with esbuild (20-30x faster than tsc).
+
+### Project Structure
+
+The recommended structure uses **feature-based organization** where each domain (auth, dashboard, etc.) groups its components, hooks, and logic together rather than separating by file type.
+
+- **`index.html`** — Vite's entry point (not buried in `public/`). Contains the `<div id="root">` mount point and `<script type="module" src="/src/main.tsx">`.
+- **`vite.config.ts`** — plugins, path aliases, server config, and build options.
+- **`src/main.tsx`** — React root mount with `createRoot().render()`.
+- **`src/features/`** — feature modules, each self-contained with components, hooks, and API calls.
+- **`src/components/`** — shared/reusable UI components used across features.
+- **`src/hooks/`** — custom hooks shared across the application.
+- **`src/lib/`** — utility functions, API clients, constants.
+
+### Path Aliases
+
+Configure in `vite.config.ts` with `resolve.alias` and mirror in `tsconfig.json` paths for editor support:
+
+```ts
+// vite.config.ts
+resolve: {
+  alias: {
+    "@": path.resolve(__dirname, "./src"),
+    "@components": path.resolve(__dirname, "./src/components"),
+    "@features": path.resolve(__dirname, "./src/features"),
+  }
+}
+```
+
+### Environment Variables
+
+Vite exposes env variables prefixed with `VITE_` to client code via `import.meta.env`. Server-only secrets should never use the `VITE_` prefix.
+
+### Official Docs
+
+- [Vite Getting Started](https://vite.dev/guide/)
+- [Features](https://vite.dev/guide/features)
+- [Config Reference](https://vite.dev/config/)

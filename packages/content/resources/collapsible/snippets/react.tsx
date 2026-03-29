@@ -73,9 +73,7 @@ function Collapsible({
             <strong style={{ fontSize: "0.9rem", fontWeight: 600, color: "#e2e8f0" }}>
               {title}
             </strong>
-            {subtitle && (
-              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>{subtitle}</span>
-            )}
+            {subtitle && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>{subtitle}</span>}
           </div>
         </div>
 
@@ -156,7 +154,14 @@ export default function CollapsibleDemo() {
         color: "#f1f5f9",
       }}
     >
-      <div style={{ width: "min(560px, 100%)", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div
+        style={{
+          width: "min(560px, 100%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.25rem",
+        }}
+      >
         <h2 style={{ fontSize: "1.375rem", fontWeight: 700 }}>Settings</h2>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -171,7 +176,15 @@ export default function CollapsibleDemo() {
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
-                <label style={{ fontSize: "0.78rem", fontWeight: 500, color: "#94a3b8", display: "block", marginBottom: "0.375rem" }}>
+                <label
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                    display: "block",
+                    marginBottom: "0.375rem",
+                  }}
+                >
                   Project Name
                 </label>
                 <div
@@ -188,7 +201,15 @@ export default function CollapsibleDemo() {
                 </div>
               </div>
               <div>
-                <label style={{ fontSize: "0.78rem", fontWeight: 500, color: "#94a3b8", display: "block", marginBottom: "0.375rem" }}>
+                <label
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                    display: "block",
+                    marginBottom: "0.375rem",
+                  }}
+                >
                   Description
                 </label>
                 <div
@@ -203,7 +224,8 @@ export default function CollapsibleDemo() {
                     lineHeight: 1.5,
                   }}
                 >
-                  A brief description of your project that helps others understand what it does and why it exists.
+                  A brief description of your project that helps others understand what it does and
+                  why it exists.
                 </div>
               </div>
             </div>
@@ -219,13 +241,29 @@ export default function CollapsibleDemo() {
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
-                <label style={{ fontSize: "0.78rem", fontWeight: 500, color: "#94a3b8", display: "block", marginBottom: "0.375rem" }}>
+                <label
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                    display: "block",
+                    marginBottom: "0.375rem",
+                  }}
+                >
                   Two-Factor Auth
                 </label>
                 <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Disabled</span>
               </div>
               <div>
-                <label style={{ fontSize: "0.78rem", fontWeight: 500, color: "#94a3b8", display: "block", marginBottom: "0.375rem" }}>
+                <label
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                    display: "block",
+                    marginBottom: "0.375rem",
+                  }}
+                >
                   Session Timeout
                 </label>
                 <div
@@ -253,15 +291,21 @@ export default function CollapsibleDemo() {
             subtitle="Email and push notification preferences"
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              >
                 <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Email Notifications</span>
                 <span style={{ fontSize: "0.78rem", color: "#4ade80" }}>Enabled</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              >
                 <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Push Notifications</span>
                 <span style={{ fontSize: "0.78rem", color: "#4ade80" }}>Enabled</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              >
                 <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Weekly Digest</span>
                 <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Disabled</span>
               </div>

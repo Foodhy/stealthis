@@ -61,8 +61,10 @@ export function WarpBackground({
       const dx1 = Math.sin(baseY * frequency + t * 1.3) * amplitudeX;
       const dy1 = Math.cos(baseX * frequency + t * 1.1) * amplitudeY;
 
-      const dx2 = Math.sin(baseX * frequency * 1.5 + baseY * frequency * 0.5 + t * 0.7) * amplitudeX * 0.5;
-      const dy2 = Math.cos(baseY * frequency * 1.3 + baseX * frequency * 0.4 + t * 0.9) * amplitudeY * 0.5;
+      const dx2 =
+        Math.sin(baseX * frequency * 1.5 + baseY * frequency * 0.5 + t * 0.7) * amplitudeX * 0.5;
+      const dy2 =
+        Math.cos(baseY * frequency * 1.3 + baseX * frequency * 0.4 + t * 0.9) * amplitudeY * 0.5;
 
       const dx3 = Math.sin(baseX * frequency * 3 + t * 2.1) * amplitudeX * 0.15;
       const dy3 = Math.cos(baseY * frequency * 2.8 + t * 1.8) * amplitudeY * 0.15;
@@ -167,10 +169,7 @@ export function WarpBackground({
   }, [gridCols, gridRows, speed, amplitudeX, amplitudeY, frequency, color, resize]);
 
   return (
-    <div
-      className={className}
-      style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}
-    >
+    <div className={className} style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
       <canvas
         ref={canvasRef}
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
@@ -222,7 +221,8 @@ export default function WarpBackgroundDemo() {
             fontSize: "clamp(2rem, 5vw, 3.5rem)",
             fontWeight: 800,
             letterSpacing: "-0.03em",
-            background: "linear-gradient(135deg, #fde68a 0%, #f59e0b 40%, #d946ef 80%, #8b5cf6 100%)",
+            background:
+              "linear-gradient(135deg, #fde68a 0%, #f59e0b 40%, #d946ef 80%, #8b5cf6 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

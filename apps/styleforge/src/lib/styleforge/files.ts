@@ -167,7 +167,10 @@ export function createZipBlob(files: StyleForgeGeneratedFile[]): Blob {
   return new Blob([writer.toUint8Array()], { type: "application/zip" });
 }
 
-export function downloadZip(files: StyleForgeGeneratedFile[], fileName = "styleforge-kit.zip"): void {
+export function downloadZip(
+  files: StyleForgeGeneratedFile[],
+  fileName = "styleforge-kit.zip"
+): void {
   const blob = createZipBlob(files);
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");

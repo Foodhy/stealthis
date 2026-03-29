@@ -1,11 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Animated,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, Animated, StyleSheet } from "react-native";
 
 interface LikeButtonProps {
   liked: boolean;
@@ -102,7 +96,9 @@ function LikeButton({ liked, onToggle, size = 48 }: LikeButtonProps) {
   const particleSize = size * 0.2;
 
   return (
-    <View style={{ width: size * 2, height: size * 2, alignItems: "center", justifyContent: "center" }}>
+    <View
+      style={{ width: size * 2, height: size * 2, alignItems: "center", justifyContent: "center" }}
+    >
       {/* Particles */}
       {particles.map((p, i) => (
         <Animated.View

@@ -94,8 +94,12 @@ export function RippleButton({
         onClick={handleClick}
         className={className}
         style={btnStyle}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
       >
         {children}
         {ripples.map((r) => (
@@ -136,9 +140,7 @@ export default function RippleButtonDemo() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>
-        Ripple Buttons
-      </h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0" }}>Ripple Buttons</h2>
       <p style={{ color: "#525252", fontSize: "0.875rem" }}>
         Click the buttons to see the ripple effect
       </p>
@@ -149,8 +151,12 @@ export default function RippleButtonDemo() {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
         <RippleButton variant="ghost">Ghost Ripple</RippleButton>
-        <RippleButton variant="rose" size="lg">Large Button</RippleButton>
-        <RippleButton variant="amber" size="sm">Small</RippleButton>
+        <RippleButton variant="rose" size="lg">
+          Large Button
+        </RippleButton>
+        <RippleButton variant="amber" size="sm">
+          Small
+        </RippleButton>
       </div>
     </div>
   );

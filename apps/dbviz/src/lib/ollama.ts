@@ -27,9 +27,7 @@ export type OllamaChatOptions = {
   onToken?: (token: string) => void;
 };
 
-export async function listModels(
-  baseUrl = DEFAULT_BASE_URL
-): Promise<OllamaModel[]> {
+export async function listModels(baseUrl = DEFAULT_BASE_URL): Promise<OllamaModel[]> {
   const response = await fetch(`${baseUrl}/api/tags`);
   if (!response.ok) {
     throw new Error(`Ollama not available (${response.status}). Make sure it's running.`);
@@ -82,10 +80,7 @@ export async function chat({
   return readStream(response, onToken);
 }
 
-async function readStream(
-  response: Response,
-  onToken?: (token: string) => void
-): Promise<string> {
+async function readStream(response: Response, onToken?: (token: string) => void): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream from Ollama");
 

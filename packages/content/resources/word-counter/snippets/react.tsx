@@ -36,7 +36,9 @@ export default function WordCounterRC() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {items.map(({ label, value }) => (
             <div key={label} className="bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-3">
-              <p className="text-[24px] font-bold text-[#58a6ff] tabular-nums leading-none mb-1">{value}</p>
+              <p className="text-[24px] font-bold text-[#58a6ff] tabular-nums leading-none mb-1">
+                {value}
+              </p>
               <p className="text-[11px] text-[#8b949e] uppercase tracking-wider">{label}</p>
             </div>
           ))}

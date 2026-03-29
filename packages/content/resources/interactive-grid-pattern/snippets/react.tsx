@@ -208,11 +208,7 @@ export default function InteractiveGridPatternDemo() {
         position: "relative",
       }}
     >
-      <InteractiveGridPattern
-        cellSize={32}
-        illuminationRadius={200}
-        glowColor={[52, 211, 153]}
-      />
+      <InteractiveGridPattern cellSize={32} illuminationRadius={200} glowColor={[52, 211, 153]} />
       <div
         style={{
           position: "absolute",

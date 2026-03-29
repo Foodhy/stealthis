@@ -77,16 +77,16 @@ function ModelDropdown({
                   setOpen(false);
                 }}
                 className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors ${
-                  isSelected
-                    ? "bg-vibe-600/15 text-vibe-300"
-                    : "text-slate-300 hover:bg-white/6"
+                  isSelected ? "bg-vibe-600/15 text-vibe-300" : "text-slate-300 hover:bg-white/6"
                 }`}
               >
                 <span className="w-4 shrink-0 text-center text-[10px] text-vibe-400">
                   {isSelected ? "✓" : ""}
                 </span>
                 {m.vision && (
-                  <span className="shrink-0 text-[10px]" title="Vision">👁</span>
+                  <span className="shrink-0 text-[10px]" title="Vision">
+                    👁
+                  </span>
                 )}
                 <span className="truncate">{m.name}</span>
               </button>
@@ -225,7 +225,10 @@ export default function WorkbenchHeader() {
 
         {/* Vision indicator */}
         {hasVision && (
-          <span className="rounded bg-cyan-500/15 px-1.5 py-0.5 text-[9px] font-medium text-cyan-400" title="Vision supported">
+          <span
+            className="rounded bg-cyan-500/15 px-1.5 py-0.5 text-[9px] font-medium text-cyan-400"
+            title="Vision supported"
+          >
             Vision
           </span>
         )}
@@ -251,7 +254,9 @@ export default function WorkbenchHeader() {
 
         {/* Terminal toggle */}
         <button
-          onClick={() => dispatch({ type: "TERMINAL_SET_VISIBLE", payload: !state.terminalVisible })}
+          onClick={() =>
+            dispatch({ type: "TERMINAL_SET_VISIBLE", payload: !state.terminalVisible })
+          }
           className={`rounded border px-2 py-1 text-xs transition-colors ${
             state.terminalVisible
               ? "border-vibe-500/40 text-vibe-300"
@@ -263,14 +268,19 @@ export default function WorkbenchHeader() {
 
         {/* Project path */}
         {state.projectPath && (
-          <span className="rounded border border-white/8 px-2 py-1 text-xs text-slate-400" title={state.projectPath}>
+          <span
+            className="rounded border border-white/8 px-2 py-1 text-xs text-slate-400"
+            title={state.projectPath}
+          >
             {state.projectPath.split("/").slice(-2).join("/")}
           </span>
         )}
 
         {/* Theme */}
         <button
-          onClick={() => dispatch({ type: "SET_THEME", payload: state.theme === "dark" ? "light" : "dark" })}
+          onClick={() =>
+            dispatch({ type: "SET_THEME", payload: state.theme === "dark" ? "light" : "dark" })
+          }
           className="rounded border border-white/8 px-2 py-1 text-xs text-slate-400 hover:text-slate-200"
         >
           {state.theme === "dark" ? "Light" : "Dark"}

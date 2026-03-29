@@ -7,10 +7,10 @@
 
 const SCALES = {
   majorPentatonic: [0, 2, 4, 7, 9],
-  major:          [0, 2, 4, 5, 7, 9, 11],
-  dorian:         [0, 2, 3, 5, 7, 9, 10],
-  phrygian:       [0, 1, 3, 5, 7, 8, 10],
-  mixolydian:     [0, 2, 4, 5, 7, 9, 10]
+  major: [0, 2, 4, 5, 7, 9, 11],
+  dorian: [0, 2, 3, 5, 7, 9, 10],
+  phrygian: [0, 1, 3, 5, 7, 8, 10],
+  mixolydian: [0, 2, 4, 5, 7, 9, 10],
 };
 
 const ROOTS = { C: 60, D: 62, E: 64, F: 65, G: 67, A: 69, Bb: 70, B: 71 };
@@ -27,7 +27,9 @@ function scaleNote(root, scale, degree) {
 }
 
 /** Seconds per beat */
-function spb(qpm) { return 60 / qpm; }
+function spb(qpm) {
+  return 60 / qpm;
+}
 
 // --------------- NoteSequence Generator ---------------
 
@@ -40,7 +42,7 @@ function spb(qpm) { return 60 / qpm; }
  *   beat(n) returns seconds at beat n
  */
 function generate(cfg) {
-  const b = n => n * spb(cfg.qpm);
+  const b = (n) => n * spb(cfg.qpm);
   const notes = [];
   for (const layer of cfg.layers) {
     const layerNotes = [];
@@ -57,7 +59,7 @@ function generate(cfg) {
   return {
     notes,
     tempos: [{ time: 0, qpm: cfg.qpm }],
-    totalTime: cfg.totalTime
+    totalTime: cfg.totalTime,
   };
 }
 
@@ -87,28 +89,19 @@ function buildKanto() {
           // Cheerful, nostalgic 8-bit style melody — two 8-bar phrases
           const melodyDegrees = [
             // Phrase A (bars 1-4)
-            4, 5, 7, 5,  4, 3, 2, -1,
-            0, 2, 4, 5,  7, 5, 4, 2,
+            4, 5, 7, 5, 4, 3, 2, -1, 0, 2, 4, 5, 7, 5, 4, 2,
             // Phrase A variation (bars 5-8)
-            4, 5, 7, 9,  7, 5, 4, 2,
-            0, 2, 4, 5,  4, 2, 0, -1,
+            4, 5, 7, 9, 7, 5, 4, 2, 0, 2, 4, 5, 4, 2, 0, -1,
             // Phrase B (bars 9-12)
-            7, 9, 10, 9,  7, 5, 4, 5,
-            7, 5, 4, 2,   0, 2, 4, -1,
+            7, 9, 10, 9, 7, 5, 4, 5, 7, 5, 4, 2, 0, 2, 4, -1,
             // Phrase B variation / ending (bars 13-16)
-            9, 7, 5, 4,   2, 4, 5, 7,
-            9, 7, 5, 4,   2, 0, -1, 0
+            9, 7, 5, 4, 2, 4, 5, 7, 9, 7, 5, 4, 2, 0, -1, 0,
           ];
           const rhythms = [
             // Each value = duration in eighth notes (0.5 beats)
-            2, 2, 3, 1,  2, 2, 2, 2,
-            2, 2, 2, 2,  3, 1, 2, 2,
-            2, 2, 3, 1,  2, 1, 1, 2,
-            2, 2, 2, 2,  3, 1, 2, 2,
-            2, 2, 3, 1,  2, 2, 2, 2,
-            2, 1, 1, 2,  2, 2, 2, 2,
-            2, 2, 2, 2,  2, 2, 3, 1,
-            2, 2, 2, 2,  3, 1, 2, 4
+            2, 2, 3, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1, 2, 2, 2, 2, 3, 1, 2, 1, 1, 2, 2, 2, 2, 2, 3,
+            1, 2, 2, 2, 2, 3, 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1, 2, 2,
+            2, 2, 3, 1, 2, 4,
           ];
           let t = 0;
           for (let i = 0; i < melodyDegrees.length; i++) {
@@ -120,11 +113,11 @@ function buildKanto() {
               continue;
             }
             const p = scaleNote(root + 12, sc, deg);
-            const vel = (i % 4 === 0) ? 95 : 80;
+            const vel = i % 4 === 0 ? 95 : 80;
             N(notes, p, t, t + dur * 0.9, vel);
             t += dur;
           }
-        }
+        },
       },
       // Acoustic guitar chords (program 25)
       {
@@ -133,17 +126,41 @@ function buildKanto() {
           // Strum pattern: quarter-note chords on beats, varying voicings
           const chordProgressions = [
             // bars 1-4: I - V - vi(rel) - IV
-            [0, 4, 7], [4, 7, 9], [2, 5, 9], [0, 4, 7],
-            [0, 4, 7], [4, 7, 9], [2, 5, 9], [0, 2, 4],
+            [0, 4, 7],
+            [4, 7, 9],
+            [2, 5, 9],
+            [0, 4, 7],
+            [0, 4, 7],
+            [4, 7, 9],
+            [2, 5, 9],
+            [0, 2, 4],
             // bars 5-8
-            [0, 4, 7], [2, 5, 9], [4, 7, 9], [0, 4, 7],
-            [0, 4, 7], [2, 5, 9], [4, 7, 9], [0, 2, 4],
+            [0, 4, 7],
+            [2, 5, 9],
+            [4, 7, 9],
+            [0, 4, 7],
+            [0, 4, 7],
+            [2, 5, 9],
+            [4, 7, 9],
+            [0, 2, 4],
             // bars 9-12
-            [4, 7, 9], [2, 5, 7], [0, 4, 7], [2, 4, 9],
-            [4, 7, 9], [2, 5, 7], [0, 4, 7], [0, 2, 4],
+            [4, 7, 9],
+            [2, 5, 7],
+            [0, 4, 7],
+            [2, 4, 9],
+            [4, 7, 9],
+            [2, 5, 7],
+            [0, 4, 7],
+            [0, 2, 4],
             // bars 13-16
-            [4, 7, 9], [2, 5, 7], [0, 4, 7], [2, 4, 9],
-            [4, 7, 9], [2, 5, 7], [0, 4, 7], [0, 4, 7]
+            [4, 7, 9],
+            [2, 5, 7],
+            [0, 4, 7],
+            [2, 4, 9],
+            [4, 7, 9],
+            [2, 5, 7],
+            [0, 4, 7],
+            [0, 4, 7],
           ];
           for (let bar = 0; bar < totalBars; bar++) {
             for (let beat = 0; beat < 4; beat += 2) {
@@ -156,7 +173,7 @@ function buildKanto() {
               }
             }
           }
-        }
+        },
       },
       // Glockenspiel counter-melody accents (program 9)
       {
@@ -178,14 +195,14 @@ function buildKanto() {
             { bar: 12, beat: 0, deg: 9, dur: 1 },
             { bar: 13, beat: 2.5, deg: 7, dur: 1.5 },
             { bar: 14, beat: 1, deg: 5, dur: 2 },
-            { bar: 15, beat: 3, deg: 4, dur: 1 }
+            { bar: 15, beat: 3, deg: 4, dur: 1 },
           ];
           for (const a of accents) {
             const t = b(a.bar * 4 + a.beat);
             const p = scaleNote(root + 24, sc, a.deg);
             N(notes, p, t, t + b(a.dur), 65);
           }
-        }
+        },
       },
       // Drums
       {
@@ -212,9 +229,9 @@ function buildKanto() {
               N(notes, 49, b(bar * 4), b(bar * 4 + 0.3), 80);
             }
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 }
 
@@ -237,32 +254,57 @@ function buildJohto() {
           // Melancholic, folk-like melody
           const melody = [
             // Phrase A — wistful ascending (bars 1-4)
-            { d: 0, s: 0, dur: 2 }, { d: 2, s: 2, dur: 1 }, { d: 3, s: 3, dur: 1 },
-            { d: 4, s: 4, dur: 2 }, { d: 5, s: 6, dur: 2 },
-            { d: 6, s: 8, dur: 1.5 }, { d: 5, s: 9.5, dur: 1 }, { d: 4, s: 10.5, dur: 1.5 },
-            { d: 3, s: 12, dur: 2 }, { d: 2, s: 14, dur: 2 },
+            { d: 0, s: 0, dur: 2 },
+            { d: 2, s: 2, dur: 1 },
+            { d: 3, s: 3, dur: 1 },
+            { d: 4, s: 4, dur: 2 },
+            { d: 5, s: 6, dur: 2 },
+            { d: 6, s: 8, dur: 1.5 },
+            { d: 5, s: 9.5, dur: 1 },
+            { d: 4, s: 10.5, dur: 1.5 },
+            { d: 3, s: 12, dur: 2 },
+            { d: 2, s: 14, dur: 2 },
             // Phrase A2 (bars 5-8)
-            { d: 0, s: 16, dur: 1 }, { d: 2, s: 17, dur: 1 }, { d: 4, s: 18, dur: 2 },
-            { d: 6, s: 20, dur: 1.5 }, { d: 7, s: 21.5, dur: 1 }, { d: 6, s: 22.5, dur: 1.5 },
-            { d: 5, s: 24, dur: 2 }, { d: 4, s: 26, dur: 1 }, { d: 3, s: 27, dur: 1 },
-            { d: 2, s: 28, dur: 2 }, { d: 0, s: 30, dur: 2 },
+            { d: 0, s: 16, dur: 1 },
+            { d: 2, s: 17, dur: 1 },
+            { d: 4, s: 18, dur: 2 },
+            { d: 6, s: 20, dur: 1.5 },
+            { d: 7, s: 21.5, dur: 1 },
+            { d: 6, s: 22.5, dur: 1.5 },
+            { d: 5, s: 24, dur: 2 },
+            { d: 4, s: 26, dur: 1 },
+            { d: 3, s: 27, dur: 1 },
+            { d: 2, s: 28, dur: 2 },
+            { d: 0, s: 30, dur: 2 },
             // Phrase B — climax (bars 9-12)
-            { d: 7, s: 32, dur: 2 }, { d: 8, s: 34, dur: 1 }, { d: 9, s: 35, dur: 1 },
-            { d: 7, s: 36, dur: 2 }, { d: 6, s: 38, dur: 2 },
-            { d: 5, s: 40, dur: 1.5 }, { d: 4, s: 41.5, dur: 1.5 }, { d: 3, s: 43, dur: 1 },
-            { d: 2, s: 44, dur: 2 }, { d: 4, s: 46, dur: 2 },
+            { d: 7, s: 32, dur: 2 },
+            { d: 8, s: 34, dur: 1 },
+            { d: 9, s: 35, dur: 1 },
+            { d: 7, s: 36, dur: 2 },
+            { d: 6, s: 38, dur: 2 },
+            { d: 5, s: 40, dur: 1.5 },
+            { d: 4, s: 41.5, dur: 1.5 },
+            { d: 3, s: 43, dur: 1 },
+            { d: 2, s: 44, dur: 2 },
+            { d: 4, s: 46, dur: 2 },
             // Phrase B2 — resolution (bars 13-16)
-            { d: 5, s: 48, dur: 1 }, { d: 4, s: 49, dur: 1 }, { d: 3, s: 50, dur: 2 },
-            { d: 2, s: 52, dur: 1 }, { d: 3, s: 53, dur: 1 }, { d: 4, s: 54, dur: 2 },
-            { d: 3, s: 56, dur: 1.5 }, { d: 2, s: 57.5, dur: 1.5 }, { d: 1, s: 59, dur: 1 },
-            { d: 0, s: 60, dur: 4 }
+            { d: 5, s: 48, dur: 1 },
+            { d: 4, s: 49, dur: 1 },
+            { d: 3, s: 50, dur: 2 },
+            { d: 2, s: 52, dur: 1 },
+            { d: 3, s: 53, dur: 1 },
+            { d: 4, s: 54, dur: 2 },
+            { d: 3, s: 56, dur: 1.5 },
+            { d: 2, s: 57.5, dur: 1.5 },
+            { d: 1, s: 59, dur: 1 },
+            { d: 0, s: 60, dur: 4 },
           ];
           for (const n of melody) {
             const p = scaleNote(root + 12, sc, n.d);
             const vel = n.dur >= 2 ? 90 : 78;
             N(notes, p, b(n.s), b(n.s + n.dur * 0.95), vel);
           }
-        }
+        },
       },
       // Flute counter-melody (program 73)
       {
@@ -271,32 +313,54 @@ function buildJohto() {
           // Enters bar 3, weaves around the piano
           const flute = [
             // bars 3-4
-            { d: 7, s: 8, dur: 1 }, { d: 6, s: 9, dur: 0.5 }, { d: 5, s: 9.5, dur: 1.5 },
-            { d: 4, s: 11, dur: 1 }, { d: 5, s: 12, dur: 2 }, { d: 4, s: 14, dur: 1 },
+            { d: 7, s: 8, dur: 1 },
+            { d: 6, s: 9, dur: 0.5 },
+            { d: 5, s: 9.5, dur: 1.5 },
+            { d: 4, s: 11, dur: 1 },
+            { d: 5, s: 12, dur: 2 },
+            { d: 4, s: 14, dur: 1 },
             // bars 5-6
-            { d: 2, s: 17, dur: 1.5 }, { d: 4, s: 18.5, dur: 1.5 }, { d: 5, s: 20, dur: 2 },
-            { d: 6, s: 22, dur: 1 }, { d: 7, s: 23, dur: 1 },
+            { d: 2, s: 17, dur: 1.5 },
+            { d: 4, s: 18.5, dur: 1.5 },
+            { d: 5, s: 20, dur: 2 },
+            { d: 6, s: 22, dur: 1 },
+            { d: 7, s: 23, dur: 1 },
             // bars 7-8
-            { d: 6, s: 24, dur: 1.5 }, { d: 5, s: 25.5, dur: 1 }, { d: 4, s: 26.5, dur: 1.5 },
-            { d: 3, s: 28, dur: 2 }, { d: 2, s: 30, dur: 2 },
+            { d: 6, s: 24, dur: 1.5 },
+            { d: 5, s: 25.5, dur: 1 },
+            { d: 4, s: 26.5, dur: 1.5 },
+            { d: 3, s: 28, dur: 2 },
+            { d: 2, s: 30, dur: 2 },
             // bars 9-10
-            { d: 9, s: 33, dur: 1 }, { d: 8, s: 34, dur: 1 }, { d: 7, s: 35, dur: 1 },
-            { d: 8, s: 36, dur: 2 }, { d: 7, s: 38, dur: 1 }, { d: 6, s: 39, dur: 1 },
+            { d: 9, s: 33, dur: 1 },
+            { d: 8, s: 34, dur: 1 },
+            { d: 7, s: 35, dur: 1 },
+            { d: 8, s: 36, dur: 2 },
+            { d: 7, s: 38, dur: 1 },
+            { d: 6, s: 39, dur: 1 },
             // bars 11-12
-            { d: 5, s: 40, dur: 2 }, { d: 4, s: 42, dur: 1 }, { d: 3, s: 43, dur: 1 },
-            { d: 4, s: 44, dur: 2 }, { d: 5, s: 46, dur: 2 },
+            { d: 5, s: 40, dur: 2 },
+            { d: 4, s: 42, dur: 1 },
+            { d: 3, s: 43, dur: 1 },
+            { d: 4, s: 44, dur: 2 },
+            { d: 5, s: 46, dur: 2 },
             // bars 13-14
-            { d: 4, s: 48, dur: 1 }, { d: 3, s: 49, dur: 1 }, { d: 2, s: 50, dur: 2 },
-            { d: 3, s: 52, dur: 1.5 }, { d: 4, s: 53.5, dur: 1.5 }, { d: 5, s: 55, dur: 1 },
+            { d: 4, s: 48, dur: 1 },
+            { d: 3, s: 49, dur: 1 },
+            { d: 2, s: 50, dur: 2 },
+            { d: 3, s: 52, dur: 1.5 },
+            { d: 4, s: 53.5, dur: 1.5 },
+            { d: 5, s: 55, dur: 1 },
             // bars 15-16
-            { d: 4, s: 56, dur: 2 }, { d: 2, s: 58, dur: 2 },
-            { d: 0, s: 60, dur: 4 }
+            { d: 4, s: 56, dur: 2 },
+            { d: 2, s: 58, dur: 2 },
+            { d: 0, s: 60, dur: 4 },
           ];
           for (const n of flute) {
             const p = scaleNote(root + 24, sc, n.d);
             N(notes, p, b(n.s), b(n.s + n.dur * 0.92), 68);
           }
-        }
+        },
       },
       // Strings pad (program 48)
       {
@@ -304,14 +368,14 @@ function buildJohto() {
         fn(notes, b) {
           // Sustained chords, 2-bar changes
           const chords = [
-            [0, 2, 4],    // Am (i)
-            [3, 5, 7],    // C (III)
-            [5, 7, 9],    // D (IV)  — dorian IV is major
-            [4, 6, 8],    // Em (v)
-            [0, 2, 4],    // Am (i)
-            [3, 5, 7],    // C (III)
-            [5, 7, 9],    // D (IV)
-            [0, 2, 4]     // Am (i)
+            [0, 2, 4], // Am (i)
+            [3, 5, 7], // C (III)
+            [5, 7, 9], // D (IV)  — dorian IV is major
+            [4, 6, 8], // Em (v)
+            [0, 2, 4], // Am (i)
+            [3, 5, 7], // C (III)
+            [5, 7, 9], // D (IV)
+            [0, 2, 4], // Am (i)
           ];
           for (let i = 0; i < chords.length; i++) {
             const startBeat = i * 8;
@@ -320,7 +384,7 @@ function buildJohto() {
               N(notes, p, b(startBeat), b(startBeat + 7.5), 50);
             }
           }
-        }
+        },
       },
       // Drums — gentle brush-like
       {
@@ -341,9 +405,9 @@ function buildJohto() {
               }
             }
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 }
 
@@ -366,42 +430,74 @@ function buildHoenn() {
           // Tropical adventure, energetic melody
           const melody = [
             // Phrase A (bars 1-4) — upbeat, adventurous
-            { d: 0, s: 0, dur: 1 }, { d: 2, s: 1, dur: 0.5 }, { d: 4, s: 1.5, dur: 1.5 },
+            { d: 0, s: 0, dur: 1 },
+            { d: 2, s: 1, dur: 0.5 },
+            { d: 4, s: 1.5, dur: 1.5 },
             { d: 5, s: 3, dur: 1 },
-            { d: 7, s: 4, dur: 1.5 }, { d: 5, s: 5.5, dur: 0.5 }, { d: 4, s: 6, dur: 1 },
+            { d: 7, s: 4, dur: 1.5 },
+            { d: 5, s: 5.5, dur: 0.5 },
+            { d: 4, s: 6, dur: 1 },
             { d: 2, s: 7, dur: 1 },
-            { d: 4, s: 8, dur: 0.5 }, { d: 5, s: 8.5, dur: 0.5 }, { d: 7, s: 9, dur: 1.5 },
+            { d: 4, s: 8, dur: 0.5 },
+            { d: 5, s: 8.5, dur: 0.5 },
+            { d: 7, s: 9, dur: 1.5 },
             { d: 9, s: 10.5, dur: 1.5 },
-            { d: 7, s: 12, dur: 1 }, { d: 5, s: 13, dur: 1 }, { d: 4, s: 14, dur: 1 },
+            { d: 7, s: 12, dur: 1 },
+            { d: 5, s: 13, dur: 1 },
+            { d: 4, s: 14, dur: 1 },
             { d: 2, s: 15, dur: 1 },
             // Phrase A2 (bars 5-8)
-            { d: 0, s: 16, dur: 0.5 }, { d: 4, s: 16.5, dur: 0.5 }, { d: 7, s: 17, dur: 1.5 },
+            { d: 0, s: 16, dur: 0.5 },
+            { d: 4, s: 16.5, dur: 0.5 },
+            { d: 7, s: 17, dur: 1.5 },
             { d: 9, s: 18.5, dur: 1.5 },
-            { d: 11, s: 20, dur: 1 }, { d: 9, s: 21, dur: 0.5 }, { d: 7, s: 21.5, dur: 1.5 },
+            { d: 11, s: 20, dur: 1 },
+            { d: 9, s: 21, dur: 0.5 },
+            { d: 7, s: 21.5, dur: 1.5 },
             { d: 5, s: 23, dur: 1 },
-            { d: 4, s: 24, dur: 0.5 }, { d: 5, s: 24.5, dur: 0.5 }, { d: 7, s: 25, dur: 1 },
-            { d: 9, s: 26, dur: 1 }, { d: 7, s: 27, dur: 1 },
-            { d: 5, s: 28, dur: 1.5 }, { d: 4, s: 29.5, dur: 1 }, { d: 2, s: 30.5, dur: 1.5 },
+            { d: 4, s: 24, dur: 0.5 },
+            { d: 5, s: 24.5, dur: 0.5 },
+            { d: 7, s: 25, dur: 1 },
+            { d: 9, s: 26, dur: 1 },
+            { d: 7, s: 27, dur: 1 },
+            { d: 5, s: 28, dur: 1.5 },
+            { d: 4, s: 29.5, dur: 1 },
+            { d: 2, s: 30.5, dur: 1.5 },
             // Phrase B (bars 9-12) — build
-            { d: 9, s: 32, dur: 1 }, { d: 11, s: 33, dur: 1 }, { d: 12, s: 34, dur: 1.5 },
+            { d: 9, s: 32, dur: 1 },
+            { d: 11, s: 33, dur: 1 },
+            { d: 12, s: 34, dur: 1.5 },
             { d: 11, s: 35.5, dur: 0.5 },
-            { d: 9, s: 36, dur: 1 }, { d: 7, s: 37, dur: 1 }, { d: 9, s: 38, dur: 2 },
-            { d: 11, s: 40, dur: 0.5 }, { d: 12, s: 40.5, dur: 0.5 }, { d: 14, s: 41, dur: 1.5 },
+            { d: 9, s: 36, dur: 1 },
+            { d: 7, s: 37, dur: 1 },
+            { d: 9, s: 38, dur: 2 },
+            { d: 11, s: 40, dur: 0.5 },
+            { d: 12, s: 40.5, dur: 0.5 },
+            { d: 14, s: 41, dur: 1.5 },
             { d: 12, s: 42.5, dur: 1.5 },
-            { d: 11, s: 44, dur: 1 }, { d: 9, s: 45, dur: 1 }, { d: 7, s: 46, dur: 2 },
+            { d: 11, s: 44, dur: 1 },
+            { d: 9, s: 45, dur: 1 },
+            { d: 7, s: 46, dur: 2 },
             // Phrase B2 (bars 13-16) — resolution
-            { d: 5, s: 48, dur: 1 }, { d: 7, s: 49, dur: 1 }, { d: 9, s: 50, dur: 2 },
-            { d: 7, s: 52, dur: 0.5 }, { d: 5, s: 52.5, dur: 0.5 }, { d: 4, s: 53, dur: 1 },
+            { d: 5, s: 48, dur: 1 },
+            { d: 7, s: 49, dur: 1 },
+            { d: 9, s: 50, dur: 2 },
+            { d: 7, s: 52, dur: 0.5 },
+            { d: 5, s: 52.5, dur: 0.5 },
+            { d: 4, s: 53, dur: 1 },
             { d: 2, s: 54, dur: 2 },
-            { d: 4, s: 56, dur: 1 }, { d: 5, s: 57, dur: 0.5 }, { d: 4, s: 57.5, dur: 0.5 },
-            { d: 2, s: 58, dur: 1 }, { d: 0, s: 59, dur: 1 },
-            { d: 0, s: 60, dur: 4 }
+            { d: 4, s: 56, dur: 1 },
+            { d: 5, s: 57, dur: 0.5 },
+            { d: 4, s: 57.5, dur: 0.5 },
+            { d: 2, s: 58, dur: 1 },
+            { d: 0, s: 59, dur: 1 },
+            { d: 0, s: 60, dur: 4 },
           ];
           for (const n of melody) {
             const p = scaleNote(root, sc, n.d);
             N(notes, p, b(n.s), b(n.s + n.dur * 0.9), 88);
           }
-        }
+        },
       },
       // Marimba arpeggios (program 12)
       {
@@ -409,14 +505,14 @@ function buildHoenn() {
         fn(notes, b) {
           // Sixteenth-note arpeggios
           const chordDegs = [
-            [0, 2, 4, 7],   // C
-            [3, 5, 7, 9],   // F
-            [4, 6, 7, 11],  // G
-            [0, 2, 4, 7],   // C
-            [5, 7, 9, 11],  // Am
-            [3, 5, 7, 9],   // F
-            [4, 6, 7, 11],  // G
-            [0, 2, 4, 7]    // C
+            [0, 2, 4, 7], // C
+            [3, 5, 7, 9], // F
+            [4, 6, 7, 11], // G
+            [0, 2, 4, 7], // C
+            [5, 7, 9, 11], // Am
+            [3, 5, 7, 9], // F
+            [4, 6, 7, 11], // G
+            [0, 2, 4, 7], // C
           ];
           for (let bar = 0; bar < totalBars; bar++) {
             const chord = chordDegs[bar % chordDegs.length];
@@ -427,15 +523,21 @@ function buildHoenn() {
               N(notes, p, t, t + b(0.2), 55 + (sixteenth % 4 === 0 ? 15 : 0));
             }
           }
-        }
+        },
       },
       // Steel drums chords (program 114)
       {
         program: 114,
         fn(notes, b) {
           const chords = [
-            [0, 4, 7],   [5, 9, 12],  [7, 11, 14], [0, 4, 7],
-            [5, 9, 12],  [0, 4, 7],   [7, 11, 14], [0, 4, 7]
+            [0, 4, 7],
+            [5, 9, 12],
+            [7, 11, 14],
+            [0, 4, 7],
+            [5, 9, 12],
+            [0, 4, 7],
+            [7, 11, 14],
+            [0, 4, 7],
           ];
           for (let bar = 0; bar < totalBars; bar++) {
             const chord = chords[bar % chords.length];
@@ -448,7 +550,7 @@ function buildHoenn() {
               }
             }
           }
-        }
+        },
       },
       // Drums — upbeat
       {
@@ -481,9 +583,9 @@ function buildHoenn() {
               N(notes, 49, b(bar * 4), b(bar * 4 + 0.3), 85);
             }
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 }
 
@@ -505,22 +607,22 @@ function buildSinnoh() {
         fn(notes, b) {
           // Dark, sustained organ pads — whole-note chords
           const chords = [
-            [0, 2, 4],    // Dm (i)
-            [1, 3, 5],    // Eb (bII)
-            [0, 2, 4],    // Dm (i)
-            [5, 7, 9],    // Am- (v)
-            [3, 5, 7],    // F (III)
-            [1, 3, 5],    // Eb (bII)
-            [0, 2, 4],    // Dm (i)
-            [5, 7, 9],    // Am- (v)
-            [3, 5, 7],    // F (III)
-            [1, 3, 5],    // Eb (bII)
-            [6, 8, 10],   // Bb (VI)
-            [5, 7, 9],    // Am- (v)
-            [3, 5, 7],    // F (III)
-            [1, 3, 5],    // Eb (bII)
-            [0, 2, 4],    // Dm (i)
-            [0, 2, 4]     // Dm (i) — final
+            [0, 2, 4], // Dm (i)
+            [1, 3, 5], // Eb (bII)
+            [0, 2, 4], // Dm (i)
+            [5, 7, 9], // Am- (v)
+            [3, 5, 7], // F (III)
+            [1, 3, 5], // Eb (bII)
+            [0, 2, 4], // Dm (i)
+            [5, 7, 9], // Am- (v)
+            [3, 5, 7], // F (III)
+            [1, 3, 5], // Eb (bII)
+            [6, 8, 10], // Bb (VI)
+            [5, 7, 9], // Am- (v)
+            [3, 5, 7], // F (III)
+            [1, 3, 5], // Eb (bII)
+            [0, 2, 4], // Dm (i)
+            [0, 2, 4], // Dm (i) — final
           ];
           for (let bar = 0; bar < totalBars; bar++) {
             const chord = chords[bar];
@@ -530,7 +632,7 @@ function buildSinnoh() {
               N(notes, p, t, t + b(3.8), 55);
             }
           }
-        }
+        },
       },
       // Choir pad (program 52)
       {
@@ -545,7 +647,7 @@ function buildSinnoh() {
             { d: 7, s: 32, dur: 7 },
             { d: 5, s: 40, dur: 7 },
             { d: 4, s: 48, dur: 7 },
-            { d: 0, s: 56, dur: 8 }
+            { d: 0, s: 56, dur: 8 },
           ];
           for (const n of pads) {
             const p = scaleNote(root + 12, sc, n.d);
@@ -554,7 +656,7 @@ function buildSinnoh() {
             const p2 = scaleNote(root + 12, sc, n.d + 4);
             N(notes, p2, b(n.s + 0.5), b(n.s + n.dur - 0.5), 35);
           }
-        }
+        },
       },
       // Strings melody (program 48) — slow, mysterious
       {
@@ -562,32 +664,47 @@ function buildSinnoh() {
         fn(notes, b) {
           const melody = [
             // Phrase A (bars 1-4) — dark, descending
-            { d: 7, s: 0, dur: 3 }, { d: 6, s: 3, dur: 1 },
-            { d: 5, s: 4, dur: 2 }, { d: 4, s: 6, dur: 2 },
-            { d: 3, s: 8, dur: 3 }, { d: 1, s: 11, dur: 1 },
+            { d: 7, s: 0, dur: 3 },
+            { d: 6, s: 3, dur: 1 },
+            { d: 5, s: 4, dur: 2 },
+            { d: 4, s: 6, dur: 2 },
+            { d: 3, s: 8, dur: 3 },
+            { d: 1, s: 11, dur: 1 },
             { d: 0, s: 12, dur: 4 },
             // Phrase A2 (bars 5-8) — ascending
-            { d: 0, s: 16, dur: 2 }, { d: 1, s: 18, dur: 1 }, { d: 3, s: 19, dur: 1 },
-            { d: 4, s: 20, dur: 2 }, { d: 5, s: 22, dur: 2 },
-            { d: 7, s: 24, dur: 3 }, { d: 8, s: 27, dur: 1 },
+            { d: 0, s: 16, dur: 2 },
+            { d: 1, s: 18, dur: 1 },
+            { d: 3, s: 19, dur: 1 },
+            { d: 4, s: 20, dur: 2 },
+            { d: 5, s: 22, dur: 2 },
+            { d: 7, s: 24, dur: 3 },
+            { d: 8, s: 27, dur: 1 },
             { d: 7, s: 28, dur: 4 },
             // Phrase B (bars 9-12) — climax
-            { d: 9, s: 32, dur: 2 }, { d: 10, s: 34, dur: 1 }, { d: 9, s: 35, dur: 1 },
-            { d: 7, s: 36, dur: 2 }, { d: 8, s: 38, dur: 2 },
-            { d: 10, s: 40, dur: 2 }, { d: 9, s: 42, dur: 1 }, { d: 7, s: 43, dur: 1 },
-            { d: 5, s: 44, dur: 2 }, { d: 4, s: 46, dur: 2 },
+            { d: 9, s: 32, dur: 2 },
+            { d: 10, s: 34, dur: 1 },
+            { d: 9, s: 35, dur: 1 },
+            { d: 7, s: 36, dur: 2 },
+            { d: 8, s: 38, dur: 2 },
+            { d: 10, s: 40, dur: 2 },
+            { d: 9, s: 42, dur: 1 },
+            { d: 7, s: 43, dur: 1 },
+            { d: 5, s: 44, dur: 2 },
+            { d: 4, s: 46, dur: 2 },
             // Phrase B2 (bars 13-16) — fading resolution
-            { d: 3, s: 48, dur: 3 }, { d: 1, s: 51, dur: 1 },
+            { d: 3, s: 48, dur: 3 },
+            { d: 1, s: 51, dur: 1 },
             { d: 0, s: 52, dur: 4 },
-            { d: 2, s: 56, dur: 2 }, { d: 1, s: 58, dur: 2 },
-            { d: 0, s: 60, dur: 4 }
+            { d: 2, s: 56, dur: 2 },
+            { d: 1, s: 58, dur: 2 },
+            { d: 0, s: 60, dur: 4 },
           ];
           for (const n of melody) {
             const p = scaleNote(root + 12, sc, n.d);
             const vel = n.s >= 32 && n.s < 48 ? 85 : 72;
             N(notes, p, b(n.s), b(n.s + n.dur * 0.95), vel);
           }
-        }
+        },
       },
       // Sparse atmospheric percussion (no full kit — just accents)
       {
@@ -608,9 +725,9 @@ function buildSinnoh() {
               N(notes, 49, b(bar * 4), b(bar * 4 + 0.3), 55);
             }
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 }
 
@@ -633,47 +750,96 @@ function buildUnova() {
           // Modern, urban, electronic groove
           const melody = [
             // Phrase A (bars 1-4) — punchy, rhythmic
-            { d: 0, s: 0, dur: 0.5 }, { d: 2, s: 0.5, dur: 0.5 }, { d: 4, s: 1, dur: 1 },
-            { d: 5, s: 2, dur: 0.5 }, { d: 4, s: 2.5, dur: 0.5 }, { d: 2, s: 3, dur: 1 },
-            { d: 4, s: 4, dur: 0.5 }, { d: 5, s: 4.5, dur: 0.5 }, { d: 7, s: 5, dur: 1.5 },
-            { d: 5, s: 6.5, dur: 0.5 }, { d: 4, s: 7, dur: 1 },
-            { d: 2, s: 8, dur: 0.5 }, { d: 4, s: 8.5, dur: 0.5 }, { d: 5, s: 9, dur: 1 },
-            { d: 7, s: 10, dur: 0.5 }, { d: 9, s: 10.5, dur: 1.5 },
-            { d: 7, s: 12, dur: 1 }, { d: 5, s: 13, dur: 0.5 }, { d: 4, s: 13.5, dur: 0.5 },
-            { d: 2, s: 14, dur: 1 }, { d: 0, s: 15, dur: 1 },
+            { d: 0, s: 0, dur: 0.5 },
+            { d: 2, s: 0.5, dur: 0.5 },
+            { d: 4, s: 1, dur: 1 },
+            { d: 5, s: 2, dur: 0.5 },
+            { d: 4, s: 2.5, dur: 0.5 },
+            { d: 2, s: 3, dur: 1 },
+            { d: 4, s: 4, dur: 0.5 },
+            { d: 5, s: 4.5, dur: 0.5 },
+            { d: 7, s: 5, dur: 1.5 },
+            { d: 5, s: 6.5, dur: 0.5 },
+            { d: 4, s: 7, dur: 1 },
+            { d: 2, s: 8, dur: 0.5 },
+            { d: 4, s: 8.5, dur: 0.5 },
+            { d: 5, s: 9, dur: 1 },
+            { d: 7, s: 10, dur: 0.5 },
+            { d: 9, s: 10.5, dur: 1.5 },
+            { d: 7, s: 12, dur: 1 },
+            { d: 5, s: 13, dur: 0.5 },
+            { d: 4, s: 13.5, dur: 0.5 },
+            { d: 2, s: 14, dur: 1 },
+            { d: 0, s: 15, dur: 1 },
             // Phrase A2 (bars 5-8) — variation
-            { d: 7, s: 16, dur: 0.5 }, { d: 9, s: 16.5, dur: 0.5 }, { d: 11, s: 17, dur: 1 },
-            { d: 9, s: 18, dur: 0.5 }, { d: 7, s: 18.5, dur: 1 }, { d: 5, s: 19.5, dur: 0.5 },
-            { d: 7, s: 20, dur: 1 }, { d: 9, s: 21, dur: 0.5 }, { d: 11, s: 21.5, dur: 1 },
-            { d: 9, s: 22.5, dur: 0.5 }, { d: 7, s: 23, dur: 1 },
-            { d: 5, s: 24, dur: 0.5 }, { d: 4, s: 24.5, dur: 0.5 }, { d: 2, s: 25, dur: 1 },
-            { d: 4, s: 26, dur: 0.5 }, { d: 5, s: 26.5, dur: 1 }, { d: 4, s: 27.5, dur: 0.5 },
-            { d: 2, s: 28, dur: 1 }, { d: 0, s: 29, dur: 1 },
+            { d: 7, s: 16, dur: 0.5 },
+            { d: 9, s: 16.5, dur: 0.5 },
+            { d: 11, s: 17, dur: 1 },
+            { d: 9, s: 18, dur: 0.5 },
+            { d: 7, s: 18.5, dur: 1 },
+            { d: 5, s: 19.5, dur: 0.5 },
+            { d: 7, s: 20, dur: 1 },
+            { d: 9, s: 21, dur: 0.5 },
+            { d: 11, s: 21.5, dur: 1 },
+            { d: 9, s: 22.5, dur: 0.5 },
+            { d: 7, s: 23, dur: 1 },
+            { d: 5, s: 24, dur: 0.5 },
+            { d: 4, s: 24.5, dur: 0.5 },
+            { d: 2, s: 25, dur: 1 },
+            { d: 4, s: 26, dur: 0.5 },
+            { d: 5, s: 26.5, dur: 1 },
+            { d: 4, s: 27.5, dur: 0.5 },
+            { d: 2, s: 28, dur: 1 },
+            { d: 0, s: 29, dur: 1 },
             // rest
             { d: 0, s: 31, dur: 1 },
             // Phrase B (bars 9-12) — energetic climax
-            { d: 7, s: 32, dur: 0.5 }, { d: 9, s: 32.5, dur: 0.5 }, { d: 11, s: 33, dur: 0.5 },
-            { d: 12, s: 33.5, dur: 1 }, { d: 11, s: 34.5, dur: 0.5 }, { d: 9, s: 35, dur: 1 },
-            { d: 11, s: 36, dur: 0.5 }, { d: 12, s: 36.5, dur: 0.5 }, { d: 14, s: 37, dur: 1.5 },
-            { d: 12, s: 38.5, dur: 0.5 }, { d: 11, s: 39, dur: 1 },
-            { d: 9, s: 40, dur: 0.5 }, { d: 11, s: 40.5, dur: 0.5 }, { d: 12, s: 41, dur: 1 },
-            { d: 11, s: 42, dur: 0.5 }, { d: 9, s: 42.5, dur: 0.5 }, { d: 7, s: 43, dur: 1 },
-            { d: 5, s: 44, dur: 0.5 }, { d: 7, s: 44.5, dur: 0.5 }, { d: 9, s: 45, dur: 1.5 },
-            { d: 7, s: 46.5, dur: 0.5 }, { d: 5, s: 47, dur: 1 },
+            { d: 7, s: 32, dur: 0.5 },
+            { d: 9, s: 32.5, dur: 0.5 },
+            { d: 11, s: 33, dur: 0.5 },
+            { d: 12, s: 33.5, dur: 1 },
+            { d: 11, s: 34.5, dur: 0.5 },
+            { d: 9, s: 35, dur: 1 },
+            { d: 11, s: 36, dur: 0.5 },
+            { d: 12, s: 36.5, dur: 0.5 },
+            { d: 14, s: 37, dur: 1.5 },
+            { d: 12, s: 38.5, dur: 0.5 },
+            { d: 11, s: 39, dur: 1 },
+            { d: 9, s: 40, dur: 0.5 },
+            { d: 11, s: 40.5, dur: 0.5 },
+            { d: 12, s: 41, dur: 1 },
+            { d: 11, s: 42, dur: 0.5 },
+            { d: 9, s: 42.5, dur: 0.5 },
+            { d: 7, s: 43, dur: 1 },
+            { d: 5, s: 44, dur: 0.5 },
+            { d: 7, s: 44.5, dur: 0.5 },
+            { d: 9, s: 45, dur: 1.5 },
+            { d: 7, s: 46.5, dur: 0.5 },
+            { d: 5, s: 47, dur: 1 },
             // Phrase B2 (bars 13-16) — outro
-            { d: 4, s: 48, dur: 0.5 }, { d: 5, s: 48.5, dur: 0.5 }, { d: 7, s: 49, dur: 1 },
-            { d: 5, s: 50, dur: 0.5 }, { d: 4, s: 50.5, dur: 0.5 }, { d: 2, s: 51, dur: 1 },
-            { d: 4, s: 52, dur: 1 }, { d: 5, s: 53, dur: 0.5 }, { d: 4, s: 53.5, dur: 0.5 },
-            { d: 2, s: 54, dur: 1 }, { d: 0, s: 55, dur: 1 },
-            { d: 2, s: 56, dur: 0.5 }, { d: 4, s: 56.5, dur: 0.5 }, { d: 5, s: 57, dur: 1 },
-            { d: 4, s: 58, dur: 1 }, { d: 2, s: 59, dur: 1 },
-            { d: 0, s: 60, dur: 4 }
+            { d: 4, s: 48, dur: 0.5 },
+            { d: 5, s: 48.5, dur: 0.5 },
+            { d: 7, s: 49, dur: 1 },
+            { d: 5, s: 50, dur: 0.5 },
+            { d: 4, s: 50.5, dur: 0.5 },
+            { d: 2, s: 51, dur: 1 },
+            { d: 4, s: 52, dur: 1 },
+            { d: 5, s: 53, dur: 0.5 },
+            { d: 4, s: 53.5, dur: 0.5 },
+            { d: 2, s: 54, dur: 1 },
+            { d: 0, s: 55, dur: 1 },
+            { d: 2, s: 56, dur: 0.5 },
+            { d: 4, s: 56.5, dur: 0.5 },
+            { d: 5, s: 57, dur: 1 },
+            { d: 4, s: 58, dur: 1 },
+            { d: 2, s: 59, dur: 1 },
+            { d: 0, s: 60, dur: 4 },
           ];
           for (const n of melody) {
             const p = scaleNote(root + 12, sc, n.d);
             N(notes, p, b(n.s), b(n.s + n.dur * 0.85), 92);
           }
-        }
+        },
       },
       // Trumpet accents (program 56)
       {
@@ -681,44 +847,59 @@ function buildUnova() {
         fn(notes, b) {
           // Stab accents on off-beats, enters bar 3
           const stabs = [
-            { d: 7, s: 8.5, dur: 0.5 }, { d: 9, s: 10, dur: 0.5 },
-            { d: 7, s: 12.5, dur: 0.5 }, { d: 5, s: 14, dur: 0.5 },
-            { d: 9, s: 16.5, dur: 0.5 }, { d: 11, s: 18, dur: 0.5 },
-            { d: 7, s: 20.5, dur: 0.5 }, { d: 9, s: 22, dur: 0.5 },
-            { d: 5, s: 24.5, dur: 0.5 }, { d: 7, s: 26, dur: 0.5 },
-            { d: 4, s: 28.5, dur: 0.5 }, { d: 5, s: 30, dur: 0.5 },
+            { d: 7, s: 8.5, dur: 0.5 },
+            { d: 9, s: 10, dur: 0.5 },
+            { d: 7, s: 12.5, dur: 0.5 },
+            { d: 5, s: 14, dur: 0.5 },
+            { d: 9, s: 16.5, dur: 0.5 },
+            { d: 11, s: 18, dur: 0.5 },
+            { d: 7, s: 20.5, dur: 0.5 },
+            { d: 9, s: 22, dur: 0.5 },
+            { d: 5, s: 24.5, dur: 0.5 },
+            { d: 7, s: 26, dur: 0.5 },
+            { d: 4, s: 28.5, dur: 0.5 },
+            { d: 5, s: 30, dur: 0.5 },
             // Climax section — more accents
-            { d: 11, s: 32.5, dur: 0.5 }, { d: 12, s: 33.5, dur: 0.5 },
-            { d: 14, s: 34.5, dur: 0.5 }, { d: 12, s: 36, dur: 0.5 },
-            { d: 11, s: 37.5, dur: 0.5 }, { d: 14, s: 38.5, dur: 0.5 },
-            { d: 12, s: 40, dur: 0.5 }, { d: 11, s: 41.5, dur: 0.5 },
-            { d: 9, s: 42.5, dur: 0.5 }, { d: 7, s: 44, dur: 0.5 },
-            { d: 9, s: 45.5, dur: 0.5 }, { d: 7, s: 46.5, dur: 0.5 },
+            { d: 11, s: 32.5, dur: 0.5 },
+            { d: 12, s: 33.5, dur: 0.5 },
+            { d: 14, s: 34.5, dur: 0.5 },
+            { d: 12, s: 36, dur: 0.5 },
+            { d: 11, s: 37.5, dur: 0.5 },
+            { d: 14, s: 38.5, dur: 0.5 },
+            { d: 12, s: 40, dur: 0.5 },
+            { d: 11, s: 41.5, dur: 0.5 },
+            { d: 9, s: 42.5, dur: 0.5 },
+            { d: 7, s: 44, dur: 0.5 },
+            { d: 9, s: 45.5, dur: 0.5 },
+            { d: 7, s: 46.5, dur: 0.5 },
             // Outro
-            { d: 5, s: 48.5, dur: 0.5 }, { d: 7, s: 50.5, dur: 0.5 },
-            { d: 4, s: 52.5, dur: 0.5 }, { d: 5, s: 54.5, dur: 0.5 },
-            { d: 2, s: 56.5, dur: 0.5 }, { d: 4, s: 58.5, dur: 0.5 },
-            { d: 0, s: 60, dur: 2 }
+            { d: 5, s: 48.5, dur: 0.5 },
+            { d: 7, s: 50.5, dur: 0.5 },
+            { d: 4, s: 52.5, dur: 0.5 },
+            { d: 5, s: 54.5, dur: 0.5 },
+            { d: 2, s: 56.5, dur: 0.5 },
+            { d: 4, s: 58.5, dur: 0.5 },
+            { d: 0, s: 60, dur: 2 },
           ];
           for (const n of stabs) {
             const p = scaleNote(root + 12, sc, n.d);
             N(notes, p, b(n.s), b(n.s + n.dur * 0.8), 78);
           }
-        }
+        },
       },
       // Electric piano chords (program 4)
       {
         program: 4,
         fn(notes, b) {
           const chords = [
-            [0, 4, 7],     // Bb (I)
-            [5, 7, 11],    // F (V)
-            [2, 4, 7],     // Cm (ii)
-            [6, 9, 11],    // Ab (bVII)
-            [0, 4, 7],     // Bb (I)
-            [5, 7, 11],    // F (V)
-            [3, 5, 9],     // Eb (IV)
-            [0, 4, 7]      // Bb (I)
+            [0, 4, 7], // Bb (I)
+            [5, 7, 11], // F (V)
+            [2, 4, 7], // Cm (ii)
+            [6, 9, 11], // Ab (bVII)
+            [0, 4, 7], // Bb (I)
+            [5, 7, 11], // F (V)
+            [3, 5, 9], // Eb (IV)
+            [0, 4, 7], // Bb (I)
           ];
           for (let bar = 0; bar < totalBars; bar++) {
             const chord = chords[bar % chords.length];
@@ -732,7 +913,7 @@ function buildUnova() {
               }
             }
           }
-        }
+        },
       },
       // Drums — electronic, driving
       {
@@ -769,9 +950,9 @@ function buildUnova() {
               N(notes, 49, b(bar * 4), b(bar * 4 + 0.3), 90);
             }
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 }
 
@@ -793,14 +974,14 @@ function buildKalos() {
         fn(notes, b) {
           // Flowing eighth-note arpeggios, French-waltz feel
           const chordDegs = [
-            [0, 2, 4, 7],   // F
-            [2, 4, 7, 9],   // Am
-            [0, 2, 4, 7],   // F
-            [4, 7, 9, 12],  // C
-            [2, 4, 7, 9],   // Am/Dm
-            [0, 2, 4, 7],   // F
-            [4, 7, 9, 12],  // C
-            [0, 2, 4, 7]    // F
+            [0, 2, 4, 7], // F
+            [2, 4, 7, 9], // Am
+            [0, 2, 4, 7], // F
+            [4, 7, 9, 12], // C
+            [2, 4, 7, 9], // Am/Dm
+            [0, 2, 4, 7], // F
+            [4, 7, 9, 12], // C
+            [0, 2, 4, 7], // F
           ];
           for (let bar = 0; bar < totalBars; bar++) {
             const chord = chordDegs[bar % chordDegs.length];
@@ -814,7 +995,7 @@ function buildKalos() {
               N(notes, p, t, t + b(0.45), 55 + (eighth === 0 ? 10 : 0));
             }
           }
-        }
+        },
       },
       // Accordion melody (program 21)
       {
@@ -823,32 +1004,57 @@ function buildKalos() {
           // Romantic, French-inspired melody
           const melody = [
             // Phrase A (bars 1-4) — gentle, lilting
-            { d: 4, s: 0, dur: 2 }, { d: 5, s: 2, dur: 1 }, { d: 4, s: 3, dur: 1 },
-            { d: 2, s: 4, dur: 2 }, { d: 4, s: 6, dur: 2 },
-            { d: 5, s: 8, dur: 1.5 }, { d: 7, s: 9.5, dur: 1 }, { d: 5, s: 10.5, dur: 1.5 },
-            { d: 4, s: 12, dur: 3 }, { d: 2, s: 15, dur: 1 },
+            { d: 4, s: 0, dur: 2 },
+            { d: 5, s: 2, dur: 1 },
+            { d: 4, s: 3, dur: 1 },
+            { d: 2, s: 4, dur: 2 },
+            { d: 4, s: 6, dur: 2 },
+            { d: 5, s: 8, dur: 1.5 },
+            { d: 7, s: 9.5, dur: 1 },
+            { d: 5, s: 10.5, dur: 1.5 },
+            { d: 4, s: 12, dur: 3 },
+            { d: 2, s: 15, dur: 1 },
             // Phrase A2 (bars 5-8) — expands upward
-            { d: 4, s: 16, dur: 1 }, { d: 5, s: 17, dur: 1 }, { d: 7, s: 18, dur: 2 },
-            { d: 9, s: 20, dur: 1.5 }, { d: 7, s: 21.5, dur: 1 }, { d: 5, s: 22.5, dur: 1.5 },
-            { d: 4, s: 24, dur: 2 }, { d: 2, s: 26, dur: 1 }, { d: 4, s: 27, dur: 1 },
-            { d: 5, s: 28, dur: 2 }, { d: 4, s: 30, dur: 2 },
+            { d: 4, s: 16, dur: 1 },
+            { d: 5, s: 17, dur: 1 },
+            { d: 7, s: 18, dur: 2 },
+            { d: 9, s: 20, dur: 1.5 },
+            { d: 7, s: 21.5, dur: 1 },
+            { d: 5, s: 22.5, dur: 1.5 },
+            { d: 4, s: 24, dur: 2 },
+            { d: 2, s: 26, dur: 1 },
+            { d: 4, s: 27, dur: 1 },
+            { d: 5, s: 28, dur: 2 },
+            { d: 4, s: 30, dur: 2 },
             // Phrase B (bars 9-12) — emotional climax
-            { d: 7, s: 32, dur: 2 }, { d: 9, s: 34, dur: 1 }, { d: 10, s: 35, dur: 1 },
-            { d: 9, s: 36, dur: 2 }, { d: 7, s: 38, dur: 1 }, { d: 5, s: 39, dur: 1 },
-            { d: 7, s: 40, dur: 1.5 }, { d: 9, s: 41.5, dur: 1.5 }, { d: 10, s: 43, dur: 1 },
-            { d: 9, s: 44, dur: 2 }, { d: 7, s: 46, dur: 2 },
+            { d: 7, s: 32, dur: 2 },
+            { d: 9, s: 34, dur: 1 },
+            { d: 10, s: 35, dur: 1 },
+            { d: 9, s: 36, dur: 2 },
+            { d: 7, s: 38, dur: 1 },
+            { d: 5, s: 39, dur: 1 },
+            { d: 7, s: 40, dur: 1.5 },
+            { d: 9, s: 41.5, dur: 1.5 },
+            { d: 10, s: 43, dur: 1 },
+            { d: 9, s: 44, dur: 2 },
+            { d: 7, s: 46, dur: 2 },
             // Phrase B2 (bars 13-16) — gentle resolution
-            { d: 5, s: 48, dur: 1.5 }, { d: 4, s: 49.5, dur: 1 }, { d: 2, s: 50.5, dur: 1.5 },
-            { d: 4, s: 52, dur: 2 }, { d: 5, s: 54, dur: 1 }, { d: 4, s: 55, dur: 1 },
-            { d: 2, s: 56, dur: 2 }, { d: 0, s: 58, dur: 2 },
-            { d: 0, s: 60, dur: 4 }
+            { d: 5, s: 48, dur: 1.5 },
+            { d: 4, s: 49.5, dur: 1 },
+            { d: 2, s: 50.5, dur: 1.5 },
+            { d: 4, s: 52, dur: 2 },
+            { d: 5, s: 54, dur: 1 },
+            { d: 4, s: 55, dur: 1 },
+            { d: 2, s: 56, dur: 2 },
+            { d: 0, s: 58, dur: 2 },
+            { d: 0, s: 60, dur: 4 },
           ];
           for (const n of melody) {
             const p = scaleNote(root + 12, sc, n.d);
             const vel = n.s >= 32 && n.s < 48 ? 85 : 75;
             N(notes, p, b(n.s), b(n.s + n.dur * 0.92), vel);
           }
-        }
+        },
       },
       // Strings pad (program 48)
       {
@@ -856,14 +1062,14 @@ function buildKalos() {
         fn(notes, b) {
           // Warm sustained chords, 2-bar phrasing
           const chords = [
-            [0, 4, 7],    // F (I)
-            [2, 4, 9],    // Am (iii-ish pentatonic)
-            [0, 4, 7],    // F (I)
-            [4, 7, 9],    // C area
-            [2, 4, 7],    // Dm
-            [0, 4, 9],    // F
-            [4, 7, 9],    // C
-            [0, 4, 7]     // F
+            [0, 4, 7], // F (I)
+            [2, 4, 9], // Am (iii-ish pentatonic)
+            [0, 4, 7], // F (I)
+            [4, 7, 9], // C area
+            [2, 4, 7], // Dm
+            [0, 4, 9], // F
+            [4, 7, 9], // C
+            [0, 4, 7], // F
           ];
           for (let i = 0; i < chords.length; i++) {
             const startBeat = i * 8;
@@ -873,7 +1079,7 @@ function buildKalos() {
               N(notes, p, t, t + b(7.5), 45);
             }
           }
-        }
+        },
       },
       // Drums — light, waltz-ish
       {
@@ -902,45 +1108,51 @@ function buildKalos() {
               N(notes, 36, b(bar * 4 + 2), b(bar * 4 + 2.12), 50);
             }
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 }
 
 // --------------- Visualizer Helpers ---------------
 
 function stopAllPlayers() {
-  document.querySelectorAll('midi-player').forEach(p => {
-    try { p.stop(); } catch (_) {}
+  document.querySelectorAll("midi-player").forEach((p) => {
+    try {
+      p.stop();
+    } catch (_) {}
   });
 }
 
 function zoomVisualizer(viz) {
-  const svg = viz.querySelector('svg');
+  const svg = viz.querySelector("svg");
   if (!svg) return;
-  const rects = svg.querySelectorAll('rect[data-note]');
+  const rects = svg.querySelectorAll("rect[data-note]");
   if (!rects.length) return;
-  let minY = Infinity, maxY = -Infinity;
-  rects.forEach(r => {
-    const y = parseFloat(r.getAttribute('y') || 0);
-    const h = parseFloat(r.getAttribute('height') || 0);
+  let minY = Infinity,
+    maxY = -Infinity;
+  rects.forEach((r) => {
+    const y = parseFloat(r.getAttribute("y") || 0);
+    const h = parseFloat(r.getAttribute("height") || 0);
     if (y < minY) minY = y;
     if (y + h > maxY) maxY = y + h;
   });
   if (!isFinite(minY)) return;
-  const vb = svg.getAttribute('viewBox');
+  const vb = svg.getAttribute("viewBox");
   if (!vb) return;
-  const [vx, , vw, vh] = vb.split(' ').map(Number);
+  const [vx, , vw, vh] = vb.split(" ").map(Number);
   const m = vh * 0.05;
-  svg.setAttribute('viewBox', `${vx} ${Math.max(0, minY - m)} ${vw} ${Math.min(vh, maxY - minY + m * 2)}`);
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.setAttribute(
+    "viewBox",
+    `${vx} ${Math.max(0, minY - m)} ${vw} ${Math.min(vh, maxY - minY + m * 2)}`
+  );
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 }
 
 function observeViz(viz) {
   const obs = new MutationObserver(() => {
-    const svg = viz.querySelector('svg');
-    if (svg && svg.querySelectorAll('rect[data-note]').length > 0) {
+    const svg = viz.querySelector("svg");
+    if (svg && svg.querySelectorAll("rect[data-note]").length > 0) {
       zoomVisualizer(viz);
       obs.disconnect();
     }
@@ -951,47 +1163,41 @@ function observeViz(viz) {
 
 // --------------- Initialization ---------------
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   // Build NoteSequences for generated tracks (Gen I–V)
-  const sequences = [
-    buildKanto(),
-    buildJohto(),
-    buildHoenn(),
-    buildSinnoh(),
-    buildUnova()
-  ];
+  const sequences = [buildKanto(), buildJohto(), buildHoenn(), buildSinnoh(), buildUnova()];
 
   // Assign NoteSequences to players/visualizers without a src attribute
-  const players = document.querySelectorAll('midi-player');
-  const visualizers = document.querySelectorAll('midi-visualizer');
+  const players = document.querySelectorAll("midi-player");
+  const visualizers = document.querySelectorAll("midi-visualizer");
 
   players.forEach((player, i) => {
-    if (!player.getAttribute('src') && i < sequences.length) {
+    if (!player.getAttribute("src") && i < sequences.length) {
       player.noteSequence = sequences[i];
     }
   });
 
   visualizers.forEach((viz, i) => {
-    if (!viz.getAttribute('src') && i < sequences.length) {
+    if (!viz.getAttribute("src") && i < sequences.length) {
       viz.noteSequence = sequences[i];
     }
     observeViz(viz);
   });
 
   // Tab navigation
-  document.querySelectorAll('.tabs').forEach(nav => {
-    const tabs = nav.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
+  document.querySelectorAll(".tabs").forEach((nav) => {
+    const tabs = nav.querySelectorAll(".tab");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
         stopAllPlayers();
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        const parent = tab.closest('.collection') || document.body;
-        parent.querySelectorAll('.piece').forEach(p => p.classList.remove('active'));
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        const parent = tab.closest(".collection") || document.body;
+        parent.querySelectorAll(".piece").forEach((p) => p.classList.remove("active"));
         const target = document.getElementById(`piece-${tab.dataset.track}`);
         if (target) {
-          target.classList.add('active');
-          target.querySelectorAll('midi-visualizer').forEach(observeViz);
+          target.classList.add("active");
+          target.querySelectorAll("midi-visualizer").forEach(observeViz);
         }
       });
     });

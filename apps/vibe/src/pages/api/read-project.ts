@@ -23,11 +23,7 @@ const IGNORED = new Set([
 const MAX_FILE_SIZE = 512 * 1024; // 512 KB
 const MAX_FILES = 500;
 
-async function walkDir(
-  dir: string,
-  rootDir: string,
-  files: FileEntry[],
-): Promise<void> {
+async function walkDir(dir: string, rootDir: string, files: FileEntry[]): Promise<void> {
   if (files.length >= MAX_FILES) return;
 
   let entries;
@@ -53,12 +49,42 @@ async function walkDir(
         // Skip binary files by checking extension
         const ext = entry.name.split(".").pop()?.toLowerCase() ?? "";
         const binaryExts = new Set([
-          "png", "jpg", "jpeg", "gif", "webp", "ico", "bmp", "svg",
-          "woff", "woff2", "ttf", "eot", "otf",
-          "zip", "tar", "gz", "bz2", "7z", "rar",
-          "mp3", "mp4", "wav", "avi", "mov", "mkv",
-          "pdf", "doc", "docx", "xls", "xlsx",
-          "exe", "dll", "so", "dylib", "o", "a",
+          "png",
+          "jpg",
+          "jpeg",
+          "gif",
+          "webp",
+          "ico",
+          "bmp",
+          "svg",
+          "woff",
+          "woff2",
+          "ttf",
+          "eot",
+          "otf",
+          "zip",
+          "tar",
+          "gz",
+          "bz2",
+          "7z",
+          "rar",
+          "mp3",
+          "mp4",
+          "wav",
+          "avi",
+          "mov",
+          "mkv",
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "exe",
+          "dll",
+          "so",
+          "dylib",
+          "o",
+          "a",
           "lock",
         ]);
         if (binaryExts.has(ext)) continue;
@@ -88,9 +114,8 @@ export const GET: APIRoute = async ({ url }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    return new Response(
-      JSON.stringify({ files: [], error: err?.message }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ files: [], error: err?.message }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };

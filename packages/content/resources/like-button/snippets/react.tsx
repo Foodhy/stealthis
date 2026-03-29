@@ -34,7 +34,9 @@ export default function LikeButtonRC() {
           }}
         >
           <svg
-            width="22" height="22" viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
             fill={liked ? "#ff6b6b" : "none"}
             stroke={liked ? "#ff6b6b" : "#8b949e"}
             strokeWidth="2"
@@ -54,18 +56,21 @@ export default function LikeButtonRC() {
         </button>
 
         {/* Burst particles */}
-        {burst && PARTICLES.map((p, i) => (
-          <span
-            key={i}
-            className="absolute w-2 h-2 rounded-full pointer-events-none"
-            style={{
-              background: p.color,
-              animation: "particle-burst 0.6s ease-out both",
-              transformOrigin: "center",
-              "--angle": `${p.angle}deg`,
-            } as React.CSSProperties}
-          />
-        ))}
+        {burst &&
+          PARTICLES.map((p, i) => (
+            <span
+              key={i}
+              className="absolute w-2 h-2 rounded-full pointer-events-none"
+              style={
+                {
+                  background: p.color,
+                  animation: "particle-burst 0.6s ease-out both",
+                  transformOrigin: "center",
+                  "--angle": `${p.angle}deg`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
       </div>
 
       {/* Variants showcase */}
@@ -91,7 +96,12 @@ export default function LikeButtonRC() {
   );
 }
 
-function LikeVariant({ icon, label, color, initialCount }: { icon: string; label: string; color: string; initialCount: number }) {
+function LikeVariant({
+  icon,
+  label,
+  color,
+  initialCount,
+}: { icon: string; label: string; color: string; initialCount: number }) {
   const [active, setActive] = useState(false);
   const [count, setCount] = useState(initialCount);
 
@@ -110,10 +120,16 @@ function LikeVariant({ icon, label, color, initialCount }: { icon: string; label
         transform: active ? "scale(1.05)" : "scale(1)",
       }}
     >
-      <span className="text-2xl" style={{ filter: active ? "none" : "grayscale(1) opacity(0.4)", transition: "filter 0.2s" }}>
+      <span
+        className="text-2xl"
+        style={{ filter: active ? "none" : "grayscale(1) opacity(0.4)", transition: "filter 0.2s" }}
+      >
         {icon}
       </span>
-      <span className="text-xs font-semibold tabular-nums" style={{ color: active ? color : "#8b949e" }}>
+      <span
+        className="text-xs font-semibold tabular-nums"
+        style={{ color: active ? color : "#8b949e" }}
+      >
         {count.toLocaleString()}
       </span>
       <span className="text-[10px] text-[#484f58]">{label}</span>

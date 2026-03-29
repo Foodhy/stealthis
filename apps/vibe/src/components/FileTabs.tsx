@@ -29,27 +29,19 @@ export default function FileTabs() {
           <div
             key={tab.path}
             className={`group flex items-center gap-1.5 border-r border-white/6 px-3 py-1.5 text-xs ${
-              isActive
-                ? "bg-slate-900 text-slate-200"
-                : "text-slate-500 hover:text-slate-300"
+              isActive ? "bg-slate-900 text-slate-200" : "text-slate-500 hover:text-slate-300"
             }`}
           >
             <button
-              onClick={() =>
-                dispatch({ type: "SET_ACTIVE_TAB", payload: tab.path })
-              }
+              onClick={() => dispatch({ type: "SET_ACTIVE_TAB", payload: tab.path })}
               className="flex items-center gap-1.5"
             >
               <TabIcon name={fileName} />
               <span>{fileName}</span>
-              {tab.dirty && (
-                <span className="text-[10px] font-medium text-vibe-400">M</span>
-              )}
+              {tab.dirty && <span className="text-[10px] font-medium text-vibe-400">M</span>}
             </button>
             <button
-              onClick={() =>
-                dispatch({ type: "CLOSE_TAB", payload: tab.path })
-              }
+              onClick={() => dispatch({ type: "CLOSE_TAB", payload: tab.path })}
               className="ml-1 text-[10px] text-slate-600 opacity-0 transition-opacity hover:text-slate-300 group-hover:opacity-100"
             >
               x

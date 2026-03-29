@@ -14,10 +14,13 @@
   const massVal = document.getElementById("mass-val");
 
   // Spring state
-  let posX = 0, posY = 0;
-  let velX = 0, velY = 0;
+  let posX = 0,
+    posY = 0;
+  let velX = 0,
+    velY = 0;
   let isDragging = false;
-  let dragOffsetX = 0, dragOffsetY = 0;
+  let dragOffsetX = 0,
+    dragOffsetY = 0;
 
   function getParams() {
     return {
@@ -28,9 +31,15 @@
   }
 
   // Update value displays
-  stiffnessSlider.addEventListener("input", () => { stiffnessVal.textContent = stiffnessSlider.value; });
-  dampingSlider.addEventListener("input", () => { dampingVal.textContent = dampingSlider.value; });
-  massSlider.addEventListener("input", () => { massVal.textContent = massSlider.value; });
+  stiffnessSlider.addEventListener("input", () => {
+    stiffnessVal.textContent = stiffnessSlider.value;
+  });
+  dampingSlider.addEventListener("input", () => {
+    dampingVal.textContent = dampingSlider.value;
+  });
+  massSlider.addEventListener("input", () => {
+    massVal.textContent = massSlider.value;
+  });
 
   // ── Drag handling ──
   ball.addEventListener("pointerdown", (e) => {
@@ -93,10 +102,16 @@
       posY += velY * dt;
 
       // Settle threshold
-      if (Math.abs(posX) < 0.01 && Math.abs(posY) < 0.01 &&
-          Math.abs(velX) < 0.01 && Math.abs(velY) < 0.01) {
-        posX = 0; posY = 0;
-        velX = 0; velY = 0;
+      if (
+        Math.abs(posX) < 0.01 &&
+        Math.abs(posY) < 0.01 &&
+        Math.abs(velX) < 0.01 &&
+        Math.abs(velY) < 0.01
+      ) {
+        posX = 0;
+        posY = 0;
+        velX = 0;
+        velY = 0;
       }
     }
 

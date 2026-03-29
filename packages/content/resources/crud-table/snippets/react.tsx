@@ -123,10 +123,7 @@ export default function CrudTablePattern() {
           </p>
         </header>
 
-        <form
-          onSubmit={submit}
-          className="rounded-2xl border border-[#30363d] bg-[#161b22] p-4"
-        >
+        <form onSubmit={submit} className="rounded-2xl border border-[#30363d] bg-[#161b22] p-4">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[1.3fr_1.3fr_1fr_1fr_auto_auto]">
             <input
               value={form.name}
@@ -142,7 +139,9 @@ export default function CrudTablePattern() {
             />
             <select
               value={form.role}
-              onChange={(event) => setForm((prev) => ({ ...prev, role: event.target.value as Role }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, role: event.target.value as Role }))
+              }
               className="rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] outline-none transition-colors focus:border-[#58a6ff]"
             >
               {ROLE_OPTIONS.map((role) => (

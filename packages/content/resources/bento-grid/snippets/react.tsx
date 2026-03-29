@@ -7,12 +7,7 @@ interface BentoGridProps {
   className?: string;
 }
 
-export function BentoGrid({
-  children,
-  columns = 3,
-  gap = "1rem",
-  className = "",
-}: BentoGridProps) {
+export function BentoGrid({ children, columns = 3, gap = "1rem", className = "" }: BentoGridProps) {
   const gridStyle: CSSProperties = {
     display: "grid",
     gridTemplateColumns: `repeat(${columns}, 1fr)`,
@@ -60,7 +55,8 @@ export function BentoGridItem({
     display: "flex",
     flexDirection: "column",
     gap: "0.75rem",
-    transition: "border-color 0.2s ease, background 0.2s ease, opacity 0.5s ease, transform 0.5s ease",
+    transition:
+      "border-color 0.2s ease, background 0.2s ease, opacity 0.5s ease, transform 0.5s ease",
     opacity: visible ? 1 : 0,
     transform: visible ? "translateY(0)" : "translateY(16px)",
   };

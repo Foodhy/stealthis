@@ -17,15 +17,7 @@ export type ProjectFolder = {
 
 export type AppMode = "plan" | "execute";
 
-export type TechStack =
-  | "html"
-  | "react"
-  | "next"
-  | "astro"
-  | "vue"
-  | "svelte"
-  | "node"
-  | "other";
+export type TechStack = "html" | "react" | "next" | "astro" | "vue" | "svelte" | "node" | "other";
 
 export type ProjectConfig = {
   name: string;
@@ -76,7 +68,15 @@ export type WorkspaceAction =
   | { type: "SET_PROJECT_ID"; payload: string }
   | { type: "SET_CONFIG"; payload: ProjectConfig }
   | { type: "SET_CONFIGURED"; payload: boolean }
-  | { type: "RESTORE_PROJECT"; payload: { projectId: string; config: ProjectConfig; projectPath: string; messages: ChatMessage[] } }
+  | {
+      type: "RESTORE_PROJECT";
+      payload: {
+        projectId: string;
+        config: ProjectConfig;
+        projectPath: string;
+        messages: ChatMessage[];
+      };
+    }
   | { type: "SET_MODE"; payload: AppMode }
   | { type: "SET_SETTINGS_OPEN"; payload: boolean }
   | { type: "SET_FOLDER"; payload: ProjectFolder | null }

@@ -1,0 +1,58 @@
+---
+slug: boiler-next-db
+title: Next.js + Prisma + PostgreSQL Starter
+description: Full-stack Next.js starter with Prisma ORM, PostgreSQL database, typed API routes, and migration workflow. Deploy-ready with Vercel Postgres.
+category: boilerplates
+type: boilerplate
+tags: [nextjs, prisma, postgresql, fullstack, database, starter]
+tech: [nextjs, prisma, postgresql, typescript]
+difficulty: med
+targets: [html]
+labRoute: /boilerplates/boiler-next-db
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+A production-ready full-stack starter that pairs Next.js with Prisma ORM and PostgreSQL. It gives you typed database access, automatic migrations, and a clean project structure out of the box.
+
+## Why Prisma + Next.js?
+
+Prisma provides a declarative schema language that generates a fully typed TypeScript client. Combined with Next.js API routes (or Server Actions), you get end-to-end type safety from your database schema all the way to your React components — no manual type definitions, no runtime surprises.
+
+The key architectural pattern is the **singleton Prisma client**. In development, Next.js hot-reloads modules frequently, which would otherwise create multiple database connections. The singleton pattern (`globalThis.prisma`) ensures a single connection pool is reused across reloads.
+
+## Singleton Client Pattern
+
+```ts
+// src/lib/prisma.ts
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+
+export const prisma = globalForPrisma.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+```
+
+This file is the single import point for every server-side module that needs database access.
+
+## Migration Workflow
+
+Prisma migrations are version-controlled SQL files generated from your schema changes:
+
+1. Edit `prisma/schema.prisma`
+2. Run `npx prisma migrate dev --name describe_change`
+3. Prisma diffs the schema, generates SQL, applies it, and regenerates the client
+4. Commit the migration folder to source control
+
+For production deployments, `npx prisma migrate deploy` applies pending migrations without generating new ones.
+
+## References
+
+- [Prisma + Next.js Guide](https://www.prisma.io/docs/guides/frameworks/nextjs)
+- [Vercel Postgres + Prisma Template](https://vercel.com/templates/next.js/postgres-prisma)
+- Community: [nemanjam/nextjs-prisma-boilerplate](https://github.com/nemanjam/nextjs-prisma-boilerplate) (711⭐)

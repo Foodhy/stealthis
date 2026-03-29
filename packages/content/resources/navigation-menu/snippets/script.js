@@ -1,13 +1,13 @@
 (function () {
   "use strict";
 
-  const trigger    = document.getElementById("products-trigger");
-  const megaMenu   = document.getElementById("mega-menu");
-  const indicator  = document.getElementById("nav-indicator");
-  const navItems   = document.getElementById("nav-items");
-  const hamburger  = document.getElementById("hamburger");
-  const mobileNav  = document.getElementById("mobile-nav");
-  const navbar     = document.getElementById("navbar");
+  const trigger = document.getElementById("products-trigger");
+  const megaMenu = document.getElementById("mega-menu");
+  const indicator = document.getElementById("nav-indicator");
+  const navItems = document.getElementById("nav-items");
+  const hamburger = document.getElementById("hamburger");
+  const mobileNav = document.getElementById("mobile-nav");
+  const navbar = document.getElementById("navbar");
 
   let megaOpen = false;
   let mobileOpen = false;
@@ -56,10 +56,10 @@
 
   function moveIndicator(el) {
     if (!el || !navItems) return;
-    const navRect  = navItems.getBoundingClientRect();
-    const elRect   = el.getBoundingClientRect();
-    indicator.style.left    = (elRect.left - navRect.left) + "px";
-    indicator.style.width   = elRect.width + "px";
+    const navRect = navItems.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    indicator.style.left = elRect.left - navRect.left + "px";
+    indicator.style.width = elRect.width + "px";
     indicator.style.opacity = "1";
   }
 
@@ -76,8 +76,12 @@
   // Hover behaviour for all nav links + trigger
   const allNavEls = Array.from(navItems.querySelectorAll(".nav-link, .nav-link--trigger"));
   allNavEls.forEach(function (el) {
-    el.addEventListener("mouseenter", function () { moveIndicator(el); });
-    el.addEventListener("focus",      function () { moveIndicator(el); });
+    el.addEventListener("mouseenter", function () {
+      moveIndicator(el);
+    });
+    el.addEventListener("focus", function () {
+      moveIndicator(el);
+    });
   });
 
   navItems.addEventListener("mouseleave", hideIndicator);
@@ -89,7 +93,9 @@
   const activeLink = navItems.querySelector(".nav-link--active");
   if (activeLink) {
     // Slight delay to ensure layout is complete
-    requestAnimationFrame(function () { moveIndicator(activeLink); });
+    requestAnimationFrame(function () {
+      moveIndicator(activeLink);
+    });
   }
 
   // Re-position on resize
@@ -114,5 +120,4 @@
   }
 
   hamburger.addEventListener("click", toggleMobile);
-
 })();

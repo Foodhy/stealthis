@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ url }) => {
           "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "public, max-age=120",
         },
-      },
+      }
     );
   }
 
@@ -34,6 +34,6 @@ export const GET: APIRoute = async ({ url }) => {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "public, max-age=300",
       },
-    },
+    }
   );
 };

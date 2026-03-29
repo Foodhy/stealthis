@@ -1,13 +1,13 @@
 /* Dark Mode — Showcase interactions */
 
 // ── Button ripple effect ──────────────────────────────────────
-document.querySelectorAll('.btn').forEach((btn) => {
-  btn.addEventListener('click', function (e) {
+document.querySelectorAll(".btn").forEach((btn) => {
+  btn.addEventListener("click", function (e) {
     const rect = this.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const ripple = document.createElement('span');
+    const ripple = document.createElement("span");
     ripple.style.cssText = `
       position: absolute;
       left: ${x}px;
@@ -21,15 +21,15 @@ document.querySelectorAll('.btn').forEach((btn) => {
       pointer-events: none;
     `;
 
-    this.style.position = 'relative';
-    this.style.overflow = 'hidden';
+    this.style.position = "relative";
+    this.style.overflow = "hidden";
     this.appendChild(ripple);
     setTimeout(() => ripple.remove(), 500);
   });
 });
 
 // Inject ripple keyframes once
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
   @keyframes ripple {
     to { width: 200px; height: 200px; opacity: 0; }
@@ -38,41 +38,41 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ── Input — live validation feedback ─────────────────────────
-const input = document.getElementById('demo-input');
+const input = document.getElementById("demo-input");
 const hint = input?.nextElementSibling;
 
 if (input && hint) {
-  input.addEventListener('input', () => {
+  input.addEventListener("input", () => {
     const val = input.value.trim();
-    if (val.startsWith('https://github.com/')) {
-      hint.textContent = '✓ Valid GitHub URL';
-      hint.style.color = '#22C55E';
+    if (val.startsWith("https://github.com/")) {
+      hint.textContent = "✓ Valid GitHub URL";
+      hint.style.color = "#22C55E";
     } else if (val.length > 0) {
-      hint.textContent = 'URL should start with https://github.com/';
-      hint.style.color = '#EF4444';
+      hint.textContent = "URL should start with https://github.com/";
+      hint.style.color = "#EF4444";
     } else {
-      hint.textContent = 'Paste a public GitHub URL to clone.';
-      hint.style.color = '';
+      hint.textContent = "Paste a public GitHub URL to clone.";
+      hint.style.color = "";
     }
   });
 }
 
 // ── Nav link active state ─────────────────────────────────────
-document.querySelectorAll('.nav-link').forEach((link) => {
-  link.addEventListener('click', function (e) {
+document.querySelectorAll(".nav-link").forEach((link) => {
+  link.addEventListener("click", function (e) {
     e.preventDefault();
-    document.querySelectorAll('.nav-link').forEach((l) => l.classList.remove('active'));
-    this.classList.add('active');
+    document.querySelectorAll(".nav-link").forEach((l) => l.classList.remove("active"));
+    this.classList.add("active");
   });
 });
 
 // ── Card hover elevation ──────────────────────────────────────
-document.querySelectorAll('.card').forEach((card) => {
-  card.addEventListener('mouseenter', () => {
-    card.style.borderColor = '#3A3A3A';
-    card.style.transition = 'border-color 0.2s';
+document.querySelectorAll(".card").forEach((card) => {
+  card.addEventListener("mouseenter", () => {
+    card.style.borderColor = "#3A3A3A";
+    card.style.transition = "border-color 0.2s";
   });
-  card.addEventListener('mouseleave', () => {
-    card.style.borderColor = '';
+  card.addEventListener("mouseleave", () => {
+    card.style.borderColor = "";
   });
 });

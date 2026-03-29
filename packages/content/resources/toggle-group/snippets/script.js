@@ -6,7 +6,7 @@
    * @param {HTMLElement} group
    */
   function initToggleGroup(group) {
-    const mode    = group.dataset.mode || "single"; // "single" | "multi"
+    const mode = group.dataset.mode || "single"; // "single" | "multi"
     const buttons = Array.from(group.querySelectorAll("[role='button']"));
 
     // ── Click handling ──────────────────────────────────────────
@@ -17,7 +17,7 @@
     // ── Keyboard navigation (roving tabindex) ───────────────────
     group.addEventListener("keydown", (e) => {
       const focused = document.activeElement;
-      const idx     = buttons.indexOf(focused);
+      const idx = buttons.indexOf(focused);
       if (idx === -1) return;
 
       let nextIdx = idx;
@@ -95,23 +95,32 @@
     const toolbar = document.querySelector('[aria-label="Text formatting"]');
     if (!toolbar) return;
 
-    const btns    = toolbar.querySelectorAll("[role='button']");
+    const btns = toolbar.querySelectorAll("[role='button']");
     const preview = document.getElementById("preview-text");
     if (!preview) return;
 
     // Single-select: only one can be active
-    const activeLabel = [...btns].find(
-      (b) => b.getAttribute("aria-pressed") === "true"
-    )?.getAttribute("aria-label") || "";
+    const activeLabel =
+      [...btns]
+        .find((b) => b.getAttribute("aria-pressed") === "true")
+        ?.getAttribute("aria-label") || "";
 
     // Remove all format classes
     preview.classList.remove("is-bold", "is-italic", "is-underline", "is-strikethrough");
 
     switch (activeLabel) {
-      case "Bold":          preview.classList.add("is-bold");          break;
-      case "Italic":        preview.classList.add("is-italic");        break;
-      case "Underline":     preview.classList.add("is-underline");     break;
-      case "Strikethrough": preview.classList.add("is-strikethrough"); break;
+      case "Bold":
+        preview.classList.add("is-bold");
+        break;
+      case "Italic":
+        preview.classList.add("is-italic");
+        break;
+      case "Underline":
+        preview.classList.add("is-underline");
+        break;
+      case "Strikethrough":
+        preview.classList.add("is-strikethrough");
+        break;
     }
   }
 

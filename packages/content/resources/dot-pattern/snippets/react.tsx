@@ -1,10 +1,4 @@
-import {
-  type CSSProperties,
-  type ReactNode,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
+import { type CSSProperties, type ReactNode, useCallback, useRef, useState } from "react";
 
 interface DotPatternProps {
   /** Distance between dot centers in pixels */
@@ -32,17 +26,14 @@ export function DotPattern({
   const containerRef = useRef<HTMLDivElement>(null);
   const [glowPos, setGlowPos] = useState({ x: 0, y: 0, visible: false });
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      setGlowPos({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-        visible: true,
-      });
-    },
-    [],
-  );
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setGlowPos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      visible: true,
+    });
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
     setGlowPos((prev) => ({ ...prev, visible: false }));
@@ -72,8 +63,7 @@ export function DotPattern({
     width: 500,
     height: 500,
     borderRadius: "50%",
-    background:
-      "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
+    background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
     pointerEvents: "none",
     transform: "translate(-50%, -50%)",
     transition: "opacity 0.3s ease",
@@ -159,8 +149,8 @@ export default function DotPatternDemo() {
             fontFamily: "system-ui, -apple-system, sans-serif",
           }}
         >
-          Repeating dot background using radial-gradient, fully customizable
-          with CSS custom properties.
+          Repeating dot background using radial-gradient, fully customizable with CSS custom
+          properties.
         </p>
         <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
           {["CSS", "radial-gradient", "pattern"].map((tag) => (

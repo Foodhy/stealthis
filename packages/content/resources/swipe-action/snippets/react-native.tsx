@@ -46,10 +46,8 @@ function SwipeableItem({
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (
-        _: GestureResponderEvent,
-        gs: PanResponderGestureState
-      ) => Math.abs(gs.dx) > 10 && Math.abs(gs.dx) > Math.abs(gs.dy),
+      onMoveShouldSetPanResponder: (_: GestureResponderEvent, gs: PanResponderGestureState) =>
+        Math.abs(gs.dx) > 10 && Math.abs(gs.dx) > Math.abs(gs.dy),
       onPanResponderMove: (_: GestureResponderEvent, gs: PanResponderGestureState) => {
         const newX = lastOffset.current + gs.dx;
         translateX.setValue(newX);
@@ -165,9 +163,7 @@ export default function App() {
           onStar={() => {}}
         />
       ))}
-      {emails.length === 0 && (
-        <Text style={styles.empty}>All clear!</Text>
-      )}
+      {emails.length === 0 && <Text style={styles.empty}>All clear!</Text>}
     </View>
   );
 }

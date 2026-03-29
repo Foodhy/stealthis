@@ -10,12 +10,7 @@ interface SkeletonBaseProps {
   style?: object;
 }
 
-function SkeletonBase({
-  width = "100%",
-  height = 16,
-  borderRadius = 6,
-  style,
-}: SkeletonBaseProps) {
+function SkeletonBase({ width = "100%", height = 16, borderRadius = 6, style }: SkeletonBaseProps) {
   const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -55,20 +50,12 @@ function SkeletonBase({
 
 /* ── Presets ───────────────────────────────────────────── */
 
-function SkeletonLine({
-  width = "100%",
-  height = 14,
-  style,
-}: SkeletonBaseProps) {
-  return (
-    <SkeletonBase width={width} height={height} borderRadius={4} style={style} />
-  );
+function SkeletonLine({ width = "100%", height = 14, style }: SkeletonBaseProps) {
+  return <SkeletonBase width={width} height={height} borderRadius={4} style={style} />;
 }
 
 function SkeletonCircle({ size = 48, style }: { size?: number; style?: object }) {
-  return (
-    <SkeletonBase width={size} height={size} borderRadius={size / 2} style={style} />
-  );
+  return <SkeletonBase width={size} height={size} borderRadius={size / 2} style={style} />;
 }
 
 function SkeletonCard() {
@@ -102,9 +89,7 @@ export default function App() {
       <Skeleton.Card />
 
       {/* Custom layout */}
-      <Text style={[demo.sectionTitle, { marginTop: 28 }]}>
-        Custom layout
-      </Text>
+      <Text style={[demo.sectionTitle, { marginTop: 28 }]}>Custom layout</Text>
       <View style={demo.customRow}>
         <Skeleton.Circle size={52} />
         <View style={{ flex: 1, marginLeft: 14, gap: 8 }}>

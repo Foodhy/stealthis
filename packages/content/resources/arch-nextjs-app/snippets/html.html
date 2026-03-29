@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Next.js App Router Architecture</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(59,130,246,0.04) 100%);
+    }
+
+    .card-header .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.12);
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      margin-bottom: 12px;
+    }
+
+    .card-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .card-header p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .card-body { padding: 0; }
+
+    .section {
+      padding: 24px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #22d3ee;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: #22d3ee;
+      border-radius: 2px;
+    }
+
+    .tree {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+    }
+
+    .tree .dir { color: #3b82f6; font-weight: 500; }
+    .tree .file { color: #e2e8f0; }
+    .tree .comment { color: #64748b; font-style: italic; }
+    .tree .special { color: #22d3ee; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      body { padding: 16px; }
+      .section { padding: 20px 20px; }
+      .card-header { padding: 20px 20px 16px; }
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .info-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .info-card p {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .info-card .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #3b82f6;
+      background: rgba(59,130,246,0.1);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+
+    .key-files {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .key-file {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .key-file code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #22d3ee;
+      background: rgba(34,211,238,0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .key-file span {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .links a {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: none;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 8px;
+      padding: 8px 14px;
+      transition: all 0.2s;
+    }
+
+    .links a:hover {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.3);
+      color: #60a5fa;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge">Architecture</span>
+    <h1>Next.js App Router</h1>
+    <p>Project structure with nested layouts, server/client components, route handlers, and middleware</p>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Folder Tree -->
+    <div class="section">
+      <div class="section-title">Folder Structure</div>
+      <div class="tree"><span class="dir">app/</span>
+<span class="file">&#9500;&#9472;&#9472; layout.tsx</span>          <span class="comment">(Root layout)</span>
+<span class="file">&#9500;&#9472;&#9472; page.tsx</span>            <span class="comment">(Home /)</span>
+<span class="file">&#9500;&#9472;&#9472; loading.tsx</span>         <span class="comment">(Loading UI)</span>
+<span class="file">&#9500;&#9472;&#9472; error.tsx</span>           <span class="comment">(Error boundary)</span>
+<span class="file">&#9500;&#9472;&#9472; not-found.tsx</span>       <span class="comment">(404 page)</span>
+<span class="special">&#9500;&#9472;&#9472; middleware.ts</span>       <span class="comment">(Edge middleware)</span>
+<span class="dir">&#9500;&#9472;&#9472; api/</span>
+<span class="file">&#9474;   &#9492;&#9472;&#9472; route.ts</span>        <span class="comment">(Route handler)</span>
+<span class="dir">&#9500;&#9472;&#9472; dashboard/</span>
+<span class="file">&#9474;   &#9500;&#9472;&#9472; layout.tsx</span>      <span class="comment">(Nested layout)</span>
+<span class="file">&#9474;   &#9500;&#9472;&#9472; page.tsx</span>        <span class="comment">(/dashboard)</span>
+<span class="dir">&#9474;   &#9492;&#9472;&#9472; settings/</span>
+<span class="file">&#9474;       &#9492;&#9472;&#9472; page.tsx</span>    <span class="comment">(/dashboard/settings)</span>
+<span class="dir">&#9492;&#9472;&#9472; (auth)/</span>
+<span class="file">    &#9500;&#9472;&#9472; login/page.tsx</span>  <span class="comment">(Route group)</span>
+<span class="file">    &#9492;&#9472;&#9472; register/page.tsx</span></div>
+    </div>
+
+    <!-- Key Files -->
+    <div class="section">
+      <div class="section-title">Key Files</div>
+      <div class="key-files">
+        <div class="key-file"><code>layout.tsx</code> <span>Persistent UI shell; root layout replaces _app and _document</span></div>
+        <div class="key-file"><code>page.tsx</code> <span>Makes a route segment publicly accessible</span></div>
+        <div class="key-file"><code>loading.tsx</code> <span>Instant loading state via React Suspense boundaries</span></div>
+        <div class="key-file"><code>error.tsx</code> <span>Error boundary scoped to the segment and its children</span></div>
+        <div class="key-file"><code>route.ts</code> <span>API endpoint with GET, POST, PUT, DELETE handlers</span></div>
+        <div class="key-file"><code>middleware.ts</code> <span>Intercepts requests for auth, redirects, and rewrites</span></div>
+      </div>
+    </div>
+
+    <!-- Routing & Components -->
+    <div class="section">
+      <div class="section-title">Routing Conventions</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Nested Layouts</h4>
+          <p>Layouts wrap child routes automatically. A dashboard layout persists across all /dashboard/* pages without re-rendering the root.</p>
+          <span class="tag">app/dashboard/layout.tsx</span>
+        </div>
+        <div class="info-card">
+          <h4>Route Groups</h4>
+          <p>Parenthesized folders like (auth) organize routes without affecting the URL. login/page.tsx renders at /login.</p>
+          <span class="tag">(auth)/login/page.tsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Server vs Client</div>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Server Components</h4>
+          <p>Default in App Router. Zero JS bundle cost. Direct access to databases, filesystem, and secrets. No useState or event handlers.</p>
+          <span class="tag">Default behavior</span>
+        </div>
+        <div class="info-card">
+          <h4>Client Components</h4>
+          <p>Add "use client" directive for interactivity. Required for useState, useEffect, onClick, and browser APIs.</p>
+          <span class="tag">"use client"</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="section">
+      <div class="section-title">Official Links</div>
+      <div class="links">
+        <a href="https://nextjs.org/docs/app/getting-started/project-structure" target="_blank" rel="noopener">Project Structure</a>
+        <a href="https://nextjs.org/docs/app/building-your-application/routing" target="_blank" rel="noopener">Routing</a>
+        <a href="https://nextjs.org/docs/app/building-your-application/rendering/server-components" target="_blank" rel="noopener">Server Components</a>
+        <a href="https://nextjs.org/docs/app/building-your-application/routing/route-handlers" target="_blank" rel="noopener">Route Handlers</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

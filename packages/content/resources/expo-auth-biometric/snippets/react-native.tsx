@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 
 /* ------------------------------------------------------------------ */
@@ -99,8 +92,7 @@ function BiometricAuth({ onAuthenticated }: BiometricAuthProps) {
     try {
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      const supportedTypes =
-        await LocalAuthentication.supportedAuthenticationTypesAsync();
+      const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
 
       setHardwareInfo({ hasHardware, isEnrolled, supportedTypes });
 
@@ -164,11 +156,9 @@ function BiometricAuth({ onAuthenticated }: BiometricAuthProps) {
           ? "Waiting for authentication\u2026"
           : status === "success"
             ? "Authentication successful"
-            : errorMessage ?? "Authentication failed";
+            : (errorMessage ?? "Authentication failed");
 
-  const authTypeLabel = hardwareInfo
-    ? getAuthTypeLabel(hardwareInfo.supportedTypes)
-    : "Biometric";
+  const authTypeLabel = hardwareInfo ? getAuthTypeLabel(hardwareInfo.supportedTypes) : "Biometric";
 
   return (
     <View style={styles.card}>

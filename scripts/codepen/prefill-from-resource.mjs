@@ -58,7 +58,10 @@ function buildPrefill(slug) {
   });
 
   // Remove local <script src="*.js"> tags (JS content goes in the JS panel)
-  const htmlFinal = htmlCleaned.replace(/<script[^>]*\bsrc=["'][^"']*\.js["'][^>]*>[\s\S]*?<\/script>\s*/gi, "");
+  const htmlFinal = htmlCleaned.replace(
+    /<script[^>]*\bsrc=["'][^"']*\.js["'][^>]*>[\s\S]*?<\/script>\s*/gi,
+    ""
+  );
 
   // Also extract <style> from <head>
   headContent.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_, content) => {
@@ -84,7 +87,7 @@ function buildPrefill(slug) {
   let transformedJs = js;
   let useModule = false;
   const importMapMatch = html.match(
-    /<script[^>]*type=["']importmap["'][^>]*>([\s\S]*?)<\/script>/i,
+    /<script[^>]*type=["']importmap["'][^>]*>([\s\S]*?)<\/script>/i
   );
   if (importMapMatch && /\bimport\s/.test(js)) {
     try {
@@ -92,21 +95,20 @@ function buildPrefill(slug) {
       if (importMap.imports) {
         useModule = true;
         // Sort by key length descending so longer prefixes match first
-        const entries = Object.entries(importMap.imports)
-          .sort(([a], [b]) => b.length - a.length);
+        const entries = Object.entries(importMap.imports).sort(([a], [b]) => b.length - a.length);
         for (const [specifier, url] of entries) {
           const escaped = specifier.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
           if (specifier.endsWith("/")) {
             // Prefix mapping: 'three/addons/foo' → full CDN URL
             transformedJs = transformedJs.replace(
               new RegExp(`(from\\s+['"])${escaped}`, "g"),
-              `$1${url}`,
+              `$1${url}`
             );
           } else {
             // Exact mapping: 'three' → 'https://esm.sh/three@0.171.0'
             transformedJs = transformedJs.replace(
               new RegExp(`(from\\s+['"])${escaped}(['"])`, "g"),
-              `$1${url}$2`,
+              `$1${url}$2`
             );
           }
         }

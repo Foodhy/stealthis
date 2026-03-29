@@ -6,7 +6,7 @@ interface Service {
   name: string;
   status: Status;
   latency: number; // ms
-  uptime: number;  // 0-100
+  uptime: number; // 0-100
 }
 
 interface Incident {
@@ -18,16 +18,16 @@ interface Incident {
 }
 
 const INITIAL_SERVICES: Service[] = [
-  { name: "API Gateway",       status: "operational", latency: 24,  uptime: 99.98 },
-  { name: "Authentication",    status: "operational", latency: 18,  uptime: 99.99 },
-  { name: "Database (Read)",   status: "operational", latency: 8,   uptime: 99.95 },
-  { name: "Database (Write)",  status: "degraded",    latency: 412, uptime: 99.72 },
-  { name: "Object Storage",    status: "operational", latency: 62,  uptime: 99.96 },
-  { name: "Email Service",     status: "outage",      latency: 0,   uptime: 98.1  },
-  { name: "CDN",               status: "operational", latency: 5,   uptime: 99.99 },
-  { name: "Search",            status: "degraded",    latency: 890, uptime: 99.4  },
-  { name: "Analytics",         status: "operational", latency: 145, uptime: 99.8  },
-  { name: "Webhooks",          status: "operational", latency: 55,  uptime: 99.91 },
+  { name: "API Gateway", status: "operational", latency: 24, uptime: 99.98 },
+  { name: "Authentication", status: "operational", latency: 18, uptime: 99.99 },
+  { name: "Database (Read)", status: "operational", latency: 8, uptime: 99.95 },
+  { name: "Database (Write)", status: "degraded", latency: 412, uptime: 99.72 },
+  { name: "Object Storage", status: "operational", latency: 62, uptime: 99.96 },
+  { name: "Email Service", status: "outage", latency: 0, uptime: 98.1 },
+  { name: "CDN", status: "operational", latency: 5, uptime: 99.99 },
+  { name: "Search", status: "degraded", latency: 890, uptime: 99.4 },
+  { name: "Analytics", status: "operational", latency: 145, uptime: 99.8 },
+  { name: "Webhooks", status: "operational", latency: 55, uptime: 99.91 },
 ];
 
 const INCIDENTS: Incident[] = [
@@ -63,26 +63,26 @@ const INCIDENTS: Incident[] = [
 
 const STATUS_COLORS: Record<Status, string> = {
   operational: "bg-green-500",
-  degraded:    "bg-yellow-400",
-  outage:      "bg-red-500",
+  degraded: "bg-yellow-400",
+  outage: "bg-red-500",
 };
 
 const STATUS_TEXT: Record<Status, string> = {
   operational: "text-green-400",
-  degraded:    "text-yellow-400",
-  outage:      "text-red-400",
+  degraded: "text-yellow-400",
+  outage: "text-red-400",
 };
 
 const STATUS_LABEL: Record<Status, string> = {
   operational: "Operational",
-  degraded:    "Degraded",
-  outage:      "Outage",
+  degraded: "Degraded",
+  outage: "Outage",
 };
 
 const INCIDENT_BADGE: Record<Incident["status"], string> = {
-  resolved:     "bg-green-500/10 text-green-400 border-green-500/30",
-  investigating:"bg-red-500/10 text-red-400 border-red-500/30",
-  monitoring:   "bg-yellow-400/10 text-yellow-400 border-yellow-400/30",
+  resolved: "bg-green-500/10 text-green-400 border-green-500/30",
+  investigating: "bg-red-500/10 text-red-400 border-red-500/30",
+  monitoring: "bg-yellow-400/10 text-yellow-400 border-yellow-400/30",
 };
 
 function UptimeBars({ uptime }: { uptime: number }) {
@@ -185,14 +185,21 @@ export default function ApiStatusBoardRC() {
         {/* Services */}
         <div className="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
           <div className="px-5 py-3 bg-[#21262d] border-b border-[#30363d] flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">Services</span>
+            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">
+              Services
+            </span>
             <span className="text-[11px] text-[#484f58]">{services.length} endpoints</span>
           </div>
           <div className="divide-y divide-[#21262d]">
             {services.map((s) => (
-              <div key={s.name} className="flex items-center px-5 py-3 hover:bg-white/[0.02] transition-colors">
+              <div
+                key={s.name}
+                className="flex items-center px-5 py-3 hover:bg-white/[0.02] transition-colors"
+              >
                 {/* Dot */}
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 mr-3 ${STATUS_COLORS[s.status]} ${s.status !== "operational" ? "animate-pulse" : ""}`} />
+                <span
+                  className={`w-2 h-2 rounded-full flex-shrink-0 mr-3 ${STATUS_COLORS[s.status]} ${s.status !== "operational" ? "animate-pulse" : ""}`}
+                />
 
                 {/* Name */}
                 <span className="flex-1 text-[13px] text-[#e6edf3] font-medium">{s.name}</span>
@@ -200,7 +207,9 @@ export default function ApiStatusBoardRC() {
                 {/* Uptime bars */}
                 <div className="hidden sm:flex items-center gap-3 mr-5">
                   <UptimeBars uptime={s.uptime} />
-                  <span className="text-[11px] text-[#8b949e] w-14 text-right">{s.uptime.toFixed(2)}%</span>
+                  <span className="text-[11px] text-[#8b949e] w-14 text-right">
+                    {s.uptime.toFixed(2)}%
+                  </span>
                 </div>
 
                 {/* Latency */}
@@ -220,7 +229,9 @@ export default function ApiStatusBoardRC() {
         {/* Incidents */}
         <div className="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
           <div className="px-5 py-3 bg-[#21262d] border-b border-[#30363d]">
-            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">Recent Incidents</span>
+            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">
+              Recent Incidents
+            </span>
           </div>
           <div className="divide-y divide-[#21262d]">
             {INCIDENTS.map((inc) => (
@@ -230,14 +241,19 @@ export default function ApiStatusBoardRC() {
                     <p className="text-[13px] font-semibold text-[#e6edf3]">{inc.title}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {inc.services.map((svc) => (
-                        <span key={svc} className="text-[10px] px-1.5 py-0.5 bg-[#21262d] rounded text-[#8b949e] border border-[#30363d]">
+                        <span
+                          key={svc}
+                          className="text-[10px] px-1.5 py-0.5 bg-[#21262d] rounded text-[#8b949e] border border-[#30363d]"
+                        >
                           {svc}
                         </span>
                       ))}
                     </div>
                     <p className="text-[11px] text-[#484f58]">{inc.date}</p>
                   </div>
-                  <span className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${INCIDENT_BADGE[inc.status]}`}>
+                  <span
+                    className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${INCIDENT_BADGE[inc.status]}`}
+                  >
                     {inc.status}
                   </span>
                 </div>

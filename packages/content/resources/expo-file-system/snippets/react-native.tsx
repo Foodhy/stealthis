@@ -69,8 +69,7 @@ function ProgressBar({ progress }: { progress: number }) {
 /*  Download Section                                                   */
 /* ------------------------------------------------------------------ */
 
-const DEFAULT_URL =
-  "https://raw.githubusercontent.com/expo/expo/main/README.md";
+const DEFAULT_URL = "https://raw.githubusercontent.com/expo/expo/main/README.md";
 
 function DownloadSection() {
   const [url, setUrl] = useState(DEFAULT_URL);
@@ -96,12 +95,7 @@ function DownloadSection() {
       setProgress(pct);
     };
 
-    const downloadResumable = FileSystem.createDownloadResumable(
-      url,
-      fileUri,
-      {},
-      callback
-    );
+    const downloadResumable = FileSystem.createDownloadResumable(url, fileUri, {}, callback);
     resumableRef.current = downloadResumable;
 
     try {
@@ -173,12 +167,10 @@ function FileBrowserSection() {
           const info = await FileSystem.getInfoAsync(dir + name);
           return {
             name,
-            size: info.exists ? (info as any).size ?? 0 : 0,
+            size: info.exists ? ((info as any).size ?? 0) : 0,
             exists: info.exists,
             isDirectory: info.isDirectory ?? false,
-            modificationTime: info.exists
-              ? (info as any).modificationTime
-              : undefined,
+            modificationTime: info.exists ? (info as any).modificationTime : undefined,
           };
         })
       );

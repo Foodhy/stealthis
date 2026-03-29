@@ -30,10 +30,15 @@ function HoverScale() {
         onMouseEnter={() => start(1.15)}
         onMouseLeave={() => start(1)}
         style={{
-          width: 100, height: 100, borderRadius: "1rem",
+          width: 100,
+          height: 100,
+          borderRadius: "1rem",
           background: "linear-gradient(135deg, #6d28d9, #a78bfa)",
-          display: "grid", placeItems: "center",
-          fontSize: "1.75rem", cursor: "pointer", willChange: "transform",
+          display: "grid",
+          placeItems: "center",
+          fontSize: "1.75rem",
+          cursor: "pointer",
+          willChange: "transform",
         }}
       >
         ✦
@@ -52,7 +57,8 @@ function TapShrink() {
 
   const tick = useCallback(() => {
     scaleRef.current += (targetRef.current - scaleRef.current) * 0.15;
-    if (Math.abs(scaleRef.current - targetRef.current) < 0.001) scaleRef.current = targetRef.current;
+    if (Math.abs(scaleRef.current - targetRef.current) < 0.001)
+      scaleRef.current = targetRef.current;
     if (ref.current) ref.current.style.transform = `scale(${scaleRef.current})`;
     if (scaleRef.current !== targetRef.current) rafRef.current = requestAnimationFrame(tick);
   }, []);
@@ -72,10 +78,16 @@ function TapShrink() {
         onPointerUp={() => start(1)}
         onPointerLeave={() => start(1)}
         style={{
-          width: 100, height: 100, borderRadius: "1rem",
+          width: 100,
+          height: 100,
+          borderRadius: "1rem",
           background: "linear-gradient(135deg, #0ea5e9, #38bdf8)",
-          display: "grid", placeItems: "center",
-          fontSize: "1.75rem", cursor: "pointer", userSelect: "none", willChange: "transform",
+          display: "grid",
+          placeItems: "center",
+          fontSize: "1.75rem",
+          cursor: "pointer",
+          userSelect: "none",
+          willChange: "transform",
         }}
       >
         ◆
@@ -89,7 +101,17 @@ function TapShrink() {
 function DragConstrained() {
   const areaRef = useRef<HTMLDivElement>(null);
   const elRef = useRef<HTMLDivElement>(null);
-  const stateRef = useRef({ isDragging: false, offX: 0, offY: 0, originX: 0, originY: 0, lerpX: 0, lerpY: 0, targetX: 0, targetY: 0 });
+  const stateRef = useRef({
+    isDragging: false,
+    offX: 0,
+    offY: 0,
+    originX: 0,
+    originY: 0,
+    lerpX: 0,
+    lerpY: 0,
+    targetX: 0,
+    targetY: 0,
+  });
   const rafRef = useRef(0);
 
   const returnTick = useCallback(() => {
@@ -97,10 +119,13 @@ function DragConstrained() {
     s.lerpX += (s.targetX - s.lerpX) * 0.15;
     s.lerpY += (s.targetY - s.lerpY) * 0.15;
     if (Math.abs(s.lerpX - s.targetX) < 0.1 && Math.abs(s.lerpY - s.targetY) < 0.1) {
-      s.lerpX = s.targetX; s.lerpY = s.targetY;
+      s.lerpX = s.targetX;
+      s.lerpY = s.targetY;
     }
-    if (elRef.current) elRef.current.style.transform = `translate(calc(-50% + ${s.lerpX}px), calc(-50% + ${s.lerpY}px))`;
-    if (s.lerpX !== s.targetX || s.lerpY !== s.targetY) rafRef.current = requestAnimationFrame(returnTick);
+    if (elRef.current)
+      elRef.current.style.transform = `translate(calc(-50% + ${s.lerpX}px), calc(-50% + ${s.lerpY}px))`;
+    if (s.lerpX !== s.targetX || s.lerpY !== s.targetY)
+      rafRef.current = requestAnimationFrame(returnTick);
   }, []);
 
   useEffect(() => {
@@ -114,20 +139,28 @@ function DragConstrained() {
       let ny = e.clientY - s.originY - s.offY;
       nx = Math.max(-halfW, Math.min(halfW, nx));
       ny = Math.max(-halfH, Math.min(halfH, ny));
-      s.lerpX = nx; s.lerpY = ny; s.targetX = nx; s.targetY = ny;
-      if (elRef.current) elRef.current.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+      s.lerpX = nx;
+      s.lerpY = ny;
+      s.targetX = nx;
+      s.targetY = ny;
+      if (elRef.current)
+        elRef.current.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
     };
     const onUp = () => {
       const s = stateRef.current;
       if (!s.isDragging) return;
       s.isDragging = false;
-      s.targetX = 0; s.targetY = 0;
+      s.targetX = 0;
+      s.targetY = 0;
       cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(returnTick);
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
   }, [returnTick]);
 
   const onDown = (e: React.PointerEvent) => {
@@ -147,22 +180,36 @@ function DragConstrained() {
   return (
     <div style={cardStyle}>
       <span style={labelStyle}>Drag Constrained</span>
-      <div ref={areaRef} style={{
-        width: "100%", height: 120,
-        background: "rgba(255,255,255,0.02)",
-        border: "1px dashed rgba(255,255,255,0.1)",
-        borderRadius: "0.75rem", position: "relative", overflow: "hidden",
-      }}>
+      <div
+        ref={areaRef}
+        style={{
+          width: "100%",
+          height: 120,
+          background: "rgba(255,255,255,0.02)",
+          border: "1px dashed rgba(255,255,255,0.1)",
+          borderRadius: "0.75rem",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
         <div
           ref={elRef}
           onPointerDown={onDown}
           style={{
-            width: 48, height: 48, borderRadius: "0.75rem",
+            width: 48,
+            height: 48,
+            borderRadius: "0.75rem",
             background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
-            position: "absolute", top: "50%", left: "50%",
+            position: "absolute",
+            top: "50%",
+            left: "50%",
             transform: "translate(-50%, -50%)",
-            cursor: "grab", willChange: "transform", touchAction: "none",
-            display: "grid", placeItems: "center", fontSize: "1.2rem",
+            cursor: "grab",
+            willChange: "transform",
+            touchAction: "none",
+            display: "grid",
+            placeItems: "center",
+            fontSize: "1.2rem",
           }}
         >
           ⬡
@@ -206,24 +253,37 @@ function FocusGlow() {
     <div style={cardStyle}>
       <span style={labelStyle}>Focus Glow</span>
       <div style={{ width: "100%", position: "relative", borderRadius: "0.75rem" }}>
-        <div ref={glowRef} style={{
-          position: "absolute", inset: -2, borderRadius: "0.875rem",
-          opacity: 0, pointerEvents: "none",
-          background: "conic-gradient(from 0deg, #ec4899, #8b5cf6, #6366f1, #0ea5e9, #10b981, #ec4899)",
-          filter: "blur(8px)", willChange: "opacity",
-        }} />
+        <div
+          ref={glowRef}
+          style={{
+            position: "absolute",
+            inset: -2,
+            borderRadius: "0.875rem",
+            opacity: 0,
+            pointerEvents: "none",
+            background:
+              "conic-gradient(from 0deg, #ec4899, #8b5cf6, #6366f1, #0ea5e9, #10b981, #ec4899)",
+            filter: "blur(8px)",
+            willChange: "opacity",
+          }}
+        />
         <input
           type="text"
           placeholder="Click to focus..."
           onFocus={() => start(0.6)}
           onBlur={() => start(0)}
           style={{
-            width: "100%", padding: "0.75rem 1rem", fontSize: "0.85rem",
+            width: "100%",
+            padding: "0.75rem 1rem",
+            fontSize: "0.85rem",
             fontFamily: "inherit",
             background: "rgba(255,255,255,0.04)",
             border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "0.75rem", color: "#e4e4e7", outline: "none",
-            position: "relative", zIndex: 1,
+            borderRadius: "0.75rem",
+            color: "#e4e4e7",
+            outline: "none",
+            position: "relative",
+            zIndex: 1,
           }}
         />
       </div>
@@ -272,7 +332,14 @@ export default function GestureAnimations() {
         color: "#e4e4e7",
       }}
     >
-      <div style={{ width: "min(560px, 100%)", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <div
+        style={{
+          width: "min(560px, 100%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5rem",
+        }}
+      >
         <div>
           <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#f4f4f5" }}>
             Gesture Animations

@@ -1,0 +1,62 @@
+---
+slug: arch-event-sourcing
+title: Event Sourcing + CQRS Architecture
+description: Event sourcing pattern with append-only event store, aggregate roots, projections, CQRS read/write separation, and event replay for state reconstruction.
+category: architectures
+type: architecture
+tags: [event-sourcing, cqrs, ddd, aggregate, projections, event-store]
+tech: [typescript, nodejs]
+difficulty: hard
+targets: [html]
+labRoute: /architectures/arch-event-sourcing
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-03-28
+updatedAt: 2026-03-28
+---
+
+## Event Sourcing + CQRS Architecture
+
+Event Sourcing stores **every state change as an immutable event** in an append-only log. Instead of persisting the current state, you persist the sequence of events that led to it. CQRS (Command Query Responsibility Segregation) complements this by separating the **write model** (commands that produce events) from the **read model** (projections optimized for queries).
+
+### Event Sourcing
+
+The core idea is simple: instead of `UPDATE orders SET status = 'shipped'`, you append an `OrderShipped` event. The current state is derived by **replaying** all events for an aggregate from the beginning.
+
+Benefits:
+- **Complete audit trail**: Every change is recorded forever
+- **Time travel**: Reconstruct state at any point in time
+- **Event replay**: Fix bugs, rebuild projections, add new read models retroactively
+- **Debugging**: Reproduce exact sequences of events that led to a problem
+
+### Aggregates
+
+An aggregate is a cluster of domain objects (e.g., `Order` with its `OrderItems`) that forms a consistency boundary. Each aggregate:
+
+1. Receives a **command** (e.g., `ShipOrder`)
+2. Validates business rules against its current state
+3. Produces one or more **events** (e.g., `OrderShipped`)
+4. Applies events to update its in-memory state
+
+### CQRS
+
+Commands and queries use completely separate models:
+
+- **Write side**: Command handlers load an aggregate from the event store, apply the command, and persist new events
+- **Read side**: Event handlers project events into denormalized read models (e.g., `OrderSummary` table, `Analytics` view) optimized for specific queries
+
+### Projections
+
+Projections subscribe to the event stream and build materialized views. They are **disposable** -- you can delete and rebuild any projection by replaying all events from the store.
+
+### Snapshots
+
+For aggregates with many events, periodic **snapshots** cache the aggregate state at a point in time. On load, the system restores the snapshot and replays only events after the snapshot.
+
+### Learn More
+
+- [Event Sourcing (Microsoft)](https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing)
+- [Event Sourcing (microservices.io)](https://microservices.io/patterns/data/event-sourcing.html)
+- [EventSourcing.NodeJS](https://github.com/oskardudycz/EventSourcing.NodeJS)

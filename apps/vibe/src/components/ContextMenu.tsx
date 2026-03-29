@@ -56,12 +56,7 @@ export default function ContextMenu({ x, y, items, onAction, onClose }: Props) {
   }, [onClose]);
 
   return (
-    <div
-      ref={ref}
-      role="menu"
-      className="context-menu"
-      style={{ left: x, top: y }}
-    >
+    <div ref={ref} role="menu" className="context-menu" style={{ left: x, top: y }}>
       {items.map((item, i) =>
         item.label === "---" ? (
           <div key={i} className="menu-divider" role="separator" />
@@ -81,7 +76,7 @@ export default function ContextMenu({ x, y, items, onAction, onClose }: Props) {
             {item.icon && <span className="menu-item__icon">{item.icon}</span>}
             <span className="menu-item__label">{item.label}</span>
           </button>
-        ),
+        )
       )}
     </div>
   );

@@ -44,7 +44,12 @@ function StreamCard({ text, speed = 16, label }: StreamProps) {
     idxRef.current = 0;
   };
 
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    },
+    []
+  );
 
   const pct = Math.round((displayed.length / text.length) * 100);
 
@@ -53,16 +58,16 @@ function StreamCard({ text, speed = 16, label }: StreamProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#21262d] border-b border-[#30363d]">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">{label}</span>
+          <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">
+            {label}
+          </span>
           {running && (
             <span className="flex items-center gap-1 text-[11px] text-green-400">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               Streaming
             </span>
           )}
-          {done && (
-            <span className="text-[11px] text-[#8b949e]">{text.length} chars</span>
-          )}
+          {done && <span className="text-[11px] text-[#8b949e]">{text.length} chars</span>}
         </div>
         <div className="flex gap-1.5">
           <button
@@ -115,7 +120,7 @@ export default function StreamingTextRC() {
     <div className="min-h-screen bg-[#0d1117] p-6 flex justify-center">
       <div className="w-full max-w-[720px] space-y-4">
         <StreamCard text={TEXTS[0]} speed={12} label="Standard (12ms)" />
-        <StreamCard text={TEXTS[1]} speed={4}  label="Fast (4ms)" />
+        <StreamCard text={TEXTS[1]} speed={4} label="Fast (4ms)" />
         <StreamCard text={TEXTS[2]} speed={30} label="Slow (30ms)" />
       </div>
     </div>

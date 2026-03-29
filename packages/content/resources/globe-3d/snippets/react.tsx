@@ -82,7 +82,14 @@ export function Globe3D({
       ctx!.clearRect(0, 0, w, h);
 
       // Glow
-      const grad = ctx!.createRadialGradient(w / 2, h / 2, radius * 0.2, w / 2, h / 2, radius * 1.2);
+      const grad = ctx!.createRadialGradient(
+        w / 2,
+        h / 2,
+        radius * 0.2,
+        w / 2,
+        h / 2,
+        radius * 1.2
+      );
       grad.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`);
       grad.addColorStop(1, "transparent");
       ctx!.fillStyle = grad;
@@ -128,13 +135,18 @@ export function Globe3D({
       const dx = x - dragRef.current.lastX;
       const dy = y - dragRef.current.lastY;
       rotRef.current.y += dx * 0.005;
-      rotRef.current.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotRef.current.x + dy * 0.005));
+      rotRef.current.x = Math.max(
+        -Math.PI / 2,
+        Math.min(Math.PI / 2, rotRef.current.x + dy * 0.005)
+      );
       dragRef.current.lastX = x;
       dragRef.current.lastY = y;
     };
     const onUp = () => {
       dragRef.current.active = false;
-      dragTimeout = setTimeout(() => { dragRef.current.autoRotate = true; }, 2000);
+      dragTimeout = setTimeout(() => {
+        dragRef.current.autoRotate = true;
+      }, 2000);
     };
 
     const md = (e: MouseEvent) => onDown(e.clientX, e.clientY);

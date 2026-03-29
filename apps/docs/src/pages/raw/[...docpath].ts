@@ -26,9 +26,8 @@ const walkDocs = (dir: string, relativeDir = ""): string[] => {
   return docSlugs;
 };
 
-const DOC_SLUGS = existsSync(DOCS_DIR) && statSync(DOCS_DIR).isDirectory()
-  ? walkDocs(DOCS_DIR).sort()
-  : ["index"];
+const DOC_SLUGS =
+  existsSync(DOCS_DIR) && statSync(DOCS_DIR).isDirectory() ? walkDocs(DOCS_DIR).sort() : ["index"];
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return DOC_SLUGS.map((slug) => ({

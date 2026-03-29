@@ -7,7 +7,8 @@
     }
     pages.push(1);
     if (current > 3) pages.push("...");
-    for (var i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+    for (var i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++)
+      pages.push(i);
     if (current < total - 2) pages.push("...");
     pages.push(total);
     return pages;
@@ -19,11 +20,15 @@
 
     function btn(label, page, disabled, active, ellipsis) {
       var b = document.createElement("button");
-      b.className = "pg-btn" + (active ? " pg-btn--active" : "") + (ellipsis ? " pg-btn--ellipsis" : "");
+      b.className =
+        "pg-btn" + (active ? " pg-btn--active" : "") + (ellipsis ? " pg-btn--ellipsis" : "");
       b.textContent = label;
       if (disabled || ellipsis) b.disabled = true;
       if (!disabled && !ellipsis && !active) {
-        b.addEventListener("click", function () { state.current = page; renderFull(el, state); });
+        b.addEventListener("click", function () {
+          state.current = page;
+          renderFull(el, state);
+        });
       }
       return b;
     }
@@ -45,7 +50,11 @@
       b.className = "pg-btn";
       b.textContent = label;
       b.disabled = disabled;
-      if (!disabled) b.addEventListener("click", function () { state.current = page; renderMini(el, state); });
+      if (!disabled)
+        b.addEventListener("click", function () {
+          state.current = page;
+          renderMini(el, state);
+        });
       return b;
     }
     var info = document.createElement("span");
@@ -73,4 +82,4 @@
       renderFull(document.getElementById("pg-size"), stSize);
     });
   }
-}());
+})();

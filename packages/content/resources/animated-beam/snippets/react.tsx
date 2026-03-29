@@ -33,9 +33,7 @@ function AnimatedBeam({
   dashSpeed = "2s",
 }: AnimatedBeamProps) {
   const [pathD, setPathD] = useState("");
-  const gradientId = useRef(
-    `beam-grad-${Math.random().toString(36).slice(2, 9)}`
-  );
+  const gradientId = useRef(`beam-grad-${Math.random().toString(36).slice(2, 9)}`);
 
   const updatePath = useCallback(() => {
     const container = containerRef.current;
@@ -201,24 +199,24 @@ export default function AnimatedBeamDemo() {
         />
 
         <BeamNode>
-          <div ref={fromRef} style={iconBoxStyle("#22d3ee")}>&#9670;</div>
-          <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#94a3b8" }}>
-            Source
-          </span>
+          <div ref={fromRef} style={iconBoxStyle("#22d3ee")}>
+            &#9670;
+          </div>
+          <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#94a3b8" }}>Source</span>
         </BeamNode>
 
         <BeamNode>
-          <div ref={midRef} style={iconBoxStyle("#a855f7")}>&#9733;</div>
-          <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#94a3b8" }}>
-            Process
-          </span>
+          <div ref={midRef} style={iconBoxStyle("#a855f7")}>
+            &#9733;
+          </div>
+          <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#94a3b8" }}>Process</span>
         </BeamNode>
 
         <BeamNode>
-          <div ref={toRef} style={iconBoxStyle("#34d399")}>&#9679;</div>
-          <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#94a3b8" }}>
-            Output
-          </span>
+          <div ref={toRef} style={iconBoxStyle("#34d399")}>
+            &#9679;
+          </div>
+          <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#94a3b8" }}>Output</span>
         </BeamNode>
       </div>
     </div>

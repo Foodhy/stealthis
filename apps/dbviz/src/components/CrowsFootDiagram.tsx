@@ -1,9 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslations, type Locale } from "../i18n";
-import ErdContextMenu, {
-  type ErdContextMenuTarget,
-  type ErdAction,
-} from "./ErdContextMenu";
+import ErdContextMenu, { type ErdContextMenuTarget, type ErdAction } from "./ErdContextMenu";
 import { tablesToSql } from "../lib/sql-generator";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -98,9 +95,7 @@ function parseSqlDDL(sql: string): {
         /^(?:CONSTRAINT\s+(?:"[^"]+"|[\w]+)\s+)?PRIMARY\s+KEY\s*\(([^)]+)\)/i
       );
       if (pkConstraint) {
-        const pkCols = pkConstraint[1]
-          .split(",")
-          .map((c) => c.trim().replace(/"/g, ""));
+        const pkCols = pkConstraint[1].split(",").map((c) => c.trim().replace(/"/g, ""));
         tableLevelPKs.push(...pkCols);
         continue;
       }
@@ -110,16 +105,12 @@ function parseSqlDDL(sql: string): {
         /^(?:CONSTRAINT\s+(?:"[^"]+"|[\w]+)\s+)?FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+(?:(?:"[^"]+"|[\w.]+)\.)?(?:"([^"]+)"|(\w+))\s*\(([^)]+)\)/i
       );
       if (fkConstraint) {
-        const fkCols = fkConstraint[1]
-          .split(",")
-          .map((c) => c.trim().replace(/"/g, ""));
+        const fkCols = fkConstraint[1].split(",").map((c) => c.trim().replace(/"/g, ""));
         const refTable = (fkConstraint[2] || fkConstraint[3] || "").replace(
           /^(?:public|dbo)\./,
           ""
         );
-        const refCols = fkConstraint[4]
-          .split(",")
-          .map((c) => c.trim().replace(/"/g, ""));
+        const refCols = fkConstraint[4].split(",").map((c) => c.trim().replace(/"/g, ""));
         tableLevelFKs.push({ columns: fkCols, refTable, refColumns: refCols });
         continue;
       }
@@ -144,9 +135,8 @@ function parseSqlDDL(sql: string): {
 
         const isPk =
           upperRest.includes("PRIMARY KEY") ||
-          /\bSERIAL\b/i.test(colType) && upperRest.includes("PRIMARY KEY");
-        const isNotNull =
-          upperRest.includes("NOT NULL") || isPk;
+          (/\bSERIAL\b/i.test(colType) && upperRest.includes("PRIMARY KEY"));
+        const isNotNull = upperRest.includes("NOT NULL") || isPk;
         const isNullable = !isNotNull;
 
         // Inline REFERENCES
@@ -156,10 +146,7 @@ function parseSqlDDL(sql: string): {
         );
         if (inlineRef) {
           references = {
-            table: (inlineRef[1] || inlineRef[2] || "").replace(
-              /^(?:public|dbo)\./,
-              ""
-            ),
+            table: (inlineRef[1] || inlineRef[2] || "").replace(/^(?:public|dbo)\./, ""),
             column: inlineRef[3] || inlineRef[4] || "",
           };
         }
@@ -257,9 +244,7 @@ function normalizeType(t: string): string {
 
 // ─── Layout Engine ──────────────────────────────────────────────────────────
 
-function assignInitialPositions(
-  tables: Omit<SchemaTable, "x" | "y" | "color">[]
-): SchemaTable[] {
+function assignInitialPositions(tables: Omit<SchemaTable, "x" | "y" | "color">[]): SchemaTable[] {
   const cols = Math.max(1, Math.ceil(Math.sqrt(tables.length)));
 
   return tables.map((t, i) => {
@@ -470,13 +455,7 @@ function RelationLine({
         opacity={active ? 1 : 0.7}
       />
       {/* Many side (FK) — crow's foot at the source (FK table) */}
-      <ManyMarker
-        x={ax}
-        y={ay}
-        dir={fromDir}
-        nullable={relation.nullable}
-        color={color}
-      />
+      <ManyMarker x={ax} y={ay} dir={fromDir} nullable={relation.nullable} color={color} />
       {/* One side (PK) — double bar at the target (PK table) */}
       <OneMarker x={bx} y={by} dir={toDir} color={color} />
     </g>
@@ -597,13 +576,7 @@ function TableNode({
         fill={selected ? table.color : table.color + "66"}
       />
       {/* Left accent stripe */}
-      <rect
-        width={3}
-        height={h}
-        rx={10}
-        fill={table.color}
-        opacity={selected ? 1 : 0.6}
-      />
+      <rect width={3} height={h} rx={10} fill={table.color} opacity={selected ? 1 : 0.6} />
       <rect
         width={3}
         y={HEADER_H}
@@ -643,12 +616,7 @@ function TableNode({
         return (
           <g key={col.name}>
             {i % 2 === 1 && (
-              <rect
-                y={cy}
-                width={TABLE_W}
-                height={ROW_H}
-                fill="rgba(255,255,255,0.025)"
-              />
+              <rect y={cy} width={TABLE_W} height={ROW_H} fill="rgba(255,255,255,0.025)" />
             )}
             {/* PK / FK badge */}
             {(col.pk || col.fk) && (
@@ -715,7 +683,11 @@ interface CrowsFootDiagramProps {
   onSchemaChange?: (newSql: string) => void;
 }
 
-export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: CrowsFootDiagramProps) {
+export default function CrowsFootDiagram({
+  schemaSql,
+  locale,
+  onSchemaChange,
+}: CrowsFootDiagramProps) {
   const t = useTranslations(locale);
   const [tables, setTables] = useState<SchemaTable[]>([]);
   const [relations, setRelations] = useState<SchemaRelation[]>([]);
@@ -731,7 +703,12 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
   const isInternalEdit = useRef(false);
 
   // Pan state
-  const panRef = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
+  const panRef = useRef<{
+    startX: number;
+    startY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
 
   // Rebuild diagram whenever schemaSql changes
   useEffect(() => {
@@ -760,16 +737,12 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
       setParseError(null);
       setSelected(null);
     } catch (err) {
-      setParseError(
-        err instanceof Error ? err.message : t("erd.parseError")
-      );
+      setParseError(err instanceof Error ? err.message : t("erd.parseError"));
     }
   }, [schemaSql]);
 
   const handleDrag = useCallback((id: string, dx: number, dy: number) => {
-    setTables((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t))
-    );
+    setTables((prev) => prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t)));
   }, []);
 
   const handleReset = useCallback(() => {
@@ -873,10 +846,7 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
       } else if (action.type === "renameTable") {
         const tbl = tables.find((t) => t.id === action.tableId);
         if (!tbl) return;
-        const newName = window.prompt(
-          t("erd.ctx.promptTableName" as any),
-          tbl.name
-        );
+        const newName = window.prompt(t("erd.ctx.promptTableName" as any), tbl.name);
         if (!newName || !newName.trim() || newName.trim() === tbl.name) return;
         const safeName = newName.trim().replace(/\s+/g, "_").toLowerCase();
         const oldName = tbl.name;
@@ -896,10 +866,7 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
       } else if (action.type === "deleteTable") {
         const tbl = tables.find((t) => t.id === action.tableId);
         if (!tbl) return;
-        const msg = t("erd.ctx.confirmDeleteTable" as any).replace(
-          "{name}",
-          tbl.name
-        );
+        const msg = t("erd.ctx.confirmDeleteTable" as any).replace("{name}", tbl.name);
         if (!window.confirm(msg)) return;
         const oldName = tbl.name;
         const next = tables
@@ -945,10 +912,7 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
         const col = tbl.columns.find((c) => c.name === action.columnName);
         if (!col) return;
         const prefill = `${col.name} ${col.type}${col.nullable ? "" : " NOT NULL"}`;
-        const input = window.prompt(
-          t("erd.ctx.promptColumnDef" as any),
-          prefill
-        );
+        const input = window.prompt(t("erd.ctx.promptColumnDef" as any), prefill);
         if (!input || !input.trim()) return;
         const parts = input.trim().split(/\s+/);
         const newName = parts[0] || col.name;
@@ -974,10 +938,7 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
       } else if (action.type === "deleteColumn") {
         const tbl = tables.find((t) => t.id === action.tableId);
         if (!tbl) return;
-        const msg = t("erd.ctx.confirmDeleteColumn" as any).replace(
-          "{name}",
-          action.columnName
-        );
+        const msg = t("erd.ctx.confirmDeleteColumn" as any).replace("{name}", action.columnName);
         if (!window.confirm(msg)) return;
         const next = tables.map((tb) => {
           if (tb.id !== action.tableId) return { ...tb, columns: [...tb.columns] };
@@ -1022,14 +983,8 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
   };
 
   // Compute SVG canvas size
-  const canvasW = Math.max(
-    800,
-    ...tables.map((t) => t.x + TABLE_W + INITIAL_PADDING + 60)
-  );
-  const canvasH = Math.max(
-    500,
-    ...tables.map((t) => t.y + tableHeight(t) + INITIAL_PADDING + 60)
-  );
+  const canvasW = Math.max(800, ...tables.map((t) => t.x + TABLE_W + INITIAL_PADDING + 60));
+  const canvasH = Math.max(500, ...tables.map((t) => t.y + tableHeight(t) + INITIAL_PADDING + 60));
 
   if (parseError && tables.length === 0) {
     return (
@@ -1072,14 +1027,13 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
               d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
             />
           </svg>
-          <span className="text-[11px] text-slate-500">
-            {t("erd.dragHint")}
-          </span>
+          <span className="text-[11px] text-slate-500">{t("erd.dragHint")}</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[11px] text-slate-600">
             {tables.length} {tables.length !== 1 ? t("erd.tablesPlural") : t("erd.tables")} ·{" "}
-            {relations.length} {relations.length !== 1 ? t("erd.relationshipsPlural") : t("erd.relationship")}
+            {relations.length}{" "}
+            {relations.length !== 1 ? t("erd.relationshipsPlural") : t("erd.relationship")}
           </span>
           <div className="flex items-center gap-0.5 rounded-lg border border-white/10 px-0.5 py-0.5">
             <button
@@ -1088,7 +1042,9 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom out"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" /></svg>
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                <path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" />
+              </svg>
             </button>
             <button
               onClick={() => setZoom(1)}
@@ -1102,11 +1058,16 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom in"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5"><path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" /></svg>
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                <path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" />
+              </svg>
             </button>
           </div>
           <button
-            onClick={() => { handleReset(); setZoom(1); }}
+            onClick={() => {
+              handleReset();
+              setZoom(1);
+            }}
             className="rounded-lg border border-white/10 px-2.5 py-1 text-[11px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200"
           >
             {t("erd.resetLayout")}
@@ -1127,14 +1088,22 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
         }}
         onMouseDown={(e) => {
           // Only pan if clicking the canvas background (not a table)
-          if (e.target === e.currentTarget || (e.target as Element).tagName === "svg" || (e.target as Element).tagName === "rect") {
+          if (
+            e.target === e.currentTarget ||
+            (e.target as Element).tagName === "svg" ||
+            (e.target as Element).tagName === "rect"
+          ) {
             setSelected(null);
             handleCanvasMouseDown(e);
           }
         }}
         onContextMenu={(e) => {
           // Canvas right-click (only if not on a table — tables handle their own)
-          if (e.target === e.currentTarget || (e.target as Element).tagName === "svg" || (e.target as Element).closest?.("g") === null) {
+          if (
+            e.target === e.currentTarget ||
+            (e.target as Element).tagName === "svg" ||
+            (e.target as Element).closest?.("g") === null
+          ) {
             handleCanvasContextMenu(e);
           }
         }}
@@ -1145,205 +1114,93 @@ export default function CrowsFootDiagram({ schemaSql, locale, onSchemaChange }: 
           className="block"
           style={{ display: "block" }}
         >
-        <g transform={`scale(${zoom})`}>
-          {/* Grid pattern */}
-          <defs>
-            <pattern
-              id="crowsfoot-grid"
-              width="24"
-              height="24"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 24 0 L 0 0 0 24"
-                fill="none"
-                stroke="#1e293b"
-                strokeWidth="0.5"
-              />
-            </pattern>
-          </defs>
-          <rect
-            width="100%"
-            height="100%"
-            fill="url(#crowsfoot-grid)"
-            onContextMenu={(e) => {
-              handleCanvasContextMenu(e);
-            }}
-          />
-
-          {/* Relations — rendered behind tables */}
-          {relations.map((rel, i) => {
-            const ft = tables.find((t) => t.id === rel.fromTable);
-            const tt = tables.find((t) => t.id === rel.toTable);
-            if (!ft || !tt) return null;
-            const isActive =
-              selected === rel.fromTable || selected === rel.toTable;
-            return (
-              <RelationLine
-                key={`${rel.fromTable}-${rel.fromColumn}-${rel.toTable}-${i}`}
-                fromTable={ft}
-                toTable={tt}
-                relation={rel}
-                active={isActive}
-              />
-            );
-          })}
-
-          {/* Tables */}
-          {tables.map((t) => (
-            <TableNode
-              key={t.id}
-              table={t}
-              onDrag={handleDrag}
-              selected={selected === t.id}
-              onClick={setSelected}
-              onContextMenu={handleTableContextMenu}
+          <g transform={`scale(${zoom})`}>
+            {/* Grid pattern */}
+            <defs>
+              <pattern id="crowsfoot-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#1e293b" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect
+              width="100%"
+              height="100%"
+              fill="url(#crowsfoot-grid)"
+              onContextMenu={(e) => {
+                handleCanvasContextMenu(e);
+              }}
             />
-          ))}
-        </g>
+
+            {/* Relations — rendered behind tables */}
+            {relations.map((rel, i) => {
+              const ft = tables.find((t) => t.id === rel.fromTable);
+              const tt = tables.find((t) => t.id === rel.toTable);
+              if (!ft || !tt) return null;
+              const isActive = selected === rel.fromTable || selected === rel.toTable;
+              return (
+                <RelationLine
+                  key={`${rel.fromTable}-${rel.fromColumn}-${rel.toTable}-${i}`}
+                  fromTable={ft}
+                  toTable={tt}
+                  relation={rel}
+                  active={isActive}
+                />
+              );
+            })}
+
+            {/* Tables */}
+            {tables.map((t) => (
+              <TableNode
+                key={t.id}
+                table={t}
+                onDrag={handleDrag}
+                selected={selected === t.id}
+                onClick={setSelected}
+                onContextMenu={handleTableContextMenu}
+              />
+            ))}
+          </g>
         </svg>
       </div>
 
       {/* Legend — Crow's foot notation */}
       <div className="flex flex-wrap gap-4 text-[11px] text-slate-500">
         <span className="flex items-center gap-1.5">
-          <span className="font-mono font-bold text-[#eab308]">PK</span>{" "}
-          {t("erd.primaryKey")}
+          <span className="font-mono font-bold text-[#eab308]">PK</span> {t("erd.primaryKey")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="font-mono font-bold text-[#a855f7]">FK</span>{" "}
-          {t("erd.foreignKey")}
+          <span className="font-mono font-bold text-[#a855f7]">FK</span> {t("erd.foreignKey")}
         </span>
         <span className="flex items-center gap-1.5">
           <svg width="28" height="16" viewBox="0 0 28 16">
-            <line
-              x1="2"
-              y1="8"
-              x2="8"
-              y2="8"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="8"
-              y1="3"
-              x2="8"
-              y2="13"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="11"
-              y1="3"
-              x2="11"
-              y2="13"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
+            <line x1="2" y1="8" x2="8" y2="8" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="8" y1="3" x2="8" y2="13" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="11" y1="3" x2="11" y2="13" stroke="#64748b" strokeWidth="1.5" />
           </svg>
           {t("erd.exactlyOne")}
         </span>
         <span className="flex items-center gap-1.5">
           <svg width="32" height="16" viewBox="0 0 32 16">
-            <line
-              x1="18"
-              y1="8"
-              x2="22"
-              y2="8"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="22"
-              y1="3"
-              x2="22"
-              y2="13"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="18"
-              y1="8"
-              x2="8"
-              y2="2"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="18"
-              y1="8"
-              x2="8"
-              y2="8"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="18"
-              y1="8"
-              x2="8"
-              y2="14"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
+            <line x1="18" y1="8" x2="22" y2="8" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="22" y1="3" x2="22" y2="13" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="18" y1="8" x2="8" y2="2" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="18" y1="8" x2="8" y2="8" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="18" y1="8" x2="8" y2="14" stroke="#64748b" strokeWidth="1.5" />
           </svg>
           {t("erd.oneToMany")}
         </span>
         <span className="flex items-center gap-1.5">
           <svg width="38" height="16" viewBox="0 0 38 16">
-            <circle
-              cx="8"
-              cy="8"
-              r="4.5"
-              fill="none"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="24"
-              y1="8"
-              x2="28"
-              y2="8"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="28"
-              y1="3"
-              x2="28"
-              y2="13"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="24"
-              y1="8"
-              x2="14"
-              y2="2"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="24"
-              y1="8"
-              x2="14"
-              y2="8"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="24"
-              y1="8"
-              x2="14"
-              y2="14"
-              stroke="#64748b"
-              strokeWidth="1.5"
-            />
+            <circle cx="8" cy="8" r="4.5" fill="none" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="24" y1="8" x2="28" y2="8" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="28" y1="3" x2="28" y2="13" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="24" y1="8" x2="14" y2="2" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="24" y1="8" x2="14" y2="8" stroke="#64748b" strokeWidth="1.5" />
+            <line x1="24" y1="8" x2="14" y2="14" stroke="#64748b" strokeWidth="1.5" />
           </svg>
           {t("erd.zeroOrMany")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-px w-6 border-t-2 border-blue-500" />{" "}
-          {t("erd.active")}
+          <span className="inline-block h-px w-6 border-t-2 border-blue-500" /> {t("erd.active")}
         </span>
       </div>
 

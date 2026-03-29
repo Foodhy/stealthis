@@ -10,8 +10,6 @@ export const ResourceCategorySchema = z.enum([
   "components",
   "pages",
   "prompts",
-  "skills",
-  "mcp-servers",
   "architectures",
   "boilerplates",
   "remotion",
@@ -21,6 +19,7 @@ export const ResourceCategorySchema = z.enum([
   "music",
   "3d-models",
   "3d-interactions",
+  "plugins",
 ]);
 
 export const ResourceTypeSchema = z.enum([
