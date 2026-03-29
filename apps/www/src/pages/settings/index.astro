@@ -134,6 +134,20 @@ const title = t("settings.title");
   const statusEl = document.getElementById("settings-save-status");
 
   const deleteBtn = document.getElementById("settings-delete-account");
+  const SETTINGS_REQUEST_TIMEOUT_MS = 10000;
+  let isSavingSettings = false;
+  let loadMePromise = null;
+
+  async function fetchWithTimeout(url, init = {}, timeoutMs = SETTINGS_REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
 
   const setUnauth = () => {
     if (unauthEl) unauthEl.classList.remove("hidden");
@@ -146,34 +160,44 @@ const title = t("settings.title");
   };
 
   async function loadMe() {
-    const res = await fetch("/api/auth/me", { credentials: "include" });
-    if (!res.ok) {
-      setUnauth();
-      return;
-    }
+    if (loadMePromise) return loadMePromise;
 
-    const data = await res.json();
-    if (!data.authenticated) {
-      setUnauth();
-      return;
-    }
+    loadMePromise = (async () => {
+      const res = await fetchWithTimeout("/api/auth/me", { credentials: "include" });
+      if (!res.ok) {
+        setUnauth();
+        return;
+      }
 
-    setAuth();
-    const user = data.user ?? {};
+      const data = await res.json();
+      if (!data.authenticated) {
+        setUnauth();
+        return;
+      }
 
-    const login = user.login ? `@${user.login}` : "";
-    const email = user.email ?? "";
+      setAuth();
+      const user = data.user ?? {};
 
-    if (avatarImg && user.avatarUrl) avatarImg.src = user.avatarUrl;
-    if (loginEl) loginEl.textContent = login || userFallback;
-    if (emailEl) emailEl.textContent = email ?? "";
+      const login = user.login ? `@${user.login}` : "";
+      const email = user.email ?? "";
 
-    if (displayNameInput) displayNameInput.value = user.name ?? user.login ?? "";
-    if (bioInput) bioInput.value = user.bio ?? "";
+      if (avatarImg && user.avatarUrl) avatarImg.src = user.avatarUrl;
+      if (loginEl) loginEl.textContent = login || userFallback;
+      if (emailEl) emailEl.textContent = email ?? "";
+
+      if (displayNameInput) displayNameInput.value = user.name ?? user.login ?? "";
+      if (bioInput) bioInput.value = user.bio ?? "";
+    })().finally(() => {
+      loadMePromise = null;
+    });
+
+    return loadMePromise;
   }
 
   async function saveSettings() {
     if (!saveBtn) return;
+    if (isSavingSettings) return;
+    isSavingSettings = true;
     if (statusEl) statusEl.textContent = "";
 
     const displayName = displayNameInput ? displayNameInput.value : "";
@@ -183,7 +207,7 @@ const title = t("settings.title");
     saveBtn.textContent = savingLabel;
 
     try {
-      const res = await fetch("/api/auth/settings", {
+      const res = await fetchWithTimeout("/api/auth/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -200,6 +224,7 @@ const title = t("settings.title");
     } catch {
       if (statusEl) statusEl.textContent = saveErrorLabel;
     } finally {
+      isSavingSettings = false;
       saveBtn.disabled = false;
       saveBtn.textContent = saveLabel;
     }

@@ -833,12 +833,39 @@ const menuTitle = menuLabels[locale].title;
 </style>
 
 <script define:vars={{ localePrefix: prefix }}>
+  const NAV_REQUEST_TIMEOUT_MS = 10000;
+  const navInFlightRequests = new Map();
+
+  async function fetchWithTimeout(url, init = {}, timeoutMs = NAV_REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  function fetchOnce(key, requestFactory) {
+    const pending = navInFlightRequests.get(key);
+    if (pending) return pending;
+
+    const request = requestFactory().finally(() => {
+      navInFlightRequests.delete(key);
+    });
+    navInFlightRequests.set(key, request);
+    return request;
+  }
+
   async function initAuthMenu() {
     const container = document.getElementById("nav-auth");
     if (!container) return;
 
     try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
+      const res = await fetchOnce("auth:me", () =>
+        fetchWithTimeout("/api/auth/me", { credentials: "include" })
+      );
       if (!res.ok) return;
 
       const data = await res.json();
