@@ -6,7 +6,7 @@ interface LineShadowTextProps {
 }
 
 export default function LineShadowText({
-  children,
+  children = "Shadow",
   shadowColor = "167, 139, 250",
 }: LineShadowTextProps) {
   return (

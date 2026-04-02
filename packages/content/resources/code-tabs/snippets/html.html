@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Tabs Viewer</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <div class="code-viewer">
+        <!-- Tab row -->
+        <div class="tabs-row" role="tablist" aria-label="Code targets">
+          <button class="tab active" role="tab" data-target="html"   aria-selected="true"  aria-controls="panel-html">HTML</button>
+          <button class="tab"        role="tab" data-target="css"    aria-selected="false" aria-controls="panel-css">CSS</button>
+          <button class="tab"        role="tab" data-target="react"  aria-selected="false" aria-controls="panel-react">React</button>
+          <button class="tab"        role="tab" data-target="vue"    aria-selected="false" aria-controls="panel-vue">Vue</button>
+          <button class="tab"        role="tab" data-target="svelte" aria-selected="false" aria-controls="panel-svelte">Svelte</button>
+        </div>
+
+        <!-- Code panels -->
+        <div class="panel-wrap">
+          <button class="copy-btn" id="copy-btn" aria-label="Copy code">
+            <svg class="icon-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <svg class="icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+
+          <pre class="code-block" id="panel-html"   role="tabpanel" aria-labelledby="tab-html"><code>&lt;button class="btn"&gt;Click me&lt;/button&gt;</code></pre>
+          <pre class="code-block" id="panel-css"    role="tabpanel" aria-labelledby="tab-css"   hidden>.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}</pre>
+          <pre class="code-block" id="panel-react"  role="tabpanel" aria-labelledby="tab-react"  hidden>export default function Button() {
+  return &lt;button className="btn"&gt;Click me&lt;/button&gt;;
+}</pre>
+          <pre class="code-block" id="panel-vue"    role="tabpanel" aria-labelledby="tab-vue"    hidden>&lt;template&gt;
+  &lt;button class="btn"&gt;Click me&lt;/button&gt;
+&lt;/template&gt;</pre>
+          <pre class="code-block" id="panel-svelte" role="tabpanel" aria-labelledby="tab-svelte" hidden>&lt;button class="btn"&gt;Click me&lt;/button&gt;</pre>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const tabs   = document.querySelectorAll('.tab');
+      const panels = document.querySelectorAll('.code-block');
+      const copyBtn = document.getElementById('copy-btn');
+      const iconCopy  = copyBtn.querySelector('.icon-copy');
+      const iconCheck = copyBtn.querySelector('.icon-check');
+      let copyTimer;
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+          panels.forEach(p => p.hidden = true);
+
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          document.getElementById('panel-' + tab.dataset.target).hidden = false;
+        });
+      });
+
+      copyBtn.addEventListener('click', () => {
+        const activePanel = document.querySelector('.code-block:not([hidden])');
+        navigator.clipboard.writeText(activePanel.textContent).then(() => {
+          iconCopy.style.display  = 'none';
+          iconCheck.style.display = '';
+          clearTimeout(copyTimer);
+          copyTimer = setTimeout(() => {
+            iconCopy.style.display  = '';
+            iconCheck.style.display = 'none';
+          }, 2000);
+        });
+      });
+    </script>
+  </body>
+</html>

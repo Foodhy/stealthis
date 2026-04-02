@@ -1,82 +1,90 @@
-<script setup lang="ts">
-import { computed } from "vue";
-
-const props = defineProps({
-  filled: { type: Boolean, default: false },
-  size: { type: String, default: "md" }, // sm, md, lg
-  rounded: { type: Boolean, default: false },
-  speed: { type: String, default: "3s" },
-  class: { type: [String, Object, Array], default: "" },
-});
-
-const sizeMap: Record<string, { padding: string; fontSize: string }> = {
+<script setup>
+const sizeMap = {
   sm: { padding: "0.625rem 1.5rem", fontSize: "0.8125rem" },
   md: { padding: "0.875rem 2rem", fontSize: "0.9375rem" },
   lg: { padding: "1.125rem 2.75rem", fontSize: "1.0625rem" },
 };
 
-const outerStyle = computed(() => ({
-  position: "relative",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "2px",
-  borderRadius: props.rounded ? "999px" : "12px",
-  border: "none",
-  outline: "none",
-  cursor: "pointer",
-  background:
-    "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff, #ff00ff, #ff0000)",
-  animation: `rainbow-spin ${props.speed} linear infinite`,
-  transition: "transform 0.2s ease, filter 0.2s ease",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-}));
-
-const labelStyle = computed(() => ({
-  display: "block",
-  ...sizeMap[props.size],
-  borderRadius: props.rounded ? "999px" : "10px",
-  background: props.filled ? "transparent" : "#0a0a0a",
-  color: props.filled ? "#fff" : "#f1f5f9",
-  fontWeight: 600,
-  letterSpacing: "0.01em",
-  textShadow: props.filled ? "0 1px 2px rgba(0,0,0,0.4)" : "none",
-  transition: "background 0.3s ease",
-}));
-
-function onMouseEnter(e: Event) {
-  const target = e.currentTarget as HTMLElement;
-  target.style.transform = "scale(1.04)";
-  target.style.filter = "brightness(1.2) hue-rotate(0deg)";
+function outerStyle(rounded, speed) {
+  return {
+    position: "relative",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "2px",
+    borderRadius: rounded ? "999px" : "12px",
+    border: "none",
+    outline: "none",
+    cursor: "pointer",
+    background:
+      "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff, #ff00ff, #ff0000)",
+    animation: `rainbow-spin ${speed} linear infinite`,
+    transition: "transform 0.2s ease, filter 0.2s ease",
+  };
 }
 
-function onMouseLeave(e: Event) {
-  const target = e.currentTarget as HTMLElement;
-  target.style.transform = "scale(1)";
-  target.style.filter = "";
+function labelStyle(filled, size, rounded) {
+  return {
+    display: "block",
+    ...sizeMap[size],
+    borderRadius: rounded ? "999px" : "10px",
+    background: filled ? "transparent" : "#0a0a0a",
+    color: filled ? "#fff" : "#f1f5f9",
+    fontWeight: 600,
+    letterSpacing: "0.01em",
+    textShadow: filled ? "0 1px 2px rgba(0,0,0,0.4)" : "none",
+    transition: "background 0.3s ease",
+  };
 }
 
-function onClick(e: Event) {
-  const target = e.currentTarget as HTMLElement;
-  target.style.animation = "none";
-  target.offsetHeight; // trigger reflow
-  target.style.animation = "";
-}
+const row1 = [
+  { label: "Explore Now", filled: false, size: "md", rounded: false, speed: "3s" },
+  { label: "Get Premium", filled: true, size: "md", rounded: false, speed: "3s" },
+];
+const row2 = [
+  { label: "Start Your Journey", filled: false, size: "lg", rounded: false, speed: "3s" },
+  { label: "Try Free", filled: true, size: "sm", rounded: false, speed: "3s" },
+];
+const row3 = [
+  { label: "Join Community", filled: false, size: "md", rounded: true, speed: "3s" },
+];
 </script>
 
 <template>
-  <button
-    class="rainbow-btn-vue"
-    :class="props.class"
-    :style="outerStyle"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
-    @click="onClick"
-  >
-    <span :style="labelStyle">
-      <slot>Rainbow Button</slot>
-    </span>
-  </button>
+  <div style="min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;padding:2rem;font-family:system-ui,-apple-system,sans-serif">
+    <h2 style="font-size:1.5rem;font-weight:700;color:#e2e8f0">Rainbow Buttons</h2>
+    <p style="color:#525252;font-size:0.875rem">Animated rainbow gradient borders</p>
+    <div style="display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:center">
+      <button
+        v-for="btn in row1" :key="btn.label"
+        :style="outerStyle(btn.rounded, btn.speed)"
+        @mouseenter="e => { e.currentTarget.style.transform='scale(1.04)'; e.currentTarget.style.filter='brightness(1.2)' }"
+        @mouseleave="e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.filter='' }"
+      >
+        <span :style="labelStyle(btn.filled, btn.size, btn.rounded)">{{ btn.label }}</span>
+      </button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:center">
+      <button
+        v-for="btn in row2" :key="btn.label"
+        :style="outerStyle(btn.rounded, btn.speed)"
+        @mouseenter="e => { e.currentTarget.style.transform='scale(1.04)'; e.currentTarget.style.filter='brightness(1.2)' }"
+        @mouseleave="e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.filter='' }"
+      >
+        <span :style="labelStyle(btn.filled, btn.size, btn.rounded)">{{ btn.label }}</span>
+      </button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:center">
+      <button
+        v-for="btn in row3" :key="btn.label"
+        :style="outerStyle(btn.rounded, btn.speed)"
+        @mouseenter="e => { e.currentTarget.style.transform='scale(1.04)'; e.currentTarget.style.filter='brightness(1.2)' }"
+        @mouseleave="e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.filter='' }"
+      >
+        <span :style="labelStyle(btn.filled, btn.size, btn.rounded)">{{ btn.label }}</span>
+      </button>
+    </div>
+  </div>
 </template>
 
 <style>
@@ -85,6 +93,6 @@ function onClick(e: Event) {
   100% { filter: hue-rotate(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rainbow-btn-vue { animation: none !important; }
+  button { animation: none !important; }
 }
 </style>

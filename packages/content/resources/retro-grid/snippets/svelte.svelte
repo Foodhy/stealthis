@@ -25,11 +25,11 @@ function handleMouseLeave() {
 }
 </script>
 
-{#if animationCSS}
-  <svelte:head>
+<svelte:head>
+  {#if animationCSS}
     {@html `<style>${animationCSS}</style>`}
-  </svelte:head>
-{/if}
+  {/if}
+</svelte:head>
 
 <div
   style="position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 50%, #0d0520 100%); overflow: hidden; font-family: system-ui, -apple-system, sans-serif;"

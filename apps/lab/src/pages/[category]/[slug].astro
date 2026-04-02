@@ -237,11 +237,13 @@ ${scriptTagClose}
     cleanScript = cleanScript.replace(/^\s*(?:interface|type)\s+\w[\s\S]*?(?:\n\}|;)\s*$/gm, "");
 
     // Extract all top-level const/let/function names to auto-return them
+    // Strip template literal contents first to avoid matching code inside strings
+    const scriptForScan = cleanScript.replace(/`(?:[^`\\]|\\.)*`/gs, "``");
     const names = new Set<string>();
-    for (const m of cleanScript.matchAll(/^(?:const|let|var)\s+(\w+)/gm)) names.add(m[1]);
-    for (const m of cleanScript.matchAll(/^function\s+(\w+)/gm)) names.add(m[1]);
+    for (const m of scriptForScan.matchAll(/^(?:const|let|var)\s+(\w+)/gm)) names.add(m[1]);
+    for (const m of scriptForScan.matchAll(/^function\s+(\w+)/gm)) names.add(m[1]);
     // Also catch destructured: const { a, b } = ...
-    for (const m of cleanScript.matchAll(/^(?:const|let|var)\s+\{\s*([^}]+)\}/gm)) {
+    for (const m of scriptForScan.matchAll(/^(?:const|let|var)\s+\{\s*([^}]+)\}/gm)) {
       for (const name of m[1].split(",").map((s) => s.trim().split(/\s/)[0])) {
         if (name) names.add(name);
       }

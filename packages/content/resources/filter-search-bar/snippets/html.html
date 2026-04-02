@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Filter Search Bar</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page">
+      <!-- Filter bar -->
+      <div class="filter-bar" role="search">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="search"
+            class="search-input"
+            id="search-input"
+            placeholder="Search components…"
+            aria-label="Search components"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <kbd class="search-kbd">⌘K</kbd>
+        </div>
+
+        <div class="pills-row" role="group" aria-label="Filter by category">
+          <button class="pill active" data-filter="all">All <span class="pill-count">553</span></button>
+          <button class="pill" data-filter="ui-components">UI Components <span class="pill-count">311</span></button>
+          <button class="pill" data-filter="web-animations">Web Animations <span class="pill-count">44</span></button>
+          <button class="pill" data-filter="patterns">Patterns <span class="pill-count">55</span></button>
+          <button class="pill" data-filter="pages">Pages <span class="pill-count">59</span></button>
+          <button class="pill" data-filter="design-styles">Design Styles <span class="pill-count">26</span></button>
+          <button class="pill" data-filter="architectures">Architectures <span class="pill-count">13</span></button>
+          <button class="pill" data-filter="boilerplates">Boilerplates <span class="pill-count">11</span></button>
+          <button class="pill" data-filter="components">Components <span class="pill-count">11</span></button>
+        </div>
+      </div>
+
+      <!-- Result count -->
+      <p class="result-count" id="result-count">Showing <strong>553</strong> results</p>
+
+      <!-- Demo grid placeholder -->
+      <div class="demo-grid" id="demo-grid">
+        <div class="demo-item" data-category="ui-components">Button Group</div>
+        <div class="demo-item" data-category="ui-components">Tooltip</div>
+        <div class="demo-item" data-category="web-animations">Fade In</div>
+        <div class="demo-item" data-category="patterns">Skeleton Loader</div>
+        <div class="demo-item" data-category="pages">Landing Page</div>
+        <div class="demo-item" data-category="design-styles">Glassmorphism</div>
+        <div class="demo-item" data-category="architectures">REST API</div>
+        <div class="demo-item" data-category="boilerplates">Next.js Starter</div>
+        <div class="demo-item" data-category="components">Nav Header</div>
+        <div class="demo-item" data-category="ui-components">Modal Dialog</div>
+        <div class="demo-item" data-category="web-animations">Parallax Scroll</div>
+        <div class="demo-item" data-category="patterns">Infinite Scroll</div>
+      </div>
+    </div>
+
+    <script>
+      const searchInput = document.getElementById('search-input');
+      const resultCount = document.getElementById('result-count');
+      const items       = document.querySelectorAll('.demo-item');
+      const pills       = document.querySelectorAll('.pill');
+
+      let activeFilter = 'all';
+
+      function applyFilters() {
+        const query = searchInput.value.toLowerCase().trim();
+        let count = 0;
+
+        items.forEach(item => {
+          const cat   = item.dataset.category;
+          const text  = item.textContent.toLowerCase();
+          const inCat = activeFilter === 'all' || cat === activeFilter;
+          const inQ   = !query || text.includes(query);
+          const show  = inCat && inQ;
+          item.style.display = show ? '' : 'none';
+          if (show) count++;
+        });
+
+        resultCount.innerHTML = `Showing <strong>${count}</strong> result${count !== 1 ? 's' : ''}`;
+      }
+
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          const filter = pill.dataset.filter;
+          activeFilter = (activeFilter === filter && filter !== 'all') ? 'all' : filter;
+          pills.forEach(p => p.classList.toggle('active', p.dataset.filter === activeFilter));
+          applyFilters();
+        });
+      });
+
+      searchInput.addEventListener('input', applyFilters);
+
+      // ⌘K / Ctrl+K focus shortcut
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+      });
+    </script>
+  </body>
+</html>

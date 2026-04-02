@@ -141,12 +141,6 @@ const categoryCards = [
 const scramblePhrases = (t("home.scramble.phrases") as string)
   .split("||")
   .map((phrase) => phrase.trim());
-const scrambleStaticLines = [
-  t("home.scramble.static1"),
-  t("home.scramble.static2"),
-  t("home.scramble.static3"),
-  t("home.scramble.static4"),
-];
 // Hue base por palabra para gradiente (grados) — estilo lgc-37-gradient-text-scroll
 const wordHues = [0, 45, 120, 200, 280, 320];
 const homeDescriptionByLocale = {
@@ -232,7 +226,7 @@ const structuredData = [
     </div>
 
   <!-- Hero -->
-  <section class="hero-stage relative overflow-hidden pt-20 pb-16 min-w-0">
+  <section class="hero-stage relative overflow-hidden py-16 min-w-0 min-h-[calc(100vh-3.5rem)] flex flex-col justify-center">
     <!-- Flickering grid background -->
     <canvas class="hero-flicker-canvas" aria-hidden="true"></canvas>
 
@@ -280,28 +274,28 @@ const structuredData = [
         <div class="hero-anim-item flex flex-wrap gap-3 justify-center">
           <a
             href={`${prefix}/library`}
-            class="hero-primary-cta inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base"
+            class="hero-primary-cta inline-flex items-center gap-1.5 sm:gap-2 px-5 py-2.5 sm:px-7 sm:py-3.5 rounded-2xl font-semibold text-sm sm:text-base"
           >
             {t("hero.cta.browse")}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sm:w-4 sm:h-4">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </a>
           <a
             href={`${prefix}/showcase`}
-            class="hero-showcase-cta inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base"
+            class="hero-showcase-cta inline-flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 sm:px-7 sm:py-3.5 rounded-2xl font-semibold text-sm sm:text-base"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sm:w-[15px] sm:h-[15px]" aria-hidden="true">
               <rect x="2" y="3" width="20" height="14" rx="2"/>
               <path d="M8 21h8M12 17v4"/>
             </svg>
-            {t("hero.cta.showcase")}
+            <span class="sm:inline">{t("hero.cta.showcase")}</span>
           </a>
           <a
             href={SITE_URLS.docs}
             target="_blank"
             rel="noopener"
-            class="hero-secondary-cta inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base"
+            class="hero-secondary-cta inline-flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 sm:px-7 sm:py-3.5 rounded-2xl font-semibold text-sm sm:text-base"
           >
             {t("hero.cta.docs")}
           </a>
@@ -1388,9 +1382,81 @@ const structuredData = [
       background: linear-gradient(90deg, rgb(56 189 248 / 0%), rgb(56 189 248 / 35%), rgb(56 189 248 / 0%));
     }
     .roadmap-section,
-    .keywords-section,
+    .keywords-section {
+      position: relative;
+      overflow-x: clip;
+    }
+    /* Fade at bottom of keywords-section to blend into scramble */
+    .keywords-section::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 120px;
+      background: linear-gradient(to bottom, transparent 0%, #020c1a 100%);
+      pointer-events: none;
+    }
     .scramble-section {
       position: relative;
+      overflow: hidden;
+      min-height: 50vh;
+    }
+    .scramble-retro-grid {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .scramble-retro-top-fade {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 180px;
+      background: linear-gradient(to bottom, #020c1a 0%, #020c1a 15%, transparent 100%);
+      z-index: 1;
+    }
+    /* Shell and cycling text always above the grid */
+    .scramble-shell {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .scramble-retro-perspective {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      perspective: 420px;
+      perspective-origin: 50% 0%;
+    }
+    .scramble-retro-lines {
+      position: absolute;
+      inset: 0;
+      transform: rotateX(55deg);
+      transform-origin: 50% 0%;
+      background-image:
+        repeating-linear-gradient(90deg, rgba(34,211,238,0.16) 0px, rgba(34,211,238,0.16) 1px, transparent 1px, transparent 60px),
+        repeating-linear-gradient(0deg, rgba(34,211,238,0.16) 0px, rgba(34,211,238,0.16) 1px, transparent 1px, transparent 60px);
+      background-size: 60px 60px;
+      animation: scramble-retro-scroll 10s linear infinite;
+    }
+    .scramble-retro-fade {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 22%;
+      background: linear-gradient(to bottom, #020c1a 0%, transparent 100%);
+      z-index: 1;
+    }
+    @keyframes scramble-retro-scroll {
+      0%   { transform: rotateX(55deg) translateY(0); }
+      100% { transform: rotateX(55deg) translateY(60px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scramble-retro-lines { animation: none; }
     }
     /* ---- Roadmap: simple, clean ---- */
     .roadmap-shell {
@@ -1411,7 +1477,7 @@ const structuredData = [
     .keywords-title,
     .scramble-title {
       margin: 0.55rem 0 0;
-      font-size: clamp(1.6rem, 2.8vw, 2.8rem);
+      font-size: clamp(1.75rem, 4vw, 2.8rem);
       line-height: 1.1;
       letter-spacing: -0.02em;
       color: rgb(241 245 249 / 98%);
@@ -1423,7 +1489,7 @@ const structuredData = [
       max-width: 72ch;
       line-height: 1.72;
       color: rgb(148 163 184 / 92%);
-      font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
     }
     /* Roadmap SVG — full width, simple */
     .roadmap-svg {
@@ -1546,10 +1612,13 @@ const structuredData = [
     .scramble-shell {
       padding: clamp(1.5rem, 3vw, 3rem) 0;
     }
-    /* Cycling scramble hero — centered */
+    /* Cycling scramble hero — pinned over grid horizon */
     .scramble-cycle-line {
-      display: block;
-      margin: 3rem 0 0;
+      position: absolute;
+      bottom: 26%;
+      left: 0;
+      right: 0;
+      margin: 0;
       text-align: center;
       font-family: "Courier New", Courier, monospace;
       font-size: clamp(2rem, 6vw, 5rem);
@@ -1568,40 +1637,6 @@ const structuredData = [
     .scramble-static-line .scramble-char {
       color: inherit;
       text-shadow: inherit;
-    }
-    /* Static styled lines below the cycling one — centered, smaller, scramble-in */
-    .scramble-statics {
-      margin-top: 4rem;
-      display: grid;
-      gap: 1rem;
-      text-align: center;
-    }
-    .scramble-static-line {
-      margin: 0;
-      font-size: clamp(0.95rem, 2.2vw, 1.35rem);
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      line-height: 1.1;
-      text-transform: uppercase;
-    }
-    /* Style variants */
-    .scramble-static-line[data-style="plain"] {
-      color: rgb(241 245 249 / 95%);
-    }
-    .scramble-static-line[data-style="gradient"] {
-      background: linear-gradient(90deg, rgb(56 189 248), rgb(168 85 247));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .scramble-static-line[data-style="outline"] {
-      color: transparent;
-      -webkit-text-stroke: 1.5px rgb(56 189 248 / 70%);
-      letter-spacing: 0.04em;
-    }
-    .scramble-static-line[data-style="muted"] {
-      color: rgb(100 116 139 / 80%);
-      font-weight: 700;
     }
     @keyframes manifesto-pulse {
       0%, 100% { opacity: 0.8; }
@@ -1663,10 +1698,20 @@ const structuredData = [
         font-size: clamp(2.2rem, 12vw, 3.5rem);
       }
       .scramble-cycle-line {
-        font-size: clamp(1.5rem, 8vw, 3rem);
+        font-size: clamp(1.4rem, 7vw, 3rem);
+        bottom: 28%;
       }
-      .scramble-static-line {
-        font-size: clamp(0.85rem, 4vw, 1.15rem);
+      .scramble-section {
+        min-height: 60vh;
+      }
+      .scramble-shell {
+        padding-top: clamp(2rem, 5vw, 3rem);
+        padding-bottom: 0;
+      }
+      .scramble-lead {
+        max-width: 100%;
+        font-size: 0.95rem;
+        line-height: 1.65;
       }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -1981,27 +2026,28 @@ const structuredData = [
     </div>
   </section>
 
-  <section class="container-xl pb-28 scramble-section" aria-labelledby="scramble-title">
-    <div class="scramble-shell">
+  <section class="scramble-section" aria-labelledby="scramble-title">
+    <!-- Retro grid background -->
+    <div class="scramble-retro-grid" aria-hidden="true">
+      <div class="scramble-retro-top-fade"></div>
+      <div class="scramble-retro-glow"></div>
+      <div class="scramble-retro-perspective">
+        <div class="scramble-retro-lines"></div>
+        <div class="scramble-retro-fade"></div>
+      </div>
+    </div>
+    <div class="w-[90%] sm:w-full scramble-shell relative mx-auto sm:mx-8">
       <p class="scramble-eyebrow">{t("home.scramble.eyebrow")}</p>
       <h2 id="scramble-title" class="scramble-title">{t("home.scramble.title")}</h2>
       <p class="scramble-lead">{t("home.scramble.lead")}</p>
-
-      <!-- Single cycling scramble hero line -->
-      <p
-        class="scramble-cycle-line"
-        aria-live="polite"
-        data-phrases={JSON.stringify(scramblePhrases)}
-      ></p>
-
-      <!-- Static styled lines (scramble-in on scroll) -->
-      <div class="scramble-statics" role="list" aria-label={t("home.scramble.staticAria")}>
-        <p class="scramble-static-line" role="listitem" data-style="plain" data-text={scrambleStaticLines[0]}></p>
-        <p class="scramble-static-line" role="listitem" data-style="gradient" data-text={scrambleStaticLines[1]}></p>
-        <p class="scramble-static-line" role="listitem" data-style="muted" data-text={scrambleStaticLines[2]}></p>
-        <p class="scramble-static-line" role="listitem" data-style="outline" data-text={scrambleStaticLines[3]}></p>
-      </div>
     </div>
+
+    <!-- Cycling text pinned over the grid horizon -->
+    <p
+      class="scramble-cycle-line"
+      aria-live="polite"
+      data-phrases={JSON.stringify(scramblePhrases)}
+    ></p>
   </section>
   </div>
 </Base>

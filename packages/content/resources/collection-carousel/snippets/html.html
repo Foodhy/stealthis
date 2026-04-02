@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collection Carousel</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <div class="carousel-wrap" id="carousel-wrap">
+        <!-- Prev / Next arrows -->
+        <button class="arrow arrow-prev" id="prev" aria-label="Previous">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="arrow arrow-next" id="next" aria-label="Next">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <!-- Track -->
+        <ul class="carousel-track" id="carousel-track" role="list">
+          <li class="carousel-card"><span class="card-label">UI Components</span><span class="card-count">311</span></li>
+          <li class="carousel-card"><span class="card-label">Web Animations</span><span class="card-count">44</span></li>
+          <li class="carousel-card"><span class="card-label">Patterns</span><span class="card-count">55</span></li>
+          <li class="carousel-card"><span class="card-label">Pages</span><span class="card-count">59</span></li>
+          <li class="carousel-card"><span class="card-label">Design Styles</span><span class="card-count">26</span></li>
+          <li class="carousel-card"><span class="card-label">Architectures</span><span class="card-count">13</span></li>
+          <li class="carousel-card"><span class="card-label">Boilerplates</span><span class="card-count">11</span></li>
+          <li class="carousel-card"><span class="card-label">Components</span><span class="card-count">11</span></li>
+        </ul>
+      </div>
+    </main>
+
+    <script>
+      const track = document.getElementById('carousel-track');
+      const wrap  = document.getElementById('carousel-wrap');
+      const INTERVAL = 3000;
+      let timer;
+      let paused = false;
+
+      function cardWidth() {
+        const card = track.querySelector('.carousel-card');
+        return card ? card.offsetWidth + parseInt(getComputedStyle(track).gap) : 240;
+      }
+
+      function scrollBy(dir) {
+        track.scrollBy({ left: dir * cardWidth(), behavior: 'smooth' });
+      }
+
+      function autoStep() {
+        const { scrollLeft, scrollWidth, clientWidth } = track;
+        if (scrollLeft + clientWidth >= scrollWidth - 4) {
+          track.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollBy(1);
+        }
+      }
+
+      function startAuto() { timer = setInterval(autoStep, INTERVAL); }
+      function stopAuto()  { clearInterval(timer); }
+
+      document.getElementById('prev').addEventListener('click', () => { stopAuto(); scrollBy(-1); if (!paused) startAuto(); });
+      document.getElementById('next').addEventListener('click', () => { stopAuto(); scrollBy( 1); if (!paused) startAuto(); });
+
+      wrap.addEventListener('mouseenter', () => { paused = true;  stopAuto(); });
+      wrap.addEventListener('mouseleave', () => { paused = false; startAuto(); });
+      wrap.addEventListener('focusin',    () => { paused = true;  stopAuto(); });
+      wrap.addEventListener('focusout',   () => { paused = false; startAuto(); });
+
+      startAuto();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hero Code Space Background</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="space-bg" id="space-bg" aria-hidden="true"></div>
+
+    <main class="hero-content">
+      <h1 class="hero-title">Steal This</h1>
+      <p class="hero-sub">Copy. Paste. Ship.</p>
+    </main>
+
+    <script>
+      const container = document.getElementById('space-bg');
+
+      const SNIPPETS = [
+        { lang: 'js',  color: '#38bdf8', code: 'const greet = (name) =>\n  `Hello, ${name}!`;' },
+        { lang: 'css', color: '#4ade80', code: '.card {\n  border-radius: 12px;\n  padding: 1rem;\n}' },
+        { lang: 'ts',  color: '#e879f9', code: 'interface User {\n  id: string;\n  name: string;\n}' },
+        { lang: 'sql', color: '#f87171', code: 'SELECT *\nFROM users\nWHERE active = true;' },
+        { lang: 'js',  color: '#38bdf8', code: 'export default function\nApp() {\n  return <div />\n}' },
+        { lang: 'css', color: '#4ade80', code: '@keyframes fadeIn {\n  from { opacity: 0; }\n  to   { opacity: 1; }\n}' },
+        { lang: 'ts',  color: '#e879f9', code: 'type Props = {\n  title: string;\n  count: number;\n}' },
+        { lang: 'sql', color: '#f87171', code: 'CREATE TABLE posts (\n  id SERIAL,\n  body TEXT\n);' },
+      ];
+
+      const PANEL_COUNT = 24;
+      const DEPTH       = 1600;
+      const BASE_SPEED  = 1.2;
+
+      const panels = [];
+      let scrollVel = 0;
+      let lastScroll = 0;
+
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+
+      function createPanel() {
+        const snippet = SNIPPETS[Math.floor(Math.random() * SNIPPETS.length)];
+        const el = document.createElement('div');
+        el.className = 'space-panel';
+        el.style.setProperty('--color', snippet.color);
+        el.innerHTML = `<pre class="space-code">${snippet.code}</pre>`;
+        container.appendChild(el);
+        return el;
+      }
+
+      function resetPanel(p) {
+        p.el.style.opacity = '0';
+        p.x  = rand(-55, 55);
+        p.y  = rand(-40, 40);
+        p.z  = -rand(DEPTH * 0.4, DEPTH);
+        p.rx = rand(-12, 12);
+        p.ry = rand(-12, 12);
+      }
+
+      for (let i = 0; i < PANEL_COUNT; i++) {
+        const el = createPanel();
+        const p  = { el, x: 0, y: 0, z: 0, rx: 0, ry: 0 };
+        resetPanel(p);
+        p.z = -rand(0, DEPTH); // spread initial z
+        panels.push(p);
+      }
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function tick() {
+        if (prefersReduced) return;
+        requestAnimationFrame(tick);
+
+        const speed = BASE_SPEED + scrollVel;
+        scrollVel *= 0.92;
+
+        for (const p of panels) {
+          p.z += speed;
+          if (p.z > 50) resetPanel(p);
+
+          const scale   = DEPTH / (DEPTH - p.z);
+          const opacity = Math.min(1, Math.max(0, (p.z + DEPTH) / (DEPTH * 0.5)));
+
+          p.el.style.opacity   = opacity.toFixed(3);
+          p.el.style.transform =
+            `translate(-50%, -50%)
+             translate3d(${p.x * scale}vw, ${p.y * scale}vh, 0)
+             scale(${scale.toFixed(3)})
+             rotateX(${p.rx}deg) rotateY(${p.ry}deg)`;
+        }
+      }
+
+      window.addEventListener('scroll', () => {
+        const cur = window.scrollY;
+        scrollVel = Math.min((cur - lastScroll) * 0.08, 4);
+        lastScroll = cur;
+      }, { passive: true });
+
+      if (!prefersReduced) tick();
+    </script>
+  </body>
+</html>

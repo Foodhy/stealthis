@@ -147,22 +147,18 @@ export default function AuroraTextDemo() {
         fontFamily: "system-ui, -apple-system, sans-serif",
         textAlign: "center",
         padding: "2rem",
-        overflow: "hidden",
       }}
     >
       <div>
-        <h1>
-          <AuroraText>
-            <span
-              style={{
-                fontSize: "clamp(2.5rem, 7vw, 5.5rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.03em",
-              }}
-            >
-              Aurora Borealis
-            </span>
-          </AuroraText>
+        <h1
+          style={{
+            fontSize: "clamp(2.5rem, 7vw, 5.5rem)",
+            fontWeight: 900,
+            letterSpacing: "-0.03em",
+            lineHeight: 1.1,
+          }}
+        >
+          <AuroraText>Aurora Borealis</AuroraText>
         </h1>
         <p
           style={{
