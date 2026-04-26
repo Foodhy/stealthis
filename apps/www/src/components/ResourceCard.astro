@@ -65,6 +65,10 @@ const TARGET_LABELS: Record<string, string> = {
 
 const targetLabels = targets.map((target) => TARGET_LABELS[target] ?? target);
 const allBadges = [...languageBadges, ...targetLabels];
+const MAX_VISIBLE_BADGES = 4;
+const visibleBadges = allBadges.slice(0, MAX_VISIBLE_BADGES);
+const hiddenBadgesCount = allBadges.length - visibleBadges.length;
+const hiddenBadgesTitle = allBadges.slice(MAX_VISIBLE_BADGES).join(", ");
 const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
 ---
 
@@ -101,11 +105,11 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
   <!-- Tech chips -->
   {tech.length > 0 && (
     <div class="flex flex-wrap gap-1.5">
-      {tech.slice(0, 5).map((t) => (
+      {tech.slice(0, 4).map((t) => (
         <span class="chip text-xs">{t}</span>
       ))}
-      {tech.length > 5 && (
-        <span class="chip text-xs">+{tech.length - 5}</span>
+      {tech.length > 4 && (
+        <span class="chip text-xs" title={tech.slice(4).join(", ")}>+{tech.length - 4}</span>
       )}
     </div>
   )}
@@ -113,12 +117,21 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
   <!-- Actions row — relative z-10 lifts everything above the ::after card overlay -->
   <div class="relative z-10 flex items-center gap-2 mt-auto pt-1" data-pagefind-ignore>
     <!-- Targets -->
-    <div class="flex gap-1 mr-auto">
-      {allBadges.map((label) => (
+    <div class="flex flex-wrap gap-1 mr-auto min-w-0">
+      {visibleBadges.map((label) => (
         <span class="text-xs font-mono px-1.5 py-0.5 rounded bg-white/4 border border-white/8 text-slate-500">
           {label}
         </span>
       ))}
+      {hiddenBadgesCount > 0 && (
+        <span
+          class="text-xs font-mono px-1.5 py-0.5 rounded bg-white/4 border border-white/8 text-slate-400"
+          title={hiddenBadgesTitle}
+          aria-label={`${hiddenBadgesCount} more: ${hiddenBadgesTitle}`}
+        >
+          +{hiddenBadgesCount}
+        </span>
+      )}
     </div>
 
     <!-- Quick actions — always visible so heart is reachable without hover -->
