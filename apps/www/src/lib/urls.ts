@@ -9,5 +9,7 @@ export const SITE_URLS = {
   dbviz: isDev ? "http://localhost:4327/" : "https://dbviz.stealthis.dev",
   remotion: isDev ? "http://localhost:4325" : "https://remotion.stealthis.dev",
   promptDesigner: isDev ? "http://localhost:4328" : "https://prompt-designer.stealthis.dev",
+  zenpomodoro: "https://zenpomodoro.app",
+  feedbackForm: "https://forms.gle/6tD2iWDXRra58gGs7",
   changelog: "https://github.com/Foodhy/stealthis/releases",
 } as const;

@@ -73,7 +73,6 @@ const navLinks = [
     href: `${prefix}/library`,
     label: t("nav.library"),
     external: false,
-    badge: "New!",
   },
   {
     key: "showcase",
@@ -91,21 +90,45 @@ const navLinks = [
     external: true,
     badge: "",
   },
-  {
-    key: "dbviz",
-    href: SITE_URLS.dbviz,
-    label: "DbViz",
-    external: true,
-    badge: "",
-  },
 ];
 
 const visibleNavLinks = navLinks.filter(
   (link) =>
     (link.key !== "styleforge" || SHOW_STYLEFORGE_STUDIO) &&
-    (link.key !== "build" || SHOW_BUILD_BUTTON) &&
-    (link.key !== "dbviz" || SHOW_DBVIZ)
+    (link.key !== "build" || SHOW_BUILD_BUTTON)
 );
+
+type AppLink = {
+  key: string;
+  href: string;
+  label: string;
+  desc: string;
+  badge?: string;
+  trigger?: "dbviz";
+};
+
+const applicationLinks: AppLink[] = [
+  {
+    key: "dbviz",
+    href: SITE_URLS.dbviz,
+    label: t("nav.dbviz"),
+    desc: t("nav.dbviz.desc"),
+    trigger: "dbviz",
+  },
+  {
+    key: "zenpomodoro",
+    href: SITE_URLS.zenpomodoro,
+    label: t("nav.zenpomodoro"),
+    desc: t("nav.zenpomodoro.desc"),
+    badge: "New!",
+  },
+];
+
+const visibleApplicationLinks = applicationLinks.filter(
+  (link) => link.key !== "dbviz" || SHOW_DBVIZ
+);
+const showApplications = visibleApplicationLinks.length > 0;
+const applicationsLabel = t("nav.applications");
 
 const menuLabels: Record<Locale, { open: string; close: string; title: string }> = {
   en: { open: "Open menu", close: "Close menu", title: "Navigation" },
@@ -146,12 +169,82 @@ const menuTitle = menuLabels[locale].title;
           class={`nav-link ${isNavLinkActive(link.href, link.external) ? "is-active" : ""}`}
           target={link.external ? "_blank" : undefined}
           rel={link.external ? "noopener" : undefined}
-          {...(link.key === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
         >
           {link.label}
           {link.badge && <span class="nav-badge">{link.badge}</span>}
         </a>
       ))}
+
+      {showApplications && (
+        <div class="nav-dropdown" data-nav-dropdown>
+          <button
+            type="button"
+            class="nav-link nav-dropdown__trigger"
+            aria-expanded="false"
+            aria-haspopup="true"
+            aria-controls="applications-dropdown"
+            data-nav-dropdown-trigger
+          >
+            {applicationsLabel}
+            <span class="nav-badge">New!</span>
+            <svg
+              class="nav-dropdown__chevron"
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <ul
+            id="applications-dropdown"
+            class="nav-dropdown__menu"
+            data-nav-dropdown-menu
+            role="menu"
+          >
+            {visibleApplicationLinks.map((link) => (
+              <li role="none">
+                <a
+                  href={link.href}
+                  class="nav-dropdown__link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  role="menuitem"
+                  {...(link.trigger === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
+                >
+                  <span class="nav-dropdown__icon" aria-hidden="true">
+                    {link.key === "dbviz" && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                        <path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"></path>
+                        <path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"></path>
+                      </svg>
+                    )}
+                    {link.key === "zenpomodoro" && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="13" r="8"></circle>
+                        <path d="M12 9v4l2 2"></path>
+                        <path d="M9 2h6"></path>
+                      </svg>
+                    )}
+                  </span>
+                  <span class="nav-dropdown__content">
+                    <span class="nav-dropdown__title">
+                      {link.label}
+                      {link.badge && <span class="nav-badge">{link.badge}</span>}
+                    </span>
+                    <span class="nav-dropdown__desc">{link.desc}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </nav>
 
     <div class="flex items-center gap-2">
@@ -167,19 +260,6 @@ const menuTitle = menuLabels[locale].title;
           <option value={optionLocale}>{`${localeFlags[optionLocale]} ${localeOptionDisplay[optionLocale]}`}</option>
         ))}
       </select>
-
-      <a
-        href="https://github.com/Foodhy/stealthis"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-white/6 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-        aria-label="GitHub"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path>
-        </svg>
-        GitHub
-      </a>
 
       <button
         type="button"
@@ -228,7 +308,6 @@ const menuTitle = menuLabels[locale].title;
           target={link.external ? "_blank" : undefined}
           rel={link.external ? "noopener" : undefined}
           data-mobile-close
-          {...(link.key === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
         >
           <span class="mobile-drawer__link-main">
             <span class="mobile-drawer__icon" aria-hidden="true">
@@ -278,13 +357,6 @@ const menuTitle = menuLabels[locale].title;
                   <path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"></path>
                 </svg>
               )}
-              {link.key === "dbviz" && (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                  <path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"></path>
-                  <path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"></path>
-                </svg>
-              )}
             </span>
             <span>{link.label}</span>
             {link.badge && <span class="nav-badge">{link.badge}</span>}
@@ -292,6 +364,44 @@ const menuTitle = menuLabels[locale].title;
           <span aria-hidden="true">↗</span>
         </a>
       ))}
+
+      {showApplications && (
+        <div class="mobile-drawer__group">
+          <p class="mobile-drawer__group-label">{applicationsLabel}</p>
+          {visibleApplicationLinks.map((link) => (
+            <a
+              href={link.href}
+              class="mobile-drawer__link"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-mobile-close
+              {...(link.trigger === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
+            >
+              <span class="mobile-drawer__link-main">
+                <span class="mobile-drawer__icon" aria-hidden="true">
+                  {link.key === "dbviz" && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                      <path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"></path>
+                      <path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"></path>
+                    </svg>
+                  )}
+                  {link.key === "zenpomodoro" && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="13" r="8"></circle>
+                      <path d="M12 9v4l2 2"></path>
+                      <path d="M9 2h6"></path>
+                    </svg>
+                  )}
+                </span>
+                <span>{link.label}</span>
+                {link.badge && <span class="nav-badge">{link.badge}</span>}
+              </span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          ))}
+        </div>
+      )}
       <a
         href="https://github.com/Foodhy/stealthis"
         target="_blank"
@@ -403,6 +513,114 @@ const menuTitle = menuLabels[locale].title;
     border: 1px solid rgba(103, 183, 255, 0.38);
     background: linear-gradient(90deg, rgba(74, 146, 255, 0.2), rgba(120, 110, 255, 0.16));
     box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
+  }
+
+  /* ── Applications dropdown (inspired by rtl-navigation) ── */
+  .nav-dropdown {
+    position: relative;
+  }
+
+  .nav-dropdown__trigger {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .nav-dropdown__chevron {
+    transition: transform 180ms ease;
+    margin-inline-start: 2px;
+  }
+
+  .nav-dropdown__trigger[aria-expanded="true"] .nav-dropdown__chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-dropdown__trigger[aria-expanded="true"] {
+    color: rgb(241 245 249);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dropdown__menu {
+    position: absolute;
+    inset-block-start: calc(100% + 8px);
+    inset-inline-end: 0;
+    inline-size: 18rem;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(103, 183, 255, 0.22);
+    background:
+      radial-gradient(circle at 20% 10%, rgba(99, 167, 255, 0.12), transparent 55%),
+      radial-gradient(circle at 80% 90%, rgba(149, 117, 255, 0.12), transparent 55%),
+      rgba(10, 16, 38, 0.98);
+    box-shadow: 0 16px 48px rgba(2, 6, 23, 0.55);
+    backdrop-filter: blur(14px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+    z-index: 60;
+  }
+
+  .nav-dropdown__menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .nav-dropdown__link {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: 0.6rem;
+    text-decoration: none;
+    color: rgb(226 232 240);
+    transition: background 160ms ease, color 160ms ease;
+  }
+
+  .nav-dropdown__link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgb(255 255 255);
+  }
+
+  .nav-dropdown__icon {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(188 214 255);
+    border: 1px solid rgba(103, 183, 255, 0.34);
+    background: linear-gradient(135deg, rgba(103, 183, 255, 0.2), rgba(149, 117, 255, 0.2));
+    margin-block-start: 1px;
+  }
+
+  .nav-dropdown__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .nav-dropdown__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgb(241 245 249);
+    line-height: 1.2;
+  }
+
+  .nav-dropdown__desc {
+    font-size: 0.72rem;
+    color: rgb(148 163 184);
+    line-height: 1.4;
   }
 
   .lang-select {
@@ -524,6 +742,23 @@ const menuTitle = menuLabels[locale].title;
   .mobile-drawer__nav {
     display: grid;
     gap: 0.55rem;
+  }
+
+  .mobile-drawer__group {
+    display: grid;
+    gap: 0.5rem;
+    margin-block-start: 0.5rem;
+    padding-block-start: 0.65rem;
+    border-block-start: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .mobile-drawer__group-label {
+    margin: 0 0 0.15rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(148 163 184);
   }
 
   .mobile-drawer__link-main {
@@ -932,6 +1167,45 @@ const menuTitle = menuLabels[locale].title;
 
   mq.addEventListener("change", (event) => {
     if (event.matches) closeMenu(true);
+  });
+
+  /* ── Applications dropdown ── */
+  const navDropdowns = document.querySelectorAll("[data-nav-dropdown]");
+
+  const closeAllNavDropdowns = (except) => {
+    navDropdowns.forEach((dropdown) => {
+      if (dropdown === except) return;
+      const trigger = dropdown.querySelector("[data-nav-dropdown-trigger]");
+      const dropdownMenu = dropdown.querySelector("[data-nav-dropdown-menu]");
+      trigger?.setAttribute("aria-expanded", "false");
+      dropdownMenu?.classList.remove("is-open");
+    });
+  };
+
+  navDropdowns.forEach((dropdown) => {
+    const trigger = dropdown.querySelector("[data-nav-dropdown-trigger]");
+    const dropdownMenu = dropdown.querySelector("[data-nav-dropdown-menu]");
+    if (!(trigger instanceof HTMLElement) || !(dropdownMenu instanceof HTMLElement)) return;
+
+    trigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isOpen = trigger.getAttribute("aria-expanded") === "true";
+      closeAllNavDropdowns(isOpen ? null : dropdown);
+      trigger.setAttribute("aria-expanded", String(!isOpen));
+      dropdownMenu.classList.toggle("is-open", !isOpen);
+    });
+
+    dropdownMenu.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+  });
+
+  document.addEventListener("click", () => {
+    closeAllNavDropdowns(null);
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeAllNavDropdowns(null);
   });
 </script>
 
