@@ -1,0 +1,792 @@
+---
+slug: "dyslexia-friendly-delete-closing-tag-f22261c2"
+topic: "accessibility"
+title: "Fix the broken HTML structure in Dyslexia Friendly Mode"
+type: "fix"
+difficulty: 2
+resourceSlug: "dyslexia-friendly"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  @import url("https://fonts.cdnfonts.com/css/opendyslexic");
+  
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0a0a0a;
+    color: #e4e4e7;
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  
+  /* ---- Header ---- */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+  }
+  
+  .header__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    letter-spacing: -0.02em;
+  }
+  
+  /* ---- Toggle Button ---- */
+  .toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 1.125rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #a1a1aa;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  
+  .toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e4e4e7;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .toggle-btn[aria-pressed="true"] {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #c4b5fd;
+  }
+  
+  .toggle-btn__icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid currentColor;
+    position: relative;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+  
+  .toggle-btn[aria-pressed="true"] .toggle-btn__icon {
+    background: #8b5cf6;
+    border-color: #8b5cf6;
+  }
+  
+  .toggle-btn[aria-pressed="true"] .toggle-btn__icon::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 4px;
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  /* ---- Article ---- */
+  .article {
+    transition: all 0.4s ease;
+  }
+  
+  .article__heading {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+  
+  .article__subheading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e4e4e7;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+  
+  .article__text {
+    font-size: 1rem;
+    color: #a1a1aa;
+    margin-bottom: 1.25rem;
+    max-width: 65ch;
+    transition: all 0.4s ease;
+  }
+  
+  .article__list {
+    list-style: none;
+    margin-bottom: 1.5rem;
+    padding-left: 0;
+    max-width: 65ch;
+  }
+  
+  .article__list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.625rem;
+    color: #a1a1aa;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    transition: all 0.4s ease;
+  }
+  
+  .article__list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #8b5cf6;
+  }
+  
+  .article__quote {
+    border-left: 3px solid #8b5cf6;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    background: rgba(139, 92, 246, 0.06);
+    border-radius: 0 8px 8px 0;
+    max-width: 65ch;
+    transition: all 0.4s ease;
+  }
+  
+  .article__quote p {
+    font-style: italic;
+    color: #c4b5fd;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+  }
+  
+  .article__quote cite {
+    font-style: normal;
+    font-size: 0.8125rem;
+    color: #71717a;
+  }
+  
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .footer__text {
+    font-size: 0.8125rem;
+    color: #52525b;
+  }
+  
+  /* ============================
+     Dyslexia-Friendly Mode
+     ============================ */
+  
+  body.dyslexia-mode {
+    background: #f5f0e8;
+    color: #2c2c2c;
+  }
+  
+  .dyslexia-mode .header {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .dyslexia-mode .header__title {
+    color: #1a1a1a;
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+  }
+  
+  .dyslexia-mode .article {
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+    line-height: 2;
+  }
+  
+  .dyslexia-mode .article__heading {
+    color: #1a1a1a;
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+    letter-spacing: 0.04em;
+  }
+  
+  .dyslexia-mode .article__subheading {
+    color: #2c2c2c;
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+    letter-spacing: 0.04em;
+  }
+  
+  .dyslexia-mode .article__text {
+    color: #3a3a3a;
+    font-size: 1.0625rem;
+    text-align: left;
+  }
+  
+  .dyslexia-mode .article__list li {
+    color: #3a3a3a;
+    font-size: 1rem;
+    line-height: 2;
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+  }
+  
+  .dyslexia-mode .article__list li::before {
+    background: #6d28d9;
+  }
+  
+  .dyslexia-mode .article__quote {
+    background: rgba(109, 40, 217, 0.08);
+    border-left-color: #6d28d9;
+  }
+  
+  .dyslexia-mode .article__quote p {
+    color: #4c1d95;
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+    line-height: 2;
+  }
+  
+  .dyslexia-mode .article__quote cite {
+    color: #6b7280;
+  }
+  
+  .dyslexia-mode .toggle-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #4b5563;
+  }
+  
+  .dyslexia-mode .toggle-btn[aria-pressed="true"] {
+    background: rgba(109, 40, 217, 0.12);
+    border-color: rgba(109, 40, 217, 0.4);
+    color: #6d28d9;
+  }
+  
+  .dyslexia-mode .footer {
+    border-top-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .dyslexia-mode .footer__text {
+    color: #9ca3af;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dyslexia Friendly Mode
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="container">
+      <header class="header">
+        <h1 class="header__title">Dyslexia Friendly Mode</h1>
+        <button class="toggle-btn" id="dyslexia-toggle" aria-pressed="false">
+          <span class="toggle-btn__icon" aria-hidden="true"></span>
+          <span class="toggle-btn__label">Enable Dyslexia Mode</span>
+        </button>
+      </header>
+  
+      <main class="content">
+        <article class="article">
+          <h2 class="article__heading">The Importance of Inclusive Typography</h2>
+  
+          <p class="article__text">
+            Typography is one of the most powerful tools in a designer's toolkit, yet it can also be one of the most exclusionary. For the estimated 15-20% of the population who have some form of dyslexia, standard typefaces can transform reading from a simple task into an exhausting cognitive exercise. Letters may appear to swap positions, mirror themselves, or blend into their neighbors, turning every paragraph into a puzzle.
+          </p>
+  
+          <p class="article__text">
+            Dyslexia-friendly typefaces like OpenDyslexic address this by weighting the bottom of each letter, making characters feel "anchored" and reducing the likelihood that the brain will rotate or flip them. Combined with increased spacing between letters and words, these adjustments can dramatically improve reading speed and comprehension for affected users.
+          </p>
+  
+          <h3 class="article__subheading">Key Principles of Dyslexia-Friendly Design</h3>
+  
+          <ul class="article__list">
+            <li>Use a weighted or asymmetric typeface so letters are easily distinguished</li>
+            <li>Increase letter-spacing to at least 0.12em to prevent crowding</li>
+            <li>Set word-spacing to 0.16em or wider for clear word boundaries</li>
+            <li>Use a line-height of 1.8 to 2.0 for comfortable vertical rhythm</li>
+            <li>Avoid pure white backgrounds — use warm, muted tones instead</li>
+            <li>Never justify text; always use left-alignment</li>
+            <li>Keep line length under 70-80 characters</li>
+          </ul>
+  
+          <blockquote class="article__quote">
+            <p>"Good design is actually a lot harder to notice than poor design, in part because good designs fit our needs so well that the design is invisible."</p>
+            <cite>— Don Norman, The Design of Everyday Things</cite>
+          </blockquote>
+  
+          <h3 class="article__subheading">Beyond Fonts: A Holistic Approach</h3>
+  
+          <p class="article__text">
+            While typeface selection is important, truly inclusive reading experiences go further. Background color plays a significant role — many dyslexic readers find cream or light yellow backgrounds far more comfortable than stark white. Text alignment matters too: justified text creates uneven spacing between words, which can cause "rivers of white space" that disrupt reading flow. Left-aligned text maintains consistent word spacing and provides a reliable anchor point for each new line.
+          </p>
+  
+          <p class="article__text">
+            Paragraph width is another often-overlooked factor. Lines that span the full width of a large screen force the eye to travel too far, making it easy to lose one's place when returning to the start of the next line. A maximum width of around 65 characters per line is comfortable for most readers and essential for those with reading difficulties. Toggle the dyslexia-friendly mode above to see these principles in action.
+          </p>
+        </article>
+      </main>
+  
+      <footer class="footer">
+        <p class="footer__text">Preference is saved automatically and will persist across page reloads.</p>
+      </footer>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const STORAGE_KEY = "dyslexia-mode-enabled";
+    const toggleBtn = document.getElementById("dyslexia-toggle");
+    const label = toggleBtn.querySelector(".toggle-btn__label");
+  
+    function applyMode(enabled) {
+      document.body.classList.toggle("dyslexia-mode", enabled);
+      toggleBtn.setAttribute("aria-pressed", String(enabled));
+      label.textContent = enabled ? "Disable Dyslexia Mode" : "Enable Dyslexia Mode";
+    }
+  
+    // Restore saved preference
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "true") {
+      applyMode(true);
+    }
+  
+    toggleBtn.addEventListener("click", () => {
+      const isActive = document.body.classList.contains("dyslexia-mode");
+      const next = !isActive;
+      applyMode(next);
+      localStorage.setItem(STORAGE_KEY, String(next));
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  @import url("https://fonts.cdnfonts.com/css/opendyslexic");
+  
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0a0a0a;
+    color: #e4e4e7;
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  
+  /* ---- Header ---- */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+  }
+  
+  .header__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    letter-spacing: -0.02em;
+  }
+  
+  /* ---- Toggle Button ---- */
+  .toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 1.125rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #a1a1aa;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  
+  .toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e4e4e7;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .toggle-btn[aria-pressed="true"] {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #c4b5fd;
+  }
+  
+  .toggle-btn__icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid currentColor;
+    position: relative;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+  
+  .toggle-btn[aria-pressed="true"] .toggle-btn__icon {
+    background: #8b5cf6;
+    border-color: #8b5cf6;
+  }
+  
+  .toggle-btn[aria-pressed="true"] .toggle-btn__icon::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 4px;
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  /* ---- Article ---- */
+  .article {
+    transition: all 0.4s ease;
+  }
+  
+  .article__heading {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+  
+  .article__subheading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e4e4e7;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+  
+  .article__text {
+    font-size: 1rem;
+    color: #a1a1aa;
+    margin-bottom: 1.25rem;
+    max-width: 65ch;
+    transition: all 0.4s ease;
+  }
+  
+  .article__list {
+    list-style: none;
+    margin-bottom: 1.5rem;
+    padding-left: 0;
+    max-width: 65ch;
+  }
+  
+  .article__list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.625rem;
+    color: #a1a1aa;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    transition: all 0.4s ease;
+  }
+  
+  .article__list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #8b5cf6;
+  }
+  
+  .article__quote {
+    border-left: 3px solid #8b5cf6;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    background: rgba(139, 92, 246, 0.06);
+    border-radius: 0 8px 8px 0;
+    max-width: 65ch;
+    transition: all 0.4s ease;
+  }
+  
+  .article__quote p {
+    font-style: italic;
+    color: #c4b5fd;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+  }
+  
+  .article__quote cite {
+    font-style: normal;
+    font-size: 0.8125rem;
+    color: #71717a;
+  }
+  
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .footer__text {
+    font-size: 0.8125rem;
+    color: #52525b;
+  }
+  
+  /* ============================
+     Dyslexia-Friendly Mode
+     ============================ */
+  
+  body.dyslexia-mode {
+    background: #f5f0e8;
+    color: #2c2c2c;
+  }
+  
+  .dyslexia-mode .header {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .dyslexia-mode .header__title {
+    color: #1a1a1a;
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+  }
+  
+  .dyslexia-mode .article {
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+    line-height: 2;
+  }
+  
+  .dyslexia-mode .article__heading {
+    color: #1a1a1a;
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+    letter-spacing: 0.04em;
+  }
+  
+  .dyslexia-mode .article__subheading {
+    color: #2c2c2c;
+    font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+    letter-spacing: 0.04em;
+  }
+  
+  .dyslexia-mode .article__text {
+    color: #3a3a3a;
+    font-size: 1.0625rem;
+    text-align: left;
+  }
+  
+  .dyslexia-mode .article__list li {
+    color: #3a3a3a;
+    font-size: 1rem;
+    line-height: 2;
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+  }
+  
+  .dyslexia-mode .article__list li::before {
+    background: #6d28d9;
+  }
+  
+  .dyslexia-mode .article__quote {
+    background: rgba(109, 40, 217, 0.08);
+    border-left-color: #6d28d9;
+  }
+  
+  .dyslexia-mode .article__quote p {
+    color: #4c1d95;
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+    line-height: 2;
+  }
+  
+  .dyslexia-mode .article__quote cite {
+    color: #6b7280;
+  }
+  
+  .dyslexia-mode .toggle-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #4b5563;
+  }
+  
+  .dyslexia-mode .toggle-btn[aria-pressed="true"] {
+    background: rgba(109, 40, 217, 0.12);
+    border-color: rgba(109, 40, 217, 0.4);
+    color: #6d28d9;
+  }
+  
+  .dyslexia-mode .footer {
+    border-top-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .dyslexia-mode .footer__text {
+    color: #9ca3af;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dyslexia Friendly Mode</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="container">
+      <header class="header">
+        <h1 class="header__title">Dyslexia Friendly Mode</h1>
+        <button class="toggle-btn" id="dyslexia-toggle" aria-pressed="false">
+          <span class="toggle-btn__icon" aria-hidden="true"></span>
+          <span class="toggle-btn__label">Enable Dyslexia Mode</span>
+        </button>
+      </header>
+  
+      <main class="content">
+        <article class="article">
+          <h2 class="article__heading">The Importance of Inclusive Typography</h2>
+  
+          <p class="article__text">
+            Typography is one of the most powerful tools in a designer's toolkit, yet it can also be one of the most exclusionary. For the estimated 15-20% of the population who have some form of dyslexia, standard typefaces can transform reading from a simple task into an exhausting cognitive exercise. Letters may appear to swap positions, mirror themselves, or blend into their neighbors, turning every paragraph into a puzzle.
+          </p>
+  
+          <p class="article__text">
+            Dyslexia-friendly typefaces like OpenDyslexic address this by weighting the bottom of each letter, making characters feel "anchored" and reducing the likelihood that the brain will rotate or flip them. Combined with increased spacing between letters and words, these adjustments can dramatically improve reading speed and comprehension for affected users.
+          </p>
+  
+          <h3 class="article__subheading">Key Principles of Dyslexia-Friendly Design</h3>
+  
+          <ul class="article__list">
+            <li>Use a weighted or asymmetric typeface so letters are easily distinguished</li>
+            <li>Increase letter-spacing to at least 0.12em to prevent crowding</li>
+            <li>Set word-spacing to 0.16em or wider for clear word boundaries</li>
+            <li>Use a line-height of 1.8 to 2.0 for comfortable vertical rhythm</li>
+            <li>Avoid pure white backgrounds — use warm, muted tones instead</li>
+            <li>Never justify text; always use left-alignment</li>
+            <li>Keep line length under 70-80 characters</li>
+          </ul>
+  
+          <blockquote class="article__quote">
+            <p>"Good design is actually a lot harder to notice than poor design, in part because good designs fit our needs so well that the design is invisible."</p>
+            <cite>— Don Norman, The Design of Everyday Things</cite>
+          </blockquote>
+  
+          <h3 class="article__subheading">Beyond Fonts: A Holistic Approach</h3>
+  
+          <p class="article__text">
+            While typeface selection is important, truly inclusive reading experiences go further. Background color plays a significant role — many dyslexic readers find cream or light yellow backgrounds far more comfortable than stark white. Text alignment matters too: justified text creates uneven spacing between words, which can cause "rivers of white space" that disrupt reading flow. Left-aligned text maintains consistent word spacing and provides a reliable anchor point for each new line.
+          </p>
+  
+          <p class="article__text">
+            Paragraph width is another often-overlooked factor. Lines that span the full width of a large screen force the eye to travel too far, making it easy to lose one's place when returning to the start of the next line. A maximum width of around 65 characters per line is comfortable for most readers and essential for those with reading difficulties. Toggle the dyslexia-friendly mode above to see these principles in action.
+          </p>
+        </article>
+      </main>
+  
+      <footer class="footer">
+        <p class="footer__text">Preference is saved automatically and will persist across page reloads.</p>
+      </footer>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const STORAGE_KEY = "dyslexia-mode-enabled";
+    const toggleBtn = document.getElementById("dyslexia-toggle");
+    const label = toggleBtn.querySelector(".toggle-btn__label");
+  
+    function applyMode(enabled) {
+      document.body.classList.toggle("dyslexia-mode", enabled);
+      toggleBtn.setAttribute("aria-pressed", String(enabled));
+      label.textContent = enabled ? "Disable Dyslexia Mode" : "Enable Dyslexia Mode";
+    }
+  
+    // Restore saved preference
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "true") {
+      applyMode(true);
+    }
+  
+    toggleBtn.addEventListener("click", () => {
+      const isActive = document.body.classList.contains("dyslexia-mode");
+      const next = !isActive;
+      applyMode(next);
+      localStorage.setItem(STORAGE_KEY, String(next));
+    });
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

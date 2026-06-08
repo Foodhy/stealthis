@@ -1,0 +1,3152 @@
+---
+slug: "admin-layout-delete-closing-tag-2539c4f1"
+topic: "admin"
+title: "Fix the broken HTML structure in Admin Layout"
+type: "fix"
+difficulty: 2
+resourceSlug: "admin-layout"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 60px;
+    --navbar-height: 60px;
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-2: #263044;
+    --border: rgba(255, 255, 255, 0.07);
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-dim: rgba(56, 189, 248, 0.12);
+    --transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+  
+  /* ── Overlay (mobile) ── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 40;
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+  
+  /* ── Sidebar ── */
+  .sidebar {
+    position: relative;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: width var(--transition);
+    z-index: 50;
+  }
+  
+  .sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+  }
+  
+  /* Logo */
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.125rem 1rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .sidebar-logo-text {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    opacity: 1;
+    transition: opacity var(--transition);
+  }
+  .sidebar.collapsed .sidebar-logo-text {
+    opacity: 0;
+  }
+  
+  /* Nav */
+  .sidebar-nav {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sidebar-nav::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+  
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+  }
+  .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+  }
+  .nav-item.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+  .nav-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+  }
+  .nav-label {
+    opacity: 1;
+    max-width: 200px;
+    overflow: hidden;
+    transition: opacity var(--transition), max-width var(--transition);
+  }
+  .sidebar.collapsed .nav-label {
+    opacity: 0;
+    max-width: 0;
+  }
+  
+  /* Tooltip on collapsed */
+  .sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 0.625rem;
+    gap: 0;
+    width: calc(var(--sidebar-collapsed-width) - 1rem);
+  }
+  .sidebar.collapsed .nav-item:hover::after {
+    content: attr(data-label);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 8px);
+    background: #334155;
+    color: var(--text);
+    font-size: 0.8125rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 100;
+  }
+  
+  .nav-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.5rem 0.25rem;
+    flex-shrink: 0;
+  }
+  
+  /* Collapse button */
+  .sidebar-collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .sidebar-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+  }
+  .sidebar-collapse-btn svg {
+    transition: transform var(--transition);
+  }
+  .sidebar.collapsed .sidebar-collapse-btn svg {
+    transform: rotate(180deg);
+  }
+  
+  /* User */
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-top: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    opacity: 1;
+    transition: opacity var(--transition);
+  }
+  .sidebar.collapsed .sidebar-user-info {
+    opacity: 0;
+  }
+  .sidebar-user-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .sidebar-user-role {
+    font-size: 0.6875rem;
+    color: var(--muted);
+  }
+  
+  /* ── Main Area ── */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+  
+  /* ── Navbar ── */
+  .navbar {
+    height: var(--navbar-height);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+  .navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+  .navbar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  /* Hamburger */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .hamburger:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .hamburger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--muted);
+    border-radius: 1px;
+    transition: background 0.15s;
+  }
+  .hamburger:hover span {
+    background: var(--text);
+  }
+  
+  /* Search */
+  .navbar-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.375rem 0.75rem;
+  }
+  .navbar-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 0.875rem;
+    width: 180px;
+  }
+  .navbar-search input::placeholder {
+    color: #475569;
+  }
+  
+  /* Icon buttons */
+  .navbar-icon-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .navbar-icon-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .navbar-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 17px;
+    height: 17px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .navbar-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  /* ── Content ── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+  }
+  
+  .content-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .content-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .content-subtitle {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  
+  /* Stat Grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.125rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .stat-icon--blue {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+  .stat-icon--green {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+  .stat-icon--purple {
+    background: rgba(167, 139, 250, 0.12);
+    color: #a78bfa;
+  }
+  .stat-icon--cyan {
+    background: rgba(34, 211, 238, 0.12);
+    color: #22d3ee;
+  }
+  
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .stat-value {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .stat-change {
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+  .stat-change--up {
+    color: #34d399;
+  }
+  .stat-change--down {
+    color: #f87171;
+  }
+  
+  /* Activity */
+  .activity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .activity-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .activity-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .activity-view-all {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    list-style: none;
+  }
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .activity-dot--green {
+    background: #34d399;
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
+  }
+  .activity-dot--blue {
+    background: #38bdf8;
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+  }
+  .activity-dot--yellow {
+    background: #fbbf24;
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+  }
+  .activity-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .activity-text {
+    font-size: 0.875rem;
+    color: #cbd5e1;
+  }
+  .activity-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .activity-time {
+    font-size: 0.75rem;
+    color: #475569;
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .stat-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      transform: translateX(-100%);
+      transition: transform var(--transition);
+      width: var(--sidebar-width) !important;
+      z-index: 50;
+    }
+    .sidebar.mobile-open {
+      transform: translateX(0);
+    }
+    .sidebar-collapse-btn {
+      display: none;
+    }
+    .navbar-search {
+      display: none;
+    }
+    .stat-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .stat-grid {
+      grid-template-columns: 1fr;
+    }
+    .content {
+      padding: 1rem;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .sidebar *,
+    .sidebar-overlay {
+      transition: none !important;
+    }
+  }
+  
+  /* ── Page content system ── */
+  .page-content {
+    display: none;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .page-content.active {
+    display: flex;
+  }
+  
+  /* Content action button */
+  .content-action-btn {
+    padding: 0.5625rem 1rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #0f172a;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .content-action-btn:hover {
+    background: #7dd3fc;
+  }
+  
+  /* Analytics */
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .analytics-card--wide {
+    grid-column: 1 / -1;
+  }
+  .analytics-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .analytics-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .analytics-card-header h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .analytics-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .analytics-badge.up {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+  .analytics-badge.down {
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+  }
+  .chart-placeholder {
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+  }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 100%;
+    width: 100%;
+  }
+  .chart-bar {
+    flex: 1;
+    background: rgba(56, 189, 248, 0.2);
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transition: background 0.15s;
+    position: relative;
+    min-height: 8px;
+  }
+  .chart-bar.active {
+    background: #38bdf8;
+  }
+  .chart-bar span {
+    position: absolute;
+    bottom: -1.25rem;
+    font-size: 0.65rem;
+    color: #475569;
+  }
+  .big-metric {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .metric-delta {
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .metric-delta.up {
+    color: #34d399;
+  }
+  .metric-delta.down {
+    color: #f87171;
+  }
+  .metric-desc {
+    font-size: 0.8125rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+  
+  /* Users */
+  .users-list-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .users-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .users-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+  }
+  .users-row:last-child {
+    border-bottom: none;
+  }
+  .users-row--header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .users-cell-user {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .user-av {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #0f172a;
+    flex-shrink: 0;
+  }
+  .user-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .user-email {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .role-chip {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .role-chip--admin {
+    background: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
+  }
+  .role-chip--editor {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+  .role-chip--viewer {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+  }
+  .status-dot {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .status-dot--active {
+    color: #34d399;
+  }
+  .status-dot--inactive {
+    color: #64748b;
+  }
+  .status-dot--pending {
+    color: #fbbf24;
+  }
+  .user-date {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  
+  /* Orders */
+  .orders-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .orders-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1.5fr 1fr;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+  }
+  .orders-row--header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .orders-row:last-child {
+    border-bottom: none;
+  }
+  .order-id {
+    font-family: monospace;
+    color: var(--accent);
+    font-size: 0.8rem;
+  }
+  .order-amount {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .order-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-align: center;
+  }
+  .order-status--shipped {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+  .order-status--processing {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+  }
+  .order-status--delivered {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+  .order-status--cancelled {
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+  }
+  .order-date {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  
+  /* Products */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    gap: 0.875rem;
+    align-items: center;
+    transition: border-color 0.15s;
+  }
+  .product-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .product-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.9);
+    flex-shrink: 0;
+  }
+  .product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .product-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .product-price {
+    font-size: 0.8125rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .product-stock {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .in-stock {
+    background: rgba(52, 211, 153, 0.1);
+    color: #34d399;
+  }
+  .low-stock {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+  }
+  
+  /* Settings */
+  .settings-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .settings-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+  .settings-section-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.25rem;
+  }
+  .settings-row,
+  .settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .settings-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .settings-label span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .settings-label small {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .settings-input {
+    padding: 0.4375rem 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.875rem;
+    font-family: inherit;
+    outline: none;
+    min-width: 200px;
+  }
+  .settings-input:focus {
+    border-color: var(--accent);
+  }
+  .stoggle {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+  .stoggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .stoggle-track {
+    display: block;
+    width: 2.25rem;
+    height: 1.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .stoggle-track::after {
+    content: "";
+    position: absolute;
+    width: 0.875rem;
+    height: 0.875rem;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+  .stoggle input:checked + .stoggle-track {
+    background: var(--accent);
+  }
+  .stoggle input:checked + .stoggle-track::after {
+    transform: translateX(1rem);
+  }
+  .settings-save-btn {
+    padding: 0.625rem 1.5rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    align-self: flex-start;
+    font-family: inherit;
+  }
+  .settings-save-btn:hover {
+    background: #7dd3fc;
+  }
+  
+  @media (max-width: 768px) {
+    .analytics-grid {
+      grid-template-columns: 1fr;
+    }
+    .analytics-card--wide {
+      grid-column: 1;
+    }
+    .products-grid {
+      grid-template-columns: 1fr;
+    }
+    .orders-row {
+      grid-template-columns: 1fr 1.5fr 1fr;
+    }
+    .orders-row > :nth-child(4),
+    .orders-row > :nth-child(5) {
+      display: none;
+    }
+    .users-row {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+    .users-row > :nth-child(4) {
+      display: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Layout
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="sidebar">
+  
+      <!-- Logo -->
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <span class="sidebar-logo-text">StealthAdmin</span>
+      </div>
+  
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-label="Dashboard">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Analytics">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+          </span>
+          <span class="nav-label">Analytics</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Users">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </span>
+          <span class="nav-label">Users</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Orders">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </span>
+          <span class="nav-label">Orders</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Products">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </span>
+          <span class="nav-label">Products</span>
+        </a>
+  
+        <div class="nav-divider"></div>
+  
+        <a href="#" class="nav-item" data-label="Settings">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </span>
+          <span class="nav-label">Settings</span>
+        </a>
+      </nav>
+  
+      <!-- Collapse button -->
+      <button class="sidebar-collapse-btn" id="collapseBtn" title="Collapse sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+      </button>
+  
+      <!-- User profile -->
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">AC</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-user-name">Alex Chen</span>
+          <span class="sidebar-user-role">Admin</span>
+        </div>
+      </div>
+  
+    </aside>
+  
+    <!-- ── Main area ── -->
+    <div class="main-area" id="mainArea">
+  
+      <!-- Top Navbar -->
+      <header class="navbar">
+        <div class="navbar-left">
+          <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+            <span></span><span></span><span></span>
+          </button>
+          <h1 class="navbar-title" id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="navbar-right">
+          <div class="navbar-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search…" />
+          </div>
+          <button class="navbar-icon-btn" title="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="navbar-badge">3</span>
+          </button>
+          <div class="navbar-avatar">AC</div>
+        </div>
+      </header>
+  
+      <!-- Content -->
+      <main class="content">
+  
+        <!-- DASHBOARD -->
+        <div id="page-Dashboard" class="page-content active">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Good morning, Alex</h2>
+              <p class="content-subtitle">Here's what's happening with your store today.</p>
+            </div>
+          </div>
+  
+          <!-- Stat Cards -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-value">24,521</span>
+                <span class="stat-change stat-change--up">+12.5% this month</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Revenue</span>
+                <span class="stat-value">$84,320</span>
+                <span class="stat-change stat-change--up">+8.2% this month</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Orders</span>
+                <span class="stat-value">1,284</span>
+                <span class="stat-change stat-change--down">-3.1% this month</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--cyan">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Uptime</span>
+                <span class="stat-value">99.98%</span>
+                <span class="stat-change stat-change--up">+0.02% this month</span>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Recent Activity -->
+          <div class="activity-card">
+            <div class="activity-header">
+              <h3 class="activity-title">Recent Activity</h3>
+              <button class="activity-view-all">View all</button>
+            </div>
+            <ul class="activity-list">
+              <li class="activity-item">
+                <div class="activity-dot activity-dot--green"></div>
+                <div class="activity-body">
+                  <span class="activity-text">New user <strong>Sarah Kim</strong> registered</span>
+                  <span class="activity-time">2 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot activity-dot--blue"></div>
+                <div class="activity-body">
+                  <span class="activity-text">Order <strong>#ORD-4821</strong> has been shipped</span>
+                  <span class="activity-time">14 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot activity-dot--yellow"></div>
+                <div class="activity-body">
+                  <span class="activity-text">Server load reached <strong>82%</strong> — auto-scaled</span>
+                  <span class="activity-time">1 hour ago</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+  
+        <!-- ANALYTICS -->
+        <div id="page-Analytics" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Analytics</h2>
+              <p class="content-subtitle">Track your performance metrics and trends.</p>
+            </div>
+            <button class="content-action-btn">Export Report</button>
+          </div>
+          <div class="analytics-grid">
+            <div class="analytics-card analytics-card--wide">
+              <div class="analytics-card-header"><h3>Revenue Over Time</h3><span class="analytics-badge up">+8.2%</span></div>
+              <div class="chart-placeholder">
+                <div class="chart-bars">
+                  <div class="chart-bar" style="height:45%"><span>Jan</span></div>
+                  <div class="chart-bar" style="height:62%"><span>Feb</span></div>
+                  <div class="chart-bar" style="height:38%"><span>Mar</span></div>
+                  <div class="chart-bar" style="height:78%"><span>Apr</span></div>
+                  <div class="chart-bar" style="height:55%"><span>May</span></div>
+                  <div class="chart-bar active" style="height:91%"><span>Jun</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header"><h3>Conversion Rate</h3></div>
+              <div class="big-metric">3.6%<span class="metric-delta up">+0.4%</span></div>
+              <p class="metric-desc">vs 3.2% last period</p>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header"><h3>Avg. Session</h3></div>
+              <div class="big-metric">4m 32s<span class="metric-delta up">+12s</span></div>
+              <p class="metric-desc">vs 4m 20s last period</p>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header"><h3>Bounce Rate</h3></div>
+              <div class="big-metric">41.2%<span class="metric-delta down">-2.1%</span></div>
+              <p class="metric-desc">vs 43.3% last period</p>
+            </div>
+          </div>
+        </div>
+  
+        <!-- USERS -->
+        <div id="page-Users" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Users</h2>
+              <p class="content-subtitle">Manage your user accounts and permissions.</p>
+            </div>
+            <button class="content-action-btn">+ Invite User</button>
+          </div>
+          <div class="users-list-card">
+            <div class="users-search-bar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search users…" style="background:transparent;border:none;outline:none;color:#f1f5f9;font-size:0.875rem;flex:1" />
+            </div>
+            <div class="users-row users-row--header">
+              <span>User</span><span>Role</span><span>Status</span><span>Joined</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#6366f1">AC</div><div><div class="user-name">Alex Chen</div><div class="user-email">alex@company.io</div></div></div>
+              <span class="role-chip role-chip--admin">Admin</span>
+              <span class="status-dot status-dot--active">Active</span>
+              <span class="user-date">Jan 15, 2023</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#0ea5e9">SK</div><div><div class="user-name">Sarah Kim</div><div class="user-email">sarah@company.io</div></div></div>
+              <span class="role-chip role-chip--editor">Editor</span>
+              <span class="status-dot status-dot--active">Active</span>
+              <span class="user-date">Mar 22, 2023</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#8b5cf6">MR</div><div><div class="user-name">Marcus Reed</div><div class="user-email">m.reed@company.io</div></div></div>
+              <span class="role-chip role-chip--viewer">Viewer</span>
+              <span class="status-dot status-dot--inactive">Inactive</span>
+              <span class="user-date">May 10, 2023</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#f59e0b">JL</div><div><div class="user-name">Julia Lee</div><div class="user-email">julia@company.io</div></div></div>
+              <span class="role-chip role-chip--editor">Editor</span>
+              <span class="status-dot status-dot--pending">Pending</span>
+              <span class="user-date">Jan 8, 2024</span>
+            </div>
+          </div>
+        </div>
+  
+        <!-- ORDERS -->
+        <div id="page-Orders" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Orders</h2>
+              <p class="content-subtitle">View and manage all customer orders.</p>
+            </div>
+            <button class="content-action-btn">Export CSV</button>
+          </div>
+          <div class="orders-card">
+            <div class="orders-row orders-row--header"><span>Order ID</span><span>Customer</span><span>Amount</span><span>Status</span><span>Date</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4821</span><span>Sarah Johnson</span><span class="order-amount">$142.50</span><span class="order-status order-status--shipped">Shipped</span><span class="order-date">Mar 1, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4820</span><span>Tom Nakamura</span><span class="order-amount">$89.00</span><span class="order-status order-status--processing">Processing</span><span class="order-date">Mar 1, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4819</span><span>Emma Walsh</span><span class="order-amount">$215.75</span><span class="order-status order-status--delivered">Delivered</span><span class="order-date">Feb 28, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4818</span><span>David Okonkwo</span><span class="order-amount">$38.00</span><span class="order-status order-status--cancelled">Cancelled</span><span class="order-date">Feb 27, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4817</span><span>Priya Patel</span><span class="order-amount">$175.25</span><span class="order-status order-status--delivered">Delivered</span><span class="order-date">Feb 26, 2026</span></div>
+          </div>
+        </div>
+  
+        <!-- PRODUCTS -->
+        <div id="page-Products" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Products</h2>
+              <p class="content-subtitle">Manage your product catalog and inventory.</p>
+            </div>
+            <button class="content-action-btn">+ Add Product</button>
+          </div>
+          <div class="products-grid">
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">P</div><div class="product-info"><div class="product-name">Pro Subscription</div><div class="product-price">$29/mo</div><span class="product-stock in-stock">In Stock</span></div></div>
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">T</div><div class="product-info"><div class="product-name">Team Plan</div><div class="product-price">$99/mo</div><span class="product-stock in-stock">In Stock</span></div></div>
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#f59e0b,#fb923c)">E</div><div class="product-info"><div class="product-name">Enterprise License</div><div class="product-price">$499/mo</div><span class="product-stock in-stock">In Stock</span></div></div>
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#34d399,#10b981)">A</div><div class="product-info"><div class="product-name">API Access</div><div class="product-price">$49/mo</div><span class="product-stock low-stock">Low Stock</span></div></div>
+          </div>
+        </div>
+  
+        <!-- SETTINGS -->
+        <div id="page-Settings" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Settings</h2>
+              <p class="content-subtitle">Manage your account preferences and configuration.</p>
+            </div>
+          </div>
+          <div class="settings-sections">
+            <div class="settings-section">
+              <h3 class="settings-section-title">General</h3>
+              <div class="settings-row"><div class="settings-label"><span>Site Name</span><small>The name of your application</small></div><input type="text" class="settings-input" value="StealthAdmin" /></div>
+              <div class="settings-row"><div class="settings-label"><span>Support Email</span><small>Where support requests go</small></div><input type="email" class="settings-input" value="support@company.io" /></div>
+            </div>
+            <div class="settings-section">
+              <h3 class="settings-section-title">Notifications</h3>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Email Alerts</span><small>Receive important updates via email</small></div><label class="stoggle"><input type="checkbox" checked /><span class="stoggle-track"></span></label></div>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Push Notifications</span><small>Browser push notifications</small></div><label class="stoggle"><input type="checkbox" /><span class="stoggle-track"></span></label></div>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Weekly Digest</span><small>Summary report every Monday</small></div><label class="stoggle"><input type="checkbox" checked /><span class="stoggle-track"></span></label></div>
+            </div>
+            <div class="settings-section">
+              <h3 class="settings-section-title">Security</h3>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Two-Factor Auth</span><small>Add an extra layer of security</small></div><label class="stoggle"><input type="checkbox" /><span class="stoggle-track"></span></label></div>
+            </div>
+            <button class="settings-save-btn">Save Changes</button>
+          </div>
+        </div>
+  
+      </main>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const sidebar = document.getElementById("sidebar");
+    const mainArea = document.getElementById("mainArea");
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const collapseBtn = document.getElementById("collapseBtn");
+    const overlay = document.getElementById("sidebarOverlay");
+    const pageTitle = document.getElementById("pageTitle");
+    const navItems = document.querySelectorAll(".nav-item");
+  
+    const isMobile = () => window.innerWidth <= 768;
+  
+    // ── Desktop: collapse sidebar to icon-only ──
+    collapseBtn.addEventListener("click", () => {
+      if (isMobile()) return;
+      sidebar.classList.toggle("collapsed");
+    });
+  
+    // ── Hamburger: desktop collapse / mobile open ──
+    hamburgerBtn.addEventListener("click", () => {
+      if (isMobile()) {
+        sidebar.classList.toggle("mobile-open");
+        overlay.classList.toggle("active");
+      } else {
+        sidebar.classList.toggle("collapsed");
+      }
+    });
+  
+    // ── Close sidebar when overlay is clicked (mobile) ──
+    overlay.addEventListener("click", closeMobileSidebar);
+  
+    function closeMobileSidebar() {
+      sidebar.classList.remove("mobile-open");
+      overlay.classList.remove("active");
+    }
+  
+    // ── Active nav item + content panel swap ──
+    navItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        navItems.forEach((i) => i.classList.remove("active"));
+        item.classList.add("active");
+        const label = item.getAttribute("data-label");
+        if (label) pageTitle.textContent = label;
+  
+        // Swap content panels
+        document.querySelectorAll(".page-content").forEach((p) => p.classList.remove("active"));
+        const page = document.getElementById(`page-${label}`);
+        if (page) page.classList.add("active");
+  
+        if (isMobile()) closeMobileSidebar();
+      });
+    });
+  
+    // ── Reset mobile state on resize ──
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!isMobile()) {
+          sidebar.classList.remove("mobile-open");
+          overlay.classList.remove("active");
+        }
+      }, 100);
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 60px;
+    --navbar-height: 60px;
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-2: #263044;
+    --border: rgba(255, 255, 255, 0.07);
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-dim: rgba(56, 189, 248, 0.12);
+    --transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+  
+  /* ── Overlay (mobile) ── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 40;
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+  
+  /* ── Sidebar ── */
+  .sidebar {
+    position: relative;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: width var(--transition);
+    z-index: 50;
+  }
+  
+  .sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+  }
+  
+  /* Logo */
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.125rem 1rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .sidebar-logo-text {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    opacity: 1;
+    transition: opacity var(--transition);
+  }
+  .sidebar.collapsed .sidebar-logo-text {
+    opacity: 0;
+  }
+  
+  /* Nav */
+  .sidebar-nav {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sidebar-nav::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+  
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+  }
+  .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+  }
+  .nav-item.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+  .nav-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+  }
+  .nav-label {
+    opacity: 1;
+    max-width: 200px;
+    overflow: hidden;
+    transition: opacity var(--transition), max-width var(--transition);
+  }
+  .sidebar.collapsed .nav-label {
+    opacity: 0;
+    max-width: 0;
+  }
+  
+  /* Tooltip on collapsed */
+  .sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 0.625rem;
+    gap: 0;
+    width: calc(var(--sidebar-collapsed-width) - 1rem);
+  }
+  .sidebar.collapsed .nav-item:hover::after {
+    content: attr(data-label);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 8px);
+    background: #334155;
+    color: var(--text);
+    font-size: 0.8125rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 100;
+  }
+  
+  .nav-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.5rem 0.25rem;
+    flex-shrink: 0;
+  }
+  
+  /* Collapse button */
+  .sidebar-collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .sidebar-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+  }
+  .sidebar-collapse-btn svg {
+    transition: transform var(--transition);
+  }
+  .sidebar.collapsed .sidebar-collapse-btn svg {
+    transform: rotate(180deg);
+  }
+  
+  /* User */
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-top: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    opacity: 1;
+    transition: opacity var(--transition);
+  }
+  .sidebar.collapsed .sidebar-user-info {
+    opacity: 0;
+  }
+  .sidebar-user-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .sidebar-user-role {
+    font-size: 0.6875rem;
+    color: var(--muted);
+  }
+  
+  /* ── Main Area ── */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+  
+  /* ── Navbar ── */
+  .navbar {
+    height: var(--navbar-height);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+  .navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+  .navbar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  /* Hamburger */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .hamburger:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .hamburger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--muted);
+    border-radius: 1px;
+    transition: background 0.15s;
+  }
+  .hamburger:hover span {
+    background: var(--text);
+  }
+  
+  /* Search */
+  .navbar-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.375rem 0.75rem;
+  }
+  .navbar-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 0.875rem;
+    width: 180px;
+  }
+  .navbar-search input::placeholder {
+    color: #475569;
+  }
+  
+  /* Icon buttons */
+  .navbar-icon-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .navbar-icon-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .navbar-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 17px;
+    height: 17px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .navbar-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  /* ── Content ── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+  }
+  
+  .content-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .content-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .content-subtitle {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  
+  /* Stat Grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.125rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .stat-icon--blue {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+  .stat-icon--green {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+  .stat-icon--purple {
+    background: rgba(167, 139, 250, 0.12);
+    color: #a78bfa;
+  }
+  .stat-icon--cyan {
+    background: rgba(34, 211, 238, 0.12);
+    color: #22d3ee;
+  }
+  
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .stat-value {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .stat-change {
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+  .stat-change--up {
+    color: #34d399;
+  }
+  .stat-change--down {
+    color: #f87171;
+  }
+  
+  /* Activity */
+  .activity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .activity-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .activity-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .activity-view-all {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    list-style: none;
+  }
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .activity-dot--green {
+    background: #34d399;
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
+  }
+  .activity-dot--blue {
+    background: #38bdf8;
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+  }
+  .activity-dot--yellow {
+    background: #fbbf24;
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+  }
+  .activity-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .activity-text {
+    font-size: 0.875rem;
+    color: #cbd5e1;
+  }
+  .activity-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .activity-time {
+    font-size: 0.75rem;
+    color: #475569;
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .stat-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      transform: translateX(-100%);
+      transition: transform var(--transition);
+      width: var(--sidebar-width) !important;
+      z-index: 50;
+    }
+    .sidebar.mobile-open {
+      transform: translateX(0);
+    }
+    .sidebar-collapse-btn {
+      display: none;
+    }
+    .navbar-search {
+      display: none;
+    }
+    .stat-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .stat-grid {
+      grid-template-columns: 1fr;
+    }
+    .content {
+      padding: 1rem;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .sidebar *,
+    .sidebar-overlay {
+      transition: none !important;
+    }
+  }
+  
+  /* ── Page content system ── */
+  .page-content {
+    display: none;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .page-content.active {
+    display: flex;
+  }
+  
+  /* Content action button */
+  .content-action-btn {
+    padding: 0.5625rem 1rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #0f172a;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .content-action-btn:hover {
+    background: #7dd3fc;
+  }
+  
+  /* Analytics */
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .analytics-card--wide {
+    grid-column: 1 / -1;
+  }
+  .analytics-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .analytics-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .analytics-card-header h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .analytics-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .analytics-badge.up {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+  .analytics-badge.down {
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+  }
+  .chart-placeholder {
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+  }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 100%;
+    width: 100%;
+  }
+  .chart-bar {
+    flex: 1;
+    background: rgba(56, 189, 248, 0.2);
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transition: background 0.15s;
+    position: relative;
+    min-height: 8px;
+  }
+  .chart-bar.active {
+    background: #38bdf8;
+  }
+  .chart-bar span {
+    position: absolute;
+    bottom: -1.25rem;
+    font-size: 0.65rem;
+    color: #475569;
+  }
+  .big-metric {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .metric-delta {
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .metric-delta.up {
+    color: #34d399;
+  }
+  .metric-delta.down {
+    color: #f87171;
+  }
+  .metric-desc {
+    font-size: 0.8125rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+  
+  /* Users */
+  .users-list-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .users-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .users-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+  }
+  .users-row:last-child {
+    border-bottom: none;
+  }
+  .users-row--header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .users-cell-user {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .user-av {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #0f172a;
+    flex-shrink: 0;
+  }
+  .user-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .user-email {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .role-chip {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .role-chip--admin {
+    background: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
+  }
+  .role-chip--editor {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+  .role-chip--viewer {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+  }
+  .status-dot {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .status-dot--active {
+    color: #34d399;
+  }
+  .status-dot--inactive {
+    color: #64748b;
+  }
+  .status-dot--pending {
+    color: #fbbf24;
+  }
+  .user-date {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  
+  /* Orders */
+  .orders-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .orders-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1.5fr 1fr;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+  }
+  .orders-row--header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .orders-row:last-child {
+    border-bottom: none;
+  }
+  .order-id {
+    font-family: monospace;
+    color: var(--accent);
+    font-size: 0.8rem;
+  }
+  .order-amount {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .order-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-align: center;
+  }
+  .order-status--shipped {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+  .order-status--processing {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+  }
+  .order-status--delivered {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+  .order-status--cancelled {
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+  }
+  .order-date {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  
+  /* Products */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    gap: 0.875rem;
+    align-items: center;
+    transition: border-color 0.15s;
+  }
+  .product-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .product-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.9);
+    flex-shrink: 0;
+  }
+  .product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .product-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .product-price {
+    font-size: 0.8125rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .product-stock {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .in-stock {
+    background: rgba(52, 211, 153, 0.1);
+    color: #34d399;
+  }
+  .low-stock {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+  }
+  
+  /* Settings */
+  .settings-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .settings-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+  .settings-section-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.25rem;
+  }
+  .settings-row,
+  .settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .settings-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .settings-label span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .settings-label small {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .settings-input {
+    padding: 0.4375rem 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.875rem;
+    font-family: inherit;
+    outline: none;
+    min-width: 200px;
+  }
+  .settings-input:focus {
+    border-color: var(--accent);
+  }
+  .stoggle {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+  .stoggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .stoggle-track {
+    display: block;
+    width: 2.25rem;
+    height: 1.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .stoggle-track::after {
+    content: "";
+    position: absolute;
+    width: 0.875rem;
+    height: 0.875rem;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+  .stoggle input:checked + .stoggle-track {
+    background: var(--accent);
+  }
+  .stoggle input:checked + .stoggle-track::after {
+    transform: translateX(1rem);
+  }
+  .settings-save-btn {
+    padding: 0.625rem 1.5rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    align-self: flex-start;
+    font-family: inherit;
+  }
+  .settings-save-btn:hover {
+    background: #7dd3fc;
+  }
+  
+  @media (max-width: 768px) {
+    .analytics-grid {
+      grid-template-columns: 1fr;
+    }
+    .analytics-card--wide {
+      grid-column: 1;
+    }
+    .products-grid {
+      grid-template-columns: 1fr;
+    }
+    .orders-row {
+      grid-template-columns: 1fr 1.5fr 1fr;
+    }
+    .orders-row > :nth-child(4),
+    .orders-row > :nth-child(5) {
+      display: none;
+    }
+    .users-row {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+    .users-row > :nth-child(4) {
+      display: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Layout</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="sidebar">
+  
+      <!-- Logo -->
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <span class="sidebar-logo-text">StealthAdmin</span>
+      </div>
+  
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-label="Dashboard">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Analytics">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+          </span>
+          <span class="nav-label">Analytics</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Users">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </span>
+          <span class="nav-label">Users</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Orders">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </span>
+          <span class="nav-label">Orders</span>
+        </a>
+        <a href="#" class="nav-item" data-label="Products">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </span>
+          <span class="nav-label">Products</span>
+        </a>
+  
+        <div class="nav-divider"></div>
+  
+        <a href="#" class="nav-item" data-label="Settings">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </span>
+          <span class="nav-label">Settings</span>
+        </a>
+      </nav>
+  
+      <!-- Collapse button -->
+      <button class="sidebar-collapse-btn" id="collapseBtn" title="Collapse sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+      </button>
+  
+      <!-- User profile -->
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">AC</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-user-name">Alex Chen</span>
+          <span class="sidebar-user-role">Admin</span>
+        </div>
+      </div>
+  
+    </aside>
+  
+    <!-- ── Main area ── -->
+    <div class="main-area" id="mainArea">
+  
+      <!-- Top Navbar -->
+      <header class="navbar">
+        <div class="navbar-left">
+          <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+            <span></span><span></span><span></span>
+          </button>
+          <h1 class="navbar-title" id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="navbar-right">
+          <div class="navbar-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search…" />
+          </div>
+          <button class="navbar-icon-btn" title="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="navbar-badge">3</span>
+          </button>
+          <div class="navbar-avatar">AC</div>
+        </div>
+      </header>
+  
+      <!-- Content -->
+      <main class="content">
+  
+        <!-- DASHBOARD -->
+        <div id="page-Dashboard" class="page-content active">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Good morning, Alex</h2>
+              <p class="content-subtitle">Here's what's happening with your store today.</p>
+            </div>
+          </div>
+  
+          <!-- Stat Cards -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-value">24,521</span>
+                <span class="stat-change stat-change--up">+12.5% this month</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Revenue</span>
+                <span class="stat-value">$84,320</span>
+                <span class="stat-change stat-change--up">+8.2% this month</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Orders</span>
+                <span class="stat-value">1,284</span>
+                <span class="stat-change stat-change--down">-3.1% this month</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stat-icon--cyan">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Uptime</span>
+                <span class="stat-value">99.98%</span>
+                <span class="stat-change stat-change--up">+0.02% this month</span>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Recent Activity -->
+          <div class="activity-card">
+            <div class="activity-header">
+              <h3 class="activity-title">Recent Activity</h3>
+              <button class="activity-view-all">View all</button>
+            </div>
+            <ul class="activity-list">
+              <li class="activity-item">
+                <div class="activity-dot activity-dot--green"></div>
+                <div class="activity-body">
+                  <span class="activity-text">New user <strong>Sarah Kim</strong> registered</span>
+                  <span class="activity-time">2 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot activity-dot--blue"></div>
+                <div class="activity-body">
+                  <span class="activity-text">Order <strong>#ORD-4821</strong> has been shipped</span>
+                  <span class="activity-time">14 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-dot activity-dot--yellow"></div>
+                <div class="activity-body">
+                  <span class="activity-text">Server load reached <strong>82%</strong> — auto-scaled</span>
+                  <span class="activity-time">1 hour ago</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+  
+        <!-- ANALYTICS -->
+        <div id="page-Analytics" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Analytics</h2>
+              <p class="content-subtitle">Track your performance metrics and trends.</p>
+            </div>
+            <button class="content-action-btn">Export Report</button>
+          </div>
+          <div class="analytics-grid">
+            <div class="analytics-card analytics-card--wide">
+              <div class="analytics-card-header"><h3>Revenue Over Time</h3><span class="analytics-badge up">+8.2%</span></div>
+              <div class="chart-placeholder">
+                <div class="chart-bars">
+                  <div class="chart-bar" style="height:45%"><span>Jan</span></div>
+                  <div class="chart-bar" style="height:62%"><span>Feb</span></div>
+                  <div class="chart-bar" style="height:38%"><span>Mar</span></div>
+                  <div class="chart-bar" style="height:78%"><span>Apr</span></div>
+                  <div class="chart-bar" style="height:55%"><span>May</span></div>
+                  <div class="chart-bar active" style="height:91%"><span>Jun</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header"><h3>Conversion Rate</h3></div>
+              <div class="big-metric">3.6%<span class="metric-delta up">+0.4%</span></div>
+              <p class="metric-desc">vs 3.2% last period</p>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header"><h3>Avg. Session</h3></div>
+              <div class="big-metric">4m 32s<span class="metric-delta up">+12s</span></div>
+              <p class="metric-desc">vs 4m 20s last period</p>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-card-header"><h3>Bounce Rate</h3></div>
+              <div class="big-metric">41.2%<span class="metric-delta down">-2.1%</span></div>
+              <p class="metric-desc">vs 43.3% last period</p>
+            </div>
+          </div>
+        </div>
+  
+        <!-- USERS -->
+        <div id="page-Users" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Users</h2>
+              <p class="content-subtitle">Manage your user accounts and permissions.</p>
+            </div>
+            <button class="content-action-btn">+ Invite User</button>
+          </div>
+          <div class="users-list-card">
+            <div class="users-search-bar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search users…" style="background:transparent;border:none;outline:none;color:#f1f5f9;font-size:0.875rem;flex:1" />
+            </div>
+            <div class="users-row users-row--header">
+              <span>User</span><span>Role</span><span>Status</span><span>Joined</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#6366f1">AC</div><div><div class="user-name">Alex Chen</div><div class="user-email">alex@company.io</div></div></div>
+              <span class="role-chip role-chip--admin">Admin</span>
+              <span class="status-dot status-dot--active">Active</span>
+              <span class="user-date">Jan 15, 2023</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#0ea5e9">SK</div><div><div class="user-name">Sarah Kim</div><div class="user-email">sarah@company.io</div></div></div>
+              <span class="role-chip role-chip--editor">Editor</span>
+              <span class="status-dot status-dot--active">Active</span>
+              <span class="user-date">Mar 22, 2023</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#8b5cf6">MR</div><div><div class="user-name">Marcus Reed</div><div class="user-email">m.reed@company.io</div></div></div>
+              <span class="role-chip role-chip--viewer">Viewer</span>
+              <span class="status-dot status-dot--inactive">Inactive</span>
+              <span class="user-date">May 10, 2023</span>
+            </div>
+            <div class="users-row">
+              <div class="users-cell-user"><div class="user-av" style="background:#f59e0b">JL</div><div><div class="user-name">Julia Lee</div><div class="user-email">julia@company.io</div></div></div>
+              <span class="role-chip role-chip--editor">Editor</span>
+              <span class="status-dot status-dot--pending">Pending</span>
+              <span class="user-date">Jan 8, 2024</span>
+            </div>
+          </div>
+        </div>
+  
+        <!-- ORDERS -->
+        <div id="page-Orders" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Orders</h2>
+              <p class="content-subtitle">View and manage all customer orders.</p>
+            </div>
+            <button class="content-action-btn">Export CSV</button>
+          </div>
+          <div class="orders-card">
+            <div class="orders-row orders-row--header"><span>Order ID</span><span>Customer</span><span>Amount</span><span>Status</span><span>Date</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4821</span><span>Sarah Johnson</span><span class="order-amount">$142.50</span><span class="order-status order-status--shipped">Shipped</span><span class="order-date">Mar 1, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4820</span><span>Tom Nakamura</span><span class="order-amount">$89.00</span><span class="order-status order-status--processing">Processing</span><span class="order-date">Mar 1, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4819</span><span>Emma Walsh</span><span class="order-amount">$215.75</span><span class="order-status order-status--delivered">Delivered</span><span class="order-date">Feb 28, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4818</span><span>David Okonkwo</span><span class="order-amount">$38.00</span><span class="order-status order-status--cancelled">Cancelled</span><span class="order-date">Feb 27, 2026</span></div>
+            <div class="orders-row"><span class="order-id">#ORD-4817</span><span>Priya Patel</span><span class="order-amount">$175.25</span><span class="order-status order-status--delivered">Delivered</span><span class="order-date">Feb 26, 2026</span></div>
+          </div>
+        </div>
+  
+        <!-- PRODUCTS -->
+        <div id="page-Products" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Products</h2>
+              <p class="content-subtitle">Manage your product catalog and inventory.</p>
+            </div>
+            <button class="content-action-btn">+ Add Product</button>
+          </div>
+          <div class="products-grid">
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">P</div><div class="product-info"><div class="product-name">Pro Subscription</div><div class="product-price">$29/mo</div><span class="product-stock in-stock">In Stock</span></div></div>
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">T</div><div class="product-info"><div class="product-name">Team Plan</div><div class="product-price">$99/mo</div><span class="product-stock in-stock">In Stock</span></div></div>
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#f59e0b,#fb923c)">E</div><div class="product-info"><div class="product-name">Enterprise License</div><div class="product-price">$499/mo</div><span class="product-stock in-stock">In Stock</span></div></div>
+            <div class="product-card"><div class="product-img" style="background:linear-gradient(135deg,#34d399,#10b981)">A</div><div class="product-info"><div class="product-name">API Access</div><div class="product-price">$49/mo</div><span class="product-stock low-stock">Low Stock</span></div></div>
+          </div>
+        </div>
+  
+        <!-- SETTINGS -->
+        <div id="page-Settings" class="page-content">
+          <div class="content-header">
+            <div>
+              <h2 class="content-title">Settings</h2>
+              <p class="content-subtitle">Manage your account preferences and configuration.</p>
+            </div>
+          </div>
+          <div class="settings-sections">
+            <div class="settings-section">
+              <h3 class="settings-section-title">General</h3>
+              <div class="settings-row"><div class="settings-label"><span>Site Name</span><small>The name of your application</small></div><input type="text" class="settings-input" value="StealthAdmin" /></div>
+              <div class="settings-row"><div class="settings-label"><span>Support Email</span><small>Where support requests go</small></div><input type="email" class="settings-input" value="support@company.io" /></div>
+            </div>
+            <div class="settings-section">
+              <h3 class="settings-section-title">Notifications</h3>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Email Alerts</span><small>Receive important updates via email</small></div><label class="stoggle"><input type="checkbox" checked /><span class="stoggle-track"></span></label></div>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Push Notifications</span><small>Browser push notifications</small></div><label class="stoggle"><input type="checkbox" /><span class="stoggle-track"></span></label></div>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Weekly Digest</span><small>Summary report every Monday</small></div><label class="stoggle"><input type="checkbox" checked /><span class="stoggle-track"></span></label></div>
+            </div>
+            <div class="settings-section">
+              <h3 class="settings-section-title">Security</h3>
+              <div class="settings-toggle-row"><div class="settings-label"><span>Two-Factor Auth</span><small>Add an extra layer of security</small></div><label class="stoggle"><input type="checkbox" /><span class="stoggle-track"></span></label></div>
+            </div>
+            <button class="settings-save-btn">Save Changes</button>
+          </div>
+        </div>
+  
+      </main>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const sidebar = document.getElementById("sidebar");
+    const mainArea = document.getElementById("mainArea");
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const collapseBtn = document.getElementById("collapseBtn");
+    const overlay = document.getElementById("sidebarOverlay");
+    const pageTitle = document.getElementById("pageTitle");
+    const navItems = document.querySelectorAll(".nav-item");
+  
+    const isMobile = () => window.innerWidth <= 768;
+  
+    // ── Desktop: collapse sidebar to icon-only ──
+    collapseBtn.addEventListener("click", () => {
+      if (isMobile()) return;
+      sidebar.classList.toggle("collapsed");
+    });
+  
+    // ── Hamburger: desktop collapse / mobile open ──
+    hamburgerBtn.addEventListener("click", () => {
+      if (isMobile()) {
+        sidebar.classList.toggle("mobile-open");
+        overlay.classList.toggle("active");
+      } else {
+        sidebar.classList.toggle("collapsed");
+      }
+    });
+  
+    // ── Close sidebar when overlay is clicked (mobile) ──
+    overlay.addEventListener("click", closeMobileSidebar);
+  
+    function closeMobileSidebar() {
+      sidebar.classList.remove("mobile-open");
+      overlay.classList.remove("active");
+    }
+  
+    // ── Active nav item + content panel swap ──
+    navItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        navItems.forEach((i) => i.classList.remove("active"));
+        item.classList.add("active");
+        const label = item.getAttribute("data-label");
+        if (label) pageTitle.textContent = label;
+  
+        // Swap content panels
+        document.querySelectorAll(".page-content").forEach((p) => p.classList.remove("active"));
+        const page = document.getElementById(`page-${label}`);
+        if (page) page.classList.add("active");
+  
+        if (isMobile()) closeMobileSidebar();
+      });
+    });
+  
+    // ── Reset mobile state on resize ──
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!isMobile()) {
+          sidebar.classList.remove("mobile-open");
+          overlay.classList.remove("active");
+        }
+      }, 100);
+    });
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

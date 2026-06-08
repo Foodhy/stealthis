@@ -14,6 +14,7 @@ export const LOCALES = [
   "zh-cn",
   "it",
   "pl",
+  "ru",
   "uk",
 ] as const;
 export type Locale = (typeof LOCALES)[number];
@@ -37,6 +38,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   "zh-cn": "简体中文 (中国)",
   it: "Italiano",
   pl: "Polski",
+  ru: "Русский",
   uk: "Українська",
 };
 
@@ -56,6 +58,7 @@ export const LOCALE_OG_TAG: Record<Locale, string> = {
   "zh-cn": "zh_CN",
   it: "it_IT",
   pl: "pl_PL",
+  ru: "ru_RU",
   uk: "uk_UA",
 };
 
@@ -69,6 +72,7 @@ const en = {
   "nav.uhd": "UHD",
   "nav.effects": "Effects",
   "nav.changelog": "Changelog",
+  "nav.arcade": "Arcade",
   "nav.applications": "Applications",
   "nav.applications.desc": "Tools and apps from the Stealthis suite",
   "nav.dbviz": "DbViz",
@@ -303,6 +307,9 @@ const en = {
   "collection.mobile-nav.desc": "Tab bars, drawers, FABs, and bottom nav patterns for mobile UI.",
   "collection.charts.title": "Charts & Data Viz",
   "collection.charts.desc": "Bar, pie, geo, and data visualization chart components.",
+  "collection.restaurant.title": "Restaurant",
+  "collection.restaurant.desc":
+    "Menus, POS, checkout, reservations, and operations flows for restaurant products.",
   "resource.copy": "Copy",
   "resource.copied": "Copied!",
   "resource.copiedPasteGemini": "Copied! Paste in Gemini.",
@@ -388,6 +395,7 @@ const en = {
   "lang.option.ar": "Arabic",
   "lang.option.it": "Italian",
   "lang.option.pl": "Polish",
+  "lang.option.ru": "Russian",
   "lang.option.uk": "Ukrainian",
 } as const;
 
@@ -401,6 +409,7 @@ const es = {
   "nav.uhd": "UHD",
   "nav.effects": "Efectos",
   "nav.changelog": "Changelog",
+  "nav.arcade": "Arcade",
   "nav.applications": "Aplicaciones",
   "nav.applications.desc": "Herramientas y apps de la suite Stealthis",
   "nav.dbviz": "DbViz",
@@ -634,6 +643,9 @@ const es = {
     "Tab bars, drawers, FABs y patrones de navegación inferior para UI móvil.",
   "collection.charts.title": "Gráficos y Visualización",
   "collection.charts.desc": "Gráficos de barras, pie, geo y componentes de visualización de datos.",
+  "collection.restaurant.title": "Restaurantes",
+  "collection.restaurant.desc":
+    "Menús, POS, checkout, reservas y flujos operativos para productos de restaurante.",
   "resource.copy": "Copiar",
   "resource.copied": "¡Copiado!",
   "resource.copiedPasteGemini": "¡Copiado! Pega en Gemini.",
@@ -718,6 +730,7 @@ const es = {
   "lang.option.zh-cn": "Chino (China)",
   "lang.option.it": "Italiano",
   "lang.option.pl": "Polaco",
+  "lang.option.ru": "Ruso",
   "lang.option.uk": "Ucraniano",
 } as const;
 
@@ -726,6 +739,7 @@ const fr: Record<keyof typeof en, string> = {
   "nav.library": "Bibliothèque",
   "nav.build": "Builder",
   "nav.styleforge": "StyleForge",
+  "nav.arcade": "Arcade",
   "nav.applications": "Applications",
   "nav.applications.desc": "Outils et apps de la suite Stealthis",
   "nav.dbviz.desc": "Explorateur visuel de schémas de base de données",
@@ -1018,6 +1032,7 @@ const ja: Record<keyof typeof en, string> = {
   "nav.build": "ビルダー",
   "nav.styleforge": "StyleForge",
   "nav.showcase": "ショーケース",
+  "nav.arcade": "Arcade",
   "nav.applications": "アプリケーション",
   "nav.applications.desc": "Stealthis スイートのツールとアプリ",
   "nav.dbviz.desc": "ビジュアルなデータベーススキーマ エクスプローラー",
@@ -1311,6 +1326,7 @@ const ja: Record<keyof typeof en, string> = {
 const ms: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "Perpustakaan",
+  "nav.arcade": "Arcade",
   "nav.applications": "Aplikasi",
   "nav.applications.desc": "Alat dan aplikasi daripada suite Stealthis",
   "nav.dbviz.desc": "Penjelajah skema pangkalan data secara visual",
@@ -1581,6 +1597,7 @@ const ms: Record<keyof typeof en, string> = {
 const hi: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "लाइब्रेरी",
+  "nav.arcade": "Arcade",
   "nav.applications": "एप्लिकेशन",
   "nav.applications.desc": "Stealthis सूट के टूल और ऐप्स",
   "nav.dbviz.desc": "विज़ुअल डेटाबेस स्कीमा एक्सप्लोरर",
@@ -1847,6 +1864,7 @@ const hi: Record<keyof typeof en, string> = {
 const ko: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "라이브러리",
+  "nav.arcade": "Arcade",
   "nav.applications": "애플리케이션",
   "nav.applications.desc": "Stealthis 모음의 도구 및 앱",
   "nav.dbviz.desc": "시각적 데이터베이스 스키마 탐색기",
@@ -2114,6 +2132,7 @@ const ko: Record<keyof typeof en, string> = {
 const nl: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "Bibliotheek",
+  "nav.arcade": "Arcade",
   "nav.applications": "Applicaties",
   "nav.applications.desc": "Tools en apps uit de Stealthis-suite",
   "nav.dbviz.desc": "Visuele database-schemaverkenner",
@@ -2383,6 +2402,7 @@ const nl: Record<keyof typeof en, string> = {
 const de: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "Bibliothek",
+  "nav.arcade": "Arcade",
   "nav.applications": "Anwendungen",
   "nav.applications.desc": "Tools und Apps aus der Stealthis-Suite",
   "nav.dbviz.desc": "Visueller Datenbankschema-Explorer",
@@ -2653,6 +2673,7 @@ const de: Record<keyof typeof en, string> = {
 const ptBr: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "Biblioteca",
+  "nav.arcade": "Arcade",
   "nav.applications": "Aplicativos",
   "nav.applications.desc": "Ferramentas e apps da suíte Stealthis",
   "nav.dbviz.desc": "Explorador visual de esquema de banco de dados",
@@ -2923,6 +2944,7 @@ const ptBr: Record<keyof typeof en, string> = {
 const zhCn: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "资源库",
+  "nav.arcade": "Arcade",
   "nav.applications": "应用",
   "nav.applications.desc": "Stealthis 套件中的工具和应用",
   "nav.dbviz.desc": "可视化数据库结构浏览器",
@@ -3234,6 +3256,7 @@ const zhCn: Record<keyof typeof en, string> = {
 const zhHk: Record<keyof typeof en, string> = {
   ...zhCn,
   "nav.library": "資源庫",
+  "nav.arcade": "Arcade",
   "nav.applications": "應用程式",
   "nav.applications.desc": "Stealthis 套件的工具與應用程式",
   "nav.dbviz.desc": "視覺化資料庫結構瀏覽器",
@@ -3480,6 +3503,7 @@ const zhHk: Record<keyof typeof en, string> = {
 const it: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "Libreria",
+  "nav.arcade": "Arcade",
   "nav.applications": "Applicazioni",
   "nav.applications.desc": "Strumenti e app della suite Stealthis",
   "nav.dbviz.desc": "Esploratore visuale di schemi di database",
@@ -3806,6 +3830,7 @@ const it: Record<keyof typeof en, string> = {
 const pl: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "Biblioteka",
+  "nav.arcade": "Arcade",
   "nav.applications": "Aplikacje",
   "nav.applications.desc": "Narzędzia i aplikacje z pakietu Stealthis",
   "nav.dbviz.desc": "Wizualny eksplorator schematów baz danych",
@@ -4132,6 +4157,7 @@ const pl: Record<keyof typeof en, string> = {
 const uk: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "Бібліотека",
+  "nav.arcade": "Arcade",
   "nav.applications": "Застосунки",
   "nav.applications.desc": "Інструменти та застосунки з набору Stealthis",
   "nav.dbviz.desc": "Візуальний дослідник схем баз даних",
@@ -4457,9 +4483,58 @@ const uk: Record<keyof typeof en, string> = {
   "lang.option.uk": "Українська",
 };
 
+const ru: Record<keyof typeof en, string> = {
+  ...en,
+  "nav.library": "Библиотека",
+  "nav.docs": "Документация",
+  "nav.lab": "Лаб",
+  "nav.build": "Билдер",
+  "nav.changelog": "Изменения",
+  "nav.arcade": "Arcade",
+  "nav.applications": "Приложения",
+  "nav.applications.desc": "Инструменты и приложения из экосистемы Stealthis",
+  "nav.dbviz.desc": "Визуальный обозреватель схем баз данных",
+  "nav.zenpomodoro.desc": "Спокойный таймер фокуса для глубокой работы",
+  "hero.titleSuffix": " — все можно бесплатно копировать.",
+  "hero.subtitle.before": "Готовые сниппеты и демо. Сервер ",
+  "hero.subtitle.after": " включен. Изучайте, копируйте, интегрируйте.",
+  "hero.cta.browse": "Открыть библиотеку",
+  "hero.cta.docs": "Открыть Docs",
+  "home.search.placeholder": "Нажмите CMD+K для поиска...",
+  "home.search.label": "Поиск по библиотеке",
+  "library.title": "Библиотека",
+  "library.subtitle": "Просматривайте все ресурсы",
+  "changelog.title": "Изменения",
+  "showcase.title": "Showcase",
+  "showcase.livePreviews": "live-превью",
+  "showcase.noResults": "По этому фильтру ничего не найдено.",
+  "showcase.backToTop": "Наверх",
+  "showcase.viewCode": "Посмотреть код",
+  "lang.label": "Язык",
+  "lang.toggle": "Русский",
+  "lang.option.en": "Английский",
+  "lang.option.es": "Испанский",
+  "lang.option.fr": "Французский",
+  "lang.option.ar": "Арабский",
+  "lang.option.ja": "Японский",
+  "lang.option.ms": "Малайский",
+  "lang.option.hi": "Хинди",
+  "lang.option.ko": "Корейский",
+  "lang.option.nl": "Нидерландский",
+  "lang.option.de": "Немецкий",
+  "lang.option.pt-br": "Португальский (Бразилия)",
+  "lang.option.zh-hk": "Китайский (Гонконг)",
+  "lang.option.zh-cn": "Китайский (Китай)",
+  "lang.option.it": "Итальянский",
+  "lang.option.pl": "Польский",
+  "lang.option.ru": "Русский",
+  "lang.option.uk": "Украинский",
+};
+
 const ar: Record<keyof typeof en, string> = {
   ...en,
   "nav.library": "المكتبة",
+  "nav.arcade": "Arcade",
   "nav.applications": "التطبيقات",
   "nav.applications.desc": "أدوات وتطبيقات من مجموعة Stealthis",
   "nav.dbviz.desc": "مستكشف بصري لمخطط قاعدة البيانات",
@@ -4800,6 +4875,7 @@ export const ui = {
   "zh-cn": zhCn,
   it,
   pl,
+  ru,
   uk,
 } satisfies Record<Locale, Record<string, string>>;
 

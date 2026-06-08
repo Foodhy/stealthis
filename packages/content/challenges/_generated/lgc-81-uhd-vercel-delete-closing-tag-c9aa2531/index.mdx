@@ -1,0 +1,2082 @@
+---
+slug: "lgc-81-uhd-vercel-delete-closing-tag-c9aa2531"
+topic: "vercel"
+title: "Fix the broken HTML structure in Vercel UHD Developer Platform Page"
+type: "fix"
+difficulty: 2
+resourceSlug: "lgc-81-uhd-vercel"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+  
+  :root {
+    --bg: #000;
+    --fg: #ededed;
+    --fg-muted: #888;
+    --border: rgba(255, 255, 255, 0.08);
+    --accent: #0070f3;
+    --accent-glow: rgba(0, 112, 243, 0.25);
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --radius: 12px;
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  
+  /* --- Nav --- */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.7);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .nav-wordmark {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+  }
+  
+  .nav-links {
+    display: flex;
+    gap: 24px;
+  }
+  
+  .nav-links a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  
+  .nav-links a:hover {
+    color: var(--fg);
+  }
+  
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .nav-link-login {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .btn-signup {
+    padding: 6px 16px;
+    background: var(--fg);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  @media (max-width: 768px) {
+    .nav-links,
+    .nav-link-login {
+      display: none;
+    }
+  }
+  
+  /* --- Hero --- */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+  }
+  
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--fg-muted);
+    margin-bottom: 40px;
+    opacity: 0;
+  }
+  
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #0070f3;
+    animation: dot-pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes dot-pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 8px var(--accent);
+    }
+  }
+  
+  .hero-title {
+    font-size: clamp(3.5rem, 12vw, 8rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.95;
+    margin-bottom: 32px;
+  }
+  
+  .hero-line {
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  
+  .hero-line--accent {
+    background: linear-gradient(135deg, #0070f3 0%, #7928ca 50%, #ff0080 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .hero-desc {
+    font-size: 1.15rem;
+    color: var(--fg-muted);
+    max-width: 520px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    opacity: 0;
+  }
+  
+  .hero-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+  }
+  
+  .btn-primary {
+    padding: 12px 24px;
+    background: var(--fg);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  
+  .btn-primary:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.1);
+  }
+  
+  .btn-primary--large {
+    padding: 16px 32px;
+    font-size: 16px;
+  }
+  
+  .btn-secondary {
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  
+  .btn-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* --- Terminal --- */
+  .terminal {
+    margin-top: 60px;
+    width: min(600px, 90vw);
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  
+  .terminal-dots {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .terminal-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .terminal-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  
+  .terminal-body {
+    padding: 20px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  
+  .terminal-line {
+    white-space: nowrap;
+  }
+  
+  .terminal-output {
+    color: var(--fg-muted);
+  }
+  
+  .t-prompt {
+    color: var(--fg-muted);
+    margin-right: 8px;
+  }
+  
+  .t-cmd {
+    color: var(--fg);
+  }
+  
+  .t-cursor {
+    color: var(--fg);
+    animation: blink 1s step-end infinite;
+  }
+  
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  
+  .t-success {
+    color: #0070f3;
+  }
+  .t-link {
+    color: #0070f3;
+    text-decoration: underline;
+  }
+  .t-dim {
+    color: #444;
+  }
+  
+  /* --- Sections --- */
+  section {
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .section-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .section-header {
+    margin-bottom: 48px;
+  }
+  
+  .section-header--center {
+    text-align: center;
+  }
+  
+  .section-tag {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  
+  .section-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+  
+  .section-desc {
+    font-size: 1.1rem;
+    color: var(--fg-muted);
+    max-width: 480px;
+    line-height: 1.5;
+    margin-top: 16px;
+  }
+  
+  .section-header--center .section-desc {
+    margin: 16px auto 0;
+  }
+  
+  /* --- Metrics --- */
+  .metrics-section {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  
+  .metric-card {
+    background: var(--bg);
+    padding: 48px 32px;
+    text-align: center;
+  }
+  
+  .metric-value {
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+  }
+  
+  .metric-unit {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fg-muted);
+  }
+  
+  .metric-label {
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+  
+  @media (max-width: 768px) {
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* --- Bento Grid --- */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .bento-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    transition: border-color 0.3s, background 0.3s;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .bento-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .bento-card--wide {
+    grid-column: span 2;
+  }
+  
+  .bento-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: var(--fg);
+  }
+  
+  .bento-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  
+  .bento-card p {
+    color: var(--fg-muted);
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 400px;
+  }
+  
+  /* Bento visuals */
+  .bento-visual {
+    margin-top: 24px;
+    height: 100px;
+    position: relative;
+  }
+  
+  .bento-visual--edge {
+    height: 100px;
+  }
+  
+  .edge-svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .edge-path {
+    stroke: var(--accent);
+    stroke-width: 1;
+    opacity: 0.2;
+  }
+  
+  .edge-dot {
+    fill: var(--accent);
+    filter: drop-shadow(0 0 6px var(--accent-glow));
+  }
+  
+  .edge-packet {
+    fill: #fff;
+    filter: drop-shadow(0 0 8px var(--accent));
+  }
+  
+  .bento-visual--ai {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 120px;
+  }
+  
+  .ai-wave {
+    width: 4px;
+    height: 40px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--accent), #7928ca);
+    animation: ai-wave 1.8s ease-in-out infinite;
+  }
+  
+  .ai-wave--2 {
+    animation-delay: 0.15s;
+    height: 55px;
+  }
+  .ai-wave--3 {
+    animation-delay: 0.3s;
+    height: 70px;
+  }
+  .ai-wave--4 {
+    animation-delay: 0.45s;
+    height: 50px;
+    background: linear-gradient(180deg, #7928ca, #ff0080);
+  }
+  .ai-wave--5 {
+    animation-delay: 0.6s;
+    height: 65px;
+    background: linear-gradient(180deg, #7928ca, #ff0080);
+  }
+  .ai-wave--6 {
+    animation-delay: 0.75s;
+    height: 45px;
+  }
+  .ai-wave--7 {
+    animation-delay: 0.9s;
+    height: 35px;
+  }
+  
+  @keyframes ai-wave {
+    0%,
+    100% {
+      transform: scaleY(0.3);
+      opacity: 0.4;
+    }
+    50% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .bento-grid {
+      grid-template-columns: 1fr;
+    }
+    .bento-card--wide {
+      grid-column: span 1;
+    }
+  }
+  
+  /* --- Frameworks --- */
+  .framework-logos {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin-top: 48px;
+  }
+  
+  .fw-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--fg-muted);
+    transition: color 0.2s;
+  }
+  
+  .fw-logo:hover {
+    color: var(--fg);
+  }
+  
+  .fw-logo span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  /* --- CTA --- */
+  .cta-section {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .cta-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  
+  .cta-content {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .cta-title {
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+  
+  .cta-desc {
+    max-width: 400px;
+    margin: 0 auto 32px;
+  }
+  
+  .cta-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  
+  /* --- Animations --- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Vercel — Develop. Preview. Ship.
+      <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+  
+      <!-- Nav -->
+      <nav class="nav">
+          <div class="nav-inner">
+              <div class="nav-logo">
+                  <svg width="22" height="20" viewBox="0 0 76 65" fill="white">
+                      <path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/>
+                  </svg>
+                  <span class="nav-wordmark">Vercel</span>
+              </div>
+              <div class="nav-links">
+                  <a href="#">Products</a>
+                  <a href="#">Solutions</a>
+                  <a href="#">Resources</a>
+                  <a href="#">Pricing</a>
+              </div>
+              <div class="nav-actions">
+                  <a href="#" class="nav-link-login">Log In</a>
+                  <button class="btn-signup">Sign Up</button>
+              </div>
+          </div>
+      </nav>
+  
+      <main>
+  
+          <!-- Hero -->
+          <section class="hero">
+              <div class="hero-badge">
+                  <span class="badge-dot"></span>
+                  <span>Introducing Vercel AI SDK 4.0</span>
+              </div>
+              <h1 class="hero-title">
+                  <span class="hero-line">Develop.</span>
+                  <span class="hero-line">Preview.</span>
+                  <span class="hero-line hero-line--accent">Ship.</span>
+              </h1>
+              <p class="hero-desc">Vercel's frontend cloud gives developers the frameworks, workflows, and infrastructure to build a faster, more personalized web.</p>
+              <div class="hero-cta">
+                  <button class="btn-primary">Start Deploying</button>
+                  <button class="btn-secondary">Get a Demo</button>
+              </div>
+  
+              <!-- Terminal -->
+              <div class="terminal">
+                  <div class="terminal-bar">
+                      <div class="terminal-dots">
+                          <span></span><span></span><span></span>
+                      </div>
+                      <span class="terminal-title">Terminal</span>
+                  </div>
+                  <div class="terminal-body">
+                      <div class="terminal-line" id="t-line-1">
+                          <span class="t-prompt">$</span>
+                          <span class="t-cmd" id="t-cmd-1"></span>
+                          <span class="t-cursor">|</span>
+                      </div>
+                      <div class="terminal-line terminal-output" id="t-output-1" hidden>
+                          <span class="t-success">▲</span> Deploying to production...
+                      </div>
+                      <div class="terminal-line terminal-output" id="t-output-2" hidden>
+                          <span class="t-success">✓</span> Ready <span class="t-link">https://your-app.vercel.app</span> <span class="t-dim">[2.1s]</span>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- Metrics -->
+          <section class="metrics-section">
+              <div class="section-container">
+                  <div class="metrics-grid">
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="50">0</span><span class="metric-unit">ms</span>
+                          <span class="metric-label">Edge Latency</span>
+                      </div>
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="99">0</span><span class="metric-unit">.99%</span>
+                          <span class="metric-label">Uptime SLA</span>
+                      </div>
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="3">0</span><span class="metric-unit">s</span>
+                          <span class="metric-label">Average Build</span>
+                      </div>
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="40">0</span><span class="metric-unit">+</span>
+                          <span class="metric-label">Edge Regions</span>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- Features Bento -->
+          <section class="features-section">
+              <div class="section-container">
+                  <div class="reveal section-header">
+                      <span class="section-tag">Platform</span>
+                      <h2 class="section-title">Everything you need<br/>to ship faster.</h2>
+                  </div>
+  
+                  <div class="bento-grid">
+                      <div class="bento-card bento-card--wide">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                          </div>
+                          <h3>Edge Functions</h3>
+                          <p>Execute server-side logic at the edge, close to your users. Zero cold starts.</p>
+                          <div class="bento-visual bento-visual--edge">
+                              <svg class="edge-svg" viewBox="0 0 600 100" preserveAspectRatio="xMidYMid meet">
+                                  <line class="edge-path" x1="90" y1="30" x2="270" y2="15" />
+                                  <line class="edge-path" x1="270" y1="15" x2="360" y2="40" />
+                                  <line class="edge-path" x1="360" y1="40" x2="450" y2="30" />
+                                  <line class="edge-path" x1="90" y1="30" x2="180" y2="65" />
+                                  <line class="edge-path" x1="180" y1="65" x2="360" y2="70" />
+                                  <line class="edge-path" x1="360" y1="70" x2="450" y2="30" />
+                                  <circle class="edge-dot" cx="90" cy="30" r="5" />
+                                  <circle class="edge-dot" cx="270" cy="15" r="5" />
+                                  <circle class="edge-dot" cx="360" cy="40" r="5" />
+                                  <circle class="edge-dot" cx="450" cy="30" r="5" />
+                                  <circle class="edge-dot" cx="180" cy="65" r="5" />
+                                  <circle class="edge-dot" cx="360" cy="70" r="5" />
+                                  <!-- Traveling packets -->
+                                  <circle class="edge-packet" r="3">
+                                      <animateMotion dur="2.5s" repeatCount="indefinite" path="M90,30 L270,15 L360,40 L450,30" />
+                                  </circle>
+                                  <circle class="edge-packet" r="3">
+                                      <animateMotion dur="3s" repeatCount="indefinite" path="M90,30 L180,65 L360,70 L450,30" begin="0.8s" />
+                                  </circle>
+                              </svg>
+                          </div>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                          </div>
+                          <h3>Framework Agnostic</h3>
+                          <p>Next.js, Nuxt, SvelteKit, Astro, Remix — deploy any framework.</p>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                          </div>
+                          <h3>Preview Deploys</h3>
+                          <p>Every push gets a unique URL. Review changes before they go live.</p>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m16.66-5.66l-4.24 4.24M10.58 13.42l-4.24 4.24m0-11.32l4.24 4.24m4.24 4.24l4.24 4.24"/></svg>
+                          </div>
+                          <h3>Analytics</h3>
+                          <p>Real-time performance insights. Web Vitals, audience, and speed.</p>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg>
+                          </div>
+                          <h3>Serverless Storage</h3>
+                          <p>KV, Postgres, and Blob storage built into your workflow. No provisioning needed.</p>
+                      </div>
+                      <div class="bento-card bento-card--wide">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                          </div>
+                          <h3>AI SDK</h3>
+                          <p>Build AI-powered applications with streaming, tool use, and multi-model support. Ship intelligent features in minutes.</p>
+                          <div class="bento-visual bento-visual--ai">
+                              <div class="ai-wave"></div>
+                              <div class="ai-wave ai-wave--2"></div>
+                              <div class="ai-wave ai-wave--3"></div>
+                              <div class="ai-wave ai-wave--4"></div>
+                              <div class="ai-wave ai-wave--5"></div>
+                              <div class="ai-wave ai-wave--6"></div>
+                              <div class="ai-wave ai-wave--7"></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- Frameworks -->
+          <section class="frameworks-section">
+              <div class="section-container">
+                  <div class="reveal section-header section-header--center">
+                      <h2 class="section-title">Works with your stack.</h2>
+                      <p class="section-desc">First-class support for the frameworks you love.</p>
+                  </div>
+                  <div class="framework-logos">
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M11.572 0c-.176 0-.31.001-.358.007a19.76 19.76 0 0 1-.364.033C7.443.346 4.25 2.185 2.228 5.012a11.875 11.875 0 0 0-2.119 5.243c-.096.659-.108.854-.108 1.747s.012 1.089.108 1.748c.652 4.506 3.86 8.292 8.209 9.695.779.25 1.6.422 2.534.525.363.04 1.935.04 2.299 0 1.611-.178 2.977-.577 4.323-1.264.207-.106.247-.134.219-.158-.02-.013-.9-1.193-1.955-2.62l-1.919-2.592-2.404-3.558a338.739 338.739 0 0 0-2.422-3.556c-.009-.002-.018 1.579-.023 3.51-.007 3.38-.01 3.515-.052 3.595a.426.426 0 0 1-.206.214c-.075.037-.14.044-.495.044H7.81l-.108-.068a.438.438 0 0 1-.157-.171l-.05-.106.006-4.703.007-4.705.072-.092a.645.645 0 0 1 .174-.143c.096-.047.134-.051.54-.051.478 0 .558.018.682.154.035.038 1.337 1.999 2.895 4.361a10760.433 10760.433 0 0 0 4.735 7.17l1.9 2.879.096-.063a12.317 12.317 0 0 0 2.466-2.163 11.944 11.944 0 0 0 2.824-6.134c.096-.66.108-.854.108-1.748 0-.893-.012-1.088-.108-1.747-.652-4.506-3.859-8.292-8.208-9.695a12.597 12.597 0 0 0-2.499-.523A33.119 33.119 0 0 0 11.572 0zm4.069 7.217c.347 0 .408.005.486.047a.473.473 0 0 1 .237.277c.018.06.023 1.365.018 4.304l-.006 4.218-.744-1.14-.746-1.14v-3.066c0-1.982.01-3.097.023-3.15a.478.478 0 0 1 .233-.296c.096-.05.13-.054.5-.054z"/></svg>
+                          <span>Next.js</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z"/></svg>
+                          <span>Tailwind</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12.713l-11.985-6.713c0-.003.569-.335 1.265-.743l10.72-6.004 10.72 6.004c.696.408 1.265.74 1.265.743l-11.985 6.713zm-11.985 1.287l11.985 6.713 11.985-6.713v4l-11.985 6.713-11.985-6.713v-4z"/></svg>
+                          <span>Astro</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M11.77 11.24H9.956V8.202h2.152c1.17 0 1.834.522 1.834 1.466 0 1.008-.773 1.572-2.174 1.572zm.324 1.206H9.957v3.348h2.231c1.459 0 2.232-.585 2.232-1.685s-.795-1.663-2.326-1.663zM24 11.39v1.218c-1.128.108-1.817.944-2.226 2.268-.407 1.319-.463 2.937-.42 4.186.045 1.3-.968 2.5-2.337 2.5H4.985c-1.37 0-2.383-1.2-2.337-2.5.043-1.249-.013-2.867-.42-4.186-.41-1.324-1.1-2.16-2.228-2.268V11.39c1.128-.108 1.819-.944 2.227-2.268.408-1.319.464-2.937.42-4.186C2.603 3.636 3.615 2.438 4.985 2.438h14.032c1.37 0 2.382 1.198 2.337 2.498-.043 1.249.013 2.867.42 4.186.409 1.324 1.098 2.16 2.226 2.268zm-7.927 2.817c0-1.354-.953-2.333-2.368-2.488v-.057c1.04-.169 1.856-1.135 1.856-2.213 0-1.537-1.213-2.538-3.062-2.538h-4.16v10.172h4.181c2.218 0 3.553-1.086 3.553-2.876z"/></svg>
+                          <span>Remix</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/></svg>
+                          <span>SvelteKit</span>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- CTA -->
+          <section class="cta-section">
+              <div class="cta-gradient"></div>
+              <div class="section-container cta-content reveal">
+                  <h2 class="cta-title">Start building<br/>the future, today.</h2>
+                  <p class="section-desc cta-desc">Deploy your first project in seconds. No credit card required.</p>
+                  <div class="cta-actions">
+                      <button class="btn-primary btn-primary--large">Start Deploying</button>
+                      <button class="btn-secondary">Talk to Sales</button>
+                  </div>
+              </div>
+          </section>
+  
+      </main>
+  
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+      <script src="./script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  gsap.registerPlugin(ScrollTrigger);
+  
+  // --- Hero entrance ---
+  const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
+  
+  heroTl
+    .to(".hero-badge", { opacity: 1, duration: 0.8, delay: 0.3 })
+    .to(
+      ".hero-line",
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.9,
+        stagger: 0.12,
+      },
+      "-=0.4"
+    )
+    .to(".hero-desc", { opacity: 1, duration: 0.8 }, "-=0.5")
+    .to(".hero-cta", { opacity: 1, duration: 0.6 }, "-=0.4")
+    .to(".terminal", { opacity: 1, y: 0, duration: 0.8 }, "-=0.3");
+  
+  // --- Terminal typing ---
+  const CMD = "npx vercel deploy --prod";
+  const cmdEl = document.getElementById("t-cmd-1");
+  const output1 = document.getElementById("t-output-1");
+  const output2 = document.getElementById("t-output-2");
+  const cursor = document.querySelector(".t-cursor");
+  
+  let charIndex = 0;
+  
+  function typeCmd() {
+    if (charIndex < CMD.length) {
+      cmdEl.textContent += CMD[charIndex];
+      charIndex++;
+      setTimeout(typeCmd, 40 + Math.random() * 30);
+    } else {
+      cursor.style.display = "none";
+      setTimeout(() => {
+        output1.hidden = false;
+        gsap.from(output1, { opacity: 0, x: -5, duration: 0.3 });
+      }, 400);
+      setTimeout(() => {
+        output2.hidden = false;
+        gsap.from(output2, { opacity: 0, x: -5, duration: 0.3 });
+      }, 1600);
+    }
+  }
+  
+  setTimeout(typeCmd, 2000);
+  
+  // --- Reveal on scroll (for non-bento elements) ---
+  gsap.utils.toArray(".reveal").forEach((el) => {
+    gsap.fromTo(
+      el,
+      { opacity: 0, y: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: el,
+          start: "top 88%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  });
+  
+  // --- Metric count-up ---
+  document.querySelectorAll(".metric-value").forEach((el) => {
+    const target = parseInt(el.dataset.target, 10);
+    if (isNaN(target)) return;
+  
+    ScrollTrigger.create({
+      trigger: el,
+      start: "top 85%",
+      once: true,
+      onEnter: () => {
+        gsap.to(
+          { val: 0 },
+          {
+            val: target,
+            duration: 1.8,
+            ease: "power2.out",
+            onUpdate: function () {
+              el.textContent = Math.round(this.targets()[0].val);
+            },
+          }
+        );
+      },
+    });
+  });
+  
+  // --- Bento stagger (no .reveal class — dedicated animation) ---
+  const bentoGrid = document.querySelector(".bento-grid");
+  if (bentoGrid) {
+    gsap.fromTo(
+      ".bento-card",
+      { opacity: 0, y: 30, scale: 0.97 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        stagger: 0.12,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: bentoGrid,
+          start: "top 82%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  }
+  
+  // --- Framework logos stagger ---
+  const fwLogos = document.querySelector(".framework-logos");
+  if (fwLogos) {
+    gsap.fromTo(
+      ".fw-logo",
+      { opacity: 0, y: 15 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: fwLogos,
+          start: "top 85%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  }
+  
+  // --- Edge dots pulse ---
+  gsap.utils.toArray(".edge-dot").forEach((dot, i) => {
+    gsap.to(dot, {
+      r: 7,
+      opacity: 0.6,
+      duration: 1.2,
+      delay: i * 0.2,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
+  });
+  
+  </script>
+solution: |
+  <style>
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+  
+  :root {
+    --bg: #000;
+    --fg: #ededed;
+    --fg-muted: #888;
+    --border: rgba(255, 255, 255, 0.08);
+    --accent: #0070f3;
+    --accent-glow: rgba(0, 112, 243, 0.25);
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --radius: 12px;
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  
+  /* --- Nav --- */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.7);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .nav-wordmark {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+  }
+  
+  .nav-links {
+    display: flex;
+    gap: 24px;
+  }
+  
+  .nav-links a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  
+  .nav-links a:hover {
+    color: var(--fg);
+  }
+  
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .nav-link-login {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .btn-signup {
+    padding: 6px 16px;
+    background: var(--fg);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  @media (max-width: 768px) {
+    .nav-links,
+    .nav-link-login {
+      display: none;
+    }
+  }
+  
+  /* --- Hero --- */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+  }
+  
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--fg-muted);
+    margin-bottom: 40px;
+    opacity: 0;
+  }
+  
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #0070f3;
+    animation: dot-pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes dot-pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 8px var(--accent);
+    }
+  }
+  
+  .hero-title {
+    font-size: clamp(3.5rem, 12vw, 8rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.95;
+    margin-bottom: 32px;
+  }
+  
+  .hero-line {
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  
+  .hero-line--accent {
+    background: linear-gradient(135deg, #0070f3 0%, #7928ca 50%, #ff0080 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .hero-desc {
+    font-size: 1.15rem;
+    color: var(--fg-muted);
+    max-width: 520px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    opacity: 0;
+  }
+  
+  .hero-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+  }
+  
+  .btn-primary {
+    padding: 12px 24px;
+    background: var(--fg);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  
+  .btn-primary:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.1);
+  }
+  
+  .btn-primary--large {
+    padding: 16px 32px;
+    font-size: 16px;
+  }
+  
+  .btn-secondary {
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  
+  .btn-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* --- Terminal --- */
+  .terminal {
+    margin-top: 60px;
+    width: min(600px, 90vw);
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  
+  .terminal-dots {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .terminal-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .terminal-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  
+  .terminal-body {
+    padding: 20px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  
+  .terminal-line {
+    white-space: nowrap;
+  }
+  
+  .terminal-output {
+    color: var(--fg-muted);
+  }
+  
+  .t-prompt {
+    color: var(--fg-muted);
+    margin-right: 8px;
+  }
+  
+  .t-cmd {
+    color: var(--fg);
+  }
+  
+  .t-cursor {
+    color: var(--fg);
+    animation: blink 1s step-end infinite;
+  }
+  
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  
+  .t-success {
+    color: #0070f3;
+  }
+  .t-link {
+    color: #0070f3;
+    text-decoration: underline;
+  }
+  .t-dim {
+    color: #444;
+  }
+  
+  /* --- Sections --- */
+  section {
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .section-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .section-header {
+    margin-bottom: 48px;
+  }
+  
+  .section-header--center {
+    text-align: center;
+  }
+  
+  .section-tag {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  
+  .section-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+  
+  .section-desc {
+    font-size: 1.1rem;
+    color: var(--fg-muted);
+    max-width: 480px;
+    line-height: 1.5;
+    margin-top: 16px;
+  }
+  
+  .section-header--center .section-desc {
+    margin: 16px auto 0;
+  }
+  
+  /* --- Metrics --- */
+  .metrics-section {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  
+  .metric-card {
+    background: var(--bg);
+    padding: 48px 32px;
+    text-align: center;
+  }
+  
+  .metric-value {
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+  }
+  
+  .metric-unit {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fg-muted);
+  }
+  
+  .metric-label {
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+  
+  @media (max-width: 768px) {
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* --- Bento Grid --- */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .bento-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    transition: border-color 0.3s, background 0.3s;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .bento-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .bento-card--wide {
+    grid-column: span 2;
+  }
+  
+  .bento-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: var(--fg);
+  }
+  
+  .bento-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  
+  .bento-card p {
+    color: var(--fg-muted);
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 400px;
+  }
+  
+  /* Bento visuals */
+  .bento-visual {
+    margin-top: 24px;
+    height: 100px;
+    position: relative;
+  }
+  
+  .bento-visual--edge {
+    height: 100px;
+  }
+  
+  .edge-svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .edge-path {
+    stroke: var(--accent);
+    stroke-width: 1;
+    opacity: 0.2;
+  }
+  
+  .edge-dot {
+    fill: var(--accent);
+    filter: drop-shadow(0 0 6px var(--accent-glow));
+  }
+  
+  .edge-packet {
+    fill: #fff;
+    filter: drop-shadow(0 0 8px var(--accent));
+  }
+  
+  .bento-visual--ai {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 120px;
+  }
+  
+  .ai-wave {
+    width: 4px;
+    height: 40px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--accent), #7928ca);
+    animation: ai-wave 1.8s ease-in-out infinite;
+  }
+  
+  .ai-wave--2 {
+    animation-delay: 0.15s;
+    height: 55px;
+  }
+  .ai-wave--3 {
+    animation-delay: 0.3s;
+    height: 70px;
+  }
+  .ai-wave--4 {
+    animation-delay: 0.45s;
+    height: 50px;
+    background: linear-gradient(180deg, #7928ca, #ff0080);
+  }
+  .ai-wave--5 {
+    animation-delay: 0.6s;
+    height: 65px;
+    background: linear-gradient(180deg, #7928ca, #ff0080);
+  }
+  .ai-wave--6 {
+    animation-delay: 0.75s;
+    height: 45px;
+  }
+  .ai-wave--7 {
+    animation-delay: 0.9s;
+    height: 35px;
+  }
+  
+  @keyframes ai-wave {
+    0%,
+    100% {
+      transform: scaleY(0.3);
+      opacity: 0.4;
+    }
+    50% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .bento-grid {
+      grid-template-columns: 1fr;
+    }
+    .bento-card--wide {
+      grid-column: span 1;
+    }
+  }
+  
+  /* --- Frameworks --- */
+  .framework-logos {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin-top: 48px;
+  }
+  
+  .fw-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--fg-muted);
+    transition: color 0.2s;
+  }
+  
+  .fw-logo:hover {
+    color: var(--fg);
+  }
+  
+  .fw-logo span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  /* --- CTA --- */
+  .cta-section {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .cta-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  
+  .cta-content {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .cta-title {
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+  
+  .cta-desc {
+    max-width: 400px;
+    margin: 0 auto 32px;
+  }
+  
+  .cta-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  
+  /* --- Animations --- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Vercel — Develop. Preview. Ship.</title>
+      <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+  
+      <!-- Nav -->
+      <nav class="nav">
+          <div class="nav-inner">
+              <div class="nav-logo">
+                  <svg width="22" height="20" viewBox="0 0 76 65" fill="white">
+                      <path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/>
+                  </svg>
+                  <span class="nav-wordmark">Vercel</span>
+              </div>
+              <div class="nav-links">
+                  <a href="#">Products</a>
+                  <a href="#">Solutions</a>
+                  <a href="#">Resources</a>
+                  <a href="#">Pricing</a>
+              </div>
+              <div class="nav-actions">
+                  <a href="#" class="nav-link-login">Log In</a>
+                  <button class="btn-signup">Sign Up</button>
+              </div>
+          </div>
+      </nav>
+  
+      <main>
+  
+          <!-- Hero -->
+          <section class="hero">
+              <div class="hero-badge">
+                  <span class="badge-dot"></span>
+                  <span>Introducing Vercel AI SDK 4.0</span>
+              </div>
+              <h1 class="hero-title">
+                  <span class="hero-line">Develop.</span>
+                  <span class="hero-line">Preview.</span>
+                  <span class="hero-line hero-line--accent">Ship.</span>
+              </h1>
+              <p class="hero-desc">Vercel's frontend cloud gives developers the frameworks, workflows, and infrastructure to build a faster, more personalized web.</p>
+              <div class="hero-cta">
+                  <button class="btn-primary">Start Deploying</button>
+                  <button class="btn-secondary">Get a Demo</button>
+              </div>
+  
+              <!-- Terminal -->
+              <div class="terminal">
+                  <div class="terminal-bar">
+                      <div class="terminal-dots">
+                          <span></span><span></span><span></span>
+                      </div>
+                      <span class="terminal-title">Terminal</span>
+                  </div>
+                  <div class="terminal-body">
+                      <div class="terminal-line" id="t-line-1">
+                          <span class="t-prompt">$</span>
+                          <span class="t-cmd" id="t-cmd-1"></span>
+                          <span class="t-cursor">|</span>
+                      </div>
+                      <div class="terminal-line terminal-output" id="t-output-1" hidden>
+                          <span class="t-success">▲</span> Deploying to production...
+                      </div>
+                      <div class="terminal-line terminal-output" id="t-output-2" hidden>
+                          <span class="t-success">✓</span> Ready <span class="t-link">https://your-app.vercel.app</span> <span class="t-dim">[2.1s]</span>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- Metrics -->
+          <section class="metrics-section">
+              <div class="section-container">
+                  <div class="metrics-grid">
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="50">0</span><span class="metric-unit">ms</span>
+                          <span class="metric-label">Edge Latency</span>
+                      </div>
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="99">0</span><span class="metric-unit">.99%</span>
+                          <span class="metric-label">Uptime SLA</span>
+                      </div>
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="3">0</span><span class="metric-unit">s</span>
+                          <span class="metric-label">Average Build</span>
+                      </div>
+                      <div class="metric-card">
+                          <span class="metric-value" data-target="40">0</span><span class="metric-unit">+</span>
+                          <span class="metric-label">Edge Regions</span>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- Features Bento -->
+          <section class="features-section">
+              <div class="section-container">
+                  <div class="reveal section-header">
+                      <span class="section-tag">Platform</span>
+                      <h2 class="section-title">Everything you need<br/>to ship faster.</h2>
+                  </div>
+  
+                  <div class="bento-grid">
+                      <div class="bento-card bento-card--wide">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                          </div>
+                          <h3>Edge Functions</h3>
+                          <p>Execute server-side logic at the edge, close to your users. Zero cold starts.</p>
+                          <div class="bento-visual bento-visual--edge">
+                              <svg class="edge-svg" viewBox="0 0 600 100" preserveAspectRatio="xMidYMid meet">
+                                  <line class="edge-path" x1="90" y1="30" x2="270" y2="15" />
+                                  <line class="edge-path" x1="270" y1="15" x2="360" y2="40" />
+                                  <line class="edge-path" x1="360" y1="40" x2="450" y2="30" />
+                                  <line class="edge-path" x1="90" y1="30" x2="180" y2="65" />
+                                  <line class="edge-path" x1="180" y1="65" x2="360" y2="70" />
+                                  <line class="edge-path" x1="360" y1="70" x2="450" y2="30" />
+                                  <circle class="edge-dot" cx="90" cy="30" r="5" />
+                                  <circle class="edge-dot" cx="270" cy="15" r="5" />
+                                  <circle class="edge-dot" cx="360" cy="40" r="5" />
+                                  <circle class="edge-dot" cx="450" cy="30" r="5" />
+                                  <circle class="edge-dot" cx="180" cy="65" r="5" />
+                                  <circle class="edge-dot" cx="360" cy="70" r="5" />
+                                  <!-- Traveling packets -->
+                                  <circle class="edge-packet" r="3">
+                                      <animateMotion dur="2.5s" repeatCount="indefinite" path="M90,30 L270,15 L360,40 L450,30" />
+                                  </circle>
+                                  <circle class="edge-packet" r="3">
+                                      <animateMotion dur="3s" repeatCount="indefinite" path="M90,30 L180,65 L360,70 L450,30" begin="0.8s" />
+                                  </circle>
+                              </svg>
+                          </div>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                          </div>
+                          <h3>Framework Agnostic</h3>
+                          <p>Next.js, Nuxt, SvelteKit, Astro, Remix — deploy any framework.</p>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                          </div>
+                          <h3>Preview Deploys</h3>
+                          <p>Every push gets a unique URL. Review changes before they go live.</p>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m16.66-5.66l-4.24 4.24M10.58 13.42l-4.24 4.24m0-11.32l4.24 4.24m4.24 4.24l4.24 4.24"/></svg>
+                          </div>
+                          <h3>Analytics</h3>
+                          <p>Real-time performance insights. Web Vitals, audience, and speed.</p>
+                      </div>
+                      <div class="bento-card">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg>
+                          </div>
+                          <h3>Serverless Storage</h3>
+                          <p>KV, Postgres, and Blob storage built into your workflow. No provisioning needed.</p>
+                      </div>
+                      <div class="bento-card bento-card--wide">
+                          <div class="bento-icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                          </div>
+                          <h3>AI SDK</h3>
+                          <p>Build AI-powered applications with streaming, tool use, and multi-model support. Ship intelligent features in minutes.</p>
+                          <div class="bento-visual bento-visual--ai">
+                              <div class="ai-wave"></div>
+                              <div class="ai-wave ai-wave--2"></div>
+                              <div class="ai-wave ai-wave--3"></div>
+                              <div class="ai-wave ai-wave--4"></div>
+                              <div class="ai-wave ai-wave--5"></div>
+                              <div class="ai-wave ai-wave--6"></div>
+                              <div class="ai-wave ai-wave--7"></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- Frameworks -->
+          <section class="frameworks-section">
+              <div class="section-container">
+                  <div class="reveal section-header section-header--center">
+                      <h2 class="section-title">Works with your stack.</h2>
+                      <p class="section-desc">First-class support for the frameworks you love.</p>
+                  </div>
+                  <div class="framework-logos">
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M11.572 0c-.176 0-.31.001-.358.007a19.76 19.76 0 0 1-.364.033C7.443.346 4.25 2.185 2.228 5.012a11.875 11.875 0 0 0-2.119 5.243c-.096.659-.108.854-.108 1.747s.012 1.089.108 1.748c.652 4.506 3.86 8.292 8.209 9.695.779.25 1.6.422 2.534.525.363.04 1.935.04 2.299 0 1.611-.178 2.977-.577 4.323-1.264.207-.106.247-.134.219-.158-.02-.013-.9-1.193-1.955-2.62l-1.919-2.592-2.404-3.558a338.739 338.739 0 0 0-2.422-3.556c-.009-.002-.018 1.579-.023 3.51-.007 3.38-.01 3.515-.052 3.595a.426.426 0 0 1-.206.214c-.075.037-.14.044-.495.044H7.81l-.108-.068a.438.438 0 0 1-.157-.171l-.05-.106.006-4.703.007-4.705.072-.092a.645.645 0 0 1 .174-.143c.096-.047.134-.051.54-.051.478 0 .558.018.682.154.035.038 1.337 1.999 2.895 4.361a10760.433 10760.433 0 0 0 4.735 7.17l1.9 2.879.096-.063a12.317 12.317 0 0 0 2.466-2.163 11.944 11.944 0 0 0 2.824-6.134c.096-.66.108-.854.108-1.748 0-.893-.012-1.088-.108-1.747-.652-4.506-3.859-8.292-8.208-9.695a12.597 12.597 0 0 0-2.499-.523A33.119 33.119 0 0 0 11.572 0zm4.069 7.217c.347 0 .408.005.486.047a.473.473 0 0 1 .237.277c.018.06.023 1.365.018 4.304l-.006 4.218-.744-1.14-.746-1.14v-3.066c0-1.982.01-3.097.023-3.15a.478.478 0 0 1 .233-.296c.096-.05.13-.054.5-.054z"/></svg>
+                          <span>Next.js</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z"/></svg>
+                          <span>Tailwind</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12.713l-11.985-6.713c0-.003.569-.335 1.265-.743l10.72-6.004 10.72 6.004c.696.408 1.265.74 1.265.743l-11.985 6.713zm-11.985 1.287l11.985 6.713 11.985-6.713v4l-11.985 6.713-11.985-6.713v-4z"/></svg>
+                          <span>Astro</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M11.77 11.24H9.956V8.202h2.152c1.17 0 1.834.522 1.834 1.466 0 1.008-.773 1.572-2.174 1.572zm.324 1.206H9.957v3.348h2.231c1.459 0 2.232-.585 2.232-1.685s-.795-1.663-2.326-1.663zM24 11.39v1.218c-1.128.108-1.817.944-2.226 2.268-.407 1.319-.463 2.937-.42 4.186.045 1.3-.968 2.5-2.337 2.5H4.985c-1.37 0-2.383-1.2-2.337-2.5.043-1.249-.013-2.867-.42-4.186-.41-1.324-1.1-2.16-2.228-2.268V11.39c1.128-.108 1.819-.944 2.227-2.268.408-1.319.464-2.937.42-4.186C2.603 3.636 3.615 2.438 4.985 2.438h14.032c1.37 0 2.382 1.198 2.337 2.498-.043 1.249.013 2.867.42 4.186.409 1.324 1.098 2.16 2.226 2.268zm-7.927 2.817c0-1.354-.953-2.333-2.368-2.488v-.057c1.04-.169 1.856-1.135 1.856-2.213 0-1.537-1.213-2.538-3.062-2.538h-4.16v10.172h4.181c2.218 0 3.553-1.086 3.553-2.876z"/></svg>
+                          <span>Remix</span>
+                      </div>
+                      <div class="fw-logo">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/></svg>
+                          <span>SvelteKit</span>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- CTA -->
+          <section class="cta-section">
+              <div class="cta-gradient"></div>
+              <div class="section-container cta-content reveal">
+                  <h2 class="cta-title">Start building<br/>the future, today.</h2>
+                  <p class="section-desc cta-desc">Deploy your first project in seconds. No credit card required.</p>
+                  <div class="cta-actions">
+                      <button class="btn-primary btn-primary--large">Start Deploying</button>
+                      <button class="btn-secondary">Talk to Sales</button>
+                  </div>
+              </div>
+          </section>
+  
+      </main>
+  
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+      <script src="./script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  gsap.registerPlugin(ScrollTrigger);
+  
+  // --- Hero entrance ---
+  const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
+  
+  heroTl
+    .to(".hero-badge", { opacity: 1, duration: 0.8, delay: 0.3 })
+    .to(
+      ".hero-line",
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.9,
+        stagger: 0.12,
+      },
+      "-=0.4"
+    )
+    .to(".hero-desc", { opacity: 1, duration: 0.8 }, "-=0.5")
+    .to(".hero-cta", { opacity: 1, duration: 0.6 }, "-=0.4")
+    .to(".terminal", { opacity: 1, y: 0, duration: 0.8 }, "-=0.3");
+  
+  // --- Terminal typing ---
+  const CMD = "npx vercel deploy --prod";
+  const cmdEl = document.getElementById("t-cmd-1");
+  const output1 = document.getElementById("t-output-1");
+  const output2 = document.getElementById("t-output-2");
+  const cursor = document.querySelector(".t-cursor");
+  
+  let charIndex = 0;
+  
+  function typeCmd() {
+    if (charIndex < CMD.length) {
+      cmdEl.textContent += CMD[charIndex];
+      charIndex++;
+      setTimeout(typeCmd, 40 + Math.random() * 30);
+    } else {
+      cursor.style.display = "none";
+      setTimeout(() => {
+        output1.hidden = false;
+        gsap.from(output1, { opacity: 0, x: -5, duration: 0.3 });
+      }, 400);
+      setTimeout(() => {
+        output2.hidden = false;
+        gsap.from(output2, { opacity: 0, x: -5, duration: 0.3 });
+      }, 1600);
+    }
+  }
+  
+  setTimeout(typeCmd, 2000);
+  
+  // --- Reveal on scroll (for non-bento elements) ---
+  gsap.utils.toArray(".reveal").forEach((el) => {
+    gsap.fromTo(
+      el,
+      { opacity: 0, y: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: el,
+          start: "top 88%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  });
+  
+  // --- Metric count-up ---
+  document.querySelectorAll(".metric-value").forEach((el) => {
+    const target = parseInt(el.dataset.target, 10);
+    if (isNaN(target)) return;
+  
+    ScrollTrigger.create({
+      trigger: el,
+      start: "top 85%",
+      once: true,
+      onEnter: () => {
+        gsap.to(
+          { val: 0 },
+          {
+            val: target,
+            duration: 1.8,
+            ease: "power2.out",
+            onUpdate: function () {
+              el.textContent = Math.round(this.targets()[0].val);
+            },
+          }
+        );
+      },
+    });
+  });
+  
+  // --- Bento stagger (no .reveal class — dedicated animation) ---
+  const bentoGrid = document.querySelector(".bento-grid");
+  if (bentoGrid) {
+    gsap.fromTo(
+      ".bento-card",
+      { opacity: 0, y: 30, scale: 0.97 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        stagger: 0.12,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: bentoGrid,
+          start: "top 82%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  }
+  
+  // --- Framework logos stagger ---
+  const fwLogos = document.querySelector(".framework-logos");
+  if (fwLogos) {
+    gsap.fromTo(
+      ".fw-logo",
+      { opacity: 0, y: 15 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: fwLogos,
+          start: "top 85%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  }
+  
+  // --- Edge dots pulse ---
+  gsap.utils.toArray(".edge-dot").forEach((dot, i) => {
+    gsap.to(dot, {
+      r: 7,
+      opacity: 0.6,
+      duration: 1.2,
+      delay: i * 0.2,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

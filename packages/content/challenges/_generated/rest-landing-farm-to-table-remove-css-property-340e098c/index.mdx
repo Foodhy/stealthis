@@ -1,0 +1,2089 @@
+---
+slug: "rest-landing-farm-to-table-remove-css-property-340e098c"
+topic: "restaurant"
+title: "Restore missing CSS property in Farm-to-Table Landing — Sage & Stone"
+type: "fix"
+difficulty: 1
+resourceSlug: "rest-landing-farm-to-table"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  /* ────────────────────────────────────────────
+     SAGE & STONE — Farm-to-table palette
+     Sage · bone · clay · moss · ink
+  ────────────────────────────────────────────── */
+  :root {
+    --bone-2: #e6dfd0;
+    --paper: #f8f4ea;
+    --sage: #7b8a6a;
+    --sage-d: #4f5f3f;
+    --moss: #3d4a32;
+    --moss-d: #2b3624;
+    --clay: #a85a3a;
+    --clay-d: #823f25;
+    --honey: #c9a04c;
+    --ink: #2a261f;
+    --ink-2: #4a4338;
+    --mute: #8a8170;
+    --rule: rgba(42, 38, 31, 0.12);
+    --font-display: "Fraunces", "Playfair Display", Georgia, serif;
+    --font-body: "Inter Tight", "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --r-pill: 22px;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: var(--font-body);
+    background: var(--bone);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* ── Nav ── */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 32px;
+    background: rgba(241, 236, 225, 0.84);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--moss);
+  }
+  .brand-leaf {
+    color: var(--sage);
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .nav-links {
+    display: flex;
+    gap: 22px;
+    margin-left: auto;
+  }
+  .nav-links a {
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 500;
+  }
+  .nav-links a:hover {
+    color: var(--moss);
+  }
+  .nav-cta {
+    background: var(--moss);
+    color: var(--bone);
+    border-radius: var(--r-pill);
+    padding: 10px 18px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .nav-cta:hover {
+    background: var(--moss-d);
+  }
+  @media (max-width: 720px) {
+    .nav-links {
+      display: none;
+    }
+  }
+  
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 96px 32px 64px;
+    overflow: hidden;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    z-index: 0;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .blob-1 {
+    width: 360px;
+    height: 360px;
+    background: var(--sage);
+    top: -80px;
+    right: -100px;
+  }
+  .blob-2 {
+    width: 240px;
+    height: 240px;
+    background: var(--clay);
+    bottom: -60px;
+    left: -50px;
+    opacity: 0.32;
+  }
+  .blob-3 {
+    width: 160px;
+    height: 160px;
+    background: var(--honey);
+    top: 60%;
+    right: 30%;
+    opacity: 0.28;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+  }
+  .kicker {
+    font-size: 0.74rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--moss);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .em {
+    font-style: italic;
+    color: var(--clay);
+  }
+  .em-2 {
+    font-style: italic;
+    color: var(--moss);
+  }
+  .sub {
+    margin-top: 22px;
+    font-size: 1.06rem;
+    color: var(--ink-2);
+    max-width: 600px;
+  }
+  .actions {
+    margin-top: 26px;
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    padding: 13px 22px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .btn-moss {
+    background: var(--moss);
+    color: var(--bone);
+  }
+  .btn-moss:hover {
+    background: var(--moss-d);
+  }
+  .btn-clay {
+    background: transparent;
+    color: var(--clay);
+    border-color: var(--clay);
+  }
+  .btn-clay:hover {
+    background: var(--clay);
+    color: var(--bone);
+  }
+  
+  .hero-stats {
+    margin-top: 36px;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 14px 36px;
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+    max-width: 600px;
+  }
+  .hero-stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .hero-stats dt {
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 600;
+  }
+  .hero-stats dd {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.15rem;
+    color: var(--moss);
+  }
+  
+  /* ── Harvest ── */
+  .harvest {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 80px 32px 56px;
+    scroll-margin-top: 80px;
+  }
+  .section-head {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2rem, 5vw, 3rem);
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin-top: 4px;
+  }
+  .section-head h2 em {
+    font-style: italic;
+    color: var(--clay);
+  }
+  
+  .harvest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .h-item {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-pill);
+    padding: 18px 22px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .h-item:hover {
+    border-color: var(--sage);
+    transform: translateY(-2px);
+  }
+  .h-icon {
+    font-size: 1.6rem;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--bone-2);
+  }
+  .h-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.02rem;
+  }
+  .h-kg {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--moss);
+    font-weight: 600;
+  }
+  .harvest-foot {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 0.84rem;
+    color: var(--mute);
+    font-style: italic;
+  }
+  .harvest-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--sage);
+    border-radius: 999px;
+    margin-right: 4px;
+    vertical-align: middle;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  
+  /* ── No menu ── */
+  .no-menu {
+    background: var(--moss);
+    color: var(--bone);
+    padding: 96px 32px;
+    scroll-margin-top: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .no-menu::before {
+    content: "";
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 999px;
+    background: rgba(168, 90, 58, 0.15);
+    top: -200px;
+    right: -200px;
+    filter: blur(60px);
+  }
+  .no-menu-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .no-menu .kicker {
+    color: var(--honey);
+  }
+  .no-menu h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-top: 6px;
+  }
+  .no-menu h2 .em {
+    color: var(--honey);
+  }
+  .no-menu > .no-menu-inner > p {
+    margin-top: 24px;
+    font-size: 1.08rem;
+    color: rgba(241, 236, 225, 0.78);
+    max-width: 640px;
+  }
+  
+  .reveal {
+    margin-top: 40px;
+    background: rgba(241, 236, 225, 0.06);
+    border: 1px solid rgba(241, 236, 225, 0.12);
+    border-radius: 18px;
+    padding: 30px 32px 26px;
+  }
+  .reveal-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--honey);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .reveal-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .reveal-list li {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: baseline;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(241, 236, 225, 0.12);
+  }
+  .reveal-list li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .r-no {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--honey);
+  }
+  .r-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: var(--bone);
+  }
+  .r-mod {
+    grid-column: 2;
+    font-size: 0.86rem;
+    font-style: italic;
+    color: rgba(241, 236, 225, 0.65);
+    margin-top: 2px;
+  }
+  
+  /* ── Garden ── */
+  .garden {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 96px 32px;
+    scroll-margin-top: 80px;
+  }
+  .garden-inner {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .garden-text h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin-top: 4px;
+  }
+  .garden-text > p {
+    margin-top: 16px;
+    font-size: 1.02rem;
+    color: var(--ink-2);
+    max-width: 540px;
+  }
+  .garden-list {
+    list-style: none;
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+  }
+  .garden-list li {
+    font-size: 0.92rem;
+    color: var(--ink);
+    padding-left: 16px;
+    border-left: 2px solid var(--sage);
+  }
+  .garden-list li strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--moss);
+    font-size: 1.1rem;
+    margin-right: 4px;
+  }
+  .garden-art {
+    display: grid;
+    place-items: center;
+  }
+  .garden-svg {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+  }
+  @media (max-width: 880px) {
+    .garden-inner {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .garden-list {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* ── Visit ── */
+  .visit {
+    background: var(--bone-2);
+    padding: 80px 32px;
+  }
+  .visit-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .visit-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+  .hours-card,
+  .contact-card {
+    background: var(--paper);
+    border-radius: 18px;
+    padding: 32px 32px 26px;
+    border: 1px solid var(--rule);
+  }
+  .hours-card h3,
+  .contact-card h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.45rem;
+    letter-spacing: -0.01em;
+    margin-top: 4px;
+    margin-bottom: 14px;
+  }
+  .hours-card ul {
+    list-style: none;
+  }
+  .hours-card li {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    font-size: 0.94rem;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .hours-card li:last-child {
+    border-bottom: none;
+  }
+  .hours-card li span:last-child {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .hours-card li.closed {
+    color: var(--mute);
+  }
+  .contact-card address {
+    font-style: normal;
+    line-height: 1.8;
+    font-size: 0.96rem;
+    color: var(--ink-2);
+  }
+  .note {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--rule);
+    font-size: 0.84rem;
+    font-style: italic;
+    color: var(--mute);
+  }
+  
+  /* ── Reserve ── */
+  .reserve {
+    padding: 96px 32px;
+    scroll-margin-top: 80px;
+  }
+  .reserve-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .reserve h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    line-height: 1.05;
+    margin-top: 4px;
+  }
+  .reserve-sub {
+    margin-top: 16px;
+    color: var(--ink-2);
+    font-size: 0.98rem;
+    max-width: 480px;
+  }
+  .reserve-bullets {
+    list-style: none;
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--ink-2);
+    font-size: 0.92rem;
+  }
+  
+  .reserve-form {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 18px;
+    padding: 28px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .reserve-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--moss);
+    font-weight: 700;
+  }
+  .reserve-form input,
+  .reserve-form select {
+    background: var(--bone);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 0.94rem;
+    border-radius: 12px;
+    outline: none;
+  }
+  .reserve-form input:focus,
+  .reserve-form select:focus {
+    border-color: var(--moss);
+  }
+  .full {
+    width: 100%;
+  }
+  .check {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 10px !important;
+    font-size: 0.88rem !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    color: var(--ink) !important;
+    font-weight: 500 !important;
+  }
+  .check input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--moss);
+  }
+  .reserve-form .btn {
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .ok {
+    color: var(--sage-d);
+    font-weight: 600;
+    font-size: 0.94rem;
+  }
+  @media (max-width: 880px) {
+    .reserve-inner {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+  
+  /* ── Footer ── */
+  .footer {
+    background: var(--moss-d);
+    color: var(--bone);
+    text-align: center;
+    padding: 48px 28px;
+  }
+  .foot-brand {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.4rem;
+    letter-spacing: 0.02em;
+  }
+  .foot-meta {
+    color: rgba(241, 236, 225, 0.6);
+    font-size: 0.86rem;
+    margin-top: 4px;
+  }
+  .foot-meta:last-child {
+    font-style: italic;
+    color: var(--honey);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,500&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      />
+      <link rel="stylesheet" href="style.css" />
+      <title>Sage &amp; Stone — Farm to Table</title>
+    </head>
+    <body>
+      <header class="nav">
+        <a class="brand" href="#top">
+          <svg class="brand-leaf" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M12 2C7 8 5 14 12 22 19 14 17 8 12 2z" fill="currentColor" />
+          </svg>
+          <span class="brand-name">Sage &amp; Stone</span>
+        </a>
+        <nav class="nav-links">
+          <a href="#harvest">Harvest</a>
+          <a href="#no-menu">No menu</a>
+          <a href="#garden">The garden</a>
+          <a href="#reserve">Reserve</a>
+        </nav>
+        <a class="nav-cta" href="#reserve">Reserve · 4 seatings only</a>
+      </header>
+  
+      <main id="top">
+        <!-- Hero -->
+        <section class="hero">
+          <span class="blob blob-1" aria-hidden="true"></span>
+          <span class="blob blob-2" aria-hidden="true"></span>
+          <span class="blob blob-3" aria-hidden="true"></span>
+          <div class="hero-inner">
+            <p class="kicker">Hudson Valley · est. 2019</p>
+            <h1>
+              <span class="em">Slow,</span> seasonal,<br />
+              mostly <span class="em-2">vegetables.</span>
+            </h1>
+            <p class="sub">
+              A nineteen-seat farm-to-table dining room on a working
+              permaculture farm in Hudson Valley. We have no fixed menu — we
+              cook what the garden gives us, twice a week, four seatings only.
+            </p>
+            <div class="actions">
+              <a class="btn btn-moss" href="#reserve">Reserve a seat</a>
+              <a class="btn btn-clay" href="#harvest">Today's harvest</a>
+            </div>
+            <dl class="hero-stats">
+              <div><dt>Acreage</dt><dd>4.2</dd></div>
+              <div><dt>Vegetables</dt><dd>~ 90% of plate</dd></div>
+              <div><dt>From plate to soil</dt><dd>14 m</dd></div>
+            </dl>
+          </div>
+        </section>
+  
+        <!-- Harvest -->
+        <section class="harvest" id="harvest">
+          <header class="section-head">
+            <p class="kicker">This week's harvest</p>
+            <h2>What came in <em>this morning.</em></h2>
+          </header>
+          <div class="harvest-grid" id="harvestGrid"></div>
+          <p class="harvest-foot">
+            <span class="harvest-dot"></span>
+            Updated at <span id="updated">—</span> · pulled from the field notebook.
+          </p>
+        </section>
+  
+        <!-- No menu -->
+        <section class="no-menu" id="no-menu">
+          <div class="no-menu-inner">
+            <p class="kicker">No menu</p>
+            <h2>
+              We don't print a menu.<br />
+              <span class="em">Because we don't know yet.</span>
+            </h2>
+            <p>
+              The cook writes the night's progression on Monday morning, after
+              seeing what's ready in the field. You'll get six courses — sometimes
+              seven — built around three or four heroes from that week. There is
+              always something fermented, something raw, and something cooked over
+              embers.
+            </p>
+            <div class="reveal">
+              <p class="reveal-label">A recent night, late August:</p>
+              <ol class="reveal-list">
+                <li>
+                  <span class="r-no">i.</span>
+                  <span class="r-name">Tomato water · basil oil</span>
+                  <span class="r-mod">First-pick green zebras, salted three days.</span>
+                </li>
+                <li>
+                  <span class="r-no">ii.</span>
+                  <span class="r-name">Charred eggplant · whey · sumac</span>
+                  <span class="r-mod">From the ash of last night's hearth.</span>
+                </li>
+                <li>
+                  <span class="r-no">iii.</span>
+                  <span class="r-name">Beet leaves · brown butter · hazelnut</span>
+                  <span class="r-mod">The leaves you usually throw away.</span>
+                </li>
+                <li>
+                  <span class="r-no">iv.</span>
+                  <span class="r-name">Stone-fired flatbread · garden herbs</span>
+                  <span class="r-mod">Ten kinds of herb — pick them yourself at the table.</span>
+                </li>
+                <li>
+                  <span class="r-no">v.</span>
+                  <span class="r-name">Charred carrot · miso · sunflower</span>
+                  <span class="r-mod">Carrots harvested at 5:30 this morning.</span>
+                </li>
+                <li>
+                  <span class="r-no">vi.</span>
+                  <span class="r-name">Cucumber granita · honey</span>
+                  <span class="r-mod">From our hive at the field edge.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section>
+  
+        <!-- The garden -->
+        <section class="garden" id="garden">
+          <div class="garden-inner">
+            <div class="garden-text">
+              <p class="kicker">The garden</p>
+              <h2>Four acres, fourteen metres.</h2>
+              <p>
+                The kitchen looks straight onto the field. Whatever's on your
+                plate was, on average, growing fourteen metres from where
+                you're sitting four hours ago.
+              </p>
+              <p>
+                We grow on no-till beds with a heavy cover-crop rotation. No
+                petroleum-based inputs, no plastic mulch, no synthetic
+                fertilizer. We compost everything — including the bones from
+                the rare meat course — and the result goes back into the
+                field within ninety days.
+              </p>
+              <ul class="garden-list">
+                <li><strong>92</strong> varieties of vegetable, year-round</li>
+                <li><strong>14</strong> orchard trees · apples, plums, quince</li>
+                <li><strong>3</strong> beehives at the field edge</li>
+                <li><strong>1</strong> wood-fired hearth, indoor &amp; outdoor</li>
+              </ul>
+            </div>
+            <div class="garden-art" aria-hidden="true">
+              <svg viewBox="0 0 320 320" class="garden-svg">
+                <defs>
+                  <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#e9c469" />
+                    <stop offset="100%" stop-color="#c9a04c" />
+                  </radialGradient>
+                </defs>
+                <circle cx="160" cy="160" r="120" fill="url(#sun)" opacity="0.4" />
+                <circle cx="160" cy="160" r="86" fill="#7b8a6a" opacity="0.55" />
+                <circle cx="160" cy="160" r="60" fill="#3d4a32" opacity="0.78" />
+                <circle cx="160" cy="160" r="28" fill="#a85a3a" />
+                <text
+                  x="160" y="166"
+                  fill="#f1ece1"
+                  font-family="Fraunces, serif"
+                  font-style="italic"
+                  text-anchor="middle"
+                  font-size="18"
+                >
+                  here
+                </text>
+              </svg>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Hours + visit -->
+        <section class="visit">
+          <div class="visit-inner">
+            <article class="hours-card">
+              <p class="kicker">Hours</p>
+              <h3>Four seatings, twice a week.</h3>
+              <ul>
+                <li><span>Thursday</span><span>17:30 · 20:30</span></li>
+                <li><span>Friday</span><span>17:30 · 20:30</span></li>
+                <li class="closed"><span>Sat – Wed</span><span>Closed · we're in the field</span></li>
+              </ul>
+            </article>
+            <article class="contact-card">
+              <p class="kicker">The drive</p>
+              <h3>2 h 10 min from NYC.</h3>
+              <address>
+                221 Old Mill Road<br />
+                Hudson, NY 12534<br />
+                hello@sageandstone.farm<br />
+                +1 518 555 0192
+              </address>
+              <p class="note">
+                We're a working farm — wear shoes that don't mind dirt. There's
+                a small barn for late check-ins; we'll leave a lamp on.
+              </p>
+            </article>
+          </div>
+        </section>
+  
+        <!-- Reserve -->
+        <section class="reserve" id="reserve">
+          <div class="reserve-inner">
+            <div>
+              <p class="kicker">Reserve a seat</p>
+              <h2>$120 a seat. No upsells.</h2>
+              <p class="reserve-sub">
+                Cards held but not charged until the morning of service.
+                48-hour cancellation. We'll send a packing list two days before
+                with directions, dress code, and what the weather looks like
+                for the field.
+              </p>
+              <ul class="reserve-bullets">
+                <li>· Six to seven courses</li>
+                <li>· Vegetables-led · one meat course</li>
+                <li>· Beverage pairing is wine, cider, or shrub</li>
+                <li>· The room sleeps four — ask about staying</li>
+              </ul>
+            </div>
+            <form class="reserve-form" id="form">
+              <div class="form-row">
+                <label>
+                  <span>Seats</span>
+                  <select name="g">
+                    <option>2</option>
+                    <option>3</option>
+                    <option selected>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Date</span>
+                  <input type="date" name="d" />
+                </label>
+                <label>
+                  <span>Seating</span>
+                  <select name="t">
+                    <option>17:30</option>
+                    <option selected>20:30</option>
+                  </select>
+                </label>
+              </div>
+              <label class="full">
+                <span>Email · we'll send the packing list</span>
+                <input type="email" name="e" placeholder="you@example.com" />
+              </label>
+              <label class="check">
+                <input type="checkbox" name="pair" checked />
+                <span>Add beverage pairing (+$48)</span>
+              </label>
+              <button class="btn btn-moss" type="submit">Hold seats</button>
+              <p class="ok" id="ok" hidden>✓ We've got it. Packing list in your inbox shortly.</p>
+            </form>
+          </div>
+        </section>
+      </main>
+  
+      <footer class="footer">
+        <p class="foot-brand">Sage &amp; Stone</p>
+        <p class="foot-meta">221 Old Mill Road · Hudson, NY · 12534</p>
+        <p class="foot-meta">Open Thursday &amp; Friday only.</p>
+      </footer>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  const HARVEST = [
+    { icon: "🍅", name: "Heirloom tomato", kg: "14.2 kg" },
+    { icon: "🥬", name: "Lacinato kale", kg: "8.6 kg" },
+    { icon: "🌿", name: "Garden basil", kg: "2.1 kg" },
+    { icon: "🥕", name: "Purple carrot", kg: "11.8 kg" },
+    { icon: "🌽", name: "Sweetcorn", kg: "26 ears" },
+    { icon: "🌶️", name: "Padrón pepper", kg: "3.4 kg" },
+    { icon: "🧄", name: "Hardneck garlic", kg: "1.9 kg" },
+    { icon: "🥒", name: "Cucumber", kg: "9.0 kg" },
+    { icon: "🌻", name: "Sunflower seed", kg: "0.8 kg" },
+    { icon: "🍯", name: "Wild honey", kg: "1.2 kg" },
+  ];
+  
+  const grid = document.getElementById("harvestGrid");
+  grid.innerHTML = HARVEST.map(
+    (h) => `
+    <article class="h-item">
+      <span class="h-icon">${h.icon}</span>
+      <div>
+        <p class="h-name">${h.name}</p>
+        <p class="h-kg">${h.kg}</p>
+      </div>
+    </article>`
+  ).join("");
+  
+  function nowStr() {
+    const d = new Date();
+    d.setHours(d.getHours() - 1); // "an hour ago, by the field"
+    d.setMinutes(34);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} this morning`;
+  }
+  document.getElementById("updated").textContent = nowStr();
+  
+  // Default date to next Thursday
+  const di = document.querySelector('input[name="d"]');
+  if (di) {
+    const t = new Date();
+    const day = t.getDay();
+    const delta = (4 - day + 7) % 7 || 7;
+    t.setDate(t.getDate() + delta);
+    di.value = t.toISOString().slice(0, 10);
+  }
+  
+  const form = document.getElementById("form");
+  const ok = document.getElementById("ok");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    ok.hidden = false;
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    setTimeout(() => {
+      ok.hidden = true;
+      btn.disabled = false;
+    }, 3000);
+  });
+  
+  </script>
+solution: |
+  <style>
+  /* ────────────────────────────────────────────
+     SAGE & STONE — Farm-to-table palette
+     Sage · bone · clay · moss · ink
+  ────────────────────────────────────────────── */
+  :root {
+    --bone: #f1ece1;
+    --bone-2: #e6dfd0;
+    --paper: #f8f4ea;
+    --sage: #7b8a6a;
+    --sage-d: #4f5f3f;
+    --moss: #3d4a32;
+    --moss-d: #2b3624;
+    --clay: #a85a3a;
+    --clay-d: #823f25;
+    --honey: #c9a04c;
+    --ink: #2a261f;
+    --ink-2: #4a4338;
+    --mute: #8a8170;
+    --rule: rgba(42, 38, 31, 0.12);
+    --font-display: "Fraunces", "Playfair Display", Georgia, serif;
+    --font-body: "Inter Tight", "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --r-pill: 22px;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: var(--font-body);
+    background: var(--bone);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* ── Nav ── */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 32px;
+    background: rgba(241, 236, 225, 0.84);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--moss);
+  }
+  .brand-leaf {
+    color: var(--sage);
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .nav-links {
+    display: flex;
+    gap: 22px;
+    margin-left: auto;
+  }
+  .nav-links a {
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 500;
+  }
+  .nav-links a:hover {
+    color: var(--moss);
+  }
+  .nav-cta {
+    background: var(--moss);
+    color: var(--bone);
+    border-radius: var(--r-pill);
+    padding: 10px 18px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .nav-cta:hover {
+    background: var(--moss-d);
+  }
+  @media (max-width: 720px) {
+    .nav-links {
+      display: none;
+    }
+  }
+  
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 96px 32px 64px;
+    overflow: hidden;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    z-index: 0;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .blob-1 {
+    width: 360px;
+    height: 360px;
+    background: var(--sage);
+    top: -80px;
+    right: -100px;
+  }
+  .blob-2 {
+    width: 240px;
+    height: 240px;
+    background: var(--clay);
+    bottom: -60px;
+    left: -50px;
+    opacity: 0.32;
+  }
+  .blob-3 {
+    width: 160px;
+    height: 160px;
+    background: var(--honey);
+    top: 60%;
+    right: 30%;
+    opacity: 0.28;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+  }
+  .kicker {
+    font-size: 0.74rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--moss);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .em {
+    font-style: italic;
+    color: var(--clay);
+  }
+  .em-2 {
+    font-style: italic;
+    color: var(--moss);
+  }
+  .sub {
+    margin-top: 22px;
+    font-size: 1.06rem;
+    color: var(--ink-2);
+    max-width: 600px;
+  }
+  .actions {
+    margin-top: 26px;
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    padding: 13px 22px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .btn-moss {
+    background: var(--moss);
+    color: var(--bone);
+  }
+  .btn-moss:hover {
+    background: var(--moss-d);
+  }
+  .btn-clay {
+    background: transparent;
+    color: var(--clay);
+    border-color: var(--clay);
+  }
+  .btn-clay:hover {
+    background: var(--clay);
+    color: var(--bone);
+  }
+  
+  .hero-stats {
+    margin-top: 36px;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 14px 36px;
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+    max-width: 600px;
+  }
+  .hero-stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .hero-stats dt {
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 600;
+  }
+  .hero-stats dd {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.15rem;
+    color: var(--moss);
+  }
+  
+  /* ── Harvest ── */
+  .harvest {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 80px 32px 56px;
+    scroll-margin-top: 80px;
+  }
+  .section-head {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2rem, 5vw, 3rem);
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin-top: 4px;
+  }
+  .section-head h2 em {
+    font-style: italic;
+    color: var(--clay);
+  }
+  
+  .harvest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .h-item {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-pill);
+    padding: 18px 22px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .h-item:hover {
+    border-color: var(--sage);
+    transform: translateY(-2px);
+  }
+  .h-icon {
+    font-size: 1.6rem;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--bone-2);
+  }
+  .h-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.02rem;
+  }
+  .h-kg {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--moss);
+    font-weight: 600;
+  }
+  .harvest-foot {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 0.84rem;
+    color: var(--mute);
+    font-style: italic;
+  }
+  .harvest-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--sage);
+    border-radius: 999px;
+    margin-right: 4px;
+    vertical-align: middle;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  
+  /* ── No menu ── */
+  .no-menu {
+    background: var(--moss);
+    color: var(--bone);
+    padding: 96px 32px;
+    scroll-margin-top: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .no-menu::before {
+    content: "";
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 999px;
+    background: rgba(168, 90, 58, 0.15);
+    top: -200px;
+    right: -200px;
+    filter: blur(60px);
+  }
+  .no-menu-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .no-menu .kicker {
+    color: var(--honey);
+  }
+  .no-menu h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-top: 6px;
+  }
+  .no-menu h2 .em {
+    color: var(--honey);
+  }
+  .no-menu > .no-menu-inner > p {
+    margin-top: 24px;
+    font-size: 1.08rem;
+    color: rgba(241, 236, 225, 0.78);
+    max-width: 640px;
+  }
+  
+  .reveal {
+    margin-top: 40px;
+    background: rgba(241, 236, 225, 0.06);
+    border: 1px solid rgba(241, 236, 225, 0.12);
+    border-radius: 18px;
+    padding: 30px 32px 26px;
+  }
+  .reveal-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--honey);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .reveal-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .reveal-list li {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: baseline;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(241, 236, 225, 0.12);
+  }
+  .reveal-list li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .r-no {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--honey);
+  }
+  .r-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: var(--bone);
+  }
+  .r-mod {
+    grid-column: 2;
+    font-size: 0.86rem;
+    font-style: italic;
+    color: rgba(241, 236, 225, 0.65);
+    margin-top: 2px;
+  }
+  
+  /* ── Garden ── */
+  .garden {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 96px 32px;
+    scroll-margin-top: 80px;
+  }
+  .garden-inner {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .garden-text h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin-top: 4px;
+  }
+  .garden-text > p {
+    margin-top: 16px;
+    font-size: 1.02rem;
+    color: var(--ink-2);
+    max-width: 540px;
+  }
+  .garden-list {
+    list-style: none;
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+  }
+  .garden-list li {
+    font-size: 0.92rem;
+    color: var(--ink);
+    padding-left: 16px;
+    border-left: 2px solid var(--sage);
+  }
+  .garden-list li strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--moss);
+    font-size: 1.1rem;
+    margin-right: 4px;
+  }
+  .garden-art {
+    display: grid;
+    place-items: center;
+  }
+  .garden-svg {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+  }
+  @media (max-width: 880px) {
+    .garden-inner {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .garden-list {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* ── Visit ── */
+  .visit {
+    background: var(--bone-2);
+    padding: 80px 32px;
+  }
+  .visit-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .visit-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+  .hours-card,
+  .contact-card {
+    background: var(--paper);
+    border-radius: 18px;
+    padding: 32px 32px 26px;
+    border: 1px solid var(--rule);
+  }
+  .hours-card h3,
+  .contact-card h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.45rem;
+    letter-spacing: -0.01em;
+    margin-top: 4px;
+    margin-bottom: 14px;
+  }
+  .hours-card ul {
+    list-style: none;
+  }
+  .hours-card li {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    font-size: 0.94rem;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .hours-card li:last-child {
+    border-bottom: none;
+  }
+  .hours-card li span:last-child {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .hours-card li.closed {
+    color: var(--mute);
+  }
+  .contact-card address {
+    font-style: normal;
+    line-height: 1.8;
+    font-size: 0.96rem;
+    color: var(--ink-2);
+  }
+  .note {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--rule);
+    font-size: 0.84rem;
+    font-style: italic;
+    color: var(--mute);
+  }
+  
+  /* ── Reserve ── */
+  .reserve {
+    padding: 96px 32px;
+    scroll-margin-top: 80px;
+  }
+  .reserve-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .reserve h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    line-height: 1.05;
+    margin-top: 4px;
+  }
+  .reserve-sub {
+    margin-top: 16px;
+    color: var(--ink-2);
+    font-size: 0.98rem;
+    max-width: 480px;
+  }
+  .reserve-bullets {
+    list-style: none;
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--ink-2);
+    font-size: 0.92rem;
+  }
+  
+  .reserve-form {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 18px;
+    padding: 28px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .reserve-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--moss);
+    font-weight: 700;
+  }
+  .reserve-form input,
+  .reserve-form select {
+    background: var(--bone);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 0.94rem;
+    border-radius: 12px;
+    outline: none;
+  }
+  .reserve-form input:focus,
+  .reserve-form select:focus {
+    border-color: var(--moss);
+  }
+  .full {
+    width: 100%;
+  }
+  .check {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 10px !important;
+    font-size: 0.88rem !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    color: var(--ink) !important;
+    font-weight: 500 !important;
+  }
+  .check input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--moss);
+  }
+  .reserve-form .btn {
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .ok {
+    color: var(--sage-d);
+    font-weight: 600;
+    font-size: 0.94rem;
+  }
+  @media (max-width: 880px) {
+    .reserve-inner {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+  
+  /* ── Footer ── */
+  .footer {
+    background: var(--moss-d);
+    color: var(--bone);
+    text-align: center;
+    padding: 48px 28px;
+  }
+  .foot-brand {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.4rem;
+    letter-spacing: 0.02em;
+  }
+  .foot-meta {
+    color: rgba(241, 236, 225, 0.6);
+    font-size: 0.86rem;
+    margin-top: 4px;
+  }
+  .foot-meta:last-child {
+    font-style: italic;
+    color: var(--honey);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,500&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      />
+      <link rel="stylesheet" href="style.css" />
+      <title>Sage &amp; Stone — Farm to Table</title>
+    </head>
+    <body>
+      <header class="nav">
+        <a class="brand" href="#top">
+          <svg class="brand-leaf" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M12 2C7 8 5 14 12 22 19 14 17 8 12 2z" fill="currentColor" />
+          </svg>
+          <span class="brand-name">Sage &amp; Stone</span>
+        </a>
+        <nav class="nav-links">
+          <a href="#harvest">Harvest</a>
+          <a href="#no-menu">No menu</a>
+          <a href="#garden">The garden</a>
+          <a href="#reserve">Reserve</a>
+        </nav>
+        <a class="nav-cta" href="#reserve">Reserve · 4 seatings only</a>
+      </header>
+  
+      <main id="top">
+        <!-- Hero -->
+        <section class="hero">
+          <span class="blob blob-1" aria-hidden="true"></span>
+          <span class="blob blob-2" aria-hidden="true"></span>
+          <span class="blob blob-3" aria-hidden="true"></span>
+          <div class="hero-inner">
+            <p class="kicker">Hudson Valley · est. 2019</p>
+            <h1>
+              <span class="em">Slow,</span> seasonal,<br />
+              mostly <span class="em-2">vegetables.</span>
+            </h1>
+            <p class="sub">
+              A nineteen-seat farm-to-table dining room on a working
+              permaculture farm in Hudson Valley. We have no fixed menu — we
+              cook what the garden gives us, twice a week, four seatings only.
+            </p>
+            <div class="actions">
+              <a class="btn btn-moss" href="#reserve">Reserve a seat</a>
+              <a class="btn btn-clay" href="#harvest">Today's harvest</a>
+            </div>
+            <dl class="hero-stats">
+              <div><dt>Acreage</dt><dd>4.2</dd></div>
+              <div><dt>Vegetables</dt><dd>~ 90% of plate</dd></div>
+              <div><dt>From plate to soil</dt><dd>14 m</dd></div>
+            </dl>
+          </div>
+        </section>
+  
+        <!-- Harvest -->
+        <section class="harvest" id="harvest">
+          <header class="section-head">
+            <p class="kicker">This week's harvest</p>
+            <h2>What came in <em>this morning.</em></h2>
+          </header>
+          <div class="harvest-grid" id="harvestGrid"></div>
+          <p class="harvest-foot">
+            <span class="harvest-dot"></span>
+            Updated at <span id="updated">—</span> · pulled from the field notebook.
+          </p>
+        </section>
+  
+        <!-- No menu -->
+        <section class="no-menu" id="no-menu">
+          <div class="no-menu-inner">
+            <p class="kicker">No menu</p>
+            <h2>
+              We don't print a menu.<br />
+              <span class="em">Because we don't know yet.</span>
+            </h2>
+            <p>
+              The cook writes the night's progression on Monday morning, after
+              seeing what's ready in the field. You'll get six courses — sometimes
+              seven — built around three or four heroes from that week. There is
+              always something fermented, something raw, and something cooked over
+              embers.
+            </p>
+            <div class="reveal">
+              <p class="reveal-label">A recent night, late August:</p>
+              <ol class="reveal-list">
+                <li>
+                  <span class="r-no">i.</span>
+                  <span class="r-name">Tomato water · basil oil</span>
+                  <span class="r-mod">First-pick green zebras, salted three days.</span>
+                </li>
+                <li>
+                  <span class="r-no">ii.</span>
+                  <span class="r-name">Charred eggplant · whey · sumac</span>
+                  <span class="r-mod">From the ash of last night's hearth.</span>
+                </li>
+                <li>
+                  <span class="r-no">iii.</span>
+                  <span class="r-name">Beet leaves · brown butter · hazelnut</span>
+                  <span class="r-mod">The leaves you usually throw away.</span>
+                </li>
+                <li>
+                  <span class="r-no">iv.</span>
+                  <span class="r-name">Stone-fired flatbread · garden herbs</span>
+                  <span class="r-mod">Ten kinds of herb — pick them yourself at the table.</span>
+                </li>
+                <li>
+                  <span class="r-no">v.</span>
+                  <span class="r-name">Charred carrot · miso · sunflower</span>
+                  <span class="r-mod">Carrots harvested at 5:30 this morning.</span>
+                </li>
+                <li>
+                  <span class="r-no">vi.</span>
+                  <span class="r-name">Cucumber granita · honey</span>
+                  <span class="r-mod">From our hive at the field edge.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section>
+  
+        <!-- The garden -->
+        <section class="garden" id="garden">
+          <div class="garden-inner">
+            <div class="garden-text">
+              <p class="kicker">The garden</p>
+              <h2>Four acres, fourteen metres.</h2>
+              <p>
+                The kitchen looks straight onto the field. Whatever's on your
+                plate was, on average, growing fourteen metres from where
+                you're sitting four hours ago.
+              </p>
+              <p>
+                We grow on no-till beds with a heavy cover-crop rotation. No
+                petroleum-based inputs, no plastic mulch, no synthetic
+                fertilizer. We compost everything — including the bones from
+                the rare meat course — and the result goes back into the
+                field within ninety days.
+              </p>
+              <ul class="garden-list">
+                <li><strong>92</strong> varieties of vegetable, year-round</li>
+                <li><strong>14</strong> orchard trees · apples, plums, quince</li>
+                <li><strong>3</strong> beehives at the field edge</li>
+                <li><strong>1</strong> wood-fired hearth, indoor &amp; outdoor</li>
+              </ul>
+            </div>
+            <div class="garden-art" aria-hidden="true">
+              <svg viewBox="0 0 320 320" class="garden-svg">
+                <defs>
+                  <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#e9c469" />
+                    <stop offset="100%" stop-color="#c9a04c" />
+                  </radialGradient>
+                </defs>
+                <circle cx="160" cy="160" r="120" fill="url(#sun)" opacity="0.4" />
+                <circle cx="160" cy="160" r="86" fill="#7b8a6a" opacity="0.55" />
+                <circle cx="160" cy="160" r="60" fill="#3d4a32" opacity="0.78" />
+                <circle cx="160" cy="160" r="28" fill="#a85a3a" />
+                <text
+                  x="160" y="166"
+                  fill="#f1ece1"
+                  font-family="Fraunces, serif"
+                  font-style="italic"
+                  text-anchor="middle"
+                  font-size="18"
+                >
+                  here
+                </text>
+              </svg>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Hours + visit -->
+        <section class="visit">
+          <div class="visit-inner">
+            <article class="hours-card">
+              <p class="kicker">Hours</p>
+              <h3>Four seatings, twice a week.</h3>
+              <ul>
+                <li><span>Thursday</span><span>17:30 · 20:30</span></li>
+                <li><span>Friday</span><span>17:30 · 20:30</span></li>
+                <li class="closed"><span>Sat – Wed</span><span>Closed · we're in the field</span></li>
+              </ul>
+            </article>
+            <article class="contact-card">
+              <p class="kicker">The drive</p>
+              <h3>2 h 10 min from NYC.</h3>
+              <address>
+                221 Old Mill Road<br />
+                Hudson, NY 12534<br />
+                hello@sageandstone.farm<br />
+                +1 518 555 0192
+              </address>
+              <p class="note">
+                We're a working farm — wear shoes that don't mind dirt. There's
+                a small barn for late check-ins; we'll leave a lamp on.
+              </p>
+            </article>
+          </div>
+        </section>
+  
+        <!-- Reserve -->
+        <section class="reserve" id="reserve">
+          <div class="reserve-inner">
+            <div>
+              <p class="kicker">Reserve a seat</p>
+              <h2>$120 a seat. No upsells.</h2>
+              <p class="reserve-sub">
+                Cards held but not charged until the morning of service.
+                48-hour cancellation. We'll send a packing list two days before
+                with directions, dress code, and what the weather looks like
+                for the field.
+              </p>
+              <ul class="reserve-bullets">
+                <li>· Six to seven courses</li>
+                <li>· Vegetables-led · one meat course</li>
+                <li>· Beverage pairing is wine, cider, or shrub</li>
+                <li>· The room sleeps four — ask about staying</li>
+              </ul>
+            </div>
+            <form class="reserve-form" id="form">
+              <div class="form-row">
+                <label>
+                  <span>Seats</span>
+                  <select name="g">
+                    <option>2</option>
+                    <option>3</option>
+                    <option selected>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Date</span>
+                  <input type="date" name="d" />
+                </label>
+                <label>
+                  <span>Seating</span>
+                  <select name="t">
+                    <option>17:30</option>
+                    <option selected>20:30</option>
+                  </select>
+                </label>
+              </div>
+              <label class="full">
+                <span>Email · we'll send the packing list</span>
+                <input type="email" name="e" placeholder="you@example.com" />
+              </label>
+              <label class="check">
+                <input type="checkbox" name="pair" checked />
+                <span>Add beverage pairing (+$48)</span>
+              </label>
+              <button class="btn btn-moss" type="submit">Hold seats</button>
+              <p class="ok" id="ok" hidden>✓ We've got it. Packing list in your inbox shortly.</p>
+            </form>
+          </div>
+        </section>
+      </main>
+  
+      <footer class="footer">
+        <p class="foot-brand">Sage &amp; Stone</p>
+        <p class="foot-meta">221 Old Mill Road · Hudson, NY · 12534</p>
+        <p class="foot-meta">Open Thursday &amp; Friday only.</p>
+      </footer>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  const HARVEST = [
+    { icon: "🍅", name: "Heirloom tomato", kg: "14.2 kg" },
+    { icon: "🥬", name: "Lacinato kale", kg: "8.6 kg" },
+    { icon: "🌿", name: "Garden basil", kg: "2.1 kg" },
+    { icon: "🥕", name: "Purple carrot", kg: "11.8 kg" },
+    { icon: "🌽", name: "Sweetcorn", kg: "26 ears" },
+    { icon: "🌶️", name: "Padrón pepper", kg: "3.4 kg" },
+    { icon: "🧄", name: "Hardneck garlic", kg: "1.9 kg" },
+    { icon: "🥒", name: "Cucumber", kg: "9.0 kg" },
+    { icon: "🌻", name: "Sunflower seed", kg: "0.8 kg" },
+    { icon: "🍯", name: "Wild honey", kg: "1.2 kg" },
+  ];
+  
+  const grid = document.getElementById("harvestGrid");
+  grid.innerHTML = HARVEST.map(
+    (h) => `
+    <article class="h-item">
+      <span class="h-icon">${h.icon}</span>
+      <div>
+        <p class="h-name">${h.name}</p>
+        <p class="h-kg">${h.kg}</p>
+      </div>
+    </article>`
+  ).join("");
+  
+  function nowStr() {
+    const d = new Date();
+    d.setHours(d.getHours() - 1); // "an hour ago, by the field"
+    d.setMinutes(34);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} this morning`;
+  }
+  document.getElementById("updated").textContent = nowStr();
+  
+  // Default date to next Thursday
+  const di = document.querySelector('input[name="d"]');
+  if (di) {
+    const t = new Date();
+    const day = t.getDay();
+    const delta = (4 - day + 7) % 7 || 7;
+    t.setDate(t.getDate() + delta);
+    di.value = t.toISOString().slice(0, 10);
+  }
+  
+  const form = document.getElementById("form");
+  const ok = document.getElementById("ok");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    ok.hidden = false;
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    setTimeout(() => {
+      ok.hidden = true;
+      btn.disabled = false;
+    }, 3000);
+  });
+  
+  </script>
+explanation: "The declaration `--bone: #f1ece1;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

@@ -1,0 +1,1288 @@
+---
+slug: "lg-08-split-screen-reveal-delete-closing-tag-5f27cca3"
+topic: "imported-libs-gen"
+title: "Fix the broken HTML structure in Split Screen Reveal"
+type: "fix"
+difficulty: 2
+resourceSlug: "lg-08-split-screen-reveal"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --bg: #040913;
+    --bg-soft: #091a35;
+    --text: #edf4ff;
+    --muted: #b5c8e8;
+    --line: rgba(178, 203, 244, 0.24);
+    --accent-cyan: #86e7ff;
+    --accent-blue: #4f7fff;
+    --accent-gold: #ffbe78;
+    --split-progress: 0;
+    --split-reveal: 8%;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+  }
+  
+  body {
+    font-family: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+    color: var(--text);
+    background: radial-gradient(circle at 9% 8%, rgba(134, 231, 255, 0.11), transparent 34%),
+      radial-gradient(circle at 88% 86%, rgba(255, 190, 120, 0.1), transparent 38%),
+      linear-gradient(180deg, #061025 0%, var(--bg) 64%);
+    overflow-x: clip;
+  }
+  
+  .back {
+    position: fixed;
+    left: 14px;
+    top: 12px;
+    z-index: 35;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    padding: 0.38rem 0.7rem;
+    color: #dff0ff;
+    background: rgba(7, 14, 28, 0.72);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+  }
+  
+  .scroll-track {
+    min-height: 280vh;
+  }
+  
+  .sticky-shell {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+  }
+  
+  .panel {
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  .left-panel {
+    padding: clamp(4.2rem, 8vw, 5.6rem) clamp(1.1rem, 4vw, 3.2rem) clamp(2rem, 4vw, 3rem);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(120deg, rgba(10, 28, 57, 0.9), rgba(6, 16, 33, 0.9)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 58%);
+    display: grid;
+    align-content: start;
+    gap: 1.15rem;
+  }
+  
+  .eyebrow {
+    margin: 0;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c5ddfc;
+    font-size: 0.72rem;
+  }
+  
+  .left-panel h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5.6vw, 3.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  
+  .lead {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--muted);
+    line-height: 1.62;
+  }
+  
+  .progress-wrap {
+    margin-top: 0.2rem;
+    display: grid;
+    gap: 0.52rem;
+  }
+  
+  .progress-bar {
+    width: min(480px, 100%);
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.11);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    display: block;
+    height: 100%;
+    width: var(--split-reveal);
+    min-width: 8%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue), var(--accent-gold));
+    box-shadow: 0 0 16px rgba(134, 231, 255, 0.55);
+    transition: width 140ms linear;
+  }
+  
+  .progress-label {
+    margin: 0;
+    color: #d0e2fb;
+    font-size: 0.88rem;
+  }
+  
+  #progressLabel {
+    font-weight: 700;
+    color: #f7fbff;
+  }
+  
+  .story-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0.2rem 0 0;
+    display: grid;
+    gap: 0.62rem;
+  }
+  
+  .story-step {
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(12, 26, 50, 0.56);
+    padding: 0.75rem 0.8rem;
+    opacity: 0.62;
+    transform: translateX(0);
+    transition: opacity 260ms ease, border-color 260ms ease, transform 260ms ease, background 260ms
+      ease;
+  }
+  
+  .story-step.active {
+    opacity: 1;
+    border-color: rgba(134, 231, 255, 0.46);
+    background: rgba(16, 33, 63, 0.86);
+    transform: translateX(4px);
+  }
+  
+  .story-step h2 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  
+  .story-step p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    line-height: 1.45;
+    font-size: 0.83rem;
+  }
+  
+  .right-panel {
+    background: linear-gradient(165deg, #101f3f, #0a1730 62%, #081426);
+    overflow: hidden;
+  }
+  
+  .right-mask {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--split-reveal)) 0 0);
+    transition: clip-path 130ms linear;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .right-atmosphere {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  
+  .blob {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(30px);
+    opacity: 0.42;
+  }
+  
+  .blob-a {
+    width: 240px;
+    height: 240px;
+    top: 10%;
+    left: 14%;
+    background: rgba(134, 231, 255, 0.44);
+  }
+  
+  .blob-b {
+    width: 300px;
+    height: 300px;
+    top: 45%;
+    left: 46%;
+    background: rgba(79, 127, 255, 0.34);
+  }
+  
+  .blob-c {
+    width: 220px;
+    height: 220px;
+    top: 62%;
+    left: 10%;
+    background: rgba(255, 190, 120, 0.28);
+  }
+  
+  .blob-d {
+    width: 170px;
+    height: 170px;
+    top: 24%;
+    left: 68%;
+    background: rgba(190, 150, 255, 0.26);
+  }
+  
+  .right-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    padding: clamp(4.1rem, 7vw, 5.2rem) clamp(1rem, 4vw, 2.4rem) 2.2rem;
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+    opacity: calc(0.5 + (var(--split-progress) * 0.5));
+    transform: translate3d(
+      calc((1 - var(--split-progress)) * 30px),
+      calc((1 - var(--split-progress)) * 10px),
+      0
+    );
+    transition: transform 220ms linear, opacity 220ms linear;
+  }
+  
+  .board-head {
+    display: grid;
+    gap: 0.48rem;
+  }
+  
+  .board-kicker {
+    margin: 0;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: #cbe4ff;
+  }
+  
+  .board-head h2 {
+    margin: 0;
+    font-size: clamp(1.35rem, 3vw, 2.2rem);
+  }
+  
+  .board-head p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.62rem;
+  }
+  
+  .tile {
+    border-radius: 15px;
+    border: 1px solid var(--line);
+    background: rgba(8, 17, 34, 0.62);
+    padding: 0.72rem;
+    display: grid;
+    gap: 0.44rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transform: translateY(calc((1 - var(--split-progress)) * 12px));
+    transition: transform 220ms linear, border-color 220ms linear;
+  }
+  
+  .tile:hover {
+    border-color: rgba(134, 231, 255, 0.48);
+  }
+  
+  .tile-large {
+    grid-column: 1 / -1;
+  }
+  
+  .tile-label {
+    margin: 0;
+    color: #9fd5ff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.67rem;
+  }
+  
+  .tile h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  .tile p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.48;
+  }
+  
+  .reveal-line {
+    position: absolute;
+    top: 0;
+    left: calc(var(--split-reveal) * 1);
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(134, 231, 255, 0),
+      rgba(134, 231, 255, 0.85),
+      rgba(134, 231, 255, 0)
+    );
+    box-shadow: 0 0 18px rgba(134, 231, 255, 0.66);
+    pointer-events: none;
+  }
+  
+  .reveal-line::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #d2f6ff;
+    box-shadow: 0 0 18px rgba(134, 231, 255, 0.9);
+  }
+  
+  html.global-reduce-motion .progress-fill,
+  html.global-reduce-motion .right-mask,
+  html.global-reduce-motion .story-step,
+  html.global-reduce-motion .right-content,
+  html.global-reduce-motion .tile {
+    transition: none !important;
+  }
+  
+  @media (max-width: 1000px) {
+    .sticky-shell {
+      grid-template-columns: 1fr;
+      position: relative;
+      height: auto;
+    }
+  
+    .scroll-track {
+      min-height: 100%;
+    }
+  
+    .panel {
+      min-height: auto;
+    }
+  
+    .left-panel {
+      border-right: 0;
+      min-height: 68vh;
+      padding-top: 4.8rem;
+    }
+  
+    .right-panel {
+      min-height: 74vh;
+    }
+  
+    .right-mask {
+      clip-path: none;
+      border-left: 0;
+    }
+  
+    .reveal-line {
+      display: none;
+    }
+  
+    .right-content,
+    .tile {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .board-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .tile-large {
+      grid-column: auto;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 08 - Split Screen Reveal
+      <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+      <a class="back" href="../">Back to Demos</a>
+  
+      <main class="scroll-track" id="track">
+        <section class="sticky-shell" aria-label="Split screen reveal stage">
+          <article class="panel left-panel">
+            <p class="eyebrow">Demo 08 · Scroll + Clip Path</p>
+            <h1>Split Screen Reveal</h1>
+            <p class="lead">
+              Scroll through the timeline to expose the concept panel on the right. This version is designed as a
+              presentation-ready layout, not just a raw clip-path test.
+            </p>
+  
+            <div class="progress-wrap" aria-label="Reveal progress">
+              <div
+                class="progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="8"
+                aria-valuetext="Reveal progress 8 percent"
+                id="progressBar"
+              >
+                <span class="progress-fill" id="progressFill"></span>
+              </div>
+              <p class="progress-label"><span id="progressLabel">8%</span> exposed</p>
+            </div>
+  
+            <ol class="story-steps">
+              <li class="story-step active" data-step="0">
+                <h2>Stage 1 · Framing</h2>
+                <p>Introduce context with a stable reading zone while the visual side stays partially hidden.</p>
+              </li>
+              <li class="story-step" data-step="1">
+                <h2>Stage 2 · Reveal</h2>
+                <p>Mid-scroll opens the composition grid and spotlight cards to build momentum.</p>
+              </li>
+              <li class="story-step" data-step="2">
+                <h2>Stage 3 · Full Composition</h2>
+                <p>End state exposes the full board and callout stack for final messaging.</p>
+              </li>
+            </ol>
+          </article>
+  
+          <article class="panel right-panel">
+            <div class="right-mask" id="rightMask">
+              <div class="right-atmosphere" aria-hidden="true">
+                <span class="blob blob-a"></span>
+                <span class="blob blob-b"></span>
+                <span class="blob blob-c"></span>
+                <span class="blob blob-d"></span>
+              </div>
+  
+              <div class="right-content">
+                <header class="board-head">
+                  <p class="board-kicker">Concept Board</p>
+                  <h2>Original Concepts Only</h2>
+                  <p>Modular sections, motion-safe defaults, and clear hierarchy for showcase presentations.</p>
+                </header>
+  
+                <section class="board-grid" aria-label="Concept modules">
+                  <article class="tile tile-large">
+                    <p class="tile-label">Hero Module</p>
+                    <h3>Cinematic Intro Block</h3>
+                    <p>Headline rhythm, ambient backdrop, and CTA choreography tuned for fast comprehension.</p>
+                  </article>
+                  <article class="tile">
+                    <p class="tile-label">Feature A</p>
+                    <h3>Split Narrative</h3>
+                    <p>Copy and visuals remain legible while reveal transitions continue.</p>
+                  </article>
+                  <article class="tile">
+                    <p class="tile-label">Feature B</p>
+                    <h3>Motion Safe</h3>
+                    <p>Reduced-motion users receive static composition without losing content.</p>
+                  </article>
+                  <article class="tile">
+                    <p class="tile-label">Feature C</p>
+                    <h3>Presentation Mode</h3>
+                    <p>Large contrast-safe blocks and compact card metadata for live demos.</p>
+                  </article>
+                </section>
+              </div>
+            </div>
+            <span class="reveal-line" id="revealLine" aria-hidden="true"></span>
+          </article>
+        </section>
+      </main>
+  
+      <script src="script.js"></script>
+      </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  const root = document.documentElement;
+  const track = document.getElementById("track");
+  const progressBar = document.getElementById("progressBar");
+  const progressLabel = document.getElementById("progressLabel");
+  const storySteps = Array.from(document.querySelectorAll(".story-step"));
+  const mobileQuery = window.matchMedia("(max-width: 1000px)");
+  
+  const state = {
+    reduced: Boolean(window.MotionPreference && window.MotionPreference.prefersReducedMotion()),
+    mobile: mobileQuery.matches,
+    raf: 0,
+  };
+  
+  const thresholds = [0, 0.36, 0.72];
+  
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+  
+  function getScrollProgress() {
+    const rect = track.getBoundingClientRect();
+    const distance = rect.height - window.innerHeight;
+    if (distance <= 0) return 1;
+    return clamp(-rect.top / distance, 0, 1);
+  }
+  
+  function applyStepState(progress) {
+    let activeIndex = 0;
+    if (progress >= thresholds[2]) {
+      activeIndex = 2;
+    } else if (progress >= thresholds[1]) {
+      activeIndex = 1;
+    }
+  
+    storySteps.forEach((step, index) => {
+      step.classList.toggle("active", index <= activeIndex);
+    });
+  }
+  
+  function render() {
+    state.raf = 0;
+    const progress = state.reduced || state.mobile ? 1 : getScrollProgress();
+    const reveal = 8 + progress * 92;
+    const revealText = `${Math.round(reveal)}%`;
+  
+    root.style.setProperty("--split-progress", progress.toFixed(4));
+    root.style.setProperty("--split-reveal", `${reveal.toFixed(2)}%`);
+  
+    progressLabel.textContent = revealText;
+    progressBar.setAttribute("aria-valuenow", String(Math.round(reveal)));
+    progressBar.setAttribute("aria-valuetext", `Reveal progress ${Math.round(reveal)} percent`);
+  
+    applyStepState(progress);
+  }
+  
+  function scheduleRender() {
+    if (state.raf) return;
+    state.raf = window.requestAnimationFrame(render);
+  }
+  
+  if (mobileQuery.addEventListener) {
+    mobileQuery.addEventListener("change", (event) => {
+      state.mobile = event.matches;
+      scheduleRender();
+    });
+  } else if (mobileQuery.addListener) {
+    mobileQuery.addListener((event) => {
+      state.mobile = event.matches;
+      scheduleRender();
+    });
+  }
+  
+  if (window.MotionPreference && window.MotionPreference.onChange) {
+    window.MotionPreference.onChange((next) => {
+      state.reduced = Boolean(next.reduced);
+      scheduleRender();
+    });
+  }
+  
+  window.addEventListener("scroll", scheduleRender, { passive: true });
+  window.addEventListener("resize", scheduleRender);
+  scheduleRender();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --bg: #040913;
+    --bg-soft: #091a35;
+    --text: #edf4ff;
+    --muted: #b5c8e8;
+    --line: rgba(178, 203, 244, 0.24);
+    --accent-cyan: #86e7ff;
+    --accent-blue: #4f7fff;
+    --accent-gold: #ffbe78;
+    --split-progress: 0;
+    --split-reveal: 8%;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+  }
+  
+  body {
+    font-family: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+    color: var(--text);
+    background: radial-gradient(circle at 9% 8%, rgba(134, 231, 255, 0.11), transparent 34%),
+      radial-gradient(circle at 88% 86%, rgba(255, 190, 120, 0.1), transparent 38%),
+      linear-gradient(180deg, #061025 0%, var(--bg) 64%);
+    overflow-x: clip;
+  }
+  
+  .back {
+    position: fixed;
+    left: 14px;
+    top: 12px;
+    z-index: 35;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    padding: 0.38rem 0.7rem;
+    color: #dff0ff;
+    background: rgba(7, 14, 28, 0.72);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+  }
+  
+  .scroll-track {
+    min-height: 280vh;
+  }
+  
+  .sticky-shell {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+  }
+  
+  .panel {
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  .left-panel {
+    padding: clamp(4.2rem, 8vw, 5.6rem) clamp(1.1rem, 4vw, 3.2rem) clamp(2rem, 4vw, 3rem);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(120deg, rgba(10, 28, 57, 0.9), rgba(6, 16, 33, 0.9)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 58%);
+    display: grid;
+    align-content: start;
+    gap: 1.15rem;
+  }
+  
+  .eyebrow {
+    margin: 0;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c5ddfc;
+    font-size: 0.72rem;
+  }
+  
+  .left-panel h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5.6vw, 3.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  
+  .lead {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--muted);
+    line-height: 1.62;
+  }
+  
+  .progress-wrap {
+    margin-top: 0.2rem;
+    display: grid;
+    gap: 0.52rem;
+  }
+  
+  .progress-bar {
+    width: min(480px, 100%);
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.11);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    display: block;
+    height: 100%;
+    width: var(--split-reveal);
+    min-width: 8%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue), var(--accent-gold));
+    box-shadow: 0 0 16px rgba(134, 231, 255, 0.55);
+    transition: width 140ms linear;
+  }
+  
+  .progress-label {
+    margin: 0;
+    color: #d0e2fb;
+    font-size: 0.88rem;
+  }
+  
+  #progressLabel {
+    font-weight: 700;
+    color: #f7fbff;
+  }
+  
+  .story-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0.2rem 0 0;
+    display: grid;
+    gap: 0.62rem;
+  }
+  
+  .story-step {
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(12, 26, 50, 0.56);
+    padding: 0.75rem 0.8rem;
+    opacity: 0.62;
+    transform: translateX(0);
+    transition: opacity 260ms ease, border-color 260ms ease, transform 260ms ease, background 260ms
+      ease;
+  }
+  
+  .story-step.active {
+    opacity: 1;
+    border-color: rgba(134, 231, 255, 0.46);
+    background: rgba(16, 33, 63, 0.86);
+    transform: translateX(4px);
+  }
+  
+  .story-step h2 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  
+  .story-step p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    line-height: 1.45;
+    font-size: 0.83rem;
+  }
+  
+  .right-panel {
+    background: linear-gradient(165deg, #101f3f, #0a1730 62%, #081426);
+    overflow: hidden;
+  }
+  
+  .right-mask {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--split-reveal)) 0 0);
+    transition: clip-path 130ms linear;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .right-atmosphere {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  
+  .blob {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(30px);
+    opacity: 0.42;
+  }
+  
+  .blob-a {
+    width: 240px;
+    height: 240px;
+    top: 10%;
+    left: 14%;
+    background: rgba(134, 231, 255, 0.44);
+  }
+  
+  .blob-b {
+    width: 300px;
+    height: 300px;
+    top: 45%;
+    left: 46%;
+    background: rgba(79, 127, 255, 0.34);
+  }
+  
+  .blob-c {
+    width: 220px;
+    height: 220px;
+    top: 62%;
+    left: 10%;
+    background: rgba(255, 190, 120, 0.28);
+  }
+  
+  .blob-d {
+    width: 170px;
+    height: 170px;
+    top: 24%;
+    left: 68%;
+    background: rgba(190, 150, 255, 0.26);
+  }
+  
+  .right-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    padding: clamp(4.1rem, 7vw, 5.2rem) clamp(1rem, 4vw, 2.4rem) 2.2rem;
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+    opacity: calc(0.5 + (var(--split-progress) * 0.5));
+    transform: translate3d(
+      calc((1 - var(--split-progress)) * 30px),
+      calc((1 - var(--split-progress)) * 10px),
+      0
+    );
+    transition: transform 220ms linear, opacity 220ms linear;
+  }
+  
+  .board-head {
+    display: grid;
+    gap: 0.48rem;
+  }
+  
+  .board-kicker {
+    margin: 0;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: #cbe4ff;
+  }
+  
+  .board-head h2 {
+    margin: 0;
+    font-size: clamp(1.35rem, 3vw, 2.2rem);
+  }
+  
+  .board-head p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.62rem;
+  }
+  
+  .tile {
+    border-radius: 15px;
+    border: 1px solid var(--line);
+    background: rgba(8, 17, 34, 0.62);
+    padding: 0.72rem;
+    display: grid;
+    gap: 0.44rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transform: translateY(calc((1 - var(--split-progress)) * 12px));
+    transition: transform 220ms linear, border-color 220ms linear;
+  }
+  
+  .tile:hover {
+    border-color: rgba(134, 231, 255, 0.48);
+  }
+  
+  .tile-large {
+    grid-column: 1 / -1;
+  }
+  
+  .tile-label {
+    margin: 0;
+    color: #9fd5ff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.67rem;
+  }
+  
+  .tile h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  .tile p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.48;
+  }
+  
+  .reveal-line {
+    position: absolute;
+    top: 0;
+    left: calc(var(--split-reveal) * 1);
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(134, 231, 255, 0),
+      rgba(134, 231, 255, 0.85),
+      rgba(134, 231, 255, 0)
+    );
+    box-shadow: 0 0 18px rgba(134, 231, 255, 0.66);
+    pointer-events: none;
+  }
+  
+  .reveal-line::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #d2f6ff;
+    box-shadow: 0 0 18px rgba(134, 231, 255, 0.9);
+  }
+  
+  html.global-reduce-motion .progress-fill,
+  html.global-reduce-motion .right-mask,
+  html.global-reduce-motion .story-step,
+  html.global-reduce-motion .right-content,
+  html.global-reduce-motion .tile {
+    transition: none !important;
+  }
+  
+  @media (max-width: 1000px) {
+    .sticky-shell {
+      grid-template-columns: 1fr;
+      position: relative;
+      height: auto;
+    }
+  
+    .scroll-track {
+      min-height: 100%;
+    }
+  
+    .panel {
+      min-height: auto;
+    }
+  
+    .left-panel {
+      border-right: 0;
+      min-height: 68vh;
+      padding-top: 4.8rem;
+    }
+  
+    .right-panel {
+      min-height: 74vh;
+    }
+  
+    .right-mask {
+      clip-path: none;
+      border-left: 0;
+    }
+  
+    .reveal-line {
+      display: none;
+    }
+  
+    .right-content,
+    .tile {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .board-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .tile-large {
+      grid-column: auto;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 08 - Split Screen Reveal</title>
+      <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+      <a class="back" href="../">Back to Demos</a>
+  
+      <main class="scroll-track" id="track">
+        <section class="sticky-shell" aria-label="Split screen reveal stage">
+          <article class="panel left-panel">
+            <p class="eyebrow">Demo 08 · Scroll + Clip Path</p>
+            <h1>Split Screen Reveal</h1>
+            <p class="lead">
+              Scroll through the timeline to expose the concept panel on the right. This version is designed as a
+              presentation-ready layout, not just a raw clip-path test.
+            </p>
+  
+            <div class="progress-wrap" aria-label="Reveal progress">
+              <div
+                class="progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="8"
+                aria-valuetext="Reveal progress 8 percent"
+                id="progressBar"
+              >
+                <span class="progress-fill" id="progressFill"></span>
+              </div>
+              <p class="progress-label"><span id="progressLabel">8%</span> exposed</p>
+            </div>
+  
+            <ol class="story-steps">
+              <li class="story-step active" data-step="0">
+                <h2>Stage 1 · Framing</h2>
+                <p>Introduce context with a stable reading zone while the visual side stays partially hidden.</p>
+              </li>
+              <li class="story-step" data-step="1">
+                <h2>Stage 2 · Reveal</h2>
+                <p>Mid-scroll opens the composition grid and spotlight cards to build momentum.</p>
+              </li>
+              <li class="story-step" data-step="2">
+                <h2>Stage 3 · Full Composition</h2>
+                <p>End state exposes the full board and callout stack for final messaging.</p>
+              </li>
+            </ol>
+          </article>
+  
+          <article class="panel right-panel">
+            <div class="right-mask" id="rightMask">
+              <div class="right-atmosphere" aria-hidden="true">
+                <span class="blob blob-a"></span>
+                <span class="blob blob-b"></span>
+                <span class="blob blob-c"></span>
+                <span class="blob blob-d"></span>
+              </div>
+  
+              <div class="right-content">
+                <header class="board-head">
+                  <p class="board-kicker">Concept Board</p>
+                  <h2>Original Concepts Only</h2>
+                  <p>Modular sections, motion-safe defaults, and clear hierarchy for showcase presentations.</p>
+                </header>
+  
+                <section class="board-grid" aria-label="Concept modules">
+                  <article class="tile tile-large">
+                    <p class="tile-label">Hero Module</p>
+                    <h3>Cinematic Intro Block</h3>
+                    <p>Headline rhythm, ambient backdrop, and CTA choreography tuned for fast comprehension.</p>
+                  </article>
+                  <article class="tile">
+                    <p class="tile-label">Feature A</p>
+                    <h3>Split Narrative</h3>
+                    <p>Copy and visuals remain legible while reveal transitions continue.</p>
+                  </article>
+                  <article class="tile">
+                    <p class="tile-label">Feature B</p>
+                    <h3>Motion Safe</h3>
+                    <p>Reduced-motion users receive static composition without losing content.</p>
+                  </article>
+                  <article class="tile">
+                    <p class="tile-label">Feature C</p>
+                    <h3>Presentation Mode</h3>
+                    <p>Large contrast-safe blocks and compact card metadata for live demos.</p>
+                  </article>
+                </section>
+              </div>
+            </div>
+            <span class="reveal-line" id="revealLine" aria-hidden="true"></span>
+          </article>
+        </section>
+      </main>
+  
+      <script src="script.js"></script>
+      </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  const root = document.documentElement;
+  const track = document.getElementById("track");
+  const progressBar = document.getElementById("progressBar");
+  const progressLabel = document.getElementById("progressLabel");
+  const storySteps = Array.from(document.querySelectorAll(".story-step"));
+  const mobileQuery = window.matchMedia("(max-width: 1000px)");
+  
+  const state = {
+    reduced: Boolean(window.MotionPreference && window.MotionPreference.prefersReducedMotion()),
+    mobile: mobileQuery.matches,
+    raf: 0,
+  };
+  
+  const thresholds = [0, 0.36, 0.72];
+  
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+  
+  function getScrollProgress() {
+    const rect = track.getBoundingClientRect();
+    const distance = rect.height - window.innerHeight;
+    if (distance <= 0) return 1;
+    return clamp(-rect.top / distance, 0, 1);
+  }
+  
+  function applyStepState(progress) {
+    let activeIndex = 0;
+    if (progress >= thresholds[2]) {
+      activeIndex = 2;
+    } else if (progress >= thresholds[1]) {
+      activeIndex = 1;
+    }
+  
+    storySteps.forEach((step, index) => {
+      step.classList.toggle("active", index <= activeIndex);
+    });
+  }
+  
+  function render() {
+    state.raf = 0;
+    const progress = state.reduced || state.mobile ? 1 : getScrollProgress();
+    const reveal = 8 + progress * 92;
+    const revealText = `${Math.round(reveal)}%`;
+  
+    root.style.setProperty("--split-progress", progress.toFixed(4));
+    root.style.setProperty("--split-reveal", `${reveal.toFixed(2)}%`);
+  
+    progressLabel.textContent = revealText;
+    progressBar.setAttribute("aria-valuenow", String(Math.round(reveal)));
+    progressBar.setAttribute("aria-valuetext", `Reveal progress ${Math.round(reveal)} percent`);
+  
+    applyStepState(progress);
+  }
+  
+  function scheduleRender() {
+    if (state.raf) return;
+    state.raf = window.requestAnimationFrame(render);
+  }
+  
+  if (mobileQuery.addEventListener) {
+    mobileQuery.addEventListener("change", (event) => {
+      state.mobile = event.matches;
+      scheduleRender();
+    });
+  } else if (mobileQuery.addListener) {
+    mobileQuery.addListener((event) => {
+      state.mobile = event.matches;
+      scheduleRender();
+    });
+  }
+  
+  if (window.MotionPreference && window.MotionPreference.onChange) {
+    window.MotionPreference.onChange((next) => {
+      state.reduced = Boolean(next.reduced);
+      scheduleRender();
+    });
+  }
+  
+  window.addEventListener("scroll", scheduleRender, { passive: true });
+  window.addEventListener("resize", scheduleRender);
+  scheduleRender();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

@@ -1,0 +1,1661 @@
+---
+slug: "rest-reservation-form-remove-css-property-8098ee63"
+topic: "restaurant"
+title: "Restore missing CSS property in Reservation Booking Form"
+type: "fix"
+difficulty: 1
+resourceSlug: "rest-reservation-form"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --cream-2: #ece4d4;
+    --bone: #faf7f1;
+    --terracotta: #c1714a;
+    --terracotta-d: #a05a38;
+    --forest: #2d4a3e;
+    --forest-d: #1e3329;
+    --gold: #c9a84c;
+    --gold-light: #e6c97a;
+    --ink: #2c1a0e;
+    --ink-2: #4a3828;
+    --warm-gray: #7a6a58;
+    --success: #4f7a3a;
+    --danger: #b3432a;
+    --warning: #d99020;
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --shadow-1: 0 1px 2px rgba(44, 26, 14, 0.08), 0 2px 6px rgba(44, 26, 14, 0.06);
+    --shadow-2: 0 8px 24px rgba(44, 26, 14, 0.12);
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(180deg, var(--cream-2) 0%, var(--cream) 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 36px 16px 56px;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--bone);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-2);
+    padding: 32px 30px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* ── Head ── */
+  .card-head {
+    text-align: center;
+  }
+  .kicker {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--terracotta);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .card-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 4vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  .sub {
+    margin-top: 4px;
+    font-size: 0.86rem;
+    color: var(--warm-gray);
+    font-style: italic;
+  }
+  
+  /* ── Form base ── */
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .field-label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-2);
+    font-weight: 700;
+  }
+  .optional {
+    font-weight: 500;
+    color: var(--warm-gray);
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.7rem;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  input,
+  textarea {
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    background: var(--cream);
+    border-radius: var(--r-md);
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+    resize: vertical;
+  }
+  input:focus,
+  textarea:focus {
+    border-color: var(--terracotta);
+  }
+  input:invalid:not(:placeholder-shown) {
+    border-color: var(--danger);
+  }
+  
+  /* ── Party size ── */
+  .party {
+    display: flex;
+    align-items: center;
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .party-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: var(--bone);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    transition: background 0.15s;
+  }
+  .party-btn:hover {
+    background: var(--cream-2);
+    color: var(--terracotta-d);
+  }
+  .party-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .party-display {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+  }
+  .party-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--ink);
+  }
+  .party-word {
+    font-size: 0.85rem;
+    color: var(--warm-gray);
+  }
+  .party-hint {
+    font-size: 0.8rem;
+    color: var(--warning);
+    background: rgba(217, 144, 32, 0.12);
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    border-left: 3px solid var(--warning);
+    margin-top: 4px;
+  }
+  
+  /* ── Dates scroller ── */
+  .dates {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 2px 8px;
+    scrollbar-width: thin;
+  }
+  .date {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: var(--r-md);
+    padding: 8px 10px;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 60px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .date:hover {
+    border-color: var(--terracotta);
+  }
+  .date-dow {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--warm-gray);
+  }
+  .date-day {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .date-month {
+    font-size: 0.66rem;
+    color: var(--warm-gray);
+  }
+  .date.is-active {
+    background: var(--forest);
+    border-color: var(--forest-d);
+    color: var(--bone);
+  }
+  .date.is-active .date-dow,
+  .date.is-active .date-month {
+    color: var(--gold-light);
+  }
+  
+  /* ── Time slots ── */
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+  }
+  .slot {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: var(--r-sm);
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 10px 4px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .slot:hover:not(:disabled) {
+    border-color: var(--terracotta);
+    color: var(--terracotta-d);
+  }
+  .slot.is-recommended::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 999px;
+  }
+  .slot.is-active {
+    background: var(--forest);
+    color: var(--bone);
+    border-color: var(--forest-d);
+  }
+  .slot:disabled {
+    background: var(--cream-2);
+    color: var(--warm-gray);
+    cursor: not-allowed;
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    opacity: 0.7;
+  }
+  .slot-hint {
+    font-size: 0.72rem;
+    color: var(--warm-gray);
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .dot-rec,
+  .dot-disabled {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .dot-rec {
+    background: var(--gold);
+  }
+  .dot-disabled {
+    background: rgba(44, 26, 14, 0.2);
+  }
+  
+  /* ── Occasions ── */
+  .occasions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .occ {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .occ:hover {
+    border-color: var(--terracotta);
+  }
+  .occ.is-active {
+    background: var(--terracotta);
+    color: var(--bone);
+    border-color: var(--terracotta-d);
+  }
+  
+  /* ── CTA ── */
+  .cta {
+    margin-top: 4px;
+    background: var(--forest);
+    color: var(--bone);
+    border: none;
+    border-radius: 999px;
+    padding: 14px 22px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: background 0.15s, transform 0.05s;
+  }
+  .cta:hover {
+    background: var(--forest-d);
+  }
+  .cta:active {
+    transform: scale(0.99);
+  }
+  .cta-meta {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    background: rgba(250, 247, 241, 0.18);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+  }
+  
+  /* ── Confirm ── */
+  .confirm {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 0 0;
+    animation: pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .mark {
+    width: 84px;
+    height: 84px;
+    border-radius: 999px;
+    background: rgba(79, 122, 58, 0.14);
+    color: var(--success);
+    display: grid;
+    place-items: center;
+  }
+  .confirm h2 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+  .confirm-sub {
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 380px;
+  }
+  .confirm-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    width: 100%;
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-md);
+    padding: 14px 18px;
+  }
+  .confirm-meta div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .confirm-meta dt {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--warm-gray);
+    font-weight: 700;
+  }
+  .confirm-meta dd {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .confirm-fineprint {
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .ghost,
+  .primary {
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .ghost {
+    background: transparent;
+    border: 1px solid rgba(44, 26, 14, 0.18);
+    color: var(--ink-2);
+  }
+  .ghost:hover {
+    background: var(--cream-2);
+    color: var(--ink);
+  }
+  .primary {
+    background: var(--forest);
+    color: var(--bone);
+    border: none;
+  }
+  .primary:hover {
+    background: var(--forest-d);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      />
+      <link rel="stylesheet" href="style.css" />
+      <title>Reserve · Casa Olivar</title>
+    </head>
+    <body>
+      <section class="card">
+        <header class="card-head">
+          <p class="kicker">Casa Olivar · Reservations</p>
+          <h1>Reserve a table</h1>
+          <p class="sub">
+            Dinner service 19:00–23:00 · Walk-ins welcome at the bar
+          </p>
+        </header>
+  
+        <!-- Form -->
+        <form class="form" id="form" novalidate>
+          <!-- Party size -->
+          <div class="field">
+            <label class="field-label">Party size</label>
+            <div class="party">
+              <button class="party-btn" type="button" data-step="-1" aria-label="Smaller party">−</button>
+              <div class="party-display">
+                <span class="party-num" id="partyNum">2</span>
+                <span class="party-word" id="partyWord">guests</span>
+              </div>
+              <button class="party-btn" type="button" data-step="1" aria-label="Larger party">+</button>
+            </div>
+            <p class="party-hint" id="partyHint" hidden>
+              Groups of 8+ require a deposit — our host will reach out within
+              24 hours.
+            </p>
+          </div>
+  
+          <!-- Date scroller -->
+          <div class="field">
+            <label class="field-label">Date</label>
+            <div class="dates" id="dates"></div>
+          </div>
+  
+          <!-- Slots -->
+          <div class="field">
+            <label class="field-label">Time</label>
+            <div class="slots" id="slots"></div>
+            <p class="slot-hint">
+              <span class="dot-rec"></span> Recommended ·
+              <span class="dot-disabled"></span> Fully booked
+            </p>
+          </div>
+  
+          <!-- Occasion -->
+          <div class="field">
+            <label class="field-label">Occasion <span class="optional">(optional)</span></label>
+            <div class="occasions" id="occasions">
+              <button type="button" class="occ" data-occ="none">None</button>
+              <button type="button" class="occ" data-occ="birthday">🎂 Birthday</button>
+              <button type="button" class="occ" data-occ="anniversary">💍 Anniversary</button>
+              <button type="button" class="occ" data-occ="business">💼 Business</button>
+              <button type="button" class="occ" data-occ="date">🌙 Date night</button>
+            </div>
+          </div>
+  
+          <!-- Contact -->
+          <div class="row">
+            <div class="field">
+              <label class="field-label">Full name</label>
+              <input type="text" id="name" required placeholder="Lina Mendoza" />
+            </div>
+            <div class="field">
+              <label class="field-label">Phone</label>
+              <input type="tel" id="phone" required placeholder="+34 612 442 081" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Email</label>
+            <input type="email" id="email" required placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label class="field-label">Notes <span class="optional">(allergies, seating preference)</span></label>
+            <textarea id="notes" rows="2" maxlength="240"
+              placeholder="e.g. peanut allergy, prefer corner booth"></textarea>
+          </div>
+  
+          <button class="cta" type="submit">
+            <span>Confirm reservation</span>
+            <span class="cta-meta" id="ctaMeta">2 guests · today · 20:00</span>
+          </button>
+        </form>
+  
+        <!-- Confirmation -->
+        <div class="confirm" id="confirm" hidden>
+          <div class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="36" height="36">
+              <path
+                d="M20 6 9 17l-5-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <h2>Table booked</h2>
+          <p class="confirm-sub" id="confirmSub">—</p>
+          <dl class="confirm-meta">
+            <div><dt>Reference</dt><dd id="confRef">—</dd></div>
+            <div><dt>Held for</dt><dd>15 min</dd></div>
+          </dl>
+          <p class="confirm-fineprint">
+            A confirmation has been sent to <span id="confEmail">—</span>. Cancel
+            free up to 2 h before arrival.
+          </p>
+          <div class="confirm-actions">
+            <button class="ghost" type="button" id="addCal">+ Add to calendar</button>
+            <button class="primary" type="button" id="newRes">New reservation</button>
+          </div>
+        </div>
+      </section>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  const MIN_PARTY = 1;
+  const MAX_PARTY = 10;
+  const RECOMMENDED_SLOT = "20:30";
+  
+  const SLOT_LABELS = [
+    "19:00",
+    "19:15",
+    "19:30",
+    "19:45",
+    "20:00",
+    "20:15",
+    "20:30",
+    "20:45",
+    "21:00",
+    "21:15",
+    "21:30",
+    "21:45",
+    "22:00",
+    "22:15",
+    "22:30",
+  ];
+  
+  const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  
+  let party = 2;
+  let occasion = "none";
+  let selectedDate = startOfDay(new Date());
+  let selectedSlot = RECOMMENDED_SLOT;
+  
+  function startOfDay(d) {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  }
+  
+  function isSameDay(a, b) {
+    return startOfDay(a).getTime() === startOfDay(b).getTime();
+  }
+  
+  function fmtDate(d) {
+    if (isSameDay(d, new Date())) return "today";
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (isSameDay(d, tomorrow)) return "tomorrow";
+    return `${DOW[d.getDay()]} ${d.getDate()} ${MONTH[d.getMonth()]}`;
+  }
+  
+  // Slot availability is a deterministic function of date + party so the demo feels real.
+  function slotState(date, slot) {
+    const key = `${date.getDate()}-${slot}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) & 0xffffffff;
+    const v = Math.abs(hash) % 10;
+    // Larger parties have fewer options
+    if (party >= 8 && v >= 6) return "taken";
+    if (party >= 4 && v >= 8) return "taken";
+    if (v === 0) return "taken";
+    return "open";
+  }
+  
+  const datesEl = document.getElementById("dates");
+  const slotsEl = document.getElementById("slots");
+  const occEl = document.getElementById("occasions");
+  const partyNum = document.getElementById("partyNum");
+  const partyWord = document.getElementById("partyWord");
+  const partyHint = document.getElementById("partyHint");
+  const ctaMeta = document.getElementById("ctaMeta");
+  const form = document.getElementById("form");
+  const confirmEl = document.getElementById("confirm");
+  const confirmSub = document.getElementById("confirmSub");
+  const confRef = document.getElementById("confRef");
+  const confEmail = document.getElementById("confEmail");
+  
+  function renderDates() {
+    const days = [];
+    for (let i = 0; i < 14; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
+    datesEl.innerHTML = days
+      .map((d) => {
+        const active = isSameDay(d, selectedDate);
+        return `<button type="button" class="date ${active ? "is-active" : ""}"
+          data-iso="${startOfDay(d).toISOString()}">
+          <span class="date-dow">${DOW[d.getDay()]}</span>
+          <span class="date-day">${d.getDate()}</span>
+          <span class="date-month">${MONTH[d.getMonth()]}</span>
+        </button>`;
+      })
+      .join("");
+  }
+  
+  function renderSlots() {
+    slotsEl.innerHTML = SLOT_LABELS.map((label) => {
+      const state = slotState(selectedDate, label);
+      const isRec = label === RECOMMENDED_SLOT && state === "open";
+      const isActive = label === selectedSlot && state === "open";
+      return `<button type="button" class="slot ${isActive ? "is-active" : ""} ${isRec ? "is-recommended" : ""}"
+        data-slot="${label}" ${state === "taken" ? "disabled" : ""}>${label}</button>`;
+    }).join("");
+    // If selected slot is no longer available, fall back to the first open.
+    if (slotState(selectedDate, selectedSlot) === "taken") {
+      const open = SLOT_LABELS.find((s) => slotState(selectedDate, s) === "open");
+      selectedSlot = open || "";
+      renderSlots();
+    }
+  }
+  
+  function renderParty() {
+    partyNum.textContent = party;
+    partyWord.textContent = party === 1 ? "guest" : "guests";
+    partyHint.hidden = party < 8;
+    document.querySelector('[data-step="-1"]').disabled = party <= MIN_PARTY;
+    document.querySelector('[data-step="1"]').disabled = party >= MAX_PARTY;
+  }
+  
+  function renderCta() {
+    ctaMeta.textContent = `${party} ${party === 1 ? "guest" : "guests"} · ${fmtDate(selectedDate)} · ${selectedSlot}`;
+  }
+  
+  function refresh() {
+    renderParty();
+    renderDates();
+    renderSlots();
+    renderCta();
+  }
+  
+  datesEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-iso]");
+    if (!btn) return;
+    selectedDate = new Date(btn.dataset.iso);
+    refresh();
+  });
+  
+  slotsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-slot]");
+    if (!btn || btn.disabled) return;
+    selectedSlot = btn.dataset.slot;
+    renderSlots();
+    renderCta();
+  });
+  
+  document.querySelectorAll("[data-step]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      party = Math.min(MAX_PARTY, Math.max(MIN_PARTY, party + Number(btn.dataset.step)));
+      renderParty();
+      renderSlots();
+      renderCta();
+    })
+  );
+  
+  occEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-occ]");
+    if (!btn) return;
+    occEl.querySelectorAll(".occ").forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+    occasion = btn.dataset.occ;
+  });
+  
+  // Mark "None" active on load
+  occEl.querySelector('[data-occ="none"]').classList.add("is-active");
+  
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name");
+    const phone = document.getElementById("phone");
+    const email = document.getElementById("email");
+    if (!name.value || !phone.value || !email.value) {
+      if (!name.value) name.focus();
+      else if (!phone.value) phone.focus();
+      else email.focus();
+      return;
+    }
+    form.hidden = true;
+    confirmEl.hidden = false;
+    const ref = `R-${Date.now().toString(36).slice(-5).toUpperCase()}`;
+    confRef.textContent = ref;
+    confirmSub.textContent = `${party} ${party === 1 ? "guest" : "guests"} on ${fmtDate(selectedDate)} at ${selectedSlot}`;
+    confEmail.textContent = email.value;
+  });
+  
+  document.getElementById("newRes").addEventListener("click", () => {
+    form.reset();
+    occEl.querySelectorAll(".occ").forEach((b) => b.classList.remove("is-active"));
+    occEl.querySelector('[data-occ="none"]').classList.add("is-active");
+    party = 2;
+    selectedDate = startOfDay(new Date());
+    selectedSlot = RECOMMENDED_SLOT;
+    form.hidden = false;
+    confirmEl.hidden = true;
+    refresh();
+  });
+  
+  document.getElementById("addCal").addEventListener("click", () => {
+    const btn = document.getElementById("addCal");
+    btn.textContent = "Added ✓";
+    setTimeout(() => (btn.textContent = "+ Add to calendar"), 1500);
+  });
+  
+  refresh();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --cream: #f5f0e8;
+    --cream-2: #ece4d4;
+    --bone: #faf7f1;
+    --terracotta: #c1714a;
+    --terracotta-d: #a05a38;
+    --forest: #2d4a3e;
+    --forest-d: #1e3329;
+    --gold: #c9a84c;
+    --gold-light: #e6c97a;
+    --ink: #2c1a0e;
+    --ink-2: #4a3828;
+    --warm-gray: #7a6a58;
+    --success: #4f7a3a;
+    --danger: #b3432a;
+    --warning: #d99020;
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --shadow-1: 0 1px 2px rgba(44, 26, 14, 0.08), 0 2px 6px rgba(44, 26, 14, 0.06);
+    --shadow-2: 0 8px 24px rgba(44, 26, 14, 0.12);
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(180deg, var(--cream-2) 0%, var(--cream) 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 36px 16px 56px;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--bone);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-2);
+    padding: 32px 30px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* ── Head ── */
+  .card-head {
+    text-align: center;
+  }
+  .kicker {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--terracotta);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .card-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 4vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  .sub {
+    margin-top: 4px;
+    font-size: 0.86rem;
+    color: var(--warm-gray);
+    font-style: italic;
+  }
+  
+  /* ── Form base ── */
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .field-label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-2);
+    font-weight: 700;
+  }
+  .optional {
+    font-weight: 500;
+    color: var(--warm-gray);
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.7rem;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  input,
+  textarea {
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    background: var(--cream);
+    border-radius: var(--r-md);
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+    resize: vertical;
+  }
+  input:focus,
+  textarea:focus {
+    border-color: var(--terracotta);
+  }
+  input:invalid:not(:placeholder-shown) {
+    border-color: var(--danger);
+  }
+  
+  /* ── Party size ── */
+  .party {
+    display: flex;
+    align-items: center;
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .party-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: var(--bone);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    transition: background 0.15s;
+  }
+  .party-btn:hover {
+    background: var(--cream-2);
+    color: var(--terracotta-d);
+  }
+  .party-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .party-display {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+  }
+  .party-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--ink);
+  }
+  .party-word {
+    font-size: 0.85rem;
+    color: var(--warm-gray);
+  }
+  .party-hint {
+    font-size: 0.8rem;
+    color: var(--warning);
+    background: rgba(217, 144, 32, 0.12);
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    border-left: 3px solid var(--warning);
+    margin-top: 4px;
+  }
+  
+  /* ── Dates scroller ── */
+  .dates {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 2px 8px;
+    scrollbar-width: thin;
+  }
+  .date {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: var(--r-md);
+    padding: 8px 10px;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 60px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .date:hover {
+    border-color: var(--terracotta);
+  }
+  .date-dow {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--warm-gray);
+  }
+  .date-day {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .date-month {
+    font-size: 0.66rem;
+    color: var(--warm-gray);
+  }
+  .date.is-active {
+    background: var(--forest);
+    border-color: var(--forest-d);
+    color: var(--bone);
+  }
+  .date.is-active .date-dow,
+  .date.is-active .date-month {
+    color: var(--gold-light);
+  }
+  
+  /* ── Time slots ── */
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+  }
+  .slot {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: var(--r-sm);
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 10px 4px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .slot:hover:not(:disabled) {
+    border-color: var(--terracotta);
+    color: var(--terracotta-d);
+  }
+  .slot.is-recommended::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 999px;
+  }
+  .slot.is-active {
+    background: var(--forest);
+    color: var(--bone);
+    border-color: var(--forest-d);
+  }
+  .slot:disabled {
+    background: var(--cream-2);
+    color: var(--warm-gray);
+    cursor: not-allowed;
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    opacity: 0.7;
+  }
+  .slot-hint {
+    font-size: 0.72rem;
+    color: var(--warm-gray);
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .dot-rec,
+  .dot-disabled {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .dot-rec {
+    background: var(--gold);
+  }
+  .dot-disabled {
+    background: rgba(44, 26, 14, 0.2);
+  }
+  
+  /* ── Occasions ── */
+  .occasions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .occ {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .occ:hover {
+    border-color: var(--terracotta);
+  }
+  .occ.is-active {
+    background: var(--terracotta);
+    color: var(--bone);
+    border-color: var(--terracotta-d);
+  }
+  
+  /* ── CTA ── */
+  .cta {
+    margin-top: 4px;
+    background: var(--forest);
+    color: var(--bone);
+    border: none;
+    border-radius: 999px;
+    padding: 14px 22px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: background 0.15s, transform 0.05s;
+  }
+  .cta:hover {
+    background: var(--forest-d);
+  }
+  .cta:active {
+    transform: scale(0.99);
+  }
+  .cta-meta {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    background: rgba(250, 247, 241, 0.18);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+  }
+  
+  /* ── Confirm ── */
+  .confirm {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 0 0;
+    animation: pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .mark {
+    width: 84px;
+    height: 84px;
+    border-radius: 999px;
+    background: rgba(79, 122, 58, 0.14);
+    color: var(--success);
+    display: grid;
+    place-items: center;
+  }
+  .confirm h2 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+  .confirm-sub {
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 380px;
+  }
+  .confirm-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    width: 100%;
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-md);
+    padding: 14px 18px;
+  }
+  .confirm-meta div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .confirm-meta dt {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--warm-gray);
+    font-weight: 700;
+  }
+  .confirm-meta dd {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .confirm-fineprint {
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .ghost,
+  .primary {
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .ghost {
+    background: transparent;
+    border: 1px solid rgba(44, 26, 14, 0.18);
+    color: var(--ink-2);
+  }
+  .ghost:hover {
+    background: var(--cream-2);
+    color: var(--ink);
+  }
+  .primary {
+    background: var(--forest);
+    color: var(--bone);
+    border: none;
+  }
+  .primary:hover {
+    background: var(--forest-d);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      />
+      <link rel="stylesheet" href="style.css" />
+      <title>Reserve · Casa Olivar</title>
+    </head>
+    <body>
+      <section class="card">
+        <header class="card-head">
+          <p class="kicker">Casa Olivar · Reservations</p>
+          <h1>Reserve a table</h1>
+          <p class="sub">
+            Dinner service 19:00–23:00 · Walk-ins welcome at the bar
+          </p>
+        </header>
+  
+        <!-- Form -->
+        <form class="form" id="form" novalidate>
+          <!-- Party size -->
+          <div class="field">
+            <label class="field-label">Party size</label>
+            <div class="party">
+              <button class="party-btn" type="button" data-step="-1" aria-label="Smaller party">−</button>
+              <div class="party-display">
+                <span class="party-num" id="partyNum">2</span>
+                <span class="party-word" id="partyWord">guests</span>
+              </div>
+              <button class="party-btn" type="button" data-step="1" aria-label="Larger party">+</button>
+            </div>
+            <p class="party-hint" id="partyHint" hidden>
+              Groups of 8+ require a deposit — our host will reach out within
+              24 hours.
+            </p>
+          </div>
+  
+          <!-- Date scroller -->
+          <div class="field">
+            <label class="field-label">Date</label>
+            <div class="dates" id="dates"></div>
+          </div>
+  
+          <!-- Slots -->
+          <div class="field">
+            <label class="field-label">Time</label>
+            <div class="slots" id="slots"></div>
+            <p class="slot-hint">
+              <span class="dot-rec"></span> Recommended ·
+              <span class="dot-disabled"></span> Fully booked
+            </p>
+          </div>
+  
+          <!-- Occasion -->
+          <div class="field">
+            <label class="field-label">Occasion <span class="optional">(optional)</span></label>
+            <div class="occasions" id="occasions">
+              <button type="button" class="occ" data-occ="none">None</button>
+              <button type="button" class="occ" data-occ="birthday">🎂 Birthday</button>
+              <button type="button" class="occ" data-occ="anniversary">💍 Anniversary</button>
+              <button type="button" class="occ" data-occ="business">💼 Business</button>
+              <button type="button" class="occ" data-occ="date">🌙 Date night</button>
+            </div>
+          </div>
+  
+          <!-- Contact -->
+          <div class="row">
+            <div class="field">
+              <label class="field-label">Full name</label>
+              <input type="text" id="name" required placeholder="Lina Mendoza" />
+            </div>
+            <div class="field">
+              <label class="field-label">Phone</label>
+              <input type="tel" id="phone" required placeholder="+34 612 442 081" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Email</label>
+            <input type="email" id="email" required placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label class="field-label">Notes <span class="optional">(allergies, seating preference)</span></label>
+            <textarea id="notes" rows="2" maxlength="240"
+              placeholder="e.g. peanut allergy, prefer corner booth"></textarea>
+          </div>
+  
+          <button class="cta" type="submit">
+            <span>Confirm reservation</span>
+            <span class="cta-meta" id="ctaMeta">2 guests · today · 20:00</span>
+          </button>
+        </form>
+  
+        <!-- Confirmation -->
+        <div class="confirm" id="confirm" hidden>
+          <div class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="36" height="36">
+              <path
+                d="M20 6 9 17l-5-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <h2>Table booked</h2>
+          <p class="confirm-sub" id="confirmSub">—</p>
+          <dl class="confirm-meta">
+            <div><dt>Reference</dt><dd id="confRef">—</dd></div>
+            <div><dt>Held for</dt><dd>15 min</dd></div>
+          </dl>
+          <p class="confirm-fineprint">
+            A confirmation has been sent to <span id="confEmail">—</span>. Cancel
+            free up to 2 h before arrival.
+          </p>
+          <div class="confirm-actions">
+            <button class="ghost" type="button" id="addCal">+ Add to calendar</button>
+            <button class="primary" type="button" id="newRes">New reservation</button>
+          </div>
+        </div>
+      </section>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  const MIN_PARTY = 1;
+  const MAX_PARTY = 10;
+  const RECOMMENDED_SLOT = "20:30";
+  
+  const SLOT_LABELS = [
+    "19:00",
+    "19:15",
+    "19:30",
+    "19:45",
+    "20:00",
+    "20:15",
+    "20:30",
+    "20:45",
+    "21:00",
+    "21:15",
+    "21:30",
+    "21:45",
+    "22:00",
+    "22:15",
+    "22:30",
+  ];
+  
+  const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  
+  let party = 2;
+  let occasion = "none";
+  let selectedDate = startOfDay(new Date());
+  let selectedSlot = RECOMMENDED_SLOT;
+  
+  function startOfDay(d) {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  }
+  
+  function isSameDay(a, b) {
+    return startOfDay(a).getTime() === startOfDay(b).getTime();
+  }
+  
+  function fmtDate(d) {
+    if (isSameDay(d, new Date())) return "today";
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (isSameDay(d, tomorrow)) return "tomorrow";
+    return `${DOW[d.getDay()]} ${d.getDate()} ${MONTH[d.getMonth()]}`;
+  }
+  
+  // Slot availability is a deterministic function of date + party so the demo feels real.
+  function slotState(date, slot) {
+    const key = `${date.getDate()}-${slot}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) & 0xffffffff;
+    const v = Math.abs(hash) % 10;
+    // Larger parties have fewer options
+    if (party >= 8 && v >= 6) return "taken";
+    if (party >= 4 && v >= 8) return "taken";
+    if (v === 0) return "taken";
+    return "open";
+  }
+  
+  const datesEl = document.getElementById("dates");
+  const slotsEl = document.getElementById("slots");
+  const occEl = document.getElementById("occasions");
+  const partyNum = document.getElementById("partyNum");
+  const partyWord = document.getElementById("partyWord");
+  const partyHint = document.getElementById("partyHint");
+  const ctaMeta = document.getElementById("ctaMeta");
+  const form = document.getElementById("form");
+  const confirmEl = document.getElementById("confirm");
+  const confirmSub = document.getElementById("confirmSub");
+  const confRef = document.getElementById("confRef");
+  const confEmail = document.getElementById("confEmail");
+  
+  function renderDates() {
+    const days = [];
+    for (let i = 0; i < 14; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
+    datesEl.innerHTML = days
+      .map((d) => {
+        const active = isSameDay(d, selectedDate);
+        return `<button type="button" class="date ${active ? "is-active" : ""}"
+          data-iso="${startOfDay(d).toISOString()}">
+          <span class="date-dow">${DOW[d.getDay()]}</span>
+          <span class="date-day">${d.getDate()}</span>
+          <span class="date-month">${MONTH[d.getMonth()]}</span>
+        </button>`;
+      })
+      .join("");
+  }
+  
+  function renderSlots() {
+    slotsEl.innerHTML = SLOT_LABELS.map((label) => {
+      const state = slotState(selectedDate, label);
+      const isRec = label === RECOMMENDED_SLOT && state === "open";
+      const isActive = label === selectedSlot && state === "open";
+      return `<button type="button" class="slot ${isActive ? "is-active" : ""} ${isRec ? "is-recommended" : ""}"
+        data-slot="${label}" ${state === "taken" ? "disabled" : ""}>${label}</button>`;
+    }).join("");
+    // If selected slot is no longer available, fall back to the first open.
+    if (slotState(selectedDate, selectedSlot) === "taken") {
+      const open = SLOT_LABELS.find((s) => slotState(selectedDate, s) === "open");
+      selectedSlot = open || "";
+      renderSlots();
+    }
+  }
+  
+  function renderParty() {
+    partyNum.textContent = party;
+    partyWord.textContent = party === 1 ? "guest" : "guests";
+    partyHint.hidden = party < 8;
+    document.querySelector('[data-step="-1"]').disabled = party <= MIN_PARTY;
+    document.querySelector('[data-step="1"]').disabled = party >= MAX_PARTY;
+  }
+  
+  function renderCta() {
+    ctaMeta.textContent = `${party} ${party === 1 ? "guest" : "guests"} · ${fmtDate(selectedDate)} · ${selectedSlot}`;
+  }
+  
+  function refresh() {
+    renderParty();
+    renderDates();
+    renderSlots();
+    renderCta();
+  }
+  
+  datesEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-iso]");
+    if (!btn) return;
+    selectedDate = new Date(btn.dataset.iso);
+    refresh();
+  });
+  
+  slotsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-slot]");
+    if (!btn || btn.disabled) return;
+    selectedSlot = btn.dataset.slot;
+    renderSlots();
+    renderCta();
+  });
+  
+  document.querySelectorAll("[data-step]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      party = Math.min(MAX_PARTY, Math.max(MIN_PARTY, party + Number(btn.dataset.step)));
+      renderParty();
+      renderSlots();
+      renderCta();
+    })
+  );
+  
+  occEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-occ]");
+    if (!btn) return;
+    occEl.querySelectorAll(".occ").forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+    occasion = btn.dataset.occ;
+  });
+  
+  // Mark "None" active on load
+  occEl.querySelector('[data-occ="none"]').classList.add("is-active");
+  
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name");
+    const phone = document.getElementById("phone");
+    const email = document.getElementById("email");
+    if (!name.value || !phone.value || !email.value) {
+      if (!name.value) name.focus();
+      else if (!phone.value) phone.focus();
+      else email.focus();
+      return;
+    }
+    form.hidden = true;
+    confirmEl.hidden = false;
+    const ref = `R-${Date.now().toString(36).slice(-5).toUpperCase()}`;
+    confRef.textContent = ref;
+    confirmSub.textContent = `${party} ${party === 1 ? "guest" : "guests"} on ${fmtDate(selectedDate)} at ${selectedSlot}`;
+    confEmail.textContent = email.value;
+  });
+  
+  document.getElementById("newRes").addEventListener("click", () => {
+    form.reset();
+    occEl.querySelectorAll(".occ").forEach((b) => b.classList.remove("is-active"));
+    occEl.querySelector('[data-occ="none"]').classList.add("is-active");
+    party = 2;
+    selectedDate = startOfDay(new Date());
+    selectedSlot = RECOMMENDED_SLOT;
+    form.hidden = false;
+    confirmEl.hidden = true;
+    refresh();
+  });
+  
+  document.getElementById("addCal").addEventListener("click", () => {
+    const btn = document.getElementById("addCal");
+    btn.textContent = "Added ✓";
+    setTimeout(() => (btn.textContent = "+ Add to calendar"), 1500);
+  });
+  
+  refresh();
+  
+  </script>
+explanation: "The declaration `--cream: #f5f0e8;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

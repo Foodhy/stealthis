@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Self-order kiosk · Casa Olivar</title>
+  </head>
+  <body>
+    <div class="kiosk">
+      <div class="frame">
+        <!-- Persistent topbar -->
+        <header class="bar" id="topbar">
+          <div class="bar-left">
+            <span class="brand">Casa Olivar</span>
+            <span class="bar-step" id="stepLabel">Welcome</span>
+          </div>
+          <div class="bar-right">
+            <button class="lang is-active" type="button" data-lang="en">EN</button>
+            <button class="lang" type="button" data-lang="es">ES</button>
+            <button class="cart-btn" id="cartBtn" type="button" aria-label="Cart" hidden>
+              <span class="cart-icon">🧾</span>
+              <span class="cart-count" id="cartCount">0</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Step 1 — Welcome -->
+        <section class="screen screen-welcome" data-screen="welcome">
+          <div class="welcome-art" aria-hidden="true">
+            <span class="glyph g-1">🥖</span>
+            <span class="glyph g-2">🥩</span>
+            <span class="glyph g-3">🍷</span>
+          </div>
+          <p class="welcome-kicker">Tap to order</p>
+          <h1>
+            Welcome to <span class="em">Casa Olivar.</span>
+          </h1>
+          <p class="welcome-sub">
+            Tap below to begin · 6 menu sections · payment on the next screen
+          </p>
+          <button class="tap-cta" type="button" data-go="categories">
+            <span>Start an order</span>
+            <span class="tap-arrow">→</span>
+          </button>
+          <button class="quiet-cta" type="button" data-go="categories">
+            I have a code · QR scan
+          </button>
+        </section>
+
+        <!-- Step 2 — Categories -->
+        <section class="screen screen-cats" data-screen="categories" hidden>
+          <header class="screen-head">
+            <h2>What's it going to be?</h2>
+            <p>Choose a category — you can mix from any of them.</p>
+          </header>
+          <div class="cat-grid" id="catGrid"></div>
+          <footer class="screen-foot">
+            <button class="ghost-cta" type="button" data-go="welcome">← Cancel</button>
+            <button class="primary-cta" type="button" id="goCart" disabled>Review order →</button>
+          </footer>
+        </section>
+
+        <!-- Step 3 — Items (per category) -->
+        <section class="screen screen-items" data-screen="items" hidden>
+          <header class="screen-head">
+            <button class="back" type="button" data-go="categories">← Back</button>
+            <h2 id="catTitle">—</h2>
+            <p id="catSub">—</p>
+          </header>
+          <div class="item-grid" id="itemGrid"></div>
+          <footer class="screen-foot">
+            <button class="ghost-cta" type="button" data-go="categories">← Other categories</button>
+            <button class="primary-cta" type="button" id="goCart2">Review order →</button>
+          </footer>
+        </section>
+
+        <!-- Step 4 — Cart -->
+        <section class="screen screen-cart" data-screen="cart" hidden>
+          <header class="screen-head">
+            <button class="back" type="button" data-go="categories">← Add more</button>
+            <h2>Your order</h2>
+            <p id="cartCountSub">0 items</p>
+          </header>
+          <ul class="cart-lines" id="cartLines"></ul>
+          <p class="cart-empty" id="cartEmpty">Your basket is empty — tap "Add more" to start.</p>
+          <dl class="cart-totals">
+            <div><dt>Subtotal</dt><dd id="subtotal">$0.00</dd></div>
+            <div><dt>Tax (8.25%)</dt><dd id="tax">$0.00</dd></div>
+            <div class="big"><dt>Total</dt><dd id="total">$0.00</dd></div>
+          </dl>
+          <footer class="screen-foot">
+            <button class="ghost-cta" type="button" id="clear">Clear basket</button>
+            <button class="primary-cta" type="button" id="goPay" disabled>Continue to pay →</button>
+          </footer>
+        </section>
+
+        <!-- Step 5 — Pay -->
+        <section class="screen screen-pay" data-screen="pay" hidden>
+          <header class="screen-head">
+            <button class="back" type="button" data-go="cart">← Back to order</button>
+            <h2>How would you like to pay?</h2>
+            <p>Choose a method below — each option is the same speed.</p>
+          </header>
+          <div class="pay-options">
+            <button class="pay-card" type="button" data-pay="here">
+              <span class="pay-icon">💳</span>
+              <h3>Pay here</h3>
+              <p>Tap or insert card on this kiosk · receipt printed.</p>
+              <span class="pay-tag">Fastest</span>
+            </button>
+            <button class="pay-card" type="button" data-pay="counter">
+              <span class="pay-icon">🧾</span>
+              <h3>Pay at counter</h3>
+              <p>Take your order number to the counter · cash accepted.</p>
+            </button>
+            <button class="pay-card" type="button" data-pay="apple">
+              <span class="pay-icon">📱</span>
+              <h3>Apple / Google Pay</h3>
+              <p>Hold your phone or watch to the reader.</p>
+            </button>
+          </div>
+          <footer class="screen-foot">
+            <span class="pay-total" id="payTotal">$0.00</span>
+            <button class="ghost-cta" type="button" data-go="cart">← Cart</button>
+          </footer>
+        </section>
+
+        <!-- Step 6 — Reveal -->
+        <section class="screen screen-reveal" data-screen="reveal" hidden>
+          <p class="reveal-eyebrow">Thank you · enjoy</p>
+          <p class="reveal-no" id="orderNo">#0184</p>
+          <h2>Your number is up.</h2>
+          <p class="reveal-sub" id="revealSub">
+            We'll call your number at the counter in about 9 minutes.
+          </p>
+          <div class="reveal-meta">
+            <dl>
+              <div><dt>Items</dt><dd id="revealItems">—</dd></div>
+              <div><dt>Total</dt><dd id="revealTotal">—</dd></div>
+              <div><dt>Pickup</dt><dd id="revealEta">—</dd></div>
+            </dl>
+          </div>
+          <button class="tap-cta" type="button" data-go="welcome">
+            <span>Start a new order</span>
+            <span class="tap-arrow">↻</span>
+          </button>
+        </section>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

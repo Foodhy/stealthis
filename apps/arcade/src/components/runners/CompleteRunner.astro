@@ -1,0 +1,97 @@
+---
+import type { CompleteChallenge } from "@schema";
+
+interface Props {
+  challenge: CompleteChallenge;
+  index: number;
+}
+
+const { challenge, index } = Astro.props;
+
+// Split the template by {{BLANK_X}} markers, keeping the markers as separate segments
+// so we can render an <input> in place of each.
+const parts: Array<{ kind: "text"; value: string } | { kind: "blank"; key: string }> = [];
+const regex = /\{\{(BLANK_[A-Za-z0-9_]+)\}\}/g;
+let cursor = 0;
+let m: RegExpExecArray | null;
+while ((m = regex.exec(challenge.template)) !== null) {
+  if (m.index > cursor) {
+    parts.push({ kind: "text", value: challenge.template.slice(cursor, m.index) });
+  }
+  parts.push({ kind: "blank", key: m[1] });
+  cursor = m.index + m[0].length;
+}
+if (cursor < challenge.template.length) {
+  parts.push({ kind: "text", value: challenge.template.slice(cursor) });
+}
+
+const answersJson = JSON.stringify(challenge.answers);
+---
+
+<article
+  class="challenge-slide hidden flex-col gap-6 py-10"
+  data-challenge
+  data-slug={challenge.slug}
+  data-type="complete"
+  data-answers={answersJson}
+  data-case-sensitive={String(challenge.caseSensitive)}
+  data-index={index}
+>
+  <div class="space-y-2">
+    <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+    <h2 class="text-2xl font-medium leading-snug text-white">{challenge.title}</h2>
+  </div>
+
+  <pre
+    class="overflow-x-auto rounded-xl border border-white/8 bg-white/6 p-4 font-mono text-sm leading-relaxed text-white/80"
+  ><code>{parts.map((p) =>
+    p.kind === "text" ? p.value : (
+      <input
+        type="text"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        class="complete-blank inline-block min-w-[5ch] rounded-md border-b-2 border-white/40 bg-white/14 px-1.5 py-0.5 align-baseline font-mono text-white outline-none focus:border-emerald-400"
+        data-blank-key={p.key}
+        size={Math.max(challenge.answers[p.key]?.length || 6, 4)}
+      />
+    )
+  )}</code></pre>
+
+  {challenge.explanation && (
+    <div
+      class="hidden rounded-xl border border-white/8 bg-white/6 p-4 text-sm leading-relaxed text-white/70"
+      data-explanation
+    >
+      {challenge.explanation}
+    </div>
+  )}
+
+  <div class="flex items-center justify-end gap-3 pt-2">
+    <button
+      type="button"
+      class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"
+      data-check
+      disabled
+    >
+      Check
+    </button>
+    <button
+      type="button"
+      class="hidden rounded-lg bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300"
+      data-next
+    >
+      Next
+    </button>
+  </div>
+</article>
+
+<style>
+  .complete-blank[data-result="correct"] {
+    @apply border-emerald-400 bg-emerald-400/14 text-white;
+  }
+  .complete-blank[data-result="incorrect"] {
+    @apply border-rose-400 bg-rose-400/14 text-white;
+  }
+</style>

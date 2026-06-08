@@ -1,0 +1,344 @@
+---
+slug: "magnetic-button-delete-closing-tag-06b57835"
+topic: "magnetic"
+title: "Fix the broken HTML structure in Magnetic Button"
+type: "fix"
+difficulty: 2
+resourceSlug: "magnetic-button"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0f172a;
+    color: #f1f5f9;
+    min-height: 100vh;
+  }
+  
+  .demo {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  .hint {
+    color: #475569;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* --- Magnetic button --- */
+  .magnet-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2.5rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    /* Smooth snap-back */
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
+  }
+  
+  /* Inner text — moves slightly more for depth */
+  .magnet-btn__inner {
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    pointer-events: none;
+  }
+  
+  .magnet-btn--primary {
+    background: #0ea5e9;
+    color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0), 0 4px 24px rgba(14, 165, 233, 0.3);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease;
+  }
+  
+  .magnet-btn--primary:hover {
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15), 0 8px 32px rgba(14, 165, 233, 0.45);
+  }
+  
+  .magnet-btn--ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border: 1.5px solid #334155;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.2s ease, color 0.2s ease;
+  }
+  
+  .magnet-btn--ghost:hover {
+    border-color: #94a3b8;
+    color: #f1f5f9;
+  }
+  
+  /* Disable for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .magnet-btn,
+    .magnet-btn__inner {
+      transition: none;
+      transform: none !important;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magnetic Button
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo">
+      <p class="hint">Move your cursor near the buttons</p>
+  
+      <button class="magnet-btn magnet-btn--primary" data-magnetic>
+        <span class="magnet-btn__inner">Browse Library</span>
+      </button>
+  
+      <button class="magnet-btn magnet-btn--ghost" data-magnetic>
+        <span class="magnet-btn__inner">View Docs</span>
+      </button>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Magnetic Button — cursor proximity pull effect
+  (function () {
+    "use strict";
+  
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  
+    const STRENGTH = 0.35; // pull intensity (0–1)
+    const RADIUS = 100; // activation radius in px
+  
+    const buttons = document.querySelectorAll("[data-magnetic]");
+  
+    buttons.forEach((btn) => {
+      const inner = btn.querySelector(".magnet-btn__inner");
+  
+      document.addEventListener("mousemove", (e) => {
+        const rect = btn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+  
+        const dx = e.clientX - centerX;
+        const dy = e.clientY - centerY;
+        const distance = Math.hypot(dx, dy);
+  
+        if (distance < RADIUS) {
+          const pull = (1 - distance / RADIUS) * STRENGTH;
+          const moveX = dx * pull;
+          const moveY = dy * pull;
+  
+          btn.style.transform = `translate(${moveX}px, ${moveY}px)`;
+          if (inner) {
+            inner.style.transform = `translate(${moveX * 0.4}px, ${moveY * 0.4}px)`;
+          }
+        } else {
+          btn.style.transform = "";
+          if (inner) inner.style.transform = "";
+        }
+      });
+  
+      btn.addEventListener("mouseleave", () => {
+        btn.style.transform = "";
+        if (inner) inner.style.transform = "";
+      });
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0f172a;
+    color: #f1f5f9;
+    min-height: 100vh;
+  }
+  
+  .demo {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  .hint {
+    color: #475569;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* --- Magnetic button --- */
+  .magnet-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2.5rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    /* Smooth snap-back */
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
+  }
+  
+  /* Inner text — moves slightly more for depth */
+  .magnet-btn__inner {
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    pointer-events: none;
+  }
+  
+  .magnet-btn--primary {
+    background: #0ea5e9;
+    color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0), 0 4px 24px rgba(14, 165, 233, 0.3);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease;
+  }
+  
+  .magnet-btn--primary:hover {
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15), 0 8px 32px rgba(14, 165, 233, 0.45);
+  }
+  
+  .magnet-btn--ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border: 1.5px solid #334155;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.2s ease, color 0.2s ease;
+  }
+  
+  .magnet-btn--ghost:hover {
+    border-color: #94a3b8;
+    color: #f1f5f9;
+  }
+  
+  /* Disable for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .magnet-btn,
+    .magnet-btn__inner {
+      transition: none;
+      transform: none !important;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magnetic Button</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo">
+      <p class="hint">Move your cursor near the buttons</p>
+  
+      <button class="magnet-btn magnet-btn--primary" data-magnetic>
+        <span class="magnet-btn__inner">Browse Library</span>
+      </button>
+  
+      <button class="magnet-btn magnet-btn--ghost" data-magnetic>
+        <span class="magnet-btn__inner">View Docs</span>
+      </button>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Magnetic Button — cursor proximity pull effect
+  (function () {
+    "use strict";
+  
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  
+    const STRENGTH = 0.35; // pull intensity (0–1)
+    const RADIUS = 100; // activation radius in px
+  
+    const buttons = document.querySelectorAll("[data-magnetic]");
+  
+    buttons.forEach((btn) => {
+      const inner = btn.querySelector(".magnet-btn__inner");
+  
+      document.addEventListener("mousemove", (e) => {
+        const rect = btn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+  
+        const dx = e.clientX - centerX;
+        const dy = e.clientY - centerY;
+        const distance = Math.hypot(dx, dy);
+  
+        if (distance < RADIUS) {
+          const pull = (1 - distance / RADIUS) * STRENGTH;
+          const moveX = dx * pull;
+          const moveY = dy * pull;
+  
+          btn.style.transform = `translate(${moveX}px, ${moveY}px)`;
+          if (inner) {
+            inner.style.transform = `translate(${moveX * 0.4}px, ${moveY * 0.4}px)`;
+          }
+        } else {
+          btn.style.transform = "";
+          if (inner) inner.style.transform = "";
+        }
+      });
+  
+      btn.addEventListener("mouseleave", () => {
+        btn.style.transform = "";
+        if (inner) inner.style.transform = "";
+      });
+    });
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

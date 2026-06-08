@@ -1,0 +1,704 @@
+---
+slug: "code-block-delete-closing-tag-5c3fe2bf"
+topic: "code"
+title: "Fix the broken HTML structure in Code Block"
+type: "fix"
+difficulty: 2
+resourceSlug: "code-block"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    padding: 40px 24px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 680px;
+  }
+  
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  
+  /* Code block */
+  .code-block {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #21262d;
+    border-bottom: 1px solid #30363d;
+  }
+  
+  .code-lang {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b949e;
+  }
+  
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .copy-btn:hover {
+    color: #e6edf3;
+    border-color: #8b949e;
+    background: #30363d;
+  }
+  .copy-btn.copied {
+    color: #3fb950;
+    border-color: #3fb950;
+  }
+  
+  .icon-check {
+    display: none;
+  }
+  .copy-btn.copied .icon-copy {
+    display: none;
+  }
+  .copy-btn.copied .icon-check {
+    display: block;
+  }
+  
+  .code-pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, monospace;
+    counter-reset: line;
+  }
+  
+  .code-body {
+    display: block;
+  }
+  
+  /* Syntax coloring */
+  .tok-kw {
+    color: #ff7b72;
+  } /* keyword */
+  .tok-fn {
+    color: #d2a8ff;
+  } /* function */
+  .tok-str {
+    color: #a5d6ff;
+  } /* string */
+  .tok-num {
+    color: #79c0ff;
+  } /* number */
+  .tok-cmt {
+    color: #8b949e;
+    font-style: italic;
+  } /* comment */
+  .tok-type {
+    color: #ffa657;
+  } /* type/interface */
+  .tok-prop {
+    color: #e6edf3;
+  } /* property */
+  .tok-punc {
+    color: #8b949e;
+  } /* punctuation */
+  
+  /* Line numbers */
+  .code-block--lines .code-pre {
+    padding-left: 0;
+  }
+  
+  .code-line {
+    display: flex;
+  }
+  
+  .code-line-num {
+    min-width: 44px;
+    padding: 0 12px 0 16px;
+    color: #4a555f;
+    user-select: none;
+    text-align: right;
+    flex-shrink: 0;
+    counter-increment: line;
+  }
+  
+  .code-line-text {
+    flex: 1;
+    padding-right: 16px;
+  }
+  
+  /* Highlighted lines */
+  .code-line--highlight {
+    background: rgba(255, 204, 0, 0.08);
+    border-left: 2px solid #e3b341;
+    margin-left: -1px;
+  }
+  .code-line--highlight .code-line-num {
+    color: #e3b341;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Block
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="section-label">JavaScript</h2>
+  
+    <div class="code-block" data-language="JavaScript">
+      <div class="code-header">
+        <span class="code-lang">JavaScript</span>
+        <button class="copy-btn" aria-label="Copy code">
+          <svg class="icon-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <pre class="code-pre"><code class="code-body" data-raw="async function fetchUser(id) {
+    const res = await fetch(`/api/users/${id}`);
+    if (!res.ok) throw new Error('Not found');
+    return res.json();
+  }
+  
+  fetchUser(42).then(user => {
+    console.log(user.name);
+  }).catch(console.error);"></code></pre>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">With line numbers</h2>
+  
+    <div class="code-block code-block--lines" data-language="CSS">
+      <div class="code-header">
+        <span class="code-lang">CSS</span>
+        <button class="copy-btn" aria-label="Copy code">
+          <svg class="icon-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <pre class="code-pre"><code class="code-body" data-raw=".container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 40px;
+  }
+  
+  @media (max-width: 600px) {
+    .container { padding: 16px; }
+  }"></code></pre>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">With highlighted lines</h2>
+  
+    <div class="code-block" data-language="TypeScript">
+      <div class="code-header">
+        <span class="code-lang">TypeScript</span>
+        <button class="copy-btn" aria-label="Copy code">
+          <svg class="icon-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <pre class="code-pre"><code class="code-body" data-raw="interface User {
+    id: number;
+    name: string;
+    email: string;
+  }
+  
+  function getUser(id: number): Promise&lt;User&gt; {
+    return fetch(`/api/users/${id}`).then(r => r.json());
+  }" data-highlight="7,8"></code></pre>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Minimal regex tokenizer
+  function tokenize(code, lang) {
+    const rules = [
+      { cls: "tok-cmt", re: /\/\/[^\n]*/g },
+      { cls: "tok-str", re: /(['"`])(?:(?!\1)[^\\]|\\.)*\1/g },
+      {
+        cls: "tok-kw",
+        re: /\b(async|await|function|return|const|let|var|if|else|throw|new|import|export|interface|type|extends|implements|class|for|of|in)\b/g,
+      },
+      { cls: "tok-type", re: /\b(Promise|Error|string|number|boolean|void|null|undefined|User)\b/g },
+      { cls: "tok-fn", re: /\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\s*\()/g },
+      { cls: "tok-num", re: /\b\d+(\.\d+)?\b/g },
+    ];
+  
+    // Escape HTML first
+    let safe = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+    const tokens = [];
+    for (const { cls, re } of rules) {
+      let m;
+      re.lastIndex = 0;
+      while ((m = re.exec(safe)) !== null) {
+        tokens.push({ start: m.index, end: m.index + m[0].length, cls, text: m[0] });
+      }
+    }
+  
+    // Sort and remove overlaps (keep first)
+    tokens.sort((a, b) => a.start - b.start);
+    const used = tokens.filter((t, i) => i === 0 || t.start >= tokens[i - 1].end);
+  
+    // Reconstruct
+    let result = "";
+    let cursor = 0;
+    for (const { start, end, cls, text } of used) {
+      result += safe.slice(cursor, start);
+      result += `<span class="${cls}">${text}</span>`;
+      cursor = end;
+    }
+    result += safe.slice(cursor);
+    return result;
+  }
+  
+  function renderBlock(block) {
+    const codeEl = block.querySelector(".code-body");
+    const raw = codeEl.dataset.raw || "";
+    const highlight = new Set(
+      (codeEl.dataset.highlight || "")
+        .split(",")
+        .map((n) => parseInt(n))
+        .filter(Boolean)
+    );
+    const lang = block.dataset.language || "";
+    const showLines = block.classList.contains("code-block--lines") || highlight.size > 0;
+    const highlighted = tokenize(raw, lang);
+    const lines = highlighted.split("\n");
+  
+    if (showLines) {
+      block.querySelector(".code-pre").style.padding = "8px 0";
+      codeEl.innerHTML = lines
+        .map((line, i) => {
+          const num = i + 1;
+          const isHL = highlight.has(num);
+          return (
+            `<span class="code-line${isHL ? " code-line--highlight" : ""}">` +
+            `<span class="code-line-num">${num}</span>` +
+            `<span class="code-line-text">${line}</span>` +
+            `</span>`
+          );
+        })
+        .join("\n");
+    } else {
+      codeEl.innerHTML = highlighted;
+    }
+  }
+  
+  // Copy button
+  document.querySelectorAll(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const block = btn.closest(".code-block");
+      const raw = block.querySelector(".code-body").dataset.raw || "";
+      navigator.clipboard.writeText(raw).then(() => {
+        btn.classList.add("copied");
+        btn.querySelector(".copy-label").textContent = "Copied!";
+        setTimeout(() => {
+          btn.classList.remove("copied");
+          btn.querySelector(".copy-label").textContent = "Copy";
+        }, 2000);
+      });
+    });
+  });
+  
+  document.querySelectorAll(".code-block").forEach(renderBlock);
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    padding: 40px 24px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 680px;
+  }
+  
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  
+  /* Code block */
+  .code-block {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #21262d;
+    border-bottom: 1px solid #30363d;
+  }
+  
+  .code-lang {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b949e;
+  }
+  
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .copy-btn:hover {
+    color: #e6edf3;
+    border-color: #8b949e;
+    background: #30363d;
+  }
+  .copy-btn.copied {
+    color: #3fb950;
+    border-color: #3fb950;
+  }
+  
+  .icon-check {
+    display: none;
+  }
+  .copy-btn.copied .icon-copy {
+    display: none;
+  }
+  .copy-btn.copied .icon-check {
+    display: block;
+  }
+  
+  .code-pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, monospace;
+    counter-reset: line;
+  }
+  
+  .code-body {
+    display: block;
+  }
+  
+  /* Syntax coloring */
+  .tok-kw {
+    color: #ff7b72;
+  } /* keyword */
+  .tok-fn {
+    color: #d2a8ff;
+  } /* function */
+  .tok-str {
+    color: #a5d6ff;
+  } /* string */
+  .tok-num {
+    color: #79c0ff;
+  } /* number */
+  .tok-cmt {
+    color: #8b949e;
+    font-style: italic;
+  } /* comment */
+  .tok-type {
+    color: #ffa657;
+  } /* type/interface */
+  .tok-prop {
+    color: #e6edf3;
+  } /* property */
+  .tok-punc {
+    color: #8b949e;
+  } /* punctuation */
+  
+  /* Line numbers */
+  .code-block--lines .code-pre {
+    padding-left: 0;
+  }
+  
+  .code-line {
+    display: flex;
+  }
+  
+  .code-line-num {
+    min-width: 44px;
+    padding: 0 12px 0 16px;
+    color: #4a555f;
+    user-select: none;
+    text-align: right;
+    flex-shrink: 0;
+    counter-increment: line;
+  }
+  
+  .code-line-text {
+    flex: 1;
+    padding-right: 16px;
+  }
+  
+  /* Highlighted lines */
+  .code-line--highlight {
+    background: rgba(255, 204, 0, 0.08);
+    border-left: 2px solid #e3b341;
+    margin-left: -1px;
+  }
+  .code-line--highlight .code-line-num {
+    color: #e3b341;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Block</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="section-label">JavaScript</h2>
+  
+    <div class="code-block" data-language="JavaScript">
+      <div class="code-header">
+        <span class="code-lang">JavaScript</span>
+        <button class="copy-btn" aria-label="Copy code">
+          <svg class="icon-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <pre class="code-pre"><code class="code-body" data-raw="async function fetchUser(id) {
+    const res = await fetch(`/api/users/${id}`);
+    if (!res.ok) throw new Error('Not found');
+    return res.json();
+  }
+  
+  fetchUser(42).then(user => {
+    console.log(user.name);
+  }).catch(console.error);"></code></pre>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">With line numbers</h2>
+  
+    <div class="code-block code-block--lines" data-language="CSS">
+      <div class="code-header">
+        <span class="code-lang">CSS</span>
+        <button class="copy-btn" aria-label="Copy code">
+          <svg class="icon-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <pre class="code-pre"><code class="code-body" data-raw=".container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 40px;
+  }
+  
+  @media (max-width: 600px) {
+    .container { padding: 16px; }
+  }"></code></pre>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">With highlighted lines</h2>
+  
+    <div class="code-block" data-language="TypeScript">
+      <div class="code-header">
+        <span class="code-lang">TypeScript</span>
+        <button class="copy-btn" aria-label="Copy code">
+          <svg class="icon-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      <pre class="code-pre"><code class="code-body" data-raw="interface User {
+    id: number;
+    name: string;
+    email: string;
+  }
+  
+  function getUser(id: number): Promise&lt;User&gt; {
+    return fetch(`/api/users/${id}`).then(r => r.json());
+  }" data-highlight="7,8"></code></pre>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Minimal regex tokenizer
+  function tokenize(code, lang) {
+    const rules = [
+      { cls: "tok-cmt", re: /\/\/[^\n]*/g },
+      { cls: "tok-str", re: /(['"`])(?:(?!\1)[^\\]|\\.)*\1/g },
+      {
+        cls: "tok-kw",
+        re: /\b(async|await|function|return|const|let|var|if|else|throw|new|import|export|interface|type|extends|implements|class|for|of|in)\b/g,
+      },
+      { cls: "tok-type", re: /\b(Promise|Error|string|number|boolean|void|null|undefined|User)\b/g },
+      { cls: "tok-fn", re: /\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\s*\()/g },
+      { cls: "tok-num", re: /\b\d+(\.\d+)?\b/g },
+    ];
+  
+    // Escape HTML first
+    let safe = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+    const tokens = [];
+    for (const { cls, re } of rules) {
+      let m;
+      re.lastIndex = 0;
+      while ((m = re.exec(safe)) !== null) {
+        tokens.push({ start: m.index, end: m.index + m[0].length, cls, text: m[0] });
+      }
+    }
+  
+    // Sort and remove overlaps (keep first)
+    tokens.sort((a, b) => a.start - b.start);
+    const used = tokens.filter((t, i) => i === 0 || t.start >= tokens[i - 1].end);
+  
+    // Reconstruct
+    let result = "";
+    let cursor = 0;
+    for (const { start, end, cls, text } of used) {
+      result += safe.slice(cursor, start);
+      result += `<span class="${cls}">${text}</span>`;
+      cursor = end;
+    }
+    result += safe.slice(cursor);
+    return result;
+  }
+  
+  function renderBlock(block) {
+    const codeEl = block.querySelector(".code-body");
+    const raw = codeEl.dataset.raw || "";
+    const highlight = new Set(
+      (codeEl.dataset.highlight || "")
+        .split(",")
+        .map((n) => parseInt(n))
+        .filter(Boolean)
+    );
+    const lang = block.dataset.language || "";
+    const showLines = block.classList.contains("code-block--lines") || highlight.size > 0;
+    const highlighted = tokenize(raw, lang);
+    const lines = highlighted.split("\n");
+  
+    if (showLines) {
+      block.querySelector(".code-pre").style.padding = "8px 0";
+      codeEl.innerHTML = lines
+        .map((line, i) => {
+          const num = i + 1;
+          const isHL = highlight.has(num);
+          return (
+            `<span class="code-line${isHL ? " code-line--highlight" : ""}">` +
+            `<span class="code-line-num">${num}</span>` +
+            `<span class="code-line-text">${line}</span>` +
+            `</span>`
+          );
+        })
+        .join("\n");
+    } else {
+      codeEl.innerHTML = highlighted;
+    }
+  }
+  
+  // Copy button
+  document.querySelectorAll(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const block = btn.closest(".code-block");
+      const raw = block.querySelector(".code-body").dataset.raw || "";
+      navigator.clipboard.writeText(raw).then(() => {
+        btn.classList.add("copied");
+        btn.querySelector(".copy-label").textContent = "Copied!";
+        setTimeout(() => {
+          btn.classList.remove("copied");
+          btn.querySelector(".copy-label").textContent = "Copy";
+        }, 2000);
+      });
+    });
+  });
+  
+  document.querySelectorAll(".code-block").forEach(renderBlock);
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

@@ -2,8 +2,16 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
-import { ResourceMetaSchema } from "./schema.js";
-import type { ResourceMetaOutput } from "./schema.js";
+import {
+  ChallengeMetaSchema,
+  LessonSchema,
+  ResourceMetaSchema,
+} from "./schema.js";
+import type {
+  ChallengeMetaOutput,
+  LessonOutput,
+  ResourceMetaOutput,
+} from "./schema.js";
 
 export async function loadResources(contentDir: string): Promise<ResourceMetaOutput[]> {
   const pattern = join(contentDir, "resources/*/index.mdx");
@@ -67,4 +75,53 @@ export function readSnippet(contentDir: string, slug: string, target: string): s
   }
 
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Arcade — Challenges & Lessons
+// ---------------------------------------------------------------------------
+
+export async function loadChallenges(contentDir: string): Promise<ChallengeMetaOutput[]> {
+  const pattern = join(contentDir, "challenges/**/index.mdx");
+  const files = await fg(pattern, { onlyFiles: true });
+
+  const challenges: ChallengeMetaOutput[] = [];
+
+  for (const file of files) {
+    const raw = readFileSync(file, "utf-8");
+    const { data } = matter(raw);
+
+    const result = ChallengeMetaSchema.safeParse(data);
+    if (!result.success) {
+      console.warn(`[schema] Invalid challenge at ${file}:`, result.error.flatten());
+      continue;
+    }
+
+    challenges.push(result.data);
+  }
+
+  return challenges.sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+export async function loadLessons(contentDir: string): Promise<LessonOutput[]> {
+  const pattern = join(contentDir, "challenges/_lessons/**/*.yaml");
+  const files = await fg(pattern, { onlyFiles: true });
+
+  const lessons: LessonOutput[] = [];
+
+  for (const file of files) {
+    const raw = readFileSync(file, "utf-8");
+    // gray-matter can parse YAML directly with empty content
+    const parsed = matter(`---\n${raw}\n---\n`);
+
+    const result = LessonSchema.safeParse(parsed.data);
+    if (!result.success) {
+      console.warn(`[schema] Invalid lesson at ${file}:`, result.error.flatten());
+      continue;
+    }
+
+    lessons.push(result.data);
+  }
+
+  return lessons.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 }

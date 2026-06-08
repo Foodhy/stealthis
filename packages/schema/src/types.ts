@@ -58,7 +58,9 @@ export type ResourceCollection =
   | "remotion"
   | "effects"
   | "mobile-nav"
-  | "charts";
+  | "charts"
+  | "restaurant"
+  | "hotel";
 
 export interface ResourceAuthor {
   name: string;
@@ -92,4 +94,83 @@ export interface ResourceMeta {
   codepenExamples?: CodePenExample[];
   createdAt: string;
   updatedAt: string;
+}
+
+// Arcade — Challenges & Lessons
+
+export type ChallengeType = "quiz" | "complete" | "fix" | "identify" | "animation";
+export type ChallengeQuality = "draft" | "published";
+
+interface ChallengeBase {
+  slug: string;
+  topic: string;
+  title: string;
+  difficulty: number;
+  resourceSlug?: string;
+  estimatedSeconds: number;
+  quality: ChallengeQuality;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QuizChallenge extends ChallengeBase {
+  type: "quiz";
+  question: string;
+  options: string[];
+  answer: number;
+  explanation?: string;
+}
+
+export interface CompleteChallenge extends ChallengeBase {
+  type: "complete";
+  template: string;
+  answers: Record<string, string>;
+  caseSensitive: boolean;
+  explanation?: string;
+}
+
+export interface FixChallenge extends ChallengeBase {
+  type: "fix";
+  starter: string;
+  solution: string;
+  criterion: "dom-equal" | "regex" | "visual";
+  regexPattern?: string;
+  explanation?: string;
+}
+
+export interface IdentifyChallenge extends ChallengeBase {
+  type: "identify";
+  code: string;
+  answer: number | string;
+  options?: string[];
+  explanation?: string;
+}
+
+export interface AnimationChallenge extends ChallengeBase {
+  type: "animation";
+  component?: string;
+  embed?: string;
+  followUp?: {
+    question: string;
+    options: string[];
+    answer: number;
+  };
+  explanation?: string;
+}
+
+export type ChallengeMeta =
+  | QuizChallenge
+  | CompleteChallenge
+  | FixChallenge
+  | IdentifyChallenge
+  | AnimationChallenge;
+
+export interface Lesson {
+  slug: string;
+  topic: string;
+  title: string;
+  description?: string;
+  order: number;
+  challenges: string[];
 }

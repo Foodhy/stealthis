@@ -1,0 +1,304 @@
+---
+slug: "infinite-scroll-delete-closing-tag-ce7b2a29"
+topic: "infinite"
+title: "Fix the broken HTML structure in Infinite Scroll"
+type: "fix"
+difficulty: 2
+resourceSlug: "infinite-scroll"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    font-family: "Sora", system-ui, sans-serif;
+    background: #0b1020;
+    color: #e2e8f0;
+  }
+  
+  .shell {
+    width: min(760px, calc(100% - 2rem));
+    margin: 1.8rem auto 3rem;
+  }
+  
+  h1 {
+    margin-bottom: 0.3rem;
+  }
+  
+  p {
+    margin-top: 0;
+    color: #94a3b8;
+  }
+  
+  .feed {
+    display: grid;
+    gap: 0.7rem;
+    min-height: 240px;
+  }
+  
+  .card {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    background: #121a2e;
+    padding: 0.9rem;
+  }
+  
+  .card h3 {
+    margin: 0 0 0.3rem;
+  }
+  
+  .card p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .status {
+    margin-top: 0.9rem;
+    min-height: 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infinite Scroll
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <h1>Infinite Scroll</h1>
+      <p>Scroll down to load more cards.</p>
+      <section id="feed" class="feed" aria-live="polite"></section>
+      <p id="status" class="status" role="status"></p>
+      <div id="sentinel" aria-hidden="true"></div>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const TOTAL = 80;
+    const PAGE_SIZE = 10;
+    const DATA = Array.from({ length: TOTAL }, (_, index) => ({
+      id: index + 1,
+      title: `Event ${index + 1}`,
+      body: `This is item ${index + 1} in the feed.`,
+    }));
+  
+    let cursor = 0;
+    let loading = false;
+  
+    const feed = document.getElementById("feed");
+    const status = document.getElementById("status");
+    const sentinel = document.getElementById("sentinel");
+  
+    const setStatus = (message) => {
+      status.textContent = message;
+    };
+  
+    const loadNext = async () => {
+      if (loading || cursor >= DATA.length) return;
+      loading = true;
+      setStatus("Loading more...");
+  
+      await new Promise((resolve) => setTimeout(resolve, 400));
+  
+      const next = DATA.slice(cursor, cursor + PAGE_SIZE);
+      for (const item of next) {
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `<h3>${item.title}</h3><p>${item.body}</p>`;
+        feed.appendChild(card);
+      }
+  
+      cursor += next.length;
+      loading = false;
+  
+      if (cursor >= DATA.length) {
+        setStatus("You reached the end.");
+      } else {
+        setStatus(`Loaded ${cursor} of ${DATA.length}`);
+      }
+    };
+  
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          loadNext();
+        }
+      });
+      observer.observe(sentinel);
+    } else {
+      window.addEventListener("scroll", () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+          loadNext();
+        }
+      });
+    }
+  
+    loadNext();
+  })();
+  
+  </script>
+solution: |
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    font-family: "Sora", system-ui, sans-serif;
+    background: #0b1020;
+    color: #e2e8f0;
+  }
+  
+  .shell {
+    width: min(760px, calc(100% - 2rem));
+    margin: 1.8rem auto 3rem;
+  }
+  
+  h1 {
+    margin-bottom: 0.3rem;
+  }
+  
+  p {
+    margin-top: 0;
+    color: #94a3b8;
+  }
+  
+  .feed {
+    display: grid;
+    gap: 0.7rem;
+    min-height: 240px;
+  }
+  
+  .card {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    background: #121a2e;
+    padding: 0.9rem;
+  }
+  
+  .card h3 {
+    margin: 0 0 0.3rem;
+  }
+  
+  .card p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .status {
+    margin-top: 0.9rem;
+    min-height: 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infinite Scroll</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <h1>Infinite Scroll</h1>
+      <p>Scroll down to load more cards.</p>
+      <section id="feed" class="feed" aria-live="polite"></section>
+      <p id="status" class="status" role="status"></p>
+      <div id="sentinel" aria-hidden="true"></div>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const TOTAL = 80;
+    const PAGE_SIZE = 10;
+    const DATA = Array.from({ length: TOTAL }, (_, index) => ({
+      id: index + 1,
+      title: `Event ${index + 1}`,
+      body: `This is item ${index + 1} in the feed.`,
+    }));
+  
+    let cursor = 0;
+    let loading = false;
+  
+    const feed = document.getElementById("feed");
+    const status = document.getElementById("status");
+    const sentinel = document.getElementById("sentinel");
+  
+    const setStatus = (message) => {
+      status.textContent = message;
+    };
+  
+    const loadNext = async () => {
+      if (loading || cursor >= DATA.length) return;
+      loading = true;
+      setStatus("Loading more...");
+  
+      await new Promise((resolve) => setTimeout(resolve, 400));
+  
+      const next = DATA.slice(cursor, cursor + PAGE_SIZE);
+      for (const item of next) {
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `<h3>${item.title}</h3><p>${item.body}</p>`;
+        feed.appendChild(card);
+      }
+  
+      cursor += next.length;
+      loading = false;
+  
+      if (cursor >= DATA.length) {
+        setStatus("You reached the end.");
+      } else {
+        setStatus(`Loaded ${cursor} of ${DATA.length}`);
+      }
+    };
+  
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          loadNext();
+        }
+      });
+      observer.observe(sentinel);
+    } else {
+      window.addEventListener("scroll", () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+          loadNext();
+        }
+      });
+    }
+  
+    loadNext();
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

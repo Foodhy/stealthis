@@ -1,0 +1,471 @@
+---
+slug: "lg-10-threejs-distorted-plane-remove-css-property-78569d90"
+topic: "imported-libs-gen"
+title: "Restore missing CSS property in Three.js Distorted Plane Shader"
+type: "fix"
+difficulty: 1
+resourceSlug: "lg-10-threejs-distorted-plane"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --text: #eef4ff;
+    --muted: #c2d0e7;
+    --accent: #8ce8ff;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  #scene {
+    position: fixed;
+    inset: 0;
+  }
+  .topbar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 1rem;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+  }
+  .topbar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text);
+    padding: .45rem .8rem;
+    cursor: pointer;
+  }
+  .overlay {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    width: min(900px, 92%);
+    margin: 0 auto;
+    display: grid;
+    align-content: center;
+    gap: .7rem;
+    text-align: center;
+  }
+  .label {
+    margin: 0;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1,
+  p {
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(2rem, 7vw, 4.2rem);
+  }
+  p {
+    color: var(--muted);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 10 - Distorted Plane Shader</title>
+      <link rel="stylesheet" href="style.css" />
+      <script type="importmap">{"imports":{"gsap":"https://esm.sh/gsap@3.13.0","gsap/ScrollTrigger":"https://esm.sh/gsap@3.13.0/ScrollTrigger","gsap/SplitText":"https://esm.sh/gsap@3.13.0/SplitText","gsap/Flip":"https://esm.sh/gsap@3.13.0/Flip","gsap/ScrambleTextPlugin":"https://esm.sh/gsap@3.13.0/ScrambleTextPlugin","gsap/TextPlugin":"https://esm.sh/gsap@3.13.0/TextPlugin","gsap/all":"https://esm.sh/gsap@3.13.0/all","gsap/":"https://esm.sh/gsap@3.13.0/","lenis":"https://esm.sh/lenis@1.1.13/dist/lenis.mjs","three":"https://esm.sh/three@0.171.0","three/addons/":"https://esm.sh/three@0.171.0/examples/jsm/"}}</script>
+  </head>
+    <body>
+      <header class="topbar">
+        <a href="../">Back to demos</a>
+        <button id="toggleMotion"></button>
+      </header>
+      <div id="scene"></div>
+      <section class="overlay">
+        <p class="label">Demo 10</p>
+        <h1>Distorted Plane Shader</h1>
+        <p>Animated shader background baseline for cinematic hero sections.</p>
+      </section>
+  
+      <script type="module" src="script.js"></script>
+        </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  import * as THREE from "three";
+  
+  const host = document.getElementById("scene");
+  const toggle = document.getElementById("toggleMotion");
+  let motionEnabled = !window.MotionPreference.prefersReducedMotion();
+  
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+  camera.position.z = 1;
+  
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  host.appendChild(renderer.domElement);
+  
+  const uniforms = {
+    uTime: { value: 0 },
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+  };
+  
+  const material = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      precision highp float;
+      varying vec2 vUv;
+      uniform float uTime;
+      uniform vec2 uResolution;
+  
+      float noise(vec2 p){
+        return sin(p.x) * sin(p.y);
+      }
+  
+      void main() {
+        vec2 uv = vUv;
+        vec2 p = (uv - 0.5) * vec2(uResolution.x / uResolution.y, 1.0);
+        float t = uTime * 0.25;
+  
+        float wave = sin(p.x * 3.2 + t) * 0.12 + cos(p.y * 2.4 - t * 1.2) * 0.1;
+        vec2 q = p + vec2(wave, wave * 0.7);
+  
+        float d = length(q);
+        float glow = 0.25 / (d + 0.12);
+        float grain = noise(q * 8.0 + t);
+  
+        vec3 col = vec3(0.03, 0.05, 0.12);
+        col += vec3(0.15, 0.32, 0.55) * glow;
+        col += vec3(0.35, 0.18, 0.6) * max(0.0, sin(q.x * 6.0 + t));
+        col += grain * 0.015;
+  
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+  });
+  
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+  scene.add(quad);
+  
+  function setLabel() {
+    toggle.textContent = motionEnabled ? "Disable motion" : "Enable motion";
+  }
+  
+  function animate() {
+    requestAnimationFrame(animate);
+    if (motionEnabled) uniforms.uTime.value += 0.016;
+    renderer.render(scene, camera);
+  }
+  
+  function onResize() {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+  }
+  
+  toggle.addEventListener("click", () => {
+    motionEnabled = !motionEnabled;
+    setLabel();
+  });
+  
+  window.addEventListener("resize", onResize);
+  setLabel();
+  animate();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --bg: #04070f;
+    --text: #eef4ff;
+    --muted: #c2d0e7;
+    --accent: #8ce8ff;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  #scene {
+    position: fixed;
+    inset: 0;
+  }
+  .topbar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 1rem;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+  }
+  .topbar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text);
+    padding: .45rem .8rem;
+    cursor: pointer;
+  }
+  .overlay {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    width: min(900px, 92%);
+    margin: 0 auto;
+    display: grid;
+    align-content: center;
+    gap: .7rem;
+    text-align: center;
+  }
+  .label {
+    margin: 0;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1,
+  p {
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(2rem, 7vw, 4.2rem);
+  }
+  p {
+    color: var(--muted);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 10 - Distorted Plane Shader</title>
+      <link rel="stylesheet" href="style.css" />
+      <script type="importmap">{"imports":{"gsap":"https://esm.sh/gsap@3.13.0","gsap/ScrollTrigger":"https://esm.sh/gsap@3.13.0/ScrollTrigger","gsap/SplitText":"https://esm.sh/gsap@3.13.0/SplitText","gsap/Flip":"https://esm.sh/gsap@3.13.0/Flip","gsap/ScrambleTextPlugin":"https://esm.sh/gsap@3.13.0/ScrambleTextPlugin","gsap/TextPlugin":"https://esm.sh/gsap@3.13.0/TextPlugin","gsap/all":"https://esm.sh/gsap@3.13.0/all","gsap/":"https://esm.sh/gsap@3.13.0/","lenis":"https://esm.sh/lenis@1.1.13/dist/lenis.mjs","three":"https://esm.sh/three@0.171.0","three/addons/":"https://esm.sh/three@0.171.0/examples/jsm/"}}</script>
+  </head>
+    <body>
+      <header class="topbar">
+        <a href="../">Back to demos</a>
+        <button id="toggleMotion"></button>
+      </header>
+      <div id="scene"></div>
+      <section class="overlay">
+        <p class="label">Demo 10</p>
+        <h1>Distorted Plane Shader</h1>
+        <p>Animated shader background baseline for cinematic hero sections.</p>
+      </section>
+  
+      <script type="module" src="script.js"></script>
+        </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  import * as THREE from "three";
+  
+  const host = document.getElementById("scene");
+  const toggle = document.getElementById("toggleMotion");
+  let motionEnabled = !window.MotionPreference.prefersReducedMotion();
+  
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+  camera.position.z = 1;
+  
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  host.appendChild(renderer.domElement);
+  
+  const uniforms = {
+    uTime: { value: 0 },
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+  };
+  
+  const material = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      precision highp float;
+      varying vec2 vUv;
+      uniform float uTime;
+      uniform vec2 uResolution;
+  
+      float noise(vec2 p){
+        return sin(p.x) * sin(p.y);
+      }
+  
+      void main() {
+        vec2 uv = vUv;
+        vec2 p = (uv - 0.5) * vec2(uResolution.x / uResolution.y, 1.0);
+        float t = uTime * 0.25;
+  
+        float wave = sin(p.x * 3.2 + t) * 0.12 + cos(p.y * 2.4 - t * 1.2) * 0.1;
+        vec2 q = p + vec2(wave, wave * 0.7);
+  
+        float d = length(q);
+        float glow = 0.25 / (d + 0.12);
+        float grain = noise(q * 8.0 + t);
+  
+        vec3 col = vec3(0.03, 0.05, 0.12);
+        col += vec3(0.15, 0.32, 0.55) * glow;
+        col += vec3(0.35, 0.18, 0.6) * max(0.0, sin(q.x * 6.0 + t));
+        col += grain * 0.015;
+  
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+  });
+  
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+  scene.add(quad);
+  
+  function setLabel() {
+    toggle.textContent = motionEnabled ? "Disable motion" : "Enable motion";
+  }
+  
+  function animate() {
+    requestAnimationFrame(animate);
+    if (motionEnabled) uniforms.uTime.value += 0.016;
+    renderer.render(scene, camera);
+  }
+  
+  function onResize() {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+  }
+  
+  toggle.addEventListener("click", () => {
+    motionEnabled = !motionEnabled;
+    setLabel();
+  });
+  
+  window.addEventListener("resize", onResize);
+  setLabel();
+  animate();
+  
+  </script>
+explanation: "The declaration `--bg: #04070f;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

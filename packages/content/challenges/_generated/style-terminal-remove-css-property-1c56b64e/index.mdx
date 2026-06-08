@@ -1,0 +1,1893 @@
+---
+slug: "style-terminal-remove-css-property-1c56b64e"
+topic: "terminal"
+title: "Restore missing CSS property in Terminal / CLI"
+type: "fix"
+difficulty: 1
+resourceSlug: "style-terminal"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  /* ============================================================
+     TERMINAL / CLI — Style Showcase
+     Font: Courier New / Lucida Console / monospace only
+     Palette: #33FF33 (phosphor green) on #0A0F0A (near-black)
+     ============================================================ */
+  
+  /* --- Root variables --- */
+  :root {
+    --green-dim: #1a8c1a;
+    --green-mute: rgba(51, 255, 51, 0.4);
+    --green-faint: rgba(51, 255, 51, 0.12);
+    --warn: #ffd700;
+    --error: #ff3333;
+    --bg: #0a0f0a;
+    --panel: #0d150d;
+    --border: rgba(51, 255, 51, 0.35);
+    --font: "Courier New", "Lucida Console", Courier, monospace;
+  }
+  
+  /* --- Reset & base --- */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    font-size: 16px;
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  /* Subtle green CRT noise texture via gradient */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+  }
+  
+  /* --- Scrollbar --- */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--green-dim);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--green);
+  }
+  
+  /* --- Blink animation --- */
+  @keyframes blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+  
+  /* --- Header --- */
+  .site-header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--green);
+  }
+  
+  .prompt-sym {
+    color: var(--green-dim);
+  }
+  
+  .logo-text {
+    font-weight: bold;
+  }
+  
+  .cursor-blink {
+    animation: blink 0.8s step-end infinite;
+  }
+  
+  .header-nav {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .nav-link {
+    color: var(--green-dim);
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.15s;
+  }
+  
+  .nav-link:hover,
+  .nav-active {
+    color: var(--green);
+  }
+  
+  .nav-active {
+    text-decoration: underline;
+  }
+  
+  .header-uptime {
+    font-size: 11px;
+    color: var(--green-dim);
+    letter-spacing: 0.05em;
+  }
+  
+  /* --- Hero --- */
+  .hero {
+    padding: 32px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .ascii-art {
+    font-size: clamp(7px, 1.3vw, 13px);
+    color: var(--green);
+    line-height: 1.25;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  
+  .hero-tagline {
+    font-size: 12px;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  
+  .hero-sub {
+    font-size: 11px;
+    color: var(--green-dim);
+  }
+  
+  /* --- Status bar --- */
+  .status-bar {
+    background: rgba(51, 255, 51, 0.06);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+  
+  .status-item {
+    color: var(--green-dim);
+  }
+  .status-ok {
+    color: var(--green);
+  }
+  .status-sep {
+    color: var(--border);
+    user-select: none;
+  }
+  
+  /* --- Main content --- */
+  .main-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  /* --- Terminal window --- */
+  .terminal-window {
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  
+  .term-titlebar {
+    background: rgba(51, 255, 51, 0.08);
+    border-bottom: 1px solid var(--border);
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .term-dots {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  .dot-red {
+    background: #ff5f57;
+  }
+  .dot-yellow {
+    background: #febc2e;
+  }
+  .dot-green {
+    background: #28c840;
+  }
+  
+  .term-title {
+    font-size: 11px;
+    color: var(--green-dim);
+    flex: 1;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  
+  .term-body {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Output lines */
+  .output-line {
+    font-size: 12px;
+    color: var(--green);
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+  
+  .output-line.muted {
+    color: var(--green-dim);
+  }
+  
+  .prompt {
+    color: var(--green);
+    flex-shrink: 0;
+    font-weight: bold;
+  }
+  
+  /* --- Profile content --- */
+  .profile-content {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 4px 0;
+  }
+  
+  .avatar-art {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--green-dim);
+    white-space: pre;
+  }
+  
+  .profile-data {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .data-row {
+    font-size: 12px;
+  }
+  
+  .data-key {
+    color: var(--green-dim);
+  }
+  
+  .data-val {
+    color: var(--green);
+  }
+  
+  .profile-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+  
+  .stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat-num {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--green);
+  }
+  
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--green-dim);
+    letter-spacing: 0.08em;
+  }
+  
+  .stat-sep {
+    color: var(--border);
+    font-size: 18px;
+    line-height: 1;
+    user-select: none;
+  }
+  
+  /* --- Buttons --- */
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .btn {
+    font-family: var(--font);
+    font-size: 12px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    letter-spacing: 0.04em;
+    transition: background 0.1s, color 0.1s;
+    outline: none;
+  }
+  
+  .btn:focus-visible {
+    outline: 1px dashed var(--green);
+    outline-offset: 2px;
+  }
+  
+  /* Primary — [EXECUTE] */
+  .btn-primary {
+    color: var(--bg);
+    background: var(--green);
+    border: 1px solid var(--green);
+    font-weight: bold;
+  }
+  
+  .btn-primary:hover {
+    background: #50ff50;
+    border-color: #50ff50;
+  }
+  
+  .btn-primary:active {
+    background: var(--green-dim);
+    border-color: var(--green-dim);
+    color: var(--bg);
+  }
+  
+  /* Secondary — [STATUS] */
+  .btn-secondary {
+    color: rgba(51, 255, 51, 0.7);
+    background: transparent;
+    border: 1px solid rgba(51, 255, 51, 0.5);
+  }
+  
+  .btn-secondary:hover {
+    color: var(--green);
+    border-color: var(--green);
+    background: var(--green-faint);
+  }
+  
+  .btn-secondary:active {
+    background: rgba(51, 255, 51, 0.2);
+  }
+  
+  /* Ghost — text only, looks like a command */
+  .btn-ghost {
+    color: var(--green-dim);
+    background: transparent;
+    border: none;
+    padding-left: 0;
+  }
+  
+  .btn-ghost::before {
+    content: "$ ";
+    color: var(--green);
+  }
+  
+  .btn-ghost:hover {
+    color: var(--green);
+    text-decoration: underline;
+  }
+  
+  /* Command output area */
+  .cmd-output-area {
+    font-size: 11px;
+    color: var(--green-dim);
+    min-height: 0;
+    max-height: 120px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border-top: 0;
+    padding-top: 0;
+  }
+  
+  .cmd-output-area:not(:empty) {
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+  
+  .cmd-output-line {
+    display: block;
+    padding: 1px 0;
+  }
+  
+  .cmd-output-line.cmd-line {
+    color: var(--green);
+  }
+  
+  .cmd-output-line.out-line {
+    color: var(--green-dim);
+  }
+  
+  /* --- Input --- */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .input-label {
+    font-size: 11px;
+    color: var(--green-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  
+  .term-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    max-width: 480px;
+  }
+  
+  .input-prompt {
+    color: var(--green);
+    font-weight: bold;
+    flex-shrink: 0;
+    white-space: pre;
+  }
+  
+  .term-input {
+    font-family: var(--font);
+    font-size: 13px;
+    background: transparent;
+    color: var(--green);
+    border: none;
+    outline: none;
+    flex: 1;
+    caret-color: var(--green);
+  }
+  
+  .term-input::placeholder {
+    color: var(--green-mute);
+  }
+  
+  .term-input-wrap:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green-mute);
+  }
+  
+  /* --- Badges --- */
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0;
+  }
+  
+  .badge {
+    font-family: var(--font);
+    font-size: 11px;
+    padding: 3px 8px;
+    color: var(--green-dim);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    letter-spacing: 0.03em;
+  }
+  
+  .badge-on {
+    color: var(--green);
+    border-color: rgba(51, 255, 51, 0.6);
+    background: var(--green-faint);
+  }
+  
+  .badge-warn {
+    color: var(--warn);
+    border-color: rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.06);
+  }
+  
+  .badge-off {
+    color: var(--error);
+    border-color: rgba(255, 51, 51, 0.4);
+    background: rgba(255, 51, 51, 0.05);
+    text-decoration: line-through;
+  }
+  
+  /* --- Responsive --- */
+  @media (max-width: 600px) {
+    .header-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .hero {
+      padding: 20px 14px 12px;
+    }
+    .ascii-art {
+      font-size: 6px;
+    }
+    .btn {
+      width: 100%;
+    }
+    .profile-content {
+      flex-direction: column;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="style.css" />
+      <title>Terminal / CLI</title>
+    </head>
+    <body>
+      <!-- Header -->
+      <header class="site-header">
+        <div class="header-inner">
+          <div class="header-logo">
+            <span class="prompt-sym">$</span>
+            <span class="logo-text">terminal-ui<span class="cursor-blink">_</span></span>
+          </div>
+          <nav class="header-nav">
+            <a href="#" class="nav-link">--home</a>
+            <a href="#" class="nav-link">--about</a>
+            <a href="#" class="nav-link nav-active">--demo</a>
+          </nav>
+          <div class="header-uptime">UPTIME: 99.9%</div>
+        </div>
+      </header>
+  
+      <!-- Hero / ASCII banner -->
+      <section class="hero">
+        <pre class="ascii-art" aria-label="Terminal UI ASCII logo">
+   ████████╗███████╗██████╗ ███╗   ███╗
+      ██╔══╝██╔════╝██╔══██╗████╗ ████║
+      ██║   █████╗  ██████╔╝██╔████╔██║
+      ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
+      ██║   ███████╗██║  ██║██║ ╚═╝ ██║
+      ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝</pre>
+        <p class="hero-tagline">&gt; COMMAND-LINE AESTHETICS FOR THE MODERN WEB</p>
+        <p class="hero-sub">&gt; Version 2.1.0 — MIT License — Zero Dependencies</p>
+      </section>
+  
+      <!-- System status bar -->
+      <div class="status-bar">
+        <span class="status-item status-ok">● SYS: ONLINE</span>
+        <span class="status-sep">|</span>
+        <span class="status-item">CPU: 4%</span>
+        <span class="status-sep">|</span>
+        <span class="status-item">MEM: 128MB</span>
+        <span class="status-sep">|</span>
+        <span class="status-item status-ok">● NET: CONNECTED</span>
+      </div>
+  
+      <!-- Main content -->
+      <main class="main-content">
+        <!-- Profile card — terminal window style -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">profile.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> cat profile.json</div>
+            <div class="output-line muted">&gt; Reading user data...</div>
+            <div class="profile-content">
+              <div class="profile-avatar">
+                <pre class="avatar-art" aria-hidden="true">
+    ┌──────────┐
+    │  ██████  │
+    │ ████████ │
+    │  ██  ██  │
+    │  ██████  │
+    │ /██████\ │
+    │/████████\│
+    └──────────┘</pre>
+              </div>
+              <div class="profile-data">
+                <div class="data-row"><span class="data-key">"name":</span><span class="data-val"> "root_user"</span></div>
+                <div class="data-row"><span class="data-key">"role":</span><span class="data-val"> "System Administrator"</span></div>
+                <div class="data-row"><span class="data-key">"shell":</span><span class="data-val"> "/bin/bash"</span></div>
+                <div class="data-row"><span class="data-key">"uid":</span><span class="data-val"> 0</span></div>
+                <div class="profile-stats">
+                  <div class="stat-block">
+                    <span class="stat-num">1,337</span>
+                    <span class="stat-lbl">COMMITS</span>
+                  </div>
+                  <span class="stat-sep">│</span>
+                  <div class="stat-block">
+                    <span class="stat-num">42</span>
+                    <span class="stat-lbl">REPOS</span>
+                  </div>
+                  <span class="stat-sep">│</span>
+                  <div class="stat-block">
+                    <span class="stat-num">99%</span>
+                    <span class="stat-lbl">UPTIME</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="output-line muted">&gt; Done. Exit code: 0</div>
+          </div>
+        </div>
+  
+        <!-- Buttons card -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">actions.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> ls --commands</div>
+            <div class="button-row">
+              <button class="btn btn-primary" data-cmd="deploy --env=production" data-output="Deploying to production... Done. Build ID: a3f91c2">
+                [EXECUTE]
+              </button>
+              <button class="btn btn-secondary" data-cmd="status --verbose" data-output="All systems nominal. 3 services running.">
+                [STATUS]
+              </button>
+              <button class="btn btn-ghost" data-cmd="help" data-output="Usage: terminal-ui [options]&#10;  --demo    Run demo mode&#10;  --verbose Enable verbose output">
+                help
+              </button>
+            </div>
+            <div class="cmd-output-area" id="cmd-output" aria-live="polite"></div>
+          </div>
+        </div>
+  
+        <!-- Input card -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">input.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> read --prompt "ENTER COMMAND"</div>
+            <div class="input-group">
+              <label class="input-label" for="term-input">&gt; INPUT</label>
+              <div class="term-input-wrap">
+                <span class="input-prompt">$ </span>
+                <input
+                  id="term-input"
+                  class="term-input"
+                  type="text"
+                  placeholder="type your command..."
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Badges card -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">flags.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> status --list-flags</div>
+            <div class="output-line muted">&gt; Active flags:</div>
+            <div class="badge-row">
+              <span class="badge badge-on">--active</span>
+              <span class="badge badge-on">--online</span>
+              <span class="badge">--v2.1</span>
+              <span class="badge">--stable</span>
+              <span class="badge badge-warn">--debug</span>
+              <span class="badge badge-off">--deprecated</span>
+            </div>
+          </div>
+        </div>
+      </main>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  /* ============================================================
+     TERMINAL / CLI — Interactive Script
+     - Button click simulates command execution with typed output
+     - Input enter key echoes typed command as output
+     - Typewriter effect for output lines
+     - Header uptime counter (live ticking)
+     ============================================================ */
+  
+  (function () {
+    "use strict";
+  
+    /* ----------------------------------------------------------
+       1. Button click → simulate command execution
+       Each button has data-cmd and data-output attributes
+    ---------------------------------------------------------- */
+    const outputArea = document.getElementById("cmd-output");
+    const buttons = document.querySelectorAll(".btn[data-cmd]");
+  
+    function appendLine(text, cssClass) {
+      if (!outputArea) return;
+      const line = document.createElement("span");
+      line.className = "cmd-output-line " + (cssClass || "");
+      line.textContent = text;
+      outputArea.appendChild(line);
+      outputArea.scrollTop = outputArea.scrollHeight;
+    }
+  
+    function typewriterAppend(text, cssClass, delay, callback) {
+      if (!outputArea) return;
+      const line = document.createElement("span");
+      line.className = "cmd-output-line " + (cssClass || "");
+      outputArea.appendChild(line);
+  
+      let i = 0;
+      const interval = setInterval(function () {
+        line.textContent += text[i];
+        i++;
+        outputArea.scrollTop = outputArea.scrollHeight;
+        if (i >= text.length) {
+          clearInterval(interval);
+          if (callback) setTimeout(callback, 80);
+        }
+      }, delay || 18);
+    }
+  
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const cmd = btn.dataset.cmd || "";
+        const output = btn.dataset.output || "";
+  
+        // Flash button
+        btn.style.opacity = "0.6";
+        setTimeout(function () {
+          btn.style.opacity = "";
+        }, 120);
+  
+        // Show command line
+        typewriterAppend("$ " + cmd, "cmd-line", 14, function () {
+          // Show each output line
+          const lines = output.split("\n");
+          let lineIdx = 0;
+  
+          function nextLine() {
+            if (lineIdx >= lines.length) return;
+            const txt = lines[lineIdx];
+            lineIdx++;
+            appendLine("> " + txt, "out-line");
+            if (lineIdx < lines.length) {
+              setTimeout(nextLine, 100);
+            } else {
+              appendLine("> Exit code: 0", "out-line");
+            }
+          }
+  
+          setTimeout(nextLine, 120);
+        });
+      });
+    });
+  
+    /* ----------------------------------------------------------
+       2. Input enter key: echo typed line as terminal output
+    ---------------------------------------------------------- */
+    const termInput = document.getElementById("term-input");
+  
+    if (termInput && outputArea) {
+      termInput.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        const val = termInput.value.trim();
+        if (!val) return;
+  
+        appendLine("$ " + val, "cmd-line");
+  
+        // Simulate a "command not found" response for unknown commands
+        const knownCmds = {
+          help: "Usage: terminal-ui [--demo|--verbose|--help]\nAll systems nominal.",
+          ls: "profile.sh  actions.sh  input.sh  flags.sh",
+          whoami: "root_user",
+          pwd: "/usr/local/terminal-ui/demo",
+          clear: "__CLEAR__",
+          date: new Date().toString(),
+          uptime: "up 99 days, 23 hours, 59 minutes",
+          version: "terminal-ui v2.1.0",
+        };
+  
+        const response = knownCmds[val.toLowerCase()];
+  
+        setTimeout(function () {
+          if (response === "__CLEAR__") {
+            outputArea.innerHTML = "";
+          } else if (response) {
+            response.split("\n").forEach(function (line) {
+              appendLine("> " + line, "out-line");
+            });
+          } else {
+            appendLine("> command not found: " + val, "out-line");
+            appendLine('> Try "help" for available commands.', "out-line");
+          }
+          termInput.value = "";
+        }, 200);
+      });
+    }
+  
+    /* ----------------------------------------------------------
+       3. Live uptime counter in the header
+    ---------------------------------------------------------- */
+    const uptimeEl = document.querySelector(".header-uptime");
+    if (uptimeEl) {
+      let seconds = 0;
+      setInterval(function () {
+        seconds++;
+        const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        const s = String(seconds % 60).padStart(2, "0");
+        uptimeEl.textContent = "UPTIME: " + h + ":" + m + ":" + s;
+      }, 1000);
+    }
+  
+    /* ----------------------------------------------------------
+       4. Badges — toggle active state on click
+    ---------------------------------------------------------- */
+    const badges = document.querySelectorAll(".badge");
+    badges.forEach(function (badge) {
+      if (badge.classList.contains("badge-off")) return; // deprecated can't be toggled
+      badge.style.cursor = "pointer";
+  
+      badge.addEventListener("click", function () {
+        if (badge.classList.contains("badge-on")) {
+          badge.classList.remove("badge-on");
+          badge.style.textDecoration = "line-through";
+          badge.style.opacity = "0.5";
+        } else {
+          badge.classList.add("badge-on");
+          badge.style.textDecoration = "";
+          badge.style.opacity = "";
+        }
+      });
+    });
+  
+    /* ----------------------------------------------------------
+       5. Cursor blink speed on input focus
+    ---------------------------------------------------------- */
+    if (termInput) {
+      const cursorInInput = document.querySelector(".cursor-blink");
+      termInput.addEventListener("focus", function () {
+        if (cursorInInput) cursorInInput.style.animationDuration = "0.4s";
+      });
+      termInput.addEventListener("blur", function () {
+        if (cursorInInput) cursorInInput.style.animationDuration = "0.8s";
+      });
+    }
+  })();
+  
+  </script>
+solution: |
+  <style>
+  /* ============================================================
+     TERMINAL / CLI — Style Showcase
+     Font: Courier New / Lucida Console / monospace only
+     Palette: #33FF33 (phosphor green) on #0A0F0A (near-black)
+     ============================================================ */
+  
+  /* --- Root variables --- */
+  :root {
+    --green: #33ff33;
+    --green-dim: #1a8c1a;
+    --green-mute: rgba(51, 255, 51, 0.4);
+    --green-faint: rgba(51, 255, 51, 0.12);
+    --warn: #ffd700;
+    --error: #ff3333;
+    --bg: #0a0f0a;
+    --panel: #0d150d;
+    --border: rgba(51, 255, 51, 0.35);
+    --font: "Courier New", "Lucida Console", Courier, monospace;
+  }
+  
+  /* --- Reset & base --- */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    font-size: 16px;
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  /* Subtle green CRT noise texture via gradient */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+  }
+  
+  /* --- Scrollbar --- */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--green-dim);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--green);
+  }
+  
+  /* --- Blink animation --- */
+  @keyframes blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+  
+  /* --- Header --- */
+  .site-header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--green);
+  }
+  
+  .prompt-sym {
+    color: var(--green-dim);
+  }
+  
+  .logo-text {
+    font-weight: bold;
+  }
+  
+  .cursor-blink {
+    animation: blink 0.8s step-end infinite;
+  }
+  
+  .header-nav {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .nav-link {
+    color: var(--green-dim);
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.15s;
+  }
+  
+  .nav-link:hover,
+  .nav-active {
+    color: var(--green);
+  }
+  
+  .nav-active {
+    text-decoration: underline;
+  }
+  
+  .header-uptime {
+    font-size: 11px;
+    color: var(--green-dim);
+    letter-spacing: 0.05em;
+  }
+  
+  /* --- Hero --- */
+  .hero {
+    padding: 32px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .ascii-art {
+    font-size: clamp(7px, 1.3vw, 13px);
+    color: var(--green);
+    line-height: 1.25;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  
+  .hero-tagline {
+    font-size: 12px;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  
+  .hero-sub {
+    font-size: 11px;
+    color: var(--green-dim);
+  }
+  
+  /* --- Status bar --- */
+  .status-bar {
+    background: rgba(51, 255, 51, 0.06);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+  
+  .status-item {
+    color: var(--green-dim);
+  }
+  .status-ok {
+    color: var(--green);
+  }
+  .status-sep {
+    color: var(--border);
+    user-select: none;
+  }
+  
+  /* --- Main content --- */
+  .main-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  /* --- Terminal window --- */
+  .terminal-window {
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  
+  .term-titlebar {
+    background: rgba(51, 255, 51, 0.08);
+    border-bottom: 1px solid var(--border);
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .term-dots {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  .dot-red {
+    background: #ff5f57;
+  }
+  .dot-yellow {
+    background: #febc2e;
+  }
+  .dot-green {
+    background: #28c840;
+  }
+  
+  .term-title {
+    font-size: 11px;
+    color: var(--green-dim);
+    flex: 1;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  
+  .term-body {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Output lines */
+  .output-line {
+    font-size: 12px;
+    color: var(--green);
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+  
+  .output-line.muted {
+    color: var(--green-dim);
+  }
+  
+  .prompt {
+    color: var(--green);
+    flex-shrink: 0;
+    font-weight: bold;
+  }
+  
+  /* --- Profile content --- */
+  .profile-content {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 4px 0;
+  }
+  
+  .avatar-art {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--green-dim);
+    white-space: pre;
+  }
+  
+  .profile-data {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .data-row {
+    font-size: 12px;
+  }
+  
+  .data-key {
+    color: var(--green-dim);
+  }
+  
+  .data-val {
+    color: var(--green);
+  }
+  
+  .profile-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+  
+  .stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat-num {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--green);
+  }
+  
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--green-dim);
+    letter-spacing: 0.08em;
+  }
+  
+  .stat-sep {
+    color: var(--border);
+    font-size: 18px;
+    line-height: 1;
+    user-select: none;
+  }
+  
+  /* --- Buttons --- */
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .btn {
+    font-family: var(--font);
+    font-size: 12px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    letter-spacing: 0.04em;
+    transition: background 0.1s, color 0.1s;
+    outline: none;
+  }
+  
+  .btn:focus-visible {
+    outline: 1px dashed var(--green);
+    outline-offset: 2px;
+  }
+  
+  /* Primary — [EXECUTE] */
+  .btn-primary {
+    color: var(--bg);
+    background: var(--green);
+    border: 1px solid var(--green);
+    font-weight: bold;
+  }
+  
+  .btn-primary:hover {
+    background: #50ff50;
+    border-color: #50ff50;
+  }
+  
+  .btn-primary:active {
+    background: var(--green-dim);
+    border-color: var(--green-dim);
+    color: var(--bg);
+  }
+  
+  /* Secondary — [STATUS] */
+  .btn-secondary {
+    color: rgba(51, 255, 51, 0.7);
+    background: transparent;
+    border: 1px solid rgba(51, 255, 51, 0.5);
+  }
+  
+  .btn-secondary:hover {
+    color: var(--green);
+    border-color: var(--green);
+    background: var(--green-faint);
+  }
+  
+  .btn-secondary:active {
+    background: rgba(51, 255, 51, 0.2);
+  }
+  
+  /* Ghost — text only, looks like a command */
+  .btn-ghost {
+    color: var(--green-dim);
+    background: transparent;
+    border: none;
+    padding-left: 0;
+  }
+  
+  .btn-ghost::before {
+    content: "$ ";
+    color: var(--green);
+  }
+  
+  .btn-ghost:hover {
+    color: var(--green);
+    text-decoration: underline;
+  }
+  
+  /* Command output area */
+  .cmd-output-area {
+    font-size: 11px;
+    color: var(--green-dim);
+    min-height: 0;
+    max-height: 120px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border-top: 0;
+    padding-top: 0;
+  }
+  
+  .cmd-output-area:not(:empty) {
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+  
+  .cmd-output-line {
+    display: block;
+    padding: 1px 0;
+  }
+  
+  .cmd-output-line.cmd-line {
+    color: var(--green);
+  }
+  
+  .cmd-output-line.out-line {
+    color: var(--green-dim);
+  }
+  
+  /* --- Input --- */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .input-label {
+    font-size: 11px;
+    color: var(--green-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  
+  .term-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    max-width: 480px;
+  }
+  
+  .input-prompt {
+    color: var(--green);
+    font-weight: bold;
+    flex-shrink: 0;
+    white-space: pre;
+  }
+  
+  .term-input {
+    font-family: var(--font);
+    font-size: 13px;
+    background: transparent;
+    color: var(--green);
+    border: none;
+    outline: none;
+    flex: 1;
+    caret-color: var(--green);
+  }
+  
+  .term-input::placeholder {
+    color: var(--green-mute);
+  }
+  
+  .term-input-wrap:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green-mute);
+  }
+  
+  /* --- Badges --- */
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0;
+  }
+  
+  .badge {
+    font-family: var(--font);
+    font-size: 11px;
+    padding: 3px 8px;
+    color: var(--green-dim);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    letter-spacing: 0.03em;
+  }
+  
+  .badge-on {
+    color: var(--green);
+    border-color: rgba(51, 255, 51, 0.6);
+    background: var(--green-faint);
+  }
+  
+  .badge-warn {
+    color: var(--warn);
+    border-color: rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.06);
+  }
+  
+  .badge-off {
+    color: var(--error);
+    border-color: rgba(255, 51, 51, 0.4);
+    background: rgba(255, 51, 51, 0.05);
+    text-decoration: line-through;
+  }
+  
+  /* --- Responsive --- */
+  @media (max-width: 600px) {
+    .header-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .hero {
+      padding: 20px 14px 12px;
+    }
+    .ascii-art {
+      font-size: 6px;
+    }
+    .btn {
+      width: 100%;
+    }
+    .profile-content {
+      flex-direction: column;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="style.css" />
+      <title>Terminal / CLI</title>
+    </head>
+    <body>
+      <!-- Header -->
+      <header class="site-header">
+        <div class="header-inner">
+          <div class="header-logo">
+            <span class="prompt-sym">$</span>
+            <span class="logo-text">terminal-ui<span class="cursor-blink">_</span></span>
+          </div>
+          <nav class="header-nav">
+            <a href="#" class="nav-link">--home</a>
+            <a href="#" class="nav-link">--about</a>
+            <a href="#" class="nav-link nav-active">--demo</a>
+          </nav>
+          <div class="header-uptime">UPTIME: 99.9%</div>
+        </div>
+      </header>
+  
+      <!-- Hero / ASCII banner -->
+      <section class="hero">
+        <pre class="ascii-art" aria-label="Terminal UI ASCII logo">
+   ████████╗███████╗██████╗ ███╗   ███╗
+      ██╔══╝██╔════╝██╔══██╗████╗ ████║
+      ██║   █████╗  ██████╔╝██╔████╔██║
+      ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
+      ██║   ███████╗██║  ██║██║ ╚═╝ ██║
+      ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝</pre>
+        <p class="hero-tagline">&gt; COMMAND-LINE AESTHETICS FOR THE MODERN WEB</p>
+        <p class="hero-sub">&gt; Version 2.1.0 — MIT License — Zero Dependencies</p>
+      </section>
+  
+      <!-- System status bar -->
+      <div class="status-bar">
+        <span class="status-item status-ok">● SYS: ONLINE</span>
+        <span class="status-sep">|</span>
+        <span class="status-item">CPU: 4%</span>
+        <span class="status-sep">|</span>
+        <span class="status-item">MEM: 128MB</span>
+        <span class="status-sep">|</span>
+        <span class="status-item status-ok">● NET: CONNECTED</span>
+      </div>
+  
+      <!-- Main content -->
+      <main class="main-content">
+        <!-- Profile card — terminal window style -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">profile.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> cat profile.json</div>
+            <div class="output-line muted">&gt; Reading user data...</div>
+            <div class="profile-content">
+              <div class="profile-avatar">
+                <pre class="avatar-art" aria-hidden="true">
+    ┌──────────┐
+    │  ██████  │
+    │ ████████ │
+    │  ██  ██  │
+    │  ██████  │
+    │ /██████\ │
+    │/████████\│
+    └──────────┘</pre>
+              </div>
+              <div class="profile-data">
+                <div class="data-row"><span class="data-key">"name":</span><span class="data-val"> "root_user"</span></div>
+                <div class="data-row"><span class="data-key">"role":</span><span class="data-val"> "System Administrator"</span></div>
+                <div class="data-row"><span class="data-key">"shell":</span><span class="data-val"> "/bin/bash"</span></div>
+                <div class="data-row"><span class="data-key">"uid":</span><span class="data-val"> 0</span></div>
+                <div class="profile-stats">
+                  <div class="stat-block">
+                    <span class="stat-num">1,337</span>
+                    <span class="stat-lbl">COMMITS</span>
+                  </div>
+                  <span class="stat-sep">│</span>
+                  <div class="stat-block">
+                    <span class="stat-num">42</span>
+                    <span class="stat-lbl">REPOS</span>
+                  </div>
+                  <span class="stat-sep">│</span>
+                  <div class="stat-block">
+                    <span class="stat-num">99%</span>
+                    <span class="stat-lbl">UPTIME</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="output-line muted">&gt; Done. Exit code: 0</div>
+          </div>
+        </div>
+  
+        <!-- Buttons card -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">actions.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> ls --commands</div>
+            <div class="button-row">
+              <button class="btn btn-primary" data-cmd="deploy --env=production" data-output="Deploying to production... Done. Build ID: a3f91c2">
+                [EXECUTE]
+              </button>
+              <button class="btn btn-secondary" data-cmd="status --verbose" data-output="All systems nominal. 3 services running.">
+                [STATUS]
+              </button>
+              <button class="btn btn-ghost" data-cmd="help" data-output="Usage: terminal-ui [options]&#10;  --demo    Run demo mode&#10;  --verbose Enable verbose output">
+                help
+              </button>
+            </div>
+            <div class="cmd-output-area" id="cmd-output" aria-live="polite"></div>
+          </div>
+        </div>
+  
+        <!-- Input card -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">input.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> read --prompt "ENTER COMMAND"</div>
+            <div class="input-group">
+              <label class="input-label" for="term-input">&gt; INPUT</label>
+              <div class="term-input-wrap">
+                <span class="input-prompt">$ </span>
+                <input
+                  id="term-input"
+                  class="term-input"
+                  type="text"
+                  placeholder="type your command..."
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Badges card -->
+        <div class="terminal-window">
+          <div class="term-titlebar">
+            <div class="term-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="term-title">flags.sh</span>
+          </div>
+          <div class="term-body">
+            <div class="output-line"><span class="prompt">$</span> status --list-flags</div>
+            <div class="output-line muted">&gt; Active flags:</div>
+            <div class="badge-row">
+              <span class="badge badge-on">--active</span>
+              <span class="badge badge-on">--online</span>
+              <span class="badge">--v2.1</span>
+              <span class="badge">--stable</span>
+              <span class="badge badge-warn">--debug</span>
+              <span class="badge badge-off">--deprecated</span>
+            </div>
+          </div>
+        </div>
+      </main>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  /* ============================================================
+     TERMINAL / CLI — Interactive Script
+     - Button click simulates command execution with typed output
+     - Input enter key echoes typed command as output
+     - Typewriter effect for output lines
+     - Header uptime counter (live ticking)
+     ============================================================ */
+  
+  (function () {
+    "use strict";
+  
+    /* ----------------------------------------------------------
+       1. Button click → simulate command execution
+       Each button has data-cmd and data-output attributes
+    ---------------------------------------------------------- */
+    const outputArea = document.getElementById("cmd-output");
+    const buttons = document.querySelectorAll(".btn[data-cmd]");
+  
+    function appendLine(text, cssClass) {
+      if (!outputArea) return;
+      const line = document.createElement("span");
+      line.className = "cmd-output-line " + (cssClass || "");
+      line.textContent = text;
+      outputArea.appendChild(line);
+      outputArea.scrollTop = outputArea.scrollHeight;
+    }
+  
+    function typewriterAppend(text, cssClass, delay, callback) {
+      if (!outputArea) return;
+      const line = document.createElement("span");
+      line.className = "cmd-output-line " + (cssClass || "");
+      outputArea.appendChild(line);
+  
+      let i = 0;
+      const interval = setInterval(function () {
+        line.textContent += text[i];
+        i++;
+        outputArea.scrollTop = outputArea.scrollHeight;
+        if (i >= text.length) {
+          clearInterval(interval);
+          if (callback) setTimeout(callback, 80);
+        }
+      }, delay || 18);
+    }
+  
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const cmd = btn.dataset.cmd || "";
+        const output = btn.dataset.output || "";
+  
+        // Flash button
+        btn.style.opacity = "0.6";
+        setTimeout(function () {
+          btn.style.opacity = "";
+        }, 120);
+  
+        // Show command line
+        typewriterAppend("$ " + cmd, "cmd-line", 14, function () {
+          // Show each output line
+          const lines = output.split("\n");
+          let lineIdx = 0;
+  
+          function nextLine() {
+            if (lineIdx >= lines.length) return;
+            const txt = lines[lineIdx];
+            lineIdx++;
+            appendLine("> " + txt, "out-line");
+            if (lineIdx < lines.length) {
+              setTimeout(nextLine, 100);
+            } else {
+              appendLine("> Exit code: 0", "out-line");
+            }
+          }
+  
+          setTimeout(nextLine, 120);
+        });
+      });
+    });
+  
+    /* ----------------------------------------------------------
+       2. Input enter key: echo typed line as terminal output
+    ---------------------------------------------------------- */
+    const termInput = document.getElementById("term-input");
+  
+    if (termInput && outputArea) {
+      termInput.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        const val = termInput.value.trim();
+        if (!val) return;
+  
+        appendLine("$ " + val, "cmd-line");
+  
+        // Simulate a "command not found" response for unknown commands
+        const knownCmds = {
+          help: "Usage: terminal-ui [--demo|--verbose|--help]\nAll systems nominal.",
+          ls: "profile.sh  actions.sh  input.sh  flags.sh",
+          whoami: "root_user",
+          pwd: "/usr/local/terminal-ui/demo",
+          clear: "__CLEAR__",
+          date: new Date().toString(),
+          uptime: "up 99 days, 23 hours, 59 minutes",
+          version: "terminal-ui v2.1.0",
+        };
+  
+        const response = knownCmds[val.toLowerCase()];
+  
+        setTimeout(function () {
+          if (response === "__CLEAR__") {
+            outputArea.innerHTML = "";
+          } else if (response) {
+            response.split("\n").forEach(function (line) {
+              appendLine("> " + line, "out-line");
+            });
+          } else {
+            appendLine("> command not found: " + val, "out-line");
+            appendLine('> Try "help" for available commands.', "out-line");
+          }
+          termInput.value = "";
+        }, 200);
+      });
+    }
+  
+    /* ----------------------------------------------------------
+       3. Live uptime counter in the header
+    ---------------------------------------------------------- */
+    const uptimeEl = document.querySelector(".header-uptime");
+    if (uptimeEl) {
+      let seconds = 0;
+      setInterval(function () {
+        seconds++;
+        const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        const s = String(seconds % 60).padStart(2, "0");
+        uptimeEl.textContent = "UPTIME: " + h + ":" + m + ":" + s;
+      }, 1000);
+    }
+  
+    /* ----------------------------------------------------------
+       4. Badges — toggle active state on click
+    ---------------------------------------------------------- */
+    const badges = document.querySelectorAll(".badge");
+    badges.forEach(function (badge) {
+      if (badge.classList.contains("badge-off")) return; // deprecated can't be toggled
+      badge.style.cursor = "pointer";
+  
+      badge.addEventListener("click", function () {
+        if (badge.classList.contains("badge-on")) {
+          badge.classList.remove("badge-on");
+          badge.style.textDecoration = "line-through";
+          badge.style.opacity = "0.5";
+        } else {
+          badge.classList.add("badge-on");
+          badge.style.textDecoration = "";
+          badge.style.opacity = "";
+        }
+      });
+    });
+  
+    /* ----------------------------------------------------------
+       5. Cursor blink speed on input focus
+    ---------------------------------------------------------- */
+    if (termInput) {
+      const cursorInInput = document.querySelector(".cursor-blink");
+      termInput.addEventListener("focus", function () {
+        if (cursorInInput) cursorInInput.style.animationDuration = "0.4s";
+      });
+      termInput.addEventListener("blur", function () {
+        if (cursorInInput) cursorInInput.style.animationDuration = "0.8s";
+      });
+    }
+  })();
+  
+  </script>
+explanation: "The declaration `--green: #33ff33;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

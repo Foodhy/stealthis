@@ -1,0 +1,560 @@
+---
+slug: "notification-badge-delete-closing-tag-ef543d1f"
+topic: "badge"
+title: "Fix the broken HTML structure in Notification Badge"
+type: "fix"
+difficulty: 2
+resourceSlug: "notification-badge"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    color: #111;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .demo {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid #e5e7eb;
+    width: 360px;
+  }
+  
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+  }
+  
+  .section-label + .section-label,
+  .row + .section-label {
+    margin-top: 28px;
+  }
+  
+  .row {
+    display: flex;
+    gap: 28px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .badge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .demo-caption {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  
+  /* Icon button */
+  .icon-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #374151;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .icon-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+  
+  /* Base badge */
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+  }
+  
+  /* Dot */
+  .badge-dot {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+  }
+  
+  .badge-dot--warning {
+    background: #f59e0b;
+  }
+  
+  /* Pulse ring */
+  .badge-dot--pulse::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid #ef4444;
+    animation: pulse-ring 1.4s ease-out infinite;
+  }
+  
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 1;
+    }
+    70% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+  }
+  
+  /* Numeric */
+  .badge-count {
+    min-width: 18px;
+    height: 18px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 0 4px;
+    line-height: 14px;
+    text-align: center;
+  }
+  
+  .badge--overflow {
+    min-width: 24px;
+    font-size: 9px;
+  }
+  
+  /* Color variants */
+  .badge--blue {
+    background: #6366f1;
+  }
+  .badge--green {
+    background: #16a34a;
+  }
+  .badge--amber {
+    background: #d97706;
+  }
+  
+  /* Hidden state */
+  .badge.hidden {
+    transform: scale(0);
+    transition: transform 0.2s;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Badge
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="section-label">Dot indicator</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-dot"></span>
+        </button>
+        <span class="demo-caption">dot</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="badge badge-dot badge-dot--pulse"></span>
+        </button>
+        <span class="demo-caption">pulse</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="badge badge-dot badge-dot--warning"></span>
+        </button>
+        <span class="demo-caption">warning</span>
+      </div>
+    </div>
+  
+    <h2 class="section-label">Numeric counter</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count">1</span>
+        </button>
+        <span class="demo-caption">1</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="badge badge-count">12</span>
+        </button>
+        <span class="demo-caption">12</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="badge badge-count badge--overflow">99+</span>
+        </button>
+        <span class="demo-caption">99+</span>
+      </div>
+    </div>
+  
+    <h2 class="section-label">Color variants</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge--blue">4</span></button>
+        <span class="demo-caption">info</span>
+      </div>
+      <div class="badge-wrap">
+        <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge--green">7</span></button>
+        <span class="demo-caption">success</span>
+      </div>
+      <div class="badge-wrap">
+        <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge--amber">2</span></button>
+        <span class="demo-caption">warning</span>
+      </div>
+    </div>
+  
+    <h2 class="section-label">Interactive — click to clear</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn" id="clearBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge-dot--pulse" id="clearBadge">5</span>
+        </button>
+        <span class="demo-caption">click to clear</span>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const clearBtn = document.getElementById("clearBtn");
+  const clearBadge = document.getElementById("clearBadge");
+  
+  clearBtn.addEventListener("click", () => {
+    clearBadge.classList.add("hidden");
+    setTimeout(() => clearBadge.remove(), 200);
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    color: #111;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .demo {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid #e5e7eb;
+    width: 360px;
+  }
+  
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+  }
+  
+  .section-label + .section-label,
+  .row + .section-label {
+    margin-top: 28px;
+  }
+  
+  .row {
+    display: flex;
+    gap: 28px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .badge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .demo-caption {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  
+  /* Icon button */
+  .icon-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #374151;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .icon-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+  
+  /* Base badge */
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+  }
+  
+  /* Dot */
+  .badge-dot {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+  }
+  
+  .badge-dot--warning {
+    background: #f59e0b;
+  }
+  
+  /* Pulse ring */
+  .badge-dot--pulse::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid #ef4444;
+    animation: pulse-ring 1.4s ease-out infinite;
+  }
+  
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 1;
+    }
+    70% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+  }
+  
+  /* Numeric */
+  .badge-count {
+    min-width: 18px;
+    height: 18px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 0 4px;
+    line-height: 14px;
+    text-align: center;
+  }
+  
+  .badge--overflow {
+    min-width: 24px;
+    font-size: 9px;
+  }
+  
+  /* Color variants */
+  .badge--blue {
+    background: #6366f1;
+  }
+  .badge--green {
+    background: #16a34a;
+  }
+  .badge--amber {
+    background: #d97706;
+  }
+  
+  /* Hidden state */
+  .badge.hidden {
+    transform: scale(0);
+    transition: transform 0.2s;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Badge</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="section-label">Dot indicator</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-dot"></span>
+        </button>
+        <span class="demo-caption">dot</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="badge badge-dot badge-dot--pulse"></span>
+        </button>
+        <span class="demo-caption">pulse</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="badge badge-dot badge-dot--warning"></span>
+        </button>
+        <span class="demo-caption">warning</span>
+      </div>
+    </div>
+  
+    <h2 class="section-label">Numeric counter</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count">1</span>
+        </button>
+        <span class="demo-caption">1</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="badge badge-count">12</span>
+        </button>
+        <span class="demo-caption">12</span>
+      </div>
+  
+      <div class="badge-wrap">
+        <button class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="badge badge-count badge--overflow">99+</span>
+        </button>
+        <span class="demo-caption">99+</span>
+      </div>
+    </div>
+  
+    <h2 class="section-label">Color variants</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge--blue">4</span></button>
+        <span class="demo-caption">info</span>
+      </div>
+      <div class="badge-wrap">
+        <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge--green">7</span></button>
+        <span class="demo-caption">success</span>
+      </div>
+      <div class="badge-wrap">
+        <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge--amber">2</span></button>
+        <span class="demo-caption">warning</span>
+      </div>
+    </div>
+  
+    <h2 class="section-label">Interactive — click to clear</h2>
+    <div class="row">
+      <div class="badge-wrap">
+        <button class="icon-btn" id="clearBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge badge-count badge-dot--pulse" id="clearBadge">5</span>
+        </button>
+        <span class="demo-caption">click to clear</span>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const clearBtn = document.getElementById("clearBtn");
+  const clearBadge = document.getElementById("clearBadge");
+  
+  clearBtn.addEventListener("click", () => {
+    clearBadge.classList.add("hidden");
+    setTimeout(() => clearBadge.remove(), 200);
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

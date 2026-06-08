@@ -4,12 +4,17 @@ import {
   LOCALES,
   LOCALE_LABELS,
   LOCALE_STORAGE_KEY,
-  getLocalePrefix,
   type Locale,
+  getLocalePrefix,
   useTranslations,
 } from "@i18n/index";
+import {
+  SHOW_ARCADE_HEADER,
+  SHOW_BUILD_BUTTON,
+  SHOW_DBVIZ,
+  SHOW_STYLEFORGE_STUDIO,
+} from "@lib/constant";
 import { SITE_URLS } from "@lib/urls";
-import { SHOW_BUILD_BUTTON, SHOW_STYLEFORGE_STUDIO, SHOW_DBVIZ } from "@lib/constant";
 
 const { locale } = Astro.props as { locale: Locale };
 const t = useTranslations(locale);
@@ -30,6 +35,7 @@ const localeFlags: Record<Locale, string> = {
   "zh-cn": "🇨🇳",
   it: "🇮🇹",
   pl: "🇵🇱",
+  ru: "🇷🇺",
   uk: "🇺🇦",
 };
 const localeOptionLabels: Record<Locale, string> = {
@@ -48,6 +54,7 @@ const localeOptionLabels: Record<Locale, string> = {
   "zh-cn": t("lang.option.zh-cn"),
   it: t("lang.option.it"),
   pl: t("lang.option.pl"),
+  ru: t("lang.option.ru"),
   uk: t("lang.option.uk"),
 };
 const localeOptionDisplay: Record<Locale, string> = Object.fromEntries(
@@ -90,12 +97,20 @@ const navLinks = [
     external: true,
     badge: "",
   },
+  {
+    key: "arcade",
+    href: SITE_URLS.arcade,
+    label: t("nav.arcade"),
+    external: true,
+    badge: "New!",
+  },
 ];
 
 const visibleNavLinks = navLinks.filter(
   (link) =>
     (link.key !== "styleforge" || SHOW_STYLEFORGE_STUDIO) &&
-    (link.key !== "build" || SHOW_BUILD_BUTTON)
+    (link.key !== "build" || SHOW_BUILD_BUTTON) &&
+    (link.key !== "arcade" || SHOW_ARCADE_HEADER)
 );
 
 type AppLink = {
@@ -120,7 +135,6 @@ const applicationLinks: AppLink[] = [
     href: SITE_URLS.zenpomodoro,
     label: t("nav.zenpomodoro"),
     desc: t("nav.zenpomodoro.desc"),
-    badge: "New!",
   },
 ];
 
@@ -146,6 +160,7 @@ const menuLabels: Record<Locale, { open: string; close: string; title: string }>
   "zh-cn": { open: "打开菜单", close: "关闭菜单", title: "导航" },
   it: { open: "Apri menu", close: "Chiudi menu", title: "Navigazione" },
   pl: { open: "Otwórz menu", close: "Zamknij menu", title: "Nawigacja" },
+  ru: { open: "Открыть меню", close: "Закрыть меню", title: "Навигация" },
   uk: { open: "Відкрити меню", close: "Закрити меню", title: "Навігація" },
 };
 
@@ -186,7 +201,6 @@ const menuTitle = menuLabels[locale].title;
             data-nav-dropdown-trigger
           >
             {applicationsLabel}
-            <span class="nav-badge">New!</span>
             <svg
               class="nav-dropdown__chevron"
               width="10"
@@ -355,6 +369,15 @@ const menuTitle = menuLabels[locale].title;
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="3"></circle>
                   <path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"></path>
+                </svg>
+              )}
+              {link.key === "arcade" && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="6" y="2" width="12" height="20" rx="2"></rect>
+                  <circle cx="10" cy="14" r="1"></circle>
+                  <circle cx="14" cy="14" r="1"></circle>
+                  <path d="M9 7h6"></path>
+                  <path d="M10 19h4"></path>
                 </svg>
               )}
             </span>

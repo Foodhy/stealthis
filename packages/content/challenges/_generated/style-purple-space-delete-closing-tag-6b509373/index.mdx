@@ -1,0 +1,1904 @@
+---
+slug: "style-purple-space-delete-closing-tag-6b509373"
+topic: "purple"
+title: "Fix the broken HTML structure in Purple Space"
+type: "fix"
+difficulty: 2
+resourceSlug: "style-purple-space"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  /* ============================================================
+     Purple Space — Design Style Showcase
+     ============================================================ */
+  
+  :root {
+    /* Deep space surfaces */
+    --bg-body: #0a0012;
+    --bg-card: rgba(139, 92, 246, 0.07);
+    --bg-input: rgba(139, 92, 246, 0.1);
+    --bg-hover: rgba(139, 92, 246, 0.15);
+  
+    /* Borders */
+    --border: rgba(139, 92, 246, 0.3);
+    --border-light: rgba(167, 139, 250, 0.2);
+    --border-focus: #8b5cf6;
+  
+    /* Text */
+    --text-primary: #ffffff;
+    --text-muted: #c4b5fd;
+    --text-placeholder: #7c3aed;
+    --text-dim: #9370db;
+  
+    /* Accent — violet spectrum */
+    --violet: #8b5cf6;
+    --violet-light: #a78bfa;
+    --violet-dark: #7c3aed;
+    --violet-bright: #c4b5fd;
+  
+    /* Glow */
+    --glow-sm: 0 0 12px rgba(139, 92, 246, 0.4);
+    --glow-md: 0 0 24px rgba(139, 92, 246, 0.4);
+    --glow-lg: 0 0 40px rgba(139, 92, 246, 0.35);
+  
+    /* Shadows */
+    --shadow-card: 0 8px 32px rgba(139, 92, 246, 0.15);
+  
+    /* Radius */
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+  }
+  
+  /* ---- Reset ---- */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ---- Stars background ---- */
+  body {
+    background-color: var(--bg-body);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, #1a0033 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 20%, #150028 0%, transparent 45%),
+      /* Star field */
+      radial-gradient(circle at 10% 15%, rgba(255, 255, 255, 0.7) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 25% 40%, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 40% 8%, rgba(255, 255, 255, 0.8) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 55% 25%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.6) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.7) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 15% 75%, rgba(255, 255, 255, 0.6) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 35% 88%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 60% 90%, rgba(255, 255, 255, 0.7) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 75% 12%, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 48% 55%, rgba(200, 180, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 92% 48%, rgba(255, 255, 255, 0.6) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 5% 50%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px);
+    color: var(--text-primary);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+  
+  /* ---- Floating orbs ---- */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+  
+  .orb-1 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, #6b21a8, transparent 70%);
+    top: -100px;
+    left: -100px;
+    animation: float-1 18s ease-in-out infinite;
+  }
+  
+  .orb-2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #4c1d95, transparent 70%);
+    bottom: -150px;
+    right: -120px;
+    animation: float-2 22s ease-in-out infinite;
+  }
+  
+  .orb-3 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #7e22ce, transparent 70%);
+    top: 40%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: float-3 15s ease-in-out infinite;
+  }
+  
+  @keyframes float-1 {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    33% {
+      transform: translate(40px, 30px);
+    }
+    66% {
+      transform: translate(-20px, 50px);
+    }
+  }
+  
+  @keyframes float-2 {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    40% {
+      transform: translate(-50px, -40px);
+    }
+    70% {
+      transform: translate(30px, -20px);
+    }
+  }
+  
+  @keyframes float-3 {
+    0%,
+    100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-40px);
+    }
+  }
+  
+  /* ---- Header ---- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 0, 18, 0.75);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 28px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Orbitron", monospace;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--text-primary);
+    flex-shrink: 0;
+  }
+  
+  .logo-glyph {
+    color: var(--violet-light);
+    font-size: 20px;
+    line-height: 1;
+    text-shadow: 0 0 10px var(--violet);
+  }
+  
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  
+  .nav-link {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: color 0.15s, background 0.15s;
+  }
+  
+  .nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(139, 92, 246, 0.12);
+  }
+  
+  .nav-link.active {
+    color: var(--violet-bright);
+    background: rgba(139, 92, 246, 0.15);
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .icon-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: rgba(139, 92, 246, 0.08);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, box-shadow 0.2s;
+  }
+  
+  .icon-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--violet-bright);
+    box-shadow: var(--glow-sm);
+  }
+  
+  .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--violet-dark), var(--violet-light));
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-body);
+  }
+  
+  /* Gradient border avatar */
+  .avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(var(--bg-body), var(--bg-body)) padding-box,
+      linear-gradient(135deg, #8b5cf6, #c4b5fd) border-box;
+    border: 2px solid transparent;
+    color: var(--violet-bright);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.5px;
+  }
+  
+  /* ---- Layout ---- */
+  .main {
+    position: relative;
+    z-index: 1;
+    padding: 48px 0 80px;
+  }
+  
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* ---- Page title ---- */
+  .page-title-area {
+    padding: 8px 0 16px;
+  }
+  
+  .page-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--violet);
+    margin-bottom: 10px;
+    font-family: "Orbitron", monospace;
+  }
+  
+  .page-title {
+    font-family: "Orbitron", monospace;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .page-tagline {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+  
+  /* ---- Card ---- */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(12px);
+    transition: border-color 0.2s, box-shadow 0.25s, transform 0.2s;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .card:hover {
+    border-color: rgba(139, 92, 246, 0.55);
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2), var(--glow-md);
+    transform: translateY(-1px);
+  }
+  
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-family: "Orbitron", monospace;
+  }
+  
+  /* ---- Profile card ---- */
+  .profile-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  
+  .profile-avatar-wrap {
+    flex-shrink: 0;
+  }
+  
+  /* Gradient border ring on large avatar */
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(var(--bg-body), var(--bg-body)) padding-box,
+      linear-gradient(135deg, #8b5cf6, #c4b5fd, #7c3aed) border-box;
+    border: 2.5px solid transparent;
+    color: var(--violet-bright);
+    font-size: 24px;
+    font-weight: 700;
+    font-family: "Orbitron", monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.35);
+  }
+  
+  .profile-info {
+    flex: 1;
+    min-width: 160px;
+  }
+  
+  .profile-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+    font-family: "Space Grotesk", sans-serif;
+  }
+  
+  .profile-role {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  
+  .profile-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 16px;
+  }
+  
+  .stat {
+    text-align: center;
+  }
+  
+  .stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .stat-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  
+  .stat-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border-light);
+  }
+  
+  .profile-rank {
+    margin-left: auto;
+  }
+  
+  .rank-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    font-family: "Orbitron", monospace;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(167, 139, 250, 0.2));
+    color: var(--violet-bright);
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
+  }
+  
+  /* ---- Buttons ---- */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 24px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+  
+  .btn:active {
+    transform: scale(0.96);
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, var(--violet-dark), var(--violet-light));
+    color: #fff;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.45);
+  }
+  
+  .btn-primary:hover {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.65), 0 4px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+  }
+  
+  .btn-secondary {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--violet);
+    color: var(--violet-bright);
+  }
+  
+  .btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.25);
+    box-shadow: var(--glow-sm);
+  }
+  
+  .btn-ghost {
+    background: transparent;
+    border-color: rgba(167, 139, 250, 0.4);
+    color: var(--text-muted);
+  }
+  
+  .btn-ghost:hover {
+    border-color: rgba(167, 139, 250, 0.7);
+    color: var(--text-primary);
+    background: rgba(139, 92, 246, 0.08);
+  }
+  
+  /* ---- Input ---- */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  
+  .input-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  
+  .input {
+    height: 46px;
+    padding: 0 16px;
+    background: var(--bg-input);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: "Space Grotesk", inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.2s;
+  }
+  
+  .input::placeholder {
+    color: var(--text-placeholder);
+    opacity: 0.7;
+  }
+  
+  .input:focus {
+    border-color: var(--violet);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 0 20px rgba(139, 92, 246, 0.15);
+  }
+  
+  .input-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  
+  /* ---- Badges ---- */
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-family: "Orbitron", monospace;
+  }
+  
+  .badge-gradient {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.4), rgba(167, 139, 250, 0.25));
+    color: var(--violet-bright);
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  }
+  
+  .badge-outline {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+  }
+  
+  .badge-subtle {
+    background: rgba(139, 92, 246, 0.08);
+    color: var(--text-dim);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    font-family: "Space Grotesk", monospace;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+  
+  /* ---- Responsive ---- */
+  @media (max-width: 600px) {
+    .header-nav {
+      display: none;
+    }
+    .header-inner {
+      padding: 0 16px;
+      gap: 16px;
+    }
+    .container {
+      padding: 0 16px;
+    }
+    .main {
+      padding: 32px 0 48px;
+    }
+    .profile-card {
+      flex-direction: column;
+      text-align: center;
+      gap: 16px;
+    }
+    .profile-stats {
+      justify-content: center;
+    }
+    .profile-rank {
+      margin-left: 0;
+    }
+    .page-title {
+      font-size: clamp(24px, 7vw, 32px);
+    }
+    .page-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+    }
+    .page-tagline {
+      font-size: 14px;
+    }
+    .card {
+      padding: 20px;
+    }
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      font-size: 20px;
+    }
+    .profile-name {
+      font-size: 18px;
+    }
+    .stat-value {
+      font-size: 18px;
+    }
+    .stat-label {
+      font-size: 11px;
+    }
+    .btn {
+      height: 40px;
+      padding: 0 18px;
+      font-size: 13px;
+    }
+    .btn-row {
+      gap: 8px;
+    }
+    .input {
+      height: 42px;
+      font-size: 13px;
+    }
+    .orb-1 {
+      width: 240px;
+      height: 240px;
+    }
+    .orb-2 {
+      width: 280px;
+      height: 280px;
+    }
+    .orb-3 {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 380px) {
+    .profile-stats {
+      gap: 12px;
+    }
+    .logo-text {
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purple Space — Style Showcase
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- Floating background orbs -->
+    <div class="orb orb-1" id="orb-1"></div>
+    <div class="orb orb-2" id="orb-2"></div>
+    <div class="orb orb-3" id="orb-3"></div>
+  
+    <!-- Header -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="header-logo">
+          <span class="logo-glyph">✦</span>
+          <span class="logo-text">NEBULA</span>
+        </div>
+        <nav class="header-nav">
+          <a href="#" class="nav-link active">Cosmos</a>
+          <a href="#" class="nav-link">Explore</a>
+          <a href="#" class="nav-link">Signals</a>
+          <a href="#" class="nav-link">Void</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" aria-label="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notif-badge">7</span>
+          </button>
+          <div class="avatar-sm">ZX</div>
+        </div>
+      </div>
+    </header>
+  
+    <!-- Main -->
+    <main class="main">
+      <div class="container">
+  
+        <!-- Page title -->
+        <div class="page-title-area">
+          <p class="page-eyebrow">DESIGN SYSTEM · COSMIC UI</p>
+          <h1 class="page-title">Purple Space</h1>
+          <p class="page-tagline">Deep cosmos. Neon violet. Electric futures.</p>
+        </div>
+  
+        <!-- Profile card -->
+        <section class="card profile-card" id="profile-card">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar">ZX</div>
+          </div>
+          <div class="profile-info">
+            <h2 class="profile-name">Zara Xen</h2>
+            <p class="profile-role">Cosmic Architect · Level 99</p>
+            <div class="profile-stats">
+              <div class="stat">
+                <span class="stat-value">18.4K</span>
+                <span class="stat-label">Nodes</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat">
+                <span class="stat-value">312</span>
+                <span class="stat-label">Portals</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat">
+                <span class="stat-value">∞</span>
+                <span class="stat-label">Reach</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-rank">
+            <span class="rank-chip">LEGEND</span>
+          </div>
+        </section>
+  
+        <!-- Buttons -->
+        <section class="card">
+          <h3 class="section-label">Controls</h3>
+          <div class="btn-row">
+            <button class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+              Launch Mission
+            </button>
+            <button class="btn btn-secondary">Scan Area</button>
+            <button class="btn btn-ghost">Abort</button>
+          </div>
+        </section>
+  
+        <!-- Input -->
+        <section class="card">
+          <h3 class="section-label">Signal Transmission</h3>
+          <div class="input-group">
+            <label class="input-label" for="signal-input">Frequency Channel</label>
+            <input
+              id="signal-input"
+              class="input"
+              type="text"
+              placeholder="Enter frequency ID..."
+            />
+            <p class="input-hint">Specify a valid deep-space frequency in the range 4.2–8.9 GHz.</p>
+          </div>
+        </section>
+  
+        <!-- Badges -->
+        <section class="card">
+          <h3 class="section-label">Clearances &amp; Tags</h3>
+          <div class="badge-row">
+            <span class="badge badge-gradient">QUANTUM</span>
+            <span class="badge badge-gradient">DARK MATTER</span>
+            <span class="badge badge-outline">ENCRYPTED</span>
+            <span class="badge badge-outline">VOID SECTOR</span>
+            <span class="badge badge-subtle">v0.9.1-alpha</span>
+          </div>
+        </section>
+  
+      </div>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  /* Purple Space — Showcase interactions */
+  
+  // ── Orbs: inject CSS animations and add mouse parallax ───────
+  const orbs = [
+    document.getElementById("orb-1"),
+    document.getElementById("orb-2"),
+    document.getElementById("orb-3"),
+  ];
+  
+  // Subtle mouse parallax on orbs
+  document.addEventListener("mousemove", (e) => {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = (e.clientX - cx) / cx;
+    const dy = (e.clientY - cy) / cy;
+  
+    orbs.forEach((orb, i) => {
+      if (!orb) return;
+      const factor = (i + 1) * 12;
+      orb.style.transform = `translate(${dx * factor}px, ${dy * factor}px)`;
+    });
+  });
+  
+  // ── Profile card: pulsing glow on hover ───────────────────────
+  const profileCard = document.getElementById("profile-card");
+  
+  if (profileCard) {
+    profileCard.addEventListener("mouseenter", () => {
+      profileCard.style.boxShadow = "0 8px 32px rgba(139,92,246,0.2), 0 0 50px rgba(139,92,246,0.18)";
+    });
+    profileCard.addEventListener("mouseleave", () => {
+      profileCard.style.boxShadow = "";
+    });
+  }
+  
+  // ── Primary button: glow pulse on click ──────────────────────
+  document.querySelectorAll(".btn-primary").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.style.transition = "box-shadow 0.08s";
+      btn.style.boxShadow = "0 0 50px rgba(139,92,246,0.8), 0 0 15px rgba(167,139,250,0.6)";
+      setTimeout(() => {
+        btn.style.transition = "box-shadow 0.5s";
+        btn.style.boxShadow = "0 0 20px rgba(139,92,246,0.45)";
+      }, 120);
+    });
+  });
+  
+  // ── Nav: active state toggle ──────────────────────────────────
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      document.querySelectorAll(".nav-link").forEach((l) => l.classList.remove("active"));
+      this.classList.add("active");
+    });
+  });
+  
+  // ── Input: cosmic glow on focus ───────────────────────────────
+  const input = document.getElementById("signal-input");
+  const hint = input?.nextElementSibling;
+  
+  if (input) {
+    input.addEventListener("focus", () => {
+      input.style.boxShadow = "0 0 0 3px rgba(139,92,246,0.15), 0 0 24px rgba(139,92,246,0.2)";
+    });
+    input.addEventListener("blur", () => {
+      input.style.boxShadow = "";
+    });
+  }
+  
+  if (input && hint) {
+    input.addEventListener("input", () => {
+      const val = input.value.trim();
+      const freq = parseFloat(val);
+      if (val === "") {
+        hint.textContent = "Specify a valid deep-space frequency in the range 4.2–8.9 GHz.";
+        hint.style.color = "";
+      } else if (!isNaN(freq) && freq >= 4.2 && freq <= 8.9) {
+        hint.textContent = `✦ Signal lock acquired at ${freq} GHz`;
+        hint.style.color = "#A78BFA";
+      } else {
+        hint.textContent = "⚠ Frequency out of range. Try between 4.2 and 8.9 GHz.";
+        hint.style.color = "#F87171";
+      }
+    });
+  }
+  
+  // ── Badge hover: floating effect ─────────────────────────────
+  document.querySelectorAll(".badge").forEach((badge) => {
+    badge.style.transition = "transform 0.2s ease, box-shadow 0.2s ease";
+    badge.style.cursor = "default";
+    badge.addEventListener("mouseenter", () => {
+      badge.style.transform = "translateY(-2px)";
+      if (badge.classList.contains("badge-gradient")) {
+        badge.style.boxShadow = "0 4px 16px rgba(139,92,246,0.4)";
+      }
+    });
+    badge.addEventListener("mouseleave", () => {
+      badge.style.transform = "";
+      badge.style.boxShadow = "";
+    });
+  });
+  
+  </script>
+solution: |
+  <style>
+  /* ============================================================
+     Purple Space — Design Style Showcase
+     ============================================================ */
+  
+  :root {
+    /* Deep space surfaces */
+    --bg-body: #0a0012;
+    --bg-card: rgba(139, 92, 246, 0.07);
+    --bg-input: rgba(139, 92, 246, 0.1);
+    --bg-hover: rgba(139, 92, 246, 0.15);
+  
+    /* Borders */
+    --border: rgba(139, 92, 246, 0.3);
+    --border-light: rgba(167, 139, 250, 0.2);
+    --border-focus: #8b5cf6;
+  
+    /* Text */
+    --text-primary: #ffffff;
+    --text-muted: #c4b5fd;
+    --text-placeholder: #7c3aed;
+    --text-dim: #9370db;
+  
+    /* Accent — violet spectrum */
+    --violet: #8b5cf6;
+    --violet-light: #a78bfa;
+    --violet-dark: #7c3aed;
+    --violet-bright: #c4b5fd;
+  
+    /* Glow */
+    --glow-sm: 0 0 12px rgba(139, 92, 246, 0.4);
+    --glow-md: 0 0 24px rgba(139, 92, 246, 0.4);
+    --glow-lg: 0 0 40px rgba(139, 92, 246, 0.35);
+  
+    /* Shadows */
+    --shadow-card: 0 8px 32px rgba(139, 92, 246, 0.15);
+  
+    /* Radius */
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+  }
+  
+  /* ---- Reset ---- */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ---- Stars background ---- */
+  body {
+    background-color: var(--bg-body);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, #1a0033 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 20%, #150028 0%, transparent 45%),
+      /* Star field */
+      radial-gradient(circle at 10% 15%, rgba(255, 255, 255, 0.7) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 25% 40%, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 40% 8%, rgba(255, 255, 255, 0.8) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 55% 25%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.6) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.7) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 15% 75%, rgba(255, 255, 255, 0.6) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 35% 88%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 60% 90%, rgba(255, 255, 255, 0.7) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 75% 12%, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 48% 55%, rgba(200, 180, 255, 0.5) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 92% 48%, rgba(255, 255, 255, 0.6) 0.5px, transparent 0.5px),
+      radial-gradient(circle at 5% 50%, rgba(255, 255, 255, 0.4) 0.5px, transparent 0.5px);
+    color: var(--text-primary);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+  
+  /* ---- Floating orbs ---- */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+  
+  .orb-1 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, #6b21a8, transparent 70%);
+    top: -100px;
+    left: -100px;
+    animation: float-1 18s ease-in-out infinite;
+  }
+  
+  .orb-2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #4c1d95, transparent 70%);
+    bottom: -150px;
+    right: -120px;
+    animation: float-2 22s ease-in-out infinite;
+  }
+  
+  .orb-3 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #7e22ce, transparent 70%);
+    top: 40%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: float-3 15s ease-in-out infinite;
+  }
+  
+  @keyframes float-1 {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    33% {
+      transform: translate(40px, 30px);
+    }
+    66% {
+      transform: translate(-20px, 50px);
+    }
+  }
+  
+  @keyframes float-2 {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    40% {
+      transform: translate(-50px, -40px);
+    }
+    70% {
+      transform: translate(30px, -20px);
+    }
+  }
+  
+  @keyframes float-3 {
+    0%,
+    100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-40px);
+    }
+  }
+  
+  /* ---- Header ---- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 0, 18, 0.75);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 28px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Orbitron", monospace;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--text-primary);
+    flex-shrink: 0;
+  }
+  
+  .logo-glyph {
+    color: var(--violet-light);
+    font-size: 20px;
+    line-height: 1;
+    text-shadow: 0 0 10px var(--violet);
+  }
+  
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  
+  .nav-link {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: color 0.15s, background 0.15s;
+  }
+  
+  .nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(139, 92, 246, 0.12);
+  }
+  
+  .nav-link.active {
+    color: var(--violet-bright);
+    background: rgba(139, 92, 246, 0.15);
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .icon-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: rgba(139, 92, 246, 0.08);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, box-shadow 0.2s;
+  }
+  
+  .icon-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--violet-bright);
+    box-shadow: var(--glow-sm);
+  }
+  
+  .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--violet-dark), var(--violet-light));
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-body);
+  }
+  
+  /* Gradient border avatar */
+  .avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(var(--bg-body), var(--bg-body)) padding-box,
+      linear-gradient(135deg, #8b5cf6, #c4b5fd) border-box;
+    border: 2px solid transparent;
+    color: var(--violet-bright);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.5px;
+  }
+  
+  /* ---- Layout ---- */
+  .main {
+    position: relative;
+    z-index: 1;
+    padding: 48px 0 80px;
+  }
+  
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* ---- Page title ---- */
+  .page-title-area {
+    padding: 8px 0 16px;
+  }
+  
+  .page-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--violet);
+    margin-bottom: 10px;
+    font-family: "Orbitron", monospace;
+  }
+  
+  .page-title {
+    font-family: "Orbitron", monospace;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .page-tagline {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+  
+  /* ---- Card ---- */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(12px);
+    transition: border-color 0.2s, box-shadow 0.25s, transform 0.2s;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .card:hover {
+    border-color: rgba(139, 92, 246, 0.55);
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2), var(--glow-md);
+    transform: translateY(-1px);
+  }
+  
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-family: "Orbitron", monospace;
+  }
+  
+  /* ---- Profile card ---- */
+  .profile-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  
+  .profile-avatar-wrap {
+    flex-shrink: 0;
+  }
+  
+  /* Gradient border ring on large avatar */
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(var(--bg-body), var(--bg-body)) padding-box,
+      linear-gradient(135deg, #8b5cf6, #c4b5fd, #7c3aed) border-box;
+    border: 2.5px solid transparent;
+    color: var(--violet-bright);
+    font-size: 24px;
+    font-weight: 700;
+    font-family: "Orbitron", monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.35);
+  }
+  
+  .profile-info {
+    flex: 1;
+    min-width: 160px;
+  }
+  
+  .profile-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+    font-family: "Space Grotesk", sans-serif;
+  }
+  
+  .profile-role {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  
+  .profile-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 16px;
+  }
+  
+  .stat {
+    text-align: center;
+  }
+  
+  .stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .stat-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  
+  .stat-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border-light);
+  }
+  
+  .profile-rank {
+    margin-left: auto;
+  }
+  
+  .rank-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    font-family: "Orbitron", monospace;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(167, 139, 250, 0.2));
+    color: var(--violet-bright);
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
+  }
+  
+  /* ---- Buttons ---- */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 24px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+  
+  .btn:active {
+    transform: scale(0.96);
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, var(--violet-dark), var(--violet-light));
+    color: #fff;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.45);
+  }
+  
+  .btn-primary:hover {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.65), 0 4px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+  }
+  
+  .btn-secondary {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--violet);
+    color: var(--violet-bright);
+  }
+  
+  .btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.25);
+    box-shadow: var(--glow-sm);
+  }
+  
+  .btn-ghost {
+    background: transparent;
+    border-color: rgba(167, 139, 250, 0.4);
+    color: var(--text-muted);
+  }
+  
+  .btn-ghost:hover {
+    border-color: rgba(167, 139, 250, 0.7);
+    color: var(--text-primary);
+    background: rgba(139, 92, 246, 0.08);
+  }
+  
+  /* ---- Input ---- */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  
+  .input-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  
+  .input {
+    height: 46px;
+    padding: 0 16px;
+    background: var(--bg-input);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: "Space Grotesk", inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.2s;
+  }
+  
+  .input::placeholder {
+    color: var(--text-placeholder);
+    opacity: 0.7;
+  }
+  
+  .input:focus {
+    border-color: var(--violet);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 0 20px rgba(139, 92, 246, 0.15);
+  }
+  
+  .input-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  
+  /* ---- Badges ---- */
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-family: "Orbitron", monospace;
+  }
+  
+  .badge-gradient {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.4), rgba(167, 139, 250, 0.25));
+    color: var(--violet-bright);
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  }
+  
+  .badge-outline {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+  }
+  
+  .badge-subtle {
+    background: rgba(139, 92, 246, 0.08);
+    color: var(--text-dim);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    font-family: "Space Grotesk", monospace;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+  
+  /* ---- Responsive ---- */
+  @media (max-width: 600px) {
+    .header-nav {
+      display: none;
+    }
+    .header-inner {
+      padding: 0 16px;
+      gap: 16px;
+    }
+    .container {
+      padding: 0 16px;
+    }
+    .main {
+      padding: 32px 0 48px;
+    }
+    .profile-card {
+      flex-direction: column;
+      text-align: center;
+      gap: 16px;
+    }
+    .profile-stats {
+      justify-content: center;
+    }
+    .profile-rank {
+      margin-left: 0;
+    }
+    .page-title {
+      font-size: clamp(24px, 7vw, 32px);
+    }
+    .page-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+    }
+    .page-tagline {
+      font-size: 14px;
+    }
+    .card {
+      padding: 20px;
+    }
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      font-size: 20px;
+    }
+    .profile-name {
+      font-size: 18px;
+    }
+    .stat-value {
+      font-size: 18px;
+    }
+    .stat-label {
+      font-size: 11px;
+    }
+    .btn {
+      height: 40px;
+      padding: 0 18px;
+      font-size: 13px;
+    }
+    .btn-row {
+      gap: 8px;
+    }
+    .input {
+      height: 42px;
+      font-size: 13px;
+    }
+    .orb-1 {
+      width: 240px;
+      height: 240px;
+    }
+    .orb-2 {
+      width: 280px;
+      height: 280px;
+    }
+    .orb-3 {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 380px) {
+    .profile-stats {
+      gap: 12px;
+    }
+    .logo-text {
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purple Space — Style Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- Floating background orbs -->
+    <div class="orb orb-1" id="orb-1"></div>
+    <div class="orb orb-2" id="orb-2"></div>
+    <div class="orb orb-3" id="orb-3"></div>
+  
+    <!-- Header -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="header-logo">
+          <span class="logo-glyph">✦</span>
+          <span class="logo-text">NEBULA</span>
+        </div>
+        <nav class="header-nav">
+          <a href="#" class="nav-link active">Cosmos</a>
+          <a href="#" class="nav-link">Explore</a>
+          <a href="#" class="nav-link">Signals</a>
+          <a href="#" class="nav-link">Void</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" aria-label="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notif-badge">7</span>
+          </button>
+          <div class="avatar-sm">ZX</div>
+        </div>
+      </div>
+    </header>
+  
+    <!-- Main -->
+    <main class="main">
+      <div class="container">
+  
+        <!-- Page title -->
+        <div class="page-title-area">
+          <p class="page-eyebrow">DESIGN SYSTEM · COSMIC UI</p>
+          <h1 class="page-title">Purple Space</h1>
+          <p class="page-tagline">Deep cosmos. Neon violet. Electric futures.</p>
+        </div>
+  
+        <!-- Profile card -->
+        <section class="card profile-card" id="profile-card">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar">ZX</div>
+          </div>
+          <div class="profile-info">
+            <h2 class="profile-name">Zara Xen</h2>
+            <p class="profile-role">Cosmic Architect · Level 99</p>
+            <div class="profile-stats">
+              <div class="stat">
+                <span class="stat-value">18.4K</span>
+                <span class="stat-label">Nodes</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat">
+                <span class="stat-value">312</span>
+                <span class="stat-label">Portals</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat">
+                <span class="stat-value">∞</span>
+                <span class="stat-label">Reach</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-rank">
+            <span class="rank-chip">LEGEND</span>
+          </div>
+        </section>
+  
+        <!-- Buttons -->
+        <section class="card">
+          <h3 class="section-label">Controls</h3>
+          <div class="btn-row">
+            <button class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+              Launch Mission
+            </button>
+            <button class="btn btn-secondary">Scan Area</button>
+            <button class="btn btn-ghost">Abort</button>
+          </div>
+        </section>
+  
+        <!-- Input -->
+        <section class="card">
+          <h3 class="section-label">Signal Transmission</h3>
+          <div class="input-group">
+            <label class="input-label" for="signal-input">Frequency Channel</label>
+            <input
+              id="signal-input"
+              class="input"
+              type="text"
+              placeholder="Enter frequency ID..."
+            />
+            <p class="input-hint">Specify a valid deep-space frequency in the range 4.2–8.9 GHz.</p>
+          </div>
+        </section>
+  
+        <!-- Badges -->
+        <section class="card">
+          <h3 class="section-label">Clearances &amp; Tags</h3>
+          <div class="badge-row">
+            <span class="badge badge-gradient">QUANTUM</span>
+            <span class="badge badge-gradient">DARK MATTER</span>
+            <span class="badge badge-outline">ENCRYPTED</span>
+            <span class="badge badge-outline">VOID SECTOR</span>
+            <span class="badge badge-subtle">v0.9.1-alpha</span>
+          </div>
+        </section>
+  
+      </div>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  /* Purple Space — Showcase interactions */
+  
+  // ── Orbs: inject CSS animations and add mouse parallax ───────
+  const orbs = [
+    document.getElementById("orb-1"),
+    document.getElementById("orb-2"),
+    document.getElementById("orb-3"),
+  ];
+  
+  // Subtle mouse parallax on orbs
+  document.addEventListener("mousemove", (e) => {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = (e.clientX - cx) / cx;
+    const dy = (e.clientY - cy) / cy;
+  
+    orbs.forEach((orb, i) => {
+      if (!orb) return;
+      const factor = (i + 1) * 12;
+      orb.style.transform = `translate(${dx * factor}px, ${dy * factor}px)`;
+    });
+  });
+  
+  // ── Profile card: pulsing glow on hover ───────────────────────
+  const profileCard = document.getElementById("profile-card");
+  
+  if (profileCard) {
+    profileCard.addEventListener("mouseenter", () => {
+      profileCard.style.boxShadow = "0 8px 32px rgba(139,92,246,0.2), 0 0 50px rgba(139,92,246,0.18)";
+    });
+    profileCard.addEventListener("mouseleave", () => {
+      profileCard.style.boxShadow = "";
+    });
+  }
+  
+  // ── Primary button: glow pulse on click ──────────────────────
+  document.querySelectorAll(".btn-primary").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.style.transition = "box-shadow 0.08s";
+      btn.style.boxShadow = "0 0 50px rgba(139,92,246,0.8), 0 0 15px rgba(167,139,250,0.6)";
+      setTimeout(() => {
+        btn.style.transition = "box-shadow 0.5s";
+        btn.style.boxShadow = "0 0 20px rgba(139,92,246,0.45)";
+      }, 120);
+    });
+  });
+  
+  // ── Nav: active state toggle ──────────────────────────────────
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      document.querySelectorAll(".nav-link").forEach((l) => l.classList.remove("active"));
+      this.classList.add("active");
+    });
+  });
+  
+  // ── Input: cosmic glow on focus ───────────────────────────────
+  const input = document.getElementById("signal-input");
+  const hint = input?.nextElementSibling;
+  
+  if (input) {
+    input.addEventListener("focus", () => {
+      input.style.boxShadow = "0 0 0 3px rgba(139,92,246,0.15), 0 0 24px rgba(139,92,246,0.2)";
+    });
+    input.addEventListener("blur", () => {
+      input.style.boxShadow = "";
+    });
+  }
+  
+  if (input && hint) {
+    input.addEventListener("input", () => {
+      const val = input.value.trim();
+      const freq = parseFloat(val);
+      if (val === "") {
+        hint.textContent = "Specify a valid deep-space frequency in the range 4.2–8.9 GHz.";
+        hint.style.color = "";
+      } else if (!isNaN(freq) && freq >= 4.2 && freq <= 8.9) {
+        hint.textContent = `✦ Signal lock acquired at ${freq} GHz`;
+        hint.style.color = "#A78BFA";
+      } else {
+        hint.textContent = "⚠ Frequency out of range. Try between 4.2 and 8.9 GHz.";
+        hint.style.color = "#F87171";
+      }
+    });
+  }
+  
+  // ── Badge hover: floating effect ─────────────────────────────
+  document.querySelectorAll(".badge").forEach((badge) => {
+    badge.style.transition = "transform 0.2s ease, box-shadow 0.2s ease";
+    badge.style.cursor = "default";
+    badge.addEventListener("mouseenter", () => {
+      badge.style.transform = "translateY(-2px)";
+      if (badge.classList.contains("badge-gradient")) {
+        badge.style.boxShadow = "0 4px 16px rgba(139,92,246,0.4)";
+      }
+    });
+    badge.addEventListener("mouseleave", () => {
+      badge.style.transform = "";
+      badge.style.boxShadow = "";
+    });
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

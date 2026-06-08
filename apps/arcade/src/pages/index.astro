@@ -1,0 +1,101 @@
+---
+import { loadChallenges, loadLessons } from "@schema";
+import { join } from "node:path";
+import Base from "../layouts/Base.astro";
+import TopicIcon from "../components/TopicIcon.astro";
+
+const contentDir = join(process.cwd(), "..", "..", "packages", "content");
+
+const [challenges, lessons] = await Promise.all([
+  loadChallenges(contentDir),
+  loadLessons(contentDir),
+]);
+
+const published = challenges.filter((c) => c.quality === "published");
+
+const topics = new Map<
+  string,
+  { topic: string; challenges: number; lessons: number; slugs: string[] }
+>();
+for (const c of published) {
+  const t = topics.get(c.topic) ?? { topic: c.topic, challenges: 0, lessons: 0, slugs: [] };
+  t.challenges += 1;
+  t.slugs.push(c.slug);
+  topics.set(c.topic, t);
+}
+for (const l of lessons) {
+  const t = topics.get(l.topic) ?? { topic: l.topic, challenges: 0, lessons: 0, slugs: [] };
+  t.lessons += 1;
+  topics.set(l.topic, t);
+}
+
+const topicList = [...topics.values()].sort((a, b) => a.topic.localeCompare(b.topic));
+---
+
+<Base title="Arcade — Topics">
+  <section class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight text-white">Arcade</h1>
+    <p class="text-white/60">Quick challenges to practice tech topics.</p>
+  </section>
+
+  <section class="mt-10">
+    {topicList.length === 0 ? (
+      <p class="text-white/50">No topics yet — add a challenge under
+        <code class="rounded bg-white/8 px-1.5 py-0.5 text-sm">packages/content/challenges/</code>.</p>
+    ) : (
+      <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {topicList.map((t) => (
+          <li>
+            <a
+              href={`/${t.topic}/`}
+              class="block rounded-xl border border-white/8 bg-white/6 p-5 transition hover:border-white/14 hover:bg-white/8"
+              data-topic-card
+              data-topic={t.topic}
+              data-slugs={JSON.stringify(t.slugs)}
+            >
+              <div class="flex items-center gap-3">
+                <span class="grid h-9 w-9 place-items-center rounded-lg border border-white/8 bg-white/6 text-white/70">
+                  <TopicIcon topic={t.topic} size={20} />
+                </span>
+                <h2 class="text-lg font-medium text-white">{t.topic}</h2>
+              </div>
+              <p class="mt-3 text-sm text-white/50">
+                <span data-progress-summary>
+                  {t.challenges} challenge{t.challenges === 1 ? "" : "s"}
+                </span>
+                <span class="mx-1">·</span>
+                {t.lessons} lesson{t.lessons === 1 ? "" : "s"}
+              </p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Base>
+
+<script>
+  type ProgressEntry = { correct: boolean; completedAt: number };
+  let progress: Record<string, ProgressEntry> = {};
+  try {
+    progress = JSON.parse(localStorage.getItem("arcade:progress") || "{}");
+  } catch {
+    progress = {};
+  }
+
+  const cards = document.querySelectorAll<HTMLElement>("[data-topic-card]");
+  cards.forEach((card) => {
+    const slugsAttr = card.dataset.slugs;
+    if (!slugsAttr) return;
+    const slugs: string[] = JSON.parse(slugsAttr);
+    const total = slugs.length;
+    const done = slugs.filter((s) => progress[s]).length;
+    const correct = slugs.filter((s) => progress[s]?.correct).length;
+    const summary = card.querySelector<HTMLElement>("[data-progress-summary]");
+    if (!summary || total === 0) return;
+    summary.textContent =
+      done === 0
+        ? `${total} challenge${total === 1 ? "" : "s"}`
+        : `${correct}/${total} correct`;
+  });
+</script>

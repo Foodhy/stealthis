@@ -1,0 +1,668 @@
+---
+slug: "segmented-control-delete-closing-tag-c624c7a1"
+topic: "segmented"
+title: "Fix the broken HTML structure in Segmented Control"
+type: "fix"
+difficulty: 2
+resourceSlug: "segmented-control"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 480px;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.375rem;
+  }
+  .demo-sub {
+    color: #475569;
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+  
+  .section {
+    margin-bottom: 2rem;
+  }
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* ── Segmented control track ── */
+  .sc {
+    display: inline-flex;
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 0;
+  }
+  
+  /* ── Sliding indicator ── */
+  .sc-indicator {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    height: calc(100% - 6px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    /* JS sets --offset and --width */
+    transform: translateX(var(--offset, 0px));
+    width: var(--width, 80px);
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* ── Segment buttons ── */
+  .sc-item {
+    position: relative;
+    z-index: 1;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    outline: none;
+  }
+  
+  .sc-item:focus-visible {
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5);
+  }
+  
+  .sc-item--active,
+  .sc-item[aria-selected="true"] {
+    color: #f2f6ff;
+    font-weight: 600;
+  }
+  
+  /* ── Compact variant ── */
+  .sc--compact .sc-item {
+    padding: 0.375rem 0.875rem;
+    font-size: 0.75rem;
+  }
+  
+  /* ── Discount badge ── */
+  .sc-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+  
+  /* ── Output display ── */
+  .output-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.875rem;
+  }
+  
+  .output-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .output-label {
+    font-size: 0.75rem;
+    color: #475569;
+  }
+  
+  .output-value {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #38bdf8;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Segmented Control
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo">
+      <h1 class="demo-title">Segmented Control</h1>
+      <p class="demo-sub">iOS-style pill toggle with sliding indicator and keyboard support.</p>
+  
+      <!-- Example 1: Billing period -->
+      <section class="section">
+        <p class="section-label">Billing period</p>
+        <div
+          class="sc"
+          role="tablist"
+          aria-label="Billing period"
+          data-sc
+        >
+          <span class="sc-indicator" aria-hidden="true"></span>
+          <button class="sc-item sc-item--active" role="tab" aria-selected="true" tabindex="0">Monthly</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">Yearly <span class="sc-badge">-20%</span></button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">Lifetime</button>
+        </div>
+      </section>
+  
+      <!-- Example 2: Size picker -->
+      <section class="section">
+        <p class="section-label">Size</p>
+        <div
+          class="sc sc--compact"
+          role="tablist"
+          aria-label="Size selection"
+          data-sc
+        >
+          <span class="sc-indicator" aria-hidden="true"></span>
+          <button class="sc-item sc-item--active" role="tab" aria-selected="true" tabindex="0">S</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">M</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">L</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">XL</button>
+        </div>
+      </section>
+  
+      <!-- Selected value display -->
+      <div class="output-row">
+        <div class="output-block">
+          <span class="output-label">Billing:</span>
+          <span class="output-value" id="output-billing">Monthly</span>
+        </div>
+        <div class="output-block">
+          <span class="output-label">Size:</span>
+          <span class="output-value" id="output-size">S</span>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    // Output elements for the demo
+    const outputBilling = document.getElementById("output-billing");
+    const outputSize = document.getElementById("output-size");
+  
+    const outputs = [outputBilling, outputSize];
+  
+    document.querySelectorAll("[data-sc]").forEach(function (sc, scIndex) {
+      const indicator = sc.querySelector(".sc-indicator");
+      const items = Array.from(sc.querySelectorAll(".sc-item"));
+  
+      function updateIndicator(activeItem) {
+        const scRect = sc.getBoundingClientRect();
+        const itemRect = activeItem.getBoundingClientRect();
+        const offset = itemRect.left - scRect.left - 3; // 3px = padding offset
+        indicator.style.setProperty("--offset", offset + "px");
+        indicator.style.setProperty("--width", itemRect.width + "px");
+      }
+  
+      function selectItem(item) {
+        items.forEach(function (i) {
+          i.classList.remove("sc-item--active");
+          i.setAttribute("aria-selected", "false");
+          i.tabIndex = -1;
+        });
+        item.classList.add("sc-item--active");
+        item.setAttribute("aria-selected", "true");
+        item.tabIndex = 0;
+        updateIndicator(item);
+  
+        // Update demo output text (strip badge text if any)
+        const output = outputs[scIndex];
+        if (output) {
+          const badge = item.querySelector(".sc-badge");
+          output.textContent = badge
+            ? item.textContent.replace(badge.textContent, "").trim()
+            : item.textContent.trim();
+        }
+      }
+  
+      // Click
+      items.forEach(function (item) {
+        item.addEventListener("click", function () {
+          selectItem(item);
+          item.focus();
+        });
+      });
+  
+      // Keyboard navigation
+      sc.addEventListener("keydown", function (e) {
+        const currentIndex = items.indexOf(document.activeElement);
+        if (currentIndex === -1) return;
+  
+        let nextIndex = currentIndex;
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          nextIndex = (currentIndex + 1) % items.length;
+        }
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          nextIndex = (currentIndex - 1 + items.length) % items.length;
+        }
+        if (e.key === "Home") {
+          e.preventDefault();
+          nextIndex = 0;
+        }
+        if (e.key === "End") {
+          e.preventDefault();
+          nextIndex = items.length - 1;
+        }
+  
+        if (nextIndex !== currentIndex) {
+          selectItem(items[nextIndex]);
+          items[nextIndex].focus();
+        }
+  
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectItem(items[currentIndex]);
+        }
+      });
+  
+      // Initialize indicator position (after layout)
+      requestAnimationFrame(function () {
+        const active = sc.querySelector(".sc-item--active") || items[0];
+        if (active) updateIndicator(active);
+      });
+    });
+  
+    // Re-sync on resize
+    window.addEventListener("resize", function () {
+      document.querySelectorAll("[data-sc]").forEach(function (sc) {
+        const active = sc.querySelector(".sc-item--active");
+        const indicator = sc.querySelector(".sc-indicator");
+        if (!active || !indicator) return;
+        const scRect = sc.getBoundingClientRect();
+        const itemRect = active.getBoundingClientRect();
+        indicator.style.setProperty("--offset", itemRect.left - scRect.left - 3 + "px");
+        indicator.style.setProperty("--width", itemRect.width + "px");
+      });
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 480px;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.375rem;
+  }
+  .demo-sub {
+    color: #475569;
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+  
+  .section {
+    margin-bottom: 2rem;
+  }
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* ── Segmented control track ── */
+  .sc {
+    display: inline-flex;
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 0;
+  }
+  
+  /* ── Sliding indicator ── */
+  .sc-indicator {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    height: calc(100% - 6px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    /* JS sets --offset and --width */
+    transform: translateX(var(--offset, 0px));
+    width: var(--width, 80px);
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* ── Segment buttons ── */
+  .sc-item {
+    position: relative;
+    z-index: 1;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    outline: none;
+  }
+  
+  .sc-item:focus-visible {
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5);
+  }
+  
+  .sc-item--active,
+  .sc-item[aria-selected="true"] {
+    color: #f2f6ff;
+    font-weight: 600;
+  }
+  
+  /* ── Compact variant ── */
+  .sc--compact .sc-item {
+    padding: 0.375rem 0.875rem;
+    font-size: 0.75rem;
+  }
+  
+  /* ── Discount badge ── */
+  .sc-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+  
+  /* ── Output display ── */
+  .output-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.875rem;
+  }
+  
+  .output-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .output-label {
+    font-size: 0.75rem;
+    color: #475569;
+  }
+  
+  .output-value {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #38bdf8;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Segmented Control</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo">
+      <h1 class="demo-title">Segmented Control</h1>
+      <p class="demo-sub">iOS-style pill toggle with sliding indicator and keyboard support.</p>
+  
+      <!-- Example 1: Billing period -->
+      <section class="section">
+        <p class="section-label">Billing period</p>
+        <div
+          class="sc"
+          role="tablist"
+          aria-label="Billing period"
+          data-sc
+        >
+          <span class="sc-indicator" aria-hidden="true"></span>
+          <button class="sc-item sc-item--active" role="tab" aria-selected="true" tabindex="0">Monthly</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">Yearly <span class="sc-badge">-20%</span></button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">Lifetime</button>
+        </div>
+      </section>
+  
+      <!-- Example 2: Size picker -->
+      <section class="section">
+        <p class="section-label">Size</p>
+        <div
+          class="sc sc--compact"
+          role="tablist"
+          aria-label="Size selection"
+          data-sc
+        >
+          <span class="sc-indicator" aria-hidden="true"></span>
+          <button class="sc-item sc-item--active" role="tab" aria-selected="true" tabindex="0">S</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">M</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">L</button>
+          <button class="sc-item" role="tab" aria-selected="false" tabindex="-1">XL</button>
+        </div>
+      </section>
+  
+      <!-- Selected value display -->
+      <div class="output-row">
+        <div class="output-block">
+          <span class="output-label">Billing:</span>
+          <span class="output-value" id="output-billing">Monthly</span>
+        </div>
+        <div class="output-block">
+          <span class="output-label">Size:</span>
+          <span class="output-value" id="output-size">S</span>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    // Output elements for the demo
+    const outputBilling = document.getElementById("output-billing");
+    const outputSize = document.getElementById("output-size");
+  
+    const outputs = [outputBilling, outputSize];
+  
+    document.querySelectorAll("[data-sc]").forEach(function (sc, scIndex) {
+      const indicator = sc.querySelector(".sc-indicator");
+      const items = Array.from(sc.querySelectorAll(".sc-item"));
+  
+      function updateIndicator(activeItem) {
+        const scRect = sc.getBoundingClientRect();
+        const itemRect = activeItem.getBoundingClientRect();
+        const offset = itemRect.left - scRect.left - 3; // 3px = padding offset
+        indicator.style.setProperty("--offset", offset + "px");
+        indicator.style.setProperty("--width", itemRect.width + "px");
+      }
+  
+      function selectItem(item) {
+        items.forEach(function (i) {
+          i.classList.remove("sc-item--active");
+          i.setAttribute("aria-selected", "false");
+          i.tabIndex = -1;
+        });
+        item.classList.add("sc-item--active");
+        item.setAttribute("aria-selected", "true");
+        item.tabIndex = 0;
+        updateIndicator(item);
+  
+        // Update demo output text (strip badge text if any)
+        const output = outputs[scIndex];
+        if (output) {
+          const badge = item.querySelector(".sc-badge");
+          output.textContent = badge
+            ? item.textContent.replace(badge.textContent, "").trim()
+            : item.textContent.trim();
+        }
+      }
+  
+      // Click
+      items.forEach(function (item) {
+        item.addEventListener("click", function () {
+          selectItem(item);
+          item.focus();
+        });
+      });
+  
+      // Keyboard navigation
+      sc.addEventListener("keydown", function (e) {
+        const currentIndex = items.indexOf(document.activeElement);
+        if (currentIndex === -1) return;
+  
+        let nextIndex = currentIndex;
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          nextIndex = (currentIndex + 1) % items.length;
+        }
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          nextIndex = (currentIndex - 1 + items.length) % items.length;
+        }
+        if (e.key === "Home") {
+          e.preventDefault();
+          nextIndex = 0;
+        }
+        if (e.key === "End") {
+          e.preventDefault();
+          nextIndex = items.length - 1;
+        }
+  
+        if (nextIndex !== currentIndex) {
+          selectItem(items[nextIndex]);
+          items[nextIndex].focus();
+        }
+  
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectItem(items[currentIndex]);
+        }
+      });
+  
+      // Initialize indicator position (after layout)
+      requestAnimationFrame(function () {
+        const active = sc.querySelector(".sc-item--active") || items[0];
+        if (active) updateIndicator(active);
+      });
+    });
+  
+    // Re-sync on resize
+    window.addEventListener("resize", function () {
+      document.querySelectorAll("[data-sc]").forEach(function (sc) {
+        const active = sc.querySelector(".sc-item--active");
+        const indicator = sc.querySelector(".sc-indicator");
+        if (!active || !indicator) return;
+        const scRect = sc.getBoundingClientRect();
+        const itemRect = active.getBoundingClientRect();
+        indicator.style.setProperty("--offset", itemRect.left - scRect.left - 3 + "px");
+        indicator.style.setProperty("--width", itemRect.width + "px");
+      });
+    });
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

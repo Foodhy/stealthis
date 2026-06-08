@@ -65,6 +65,9 @@ const ResourceCollectionSchema = z.enum([
   "remotion",
   "effects",
   "mobile-nav",
+  "charts",
+  "restaurant",
+  "hotel",
 ]);
 
 const resources = defineCollection({

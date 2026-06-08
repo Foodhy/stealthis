@@ -1,0 +1,3012 @@
+---
+slug: "shop-category-page-delete-closing-tag-3ca318ed"
+topic: "ecommerce"
+title: "Fix the broken HTML structure in Shop Category Page"
+type: "fix"
+difficulty: 2
+resourceSlug: "shop-category-page"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a2e;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* ── Top Nav ─────────────────────────────────── */
+  
+  .shop-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  
+  .shop-logo {
+    font-size: 20px;
+    font-weight: 800;
+    color: #4f46e5;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+  
+  .nav-search {
+    display: flex;
+    flex: 1;
+    max-width: 480px;
+  }
+  
+  .nav-search input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    font-size: 14px;
+    outline: none;
+  }
+  
+  .nav-search input:focus {
+    border-color: #4f46e5;
+  }
+  
+  .nav-search button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    background: #f9fafb;
+    cursor: pointer;
+    color: #6b7280;
+  }
+  
+  .cart-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #374151;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  
+  .cart-btn:hover {
+    background: #f3f4f6;
+  }
+  
+  .cart-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: #4f46e5;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* ── Breadcrumb ──────────────────────────────── */
+  
+  .breadcrumb {
+    padding: 14px 24px;
+    font-size: 13px;
+    color: #6b7280;
+    background: #fff;
+    border-bottom: 1px solid #f0f1f3;
+  }
+  
+  .breadcrumb a {
+    color: #6b7280;
+    transition: color 0.1s;
+  }
+  
+  .breadcrumb a:hover {
+    color: #4f46e5;
+  }
+  
+  .breadcrumb .sep {
+    margin: 0 6px;
+    color: #d1d5db;
+  }
+  
+  .breadcrumb .current {
+    color: #1a1a2e;
+    font-weight: 500;
+  }
+  
+  /* ── Page Title ──────────────────────────────── */
+  
+  .page-title-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 24px 24px 16px;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  
+  .page-title-row h1 {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  
+  .product-total {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  
+  .mobile-filter-toggle {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+  }
+  
+  /* ── Shop Layout ─────────────────────────────── */
+  
+  .shop-layout {
+    display: flex;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    gap: 28px;
+  }
+  
+  /* ── Sidebar ─────────────────────────────────── */
+  
+  .shop-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 72px;
+    align-self: flex-start;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
+    padding-bottom: 24px;
+  }
+  
+  .sidebar-header {
+    display: none;
+  }
+  
+  .filter-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  
+  .filter-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    cursor: pointer;
+    text-align: left;
+  }
+  
+  .filter-heading .chevron {
+    font-size: 10px;
+    color: #9ca3af;
+    transition: transform 0.2s;
+  }
+  
+  .filter-section.collapsed .chevron {
+    transform: rotate(-90deg);
+  }
+  
+  .filter-section.collapsed .filter-body {
+    display: none;
+  }
+  
+  .filter-body {
+    padding: 0 16px 16px;
+  }
+  
+  /* Price */
+  .price-inputs {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .price-field {
+    flex: 1;
+  }
+  
+  .price-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  
+  .price-field input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    outline: none;
+  }
+  
+  .price-field input:focus {
+    border-color: #4f46e5;
+  }
+  
+  .price-dash {
+    color: #9ca3af;
+    padding-bottom: 6px;
+  }
+  
+  .price-slider {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e5e7eb;
+    border-radius: 2px;
+    outline: none;
+  }
+  
+  .price-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .price-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .price-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+  
+  /* Brand checkboxes */
+  .check-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+  }
+  
+  .check-label input {
+    accent-color: #4f46e5;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .check-label .count {
+    margin-left: auto;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Star rating filter */
+  .star-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  
+  .star-label:hover {
+    background: #f9fafb;
+  }
+  
+  .star-label.active {
+    background: #eff6ff;
+    color: #4f46e5;
+    font-weight: 500;
+  }
+  
+  .stars {
+    color: #f59e0b;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+  
+  /* Toggle switch */
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #374151;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    border: none;
+    border-radius: 12px;
+    background: #d1d5db;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s;
+  }
+  
+  .toggle-switch[aria-checked="true"] {
+    background: #4f46e5;
+  }
+  
+  .toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s;
+  }
+  
+  .toggle-switch[aria-checked="true"] .toggle-knob {
+    transform: translateX(20px);
+  }
+  
+  /* Clear filters */
+  .clear-filters {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  .clear-filters:hover {
+    text-decoration: underline;
+  }
+  
+  /* ── Main Content ────────────────────────────── */
+  
+  .shop-main {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* ── Toolbar ─────────────────────────────────── */
+  
+  .shop-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fff;
+    font-size: 12px;
+    color: #374151;
+  }
+  
+  .filter-pill button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-size: 11px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  
+  .filter-pill button:hover {
+    background: #d1d5db;
+  }
+  
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+  
+  .view-toggle {
+    display: flex;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: #fff;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  
+  .view-btn:not(:last-child) {
+    border-right: 1px solid #e5e7eb;
+  }
+  
+  .view-btn.active {
+    background: #4f46e5;
+    color: #fff;
+  }
+  
+  .sort-select {
+    padding: 7px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #374151;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .sort-select:focus {
+    border-color: #4f46e5;
+  }
+  
+  .showing-count {
+    font-size: 13px;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+  
+  /* ── Product Grid ────────────────────────────── */
+  
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  
+  .product-grid.list-view {
+    grid-template-columns: 1fr;
+  }
+  
+  .product-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .product-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  
+  .product-img {
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .badge-new {
+    background: #059669;
+    color: #fff;
+  }
+  
+  .badge-out {
+    background: #dc2626;
+    color: #fff;
+  }
+  
+  .product-info {
+    padding: 16px;
+  }
+  
+  .product-brand {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  
+  .product-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  
+  .product-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .stars-display {
+    color: #f59e0b;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  
+  .rating-num {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+  
+  .product-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .price-current {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  
+  .price-sale {
+    color: #dc2626;
+  }
+  
+  .price-original {
+    font-size: 14px;
+    color: #9ca3af;
+    text-decoration: line-through;
+  }
+  
+  .add-to-cart {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid #4f46e5;
+    border-radius: 8px;
+    background: transparent;
+    color: #4f46e5;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  
+  .add-to-cart:hover:not(:disabled) {
+    background: #4f46e5;
+    color: #fff;
+  }
+  
+  .add-to-cart:disabled {
+    border-color: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+  
+  /* ── List View Cards ─────────────────────────── */
+  
+  .product-grid.list-view .product-card {
+    display: flex;
+  }
+  
+  .product-grid.list-view .product-img {
+    width: 240px;
+    height: auto;
+    min-height: 180px;
+    flex-shrink: 0;
+  }
+  
+  .product-grid.list-view .product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* ── Pagination ──────────────────────────────── */
+  
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 32px;
+  }
+  
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  
+  .page-btn:hover:not(:disabled):not(.active) {
+    background: #f3f4f6;
+  }
+  
+  .page-btn.active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  
+  /* ── Responsive ──────────────────────────────── */
+  
+  @media (max-width: 1024px) {
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .shop-nav {
+      padding: 10px 16px;
+    }
+  
+    .nav-search {
+      display: none;
+    }
+  
+    .page-title-row {
+      padding: 16px 16px 12px;
+    }
+  
+    .page-title-row h1 {
+      font-size: 22px;
+    }
+  
+    .mobile-filter-toggle {
+      display: inline-flex;
+    }
+  
+    .shop-layout {
+      flex-direction: column;
+      padding: 0 16px 40px;
+      gap: 0;
+    }
+  
+    .shop-sidebar {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      width: 100%;
+      max-height: 100vh;
+      top: 0;
+      background: #fff;
+      padding: 16px;
+      overflow-y: auto;
+    }
+  
+    .shop-sidebar.open {
+      display: block;
+    }
+  
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+  
+    .sidebar-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+  
+    .sidebar-close {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 8px;
+      background: #f3f4f6;
+      font-size: 22px;
+      color: #374151;
+      cursor: pointer;
+    }
+  
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+  
+    .product-img {
+      height: 150px;
+    }
+  
+    .product-info {
+      padding: 12px;
+    }
+  
+    .product-name {
+      font-size: 13px;
+    }
+  
+    .price-current {
+      font-size: 16px;
+    }
+  
+    .toolbar-right {
+      flex-wrap: wrap;
+    }
+  
+    .showing-count {
+      display: none;
+    }
+  
+    .product-grid.list-view .product-card {
+      flex-direction: column;
+    }
+  
+    .product-grid.list-view .product-img {
+      width: 100%;
+      min-height: 150px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .product-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Headphones &mdash; Shop
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="shop-page">
+      <!-- Top Nav -->
+      <header class="shop-nav">
+        <a href="#" class="shop-logo">ShopUI</a>
+        <div class="nav-search">
+          <input type="text" placeholder="Search products..." />
+          <button aria-label="Search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+        <button class="cart-btn" aria-label="Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-count">3</span>
+        </button>
+      </header>
+  
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="#">Home</a>
+        <span class="sep">&rsaquo;</span>
+        <a href="#">Electronics</a>
+        <span class="sep">&rsaquo;</span>
+        <span class="current">Headphones</span>
+      </nav>
+  
+      <!-- Page Title -->
+      <div class="page-title-row">
+        <div>
+          <h1>Headphones</h1>
+          <p class="product-total" id="productTotal">48 products</p>
+        </div>
+        <button class="mobile-filter-toggle" id="mobileFilterToggle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
+          Filters
+        </button>
+      </div>
+  
+      <div class="shop-layout">
+        <!-- Sidebar -->
+        <aside class="shop-sidebar" id="shopSidebar">
+          <div class="sidebar-header">
+            <h2>Filters</h2>
+            <button class="sidebar-close" id="sidebarClose">&times;</button>
+          </div>
+  
+          <div class="filter-section" data-filter="price">
+            <button class="filter-heading">Price Range <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <div class="price-inputs">
+                <div class="price-field">
+                  <label>Min</label>
+                  <input type="number" id="priceMin" value="0" min="0" max="500" step="10" />
+                </div>
+                <span class="price-dash">&ndash;</span>
+                <div class="price-field">
+                  <label>Max</label>
+                  <input type="number" id="priceMax" value="500" min="0" max="500" step="10" />
+                </div>
+              </div>
+              <input type="range" class="price-slider" id="priceSlider" min="0" max="500" value="500" step="10" />
+              <div class="price-labels"><span>$0</span><span>$500</span></div>
+            </div>
+          </div>
+  
+          <div class="filter-section" data-filter="brand">
+            <button class="filter-heading">Brand <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <label class="check-label"><input type="checkbox" value="sony" /> Sony <span class="count">(12)</span></label>
+              <label class="check-label"><input type="checkbox" value="bose" /> Bose <span class="count">(9)</span></label>
+              <label class="check-label"><input type="checkbox" value="apple" /> Apple <span class="count">(8)</span></label>
+              <label class="check-label"><input type="checkbox" value="samsung" /> Samsung <span class="count">(7)</span></label>
+              <label class="check-label"><input type="checkbox" value="jbl" /> JBL <span class="count">(6)</span></label>
+              <label class="check-label"><input type="checkbox" value="sennheiser" /> Sennheiser <span class="count">(6)</span></label>
+            </div>
+          </div>
+  
+          <div class="filter-section" data-filter="rating">
+            <button class="filter-heading">Rating <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <label class="star-label" data-min="4"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span> &amp; up</label>
+              <label class="star-label" data-min="3"><span class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span> &amp; up</label>
+              <label class="star-label" data-min="2"><span class="stars">&#9733;&#9733;&#9734;&#9734;&#9734;</span> &amp; up</label>
+            </div>
+          </div>
+  
+          <div class="filter-section" data-filter="availability">
+            <button class="filter-heading">Availability <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <label class="toggle-label">
+                <span>In Stock only</span>
+                <button class="toggle-switch" id="stockToggle" role="switch" aria-checked="false">
+                  <span class="toggle-knob"></span>
+                </button>
+              </label>
+            </div>
+          </div>
+  
+          <button class="clear-filters" id="clearFilters">Clear all filters</button>
+        </aside>
+  
+        <!-- Main Content -->
+        <main class="shop-main">
+          <!-- Toolbar -->
+          <div class="shop-toolbar">
+            <div class="active-filters" id="activeFilters"></div>
+            <div class="toolbar-right">
+              <div class="view-toggle">
+                <button class="view-btn active" data-view="grid" aria-label="Grid view">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+                </button>
+                <button class="view-btn" data-view="list" aria-label="List view">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                </button>
+              </div>
+              <select class="sort-select" id="sortSelect">
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="newest">Newest</option>
+                <option value="rating">Best Rating</option>
+              </select>
+              <span class="showing-count" id="showingCount">Showing 12 of 48 products</span>
+            </div>
+          </div>
+  
+          <!-- Product Grid -->
+          <div class="product-grid" id="productGrid">
+            <div class="product-card" data-brand="sony" data-price="349" data-rating="4.8" data-stock="true" data-date="2026-03-10">
+              <div class="product-img" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <span class="badge badge-new">New</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sony</span>
+                <h3 class="product-name">WH-1000XM6 Wireless</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.8">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.8</span></div>
+                <div class="product-price">
+                  <span class="price-current">$349.99</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="bose" data-price="279" data-rating="4.6" data-stock="true" data-date="2026-02-28">
+              <div class="product-img" style="background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Bose</span>
+                <h3 class="product-name">QuietComfort Ultra</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.6">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.6</span></div>
+                <div class="product-price">
+                  <span class="price-current">$279.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="apple" data-price="549" data-rating="4.7" data-stock="true" data-date="2026-03-15">
+              <div class="product-img" style="background: linear-gradient(135deg, #f5f5f7 0%, #d2d2d7 100%);">
+                <span class="badge badge-new">New</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Apple</span>
+                <h3 class="product-name">AirPods Max 2nd Gen</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.7">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.7</span></div>
+                <div class="product-price">
+                  <span class="price-current">$549.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="samsung" data-price="149" data-rating="4.3" data-stock="true" data-date="2026-01-20">
+              <div class="product-img" style="background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Samsung</span>
+                <h3 class="product-name">Galaxy Buds3 Pro</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.3">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.3</span></div>
+                <div class="product-price">
+                  <span class="price-original">$199.99</span>
+                  <span class="price-current price-sale">$149.99</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="jbl" data-price="99" data-rating="4.2" data-stock="true" data-date="2026-02-10">
+              <div class="product-img" style="background: linear-gradient(135deg, #ff6b35 0%, #f7c59f 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">JBL</span>
+                <h3 class="product-name">Tune 770NC Wireless</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.2">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.2</span></div>
+                <div class="product-price">
+                  <span class="price-current">$99.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="sennheiser" data-price="299" data-rating="4.9" data-stock="true" data-date="2026-03-05">
+              <div class="product-img" style="background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sennheiser</span>
+                <h3 class="product-name">Momentum 4 Wireless</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.9">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.9</span></div>
+                <div class="product-price">
+                  <span class="price-current">$299.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="sony" data-price="128" data-rating="4.4" data-stock="false" data-date="2025-12-15">
+              <div class="product-img" style="background: linear-gradient(135deg, #232526 0%, #414345 100%);">
+                <span class="badge badge-out">Out of Stock</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sony</span>
+                <h3 class="product-name">WF-1000XM5 Earbuds</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.4">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.4</span></div>
+                <div class="product-price">
+                  <span class="price-current">$128.00</span>
+                </div>
+                <button class="add-to-cart" disabled>Out of Stock</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="bose" data-price="199" data-rating="4.5" data-stock="true" data-date="2026-01-08">
+              <div class="product-img" style="background: linear-gradient(135deg, #434343 0%, #000000 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Bose</span>
+                <h3 class="product-name">Sport Open Earbuds</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.5">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.5</span></div>
+                <div class="product-price">
+                  <span class="price-original">$249.00</span>
+                  <span class="price-current price-sale">$199.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="apple" data-price="179" data-rating="4.6" data-stock="true" data-date="2026-02-20">
+              <div class="product-img" style="background: linear-gradient(135deg, #e8e8ed 0%, #c7c7cc 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Apple</span>
+                <h3 class="product-name">AirPods Pro 3rd Gen</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.6">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.6</span></div>
+                <div class="product-price">
+                  <span class="price-current">$179.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="jbl" data-price="49" data-rating="3.9" data-stock="true" data-date="2025-11-30">
+              <div class="product-img" style="background: linear-gradient(135deg, #e55d87 0%, #5fc3e4 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">JBL</span>
+                <h3 class="product-name">Tune 510BT On-Ear</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="3.9">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">3.9</span></div>
+                <div class="product-price">
+                  <span class="price-original">$69.95</span>
+                  <span class="price-current price-sale">$49.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="sennheiser" data-price="89" data-rating="4.1" data-stock="true" data-date="2026-01-15">
+              <div class="product-img" style="background: linear-gradient(135deg, #373b44 0%, #4286f4 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sennheiser</span>
+                <h3 class="product-name">HD 560S Open-Back</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.1">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.1</span></div>
+                <div class="product-price">
+                  <span class="price-current">$89.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="samsung" data-price="29" data-rating="3.5" data-stock="false" data-date="2025-10-01">
+              <div class="product-img" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
+                <span class="badge badge-out">Out of Stock</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Samsung</span>
+                <h3 class="product-name">Galaxy Buds FE</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="3.5">&#9733;&#9733;&#9733;&#9734;&#9734;</span><span class="rating-num">3.5</span></div>
+                <div class="product-price">
+                  <span class="price-original">$49.99</span>
+                  <span class="price-current price-sale">$29.99</span>
+                </div>
+                <button class="add-to-cart" disabled>Out of Stock</button>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Pagination -->
+          <nav class="pagination" id="pagination" aria-label="Pagination">
+            <button class="page-btn prev" disabled aria-label="Previous">&larr;</button>
+            <button class="page-btn active" data-page="1">1</button>
+            <button class="page-btn" data-page="2">2</button>
+            <button class="page-btn" data-page="3">3</button>
+            <button class="page-btn" data-page="4">4</button>
+            <button class="page-btn next" aria-label="Next">&rarr;</button>
+          </nav>
+        </main>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const grid = document.getElementById("productGrid");
+    const sortSelect = document.getElementById("sortSelect");
+    const priceMin = document.getElementById("priceMin");
+    const priceMax = document.getElementById("priceMax");
+    const priceSlider = document.getElementById("priceSlider");
+    const stockToggle = document.getElementById("stockToggle");
+    const clearBtn = document.getElementById("clearFilters");
+    const activeFiltersEl = document.getElementById("activeFilters");
+    const showingCount = document.getElementById("showingCount");
+    const productTotal = document.getElementById("productTotal");
+    const pagination = document.getElementById("pagination");
+    const sidebar = document.getElementById("shopSidebar");
+    const mobileToggle = document.getElementById("mobileFilterToggle");
+    const sidebarClose = document.getElementById("sidebarClose");
+  
+    let ratingFilter = 0;
+    let currentPage = 1;
+  
+    function getCards() {
+      return Array.from(grid.querySelectorAll(".product-card"));
+    }
+  
+    /* ── Price Filter ──────────────────────────── */
+  
+    priceSlider.addEventListener("input", () => {
+      priceMax.value = priceSlider.value;
+      applyFilters();
+    });
+  
+    priceMin.addEventListener("change", () => applyFilters());
+    priceMax.addEventListener("change", () => {
+      priceSlider.value = priceMax.value;
+      applyFilters();
+    });
+  
+    /* ── Brand Filter ──────────────────────────── */
+  
+    sidebar.querySelectorAll('.check-label input[type="checkbox"]').forEach((cb) => {
+      cb.addEventListener("change", () => applyFilters());
+    });
+  
+    /* ── Rating Filter ─────────────────────────── */
+  
+    sidebar.querySelectorAll(".star-label").forEach((label) => {
+      label.addEventListener("click", () => {
+        const min = parseInt(label.getAttribute("data-min"), 10);
+        if (ratingFilter === min) {
+          ratingFilter = 0;
+          label.classList.remove("active");
+        } else {
+          sidebar.querySelectorAll(".star-label").forEach((l) => l.classList.remove("active"));
+          ratingFilter = min;
+          label.classList.add("active");
+        }
+        applyFilters();
+      });
+    });
+  
+    /* ── Stock Toggle ──────────────────────────── */
+  
+    stockToggle.addEventListener("click", () => {
+      const current = stockToggle.getAttribute("aria-checked") === "true";
+      stockToggle.setAttribute("aria-checked", !current);
+      applyFilters();
+    });
+  
+    /* ── Sort ───────────────────────────────────── */
+  
+    sortSelect.addEventListener("change", () => applyFilters());
+  
+    /* ── View Toggle ───────────────────────────── */
+  
+    document.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".view-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const view = btn.getAttribute("data-view");
+        grid.classList.toggle("list-view", view === "list");
+      });
+    });
+  
+    /* ── Collapsible Sections ──────────────────── */
+  
+    sidebar.querySelectorAll(".filter-heading").forEach((heading) => {
+      heading.addEventListener("click", () => {
+        heading.closest(".filter-section").classList.toggle("collapsed");
+      });
+    });
+  
+    /* ── Clear All ─────────────────────────────── */
+  
+    clearBtn.addEventListener("click", () => {
+      priceMin.value = 0;
+      priceMax.value = 500;
+      priceSlider.value = 500;
+      sidebar.querySelectorAll('.check-label input[type="checkbox"]').forEach((cb) => {
+        cb.checked = false;
+      });
+      ratingFilter = 0;
+      sidebar.querySelectorAll(".star-label").forEach((l) => l.classList.remove("active"));
+      stockToggle.setAttribute("aria-checked", "false");
+      sortSelect.value = "featured";
+      applyFilters();
+    });
+  
+    /* ── Mobile Sidebar ────────────────────────── */
+  
+    mobileToggle.addEventListener("click", () => {
+      sidebar.classList.add("open");
+      document.body.style.overflow = "hidden";
+    });
+  
+    sidebarClose.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      document.body.style.overflow = "";
+    });
+  
+    /* ── Apply Filters ─────────────────────────── */
+  
+    function applyFilters() {
+      const cards = getCards();
+      const minPrice = parseInt(priceMin.value, 10) || 0;
+      const maxPrice = parseInt(priceMax.value, 10) || 500;
+      const stockOnly = stockToggle.getAttribute("aria-checked") === "true";
+  
+      const selectedBrands = Array.from(sidebar.querySelectorAll(".check-label input:checked")).map(
+        (cb) => cb.value
+      );
+  
+      let visibleCount = 0;
+  
+      cards.forEach((card) => {
+        const price = parseInt(card.getAttribute("data-price"), 10);
+        const brand = card.getAttribute("data-brand");
+        const rating = parseFloat(card.getAttribute("data-rating"));
+        const inStock = card.getAttribute("data-stock") === "true";
+  
+        let show = true;
+  
+        if (price < minPrice || price > maxPrice) show = false;
+        if (selectedBrands.length > 0 && !selectedBrands.includes(brand)) show = false;
+        if (ratingFilter > 0 && rating < ratingFilter) show = false;
+        if (stockOnly && !inStock) show = false;
+  
+        card.style.display = show ? "" : "none";
+        if (show) visibleCount++;
+      });
+  
+      /* Sort visible cards */
+      sortCards();
+  
+      /* Update counts */
+      showingCount.textContent = `Showing ${visibleCount} of 48 products`;
+      productTotal.textContent = `${visibleCount} products`;
+  
+      /* Update active filter pills */
+      updateFilterPills(minPrice, maxPrice, selectedBrands, stockOnly);
+    }
+  
+    function sortCards() {
+      const val = sortSelect.value;
+      const cards = getCards();
+  
+      cards.sort((a, b) => {
+        const pa = parseInt(a.getAttribute("data-price"), 10);
+        const pb = parseInt(b.getAttribute("data-price"), 10);
+        const ra = parseFloat(a.getAttribute("data-rating"));
+        const rb = parseFloat(b.getAttribute("data-rating"));
+        const da = new Date(a.getAttribute("data-date"));
+        const db = new Date(b.getAttribute("data-date"));
+  
+        switch (val) {
+          case "price-asc":
+            return pa - pb;
+          case "price-desc":
+            return pb - pa;
+          case "newest":
+            return db - da;
+          case "rating":
+            return rb - ra;
+          default:
+            return 0;
+        }
+      });
+  
+      cards.forEach((card) => grid.appendChild(card));
+    }
+  
+    /* ── Active Filter Pills ───────────────────── */
+  
+    function updateFilterPills(minPrice, maxPrice, brands, stockOnly) {
+      activeFiltersEl.innerHTML = "";
+  
+      if (minPrice > 0 || maxPrice < 500) {
+        addPill(`$${minPrice} – $${maxPrice}`, () => {
+          priceMin.value = 0;
+          priceMax.value = 500;
+          priceSlider.value = 500;
+          applyFilters();
+        });
+      }
+  
+      brands.forEach((brand) => {
+        addPill(capitalize(brand), () => {
+          const cb = sidebar.querySelector(`.check-label input[value="${brand}"]`);
+          if (cb) cb.checked = false;
+          applyFilters();
+        });
+      });
+  
+      if (ratingFilter > 0) {
+        addPill(`${ratingFilter}★ & up`, () => {
+          ratingFilter = 0;
+          sidebar.querySelectorAll(".star-label").forEach((l) => l.classList.remove("active"));
+          applyFilters();
+        });
+      }
+  
+      if (stockOnly) {
+        addPill("In Stock", () => {
+          stockToggle.setAttribute("aria-checked", "false");
+          applyFilters();
+        });
+      }
+    }
+  
+    function addPill(text, onRemove) {
+      const pill = document.createElement("span");
+      pill.className = "filter-pill";
+      pill.innerHTML = `${escapeHtml(text)} <button aria-label="Remove">&times;</button>`;
+      pill.querySelector("button").addEventListener("click", onRemove);
+      activeFiltersEl.appendChild(pill);
+    }
+  
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  
+    /* ── Pagination ────────────────────────────── */
+  
+    pagination.addEventListener("click", (e) => {
+      const btn = e.target.closest(".page-btn");
+      if (!btn || btn.disabled) return;
+  
+      if (btn.classList.contains("prev")) {
+        if (currentPage > 1) currentPage--;
+      } else if (btn.classList.contains("next")) {
+        currentPage++;
+      } else {
+        currentPage = parseInt(btn.getAttribute("data-page"), 10);
+      }
+  
+      pagination.querySelectorAll(".page-btn[data-page]").forEach((p) => {
+        p.classList.toggle("active", parseInt(p.getAttribute("data-page"), 10) === currentPage);
+      });
+  
+      pagination.querySelector(".prev").disabled = currentPage <= 1;
+      pagination.querySelector(".next").disabled = currentPage >= 4;
+  
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  
+    /* ── Render Stars ──────────────────────────── */
+  
+    document.querySelectorAll(".stars-display").forEach((el) => {
+      const rating = parseFloat(el.getAttribute("data-rating"));
+      const full = Math.floor(rating);
+      const half = rating % 1 >= 0.5 ? 1 : 0;
+      const empty = 5 - full - half;
+      el.textContent =
+        "\u2605".repeat(full) + (half ? "\u2605" : "") + "\u2606".repeat(empty - (half ? 0 : 0));
+      /* Re-render with proper full/empty */
+      let stars = "";
+      for (let i = 0; i < full; i++) stars += "\u2605";
+      for (let i = 0; i < 5 - full; i++) stars += "\u2606";
+      el.textContent = stars;
+    });
+  
+    /* ── Init ──────────────────────────────────── */
+    applyFilters();
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a2e;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* ── Top Nav ─────────────────────────────────── */
+  
+  .shop-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  
+  .shop-logo {
+    font-size: 20px;
+    font-weight: 800;
+    color: #4f46e5;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+  
+  .nav-search {
+    display: flex;
+    flex: 1;
+    max-width: 480px;
+  }
+  
+  .nav-search input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    font-size: 14px;
+    outline: none;
+  }
+  
+  .nav-search input:focus {
+    border-color: #4f46e5;
+  }
+  
+  .nav-search button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    background: #f9fafb;
+    cursor: pointer;
+    color: #6b7280;
+  }
+  
+  .cart-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #374151;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  
+  .cart-btn:hover {
+    background: #f3f4f6;
+  }
+  
+  .cart-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: #4f46e5;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* ── Breadcrumb ──────────────────────────────── */
+  
+  .breadcrumb {
+    padding: 14px 24px;
+    font-size: 13px;
+    color: #6b7280;
+    background: #fff;
+    border-bottom: 1px solid #f0f1f3;
+  }
+  
+  .breadcrumb a {
+    color: #6b7280;
+    transition: color 0.1s;
+  }
+  
+  .breadcrumb a:hover {
+    color: #4f46e5;
+  }
+  
+  .breadcrumb .sep {
+    margin: 0 6px;
+    color: #d1d5db;
+  }
+  
+  .breadcrumb .current {
+    color: #1a1a2e;
+    font-weight: 500;
+  }
+  
+  /* ── Page Title ──────────────────────────────── */
+  
+  .page-title-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 24px 24px 16px;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  
+  .page-title-row h1 {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  
+  .product-total {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  
+  .mobile-filter-toggle {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+  }
+  
+  /* ── Shop Layout ─────────────────────────────── */
+  
+  .shop-layout {
+    display: flex;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    gap: 28px;
+  }
+  
+  /* ── Sidebar ─────────────────────────────────── */
+  
+  .shop-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 72px;
+    align-self: flex-start;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
+    padding-bottom: 24px;
+  }
+  
+  .sidebar-header {
+    display: none;
+  }
+  
+  .filter-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  
+  .filter-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    cursor: pointer;
+    text-align: left;
+  }
+  
+  .filter-heading .chevron {
+    font-size: 10px;
+    color: #9ca3af;
+    transition: transform 0.2s;
+  }
+  
+  .filter-section.collapsed .chevron {
+    transform: rotate(-90deg);
+  }
+  
+  .filter-section.collapsed .filter-body {
+    display: none;
+  }
+  
+  .filter-body {
+    padding: 0 16px 16px;
+  }
+  
+  /* Price */
+  .price-inputs {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .price-field {
+    flex: 1;
+  }
+  
+  .price-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  
+  .price-field input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    outline: none;
+  }
+  
+  .price-field input:focus {
+    border-color: #4f46e5;
+  }
+  
+  .price-dash {
+    color: #9ca3af;
+    padding-bottom: 6px;
+  }
+  
+  .price-slider {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e5e7eb;
+    border-radius: 2px;
+    outline: none;
+  }
+  
+  .price-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .price-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .price-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+  
+  /* Brand checkboxes */
+  .check-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+  }
+  
+  .check-label input {
+    accent-color: #4f46e5;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .check-label .count {
+    margin-left: auto;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Star rating filter */
+  .star-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  
+  .star-label:hover {
+    background: #f9fafb;
+  }
+  
+  .star-label.active {
+    background: #eff6ff;
+    color: #4f46e5;
+    font-weight: 500;
+  }
+  
+  .stars {
+    color: #f59e0b;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+  
+  /* Toggle switch */
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #374151;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    border: none;
+    border-radius: 12px;
+    background: #d1d5db;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s;
+  }
+  
+  .toggle-switch[aria-checked="true"] {
+    background: #4f46e5;
+  }
+  
+  .toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s;
+  }
+  
+  .toggle-switch[aria-checked="true"] .toggle-knob {
+    transform: translateX(20px);
+  }
+  
+  /* Clear filters */
+  .clear-filters {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  .clear-filters:hover {
+    text-decoration: underline;
+  }
+  
+  /* ── Main Content ────────────────────────────── */
+  
+  .shop-main {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* ── Toolbar ─────────────────────────────────── */
+  
+  .shop-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fff;
+    font-size: 12px;
+    color: #374151;
+  }
+  
+  .filter-pill button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-size: 11px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  
+  .filter-pill button:hover {
+    background: #d1d5db;
+  }
+  
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+  
+  .view-toggle {
+    display: flex;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: #fff;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  
+  .view-btn:not(:last-child) {
+    border-right: 1px solid #e5e7eb;
+  }
+  
+  .view-btn.active {
+    background: #4f46e5;
+    color: #fff;
+  }
+  
+  .sort-select {
+    padding: 7px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #374151;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .sort-select:focus {
+    border-color: #4f46e5;
+  }
+  
+  .showing-count {
+    font-size: 13px;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+  
+  /* ── Product Grid ────────────────────────────── */
+  
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  
+  .product-grid.list-view {
+    grid-template-columns: 1fr;
+  }
+  
+  .product-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .product-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  
+  .product-img {
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .badge-new {
+    background: #059669;
+    color: #fff;
+  }
+  
+  .badge-out {
+    background: #dc2626;
+    color: #fff;
+  }
+  
+  .product-info {
+    padding: 16px;
+  }
+  
+  .product-brand {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  
+  .product-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  
+  .product-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .stars-display {
+    color: #f59e0b;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  
+  .rating-num {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+  
+  .product-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .price-current {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  
+  .price-sale {
+    color: #dc2626;
+  }
+  
+  .price-original {
+    font-size: 14px;
+    color: #9ca3af;
+    text-decoration: line-through;
+  }
+  
+  .add-to-cart {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid #4f46e5;
+    border-radius: 8px;
+    background: transparent;
+    color: #4f46e5;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  
+  .add-to-cart:hover:not(:disabled) {
+    background: #4f46e5;
+    color: #fff;
+  }
+  
+  .add-to-cart:disabled {
+    border-color: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+  
+  /* ── List View Cards ─────────────────────────── */
+  
+  .product-grid.list-view .product-card {
+    display: flex;
+  }
+  
+  .product-grid.list-view .product-img {
+    width: 240px;
+    height: auto;
+    min-height: 180px;
+    flex-shrink: 0;
+  }
+  
+  .product-grid.list-view .product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* ── Pagination ──────────────────────────────── */
+  
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 32px;
+  }
+  
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  
+  .page-btn:hover:not(:disabled):not(.active) {
+    background: #f3f4f6;
+  }
+  
+  .page-btn.active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  
+  /* ── Responsive ──────────────────────────────── */
+  
+  @media (max-width: 1024px) {
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .shop-nav {
+      padding: 10px 16px;
+    }
+  
+    .nav-search {
+      display: none;
+    }
+  
+    .page-title-row {
+      padding: 16px 16px 12px;
+    }
+  
+    .page-title-row h1 {
+      font-size: 22px;
+    }
+  
+    .mobile-filter-toggle {
+      display: inline-flex;
+    }
+  
+    .shop-layout {
+      flex-direction: column;
+      padding: 0 16px 40px;
+      gap: 0;
+    }
+  
+    .shop-sidebar {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      width: 100%;
+      max-height: 100vh;
+      top: 0;
+      background: #fff;
+      padding: 16px;
+      overflow-y: auto;
+    }
+  
+    .shop-sidebar.open {
+      display: block;
+    }
+  
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+  
+    .sidebar-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+  
+    .sidebar-close {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 8px;
+      background: #f3f4f6;
+      font-size: 22px;
+      color: #374151;
+      cursor: pointer;
+    }
+  
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+  
+    .product-img {
+      height: 150px;
+    }
+  
+    .product-info {
+      padding: 12px;
+    }
+  
+    .product-name {
+      font-size: 13px;
+    }
+  
+    .price-current {
+      font-size: 16px;
+    }
+  
+    .toolbar-right {
+      flex-wrap: wrap;
+    }
+  
+    .showing-count {
+      display: none;
+    }
+  
+    .product-grid.list-view .product-card {
+      flex-direction: column;
+    }
+  
+    .product-grid.list-view .product-img {
+      width: 100%;
+      min-height: 150px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .product-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Headphones &mdash; Shop</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="shop-page">
+      <!-- Top Nav -->
+      <header class="shop-nav">
+        <a href="#" class="shop-logo">ShopUI</a>
+        <div class="nav-search">
+          <input type="text" placeholder="Search products..." />
+          <button aria-label="Search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+        <button class="cart-btn" aria-label="Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-count">3</span>
+        </button>
+      </header>
+  
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="#">Home</a>
+        <span class="sep">&rsaquo;</span>
+        <a href="#">Electronics</a>
+        <span class="sep">&rsaquo;</span>
+        <span class="current">Headphones</span>
+      </nav>
+  
+      <!-- Page Title -->
+      <div class="page-title-row">
+        <div>
+          <h1>Headphones</h1>
+          <p class="product-total" id="productTotal">48 products</p>
+        </div>
+        <button class="mobile-filter-toggle" id="mobileFilterToggle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
+          Filters
+        </button>
+      </div>
+  
+      <div class="shop-layout">
+        <!-- Sidebar -->
+        <aside class="shop-sidebar" id="shopSidebar">
+          <div class="sidebar-header">
+            <h2>Filters</h2>
+            <button class="sidebar-close" id="sidebarClose">&times;</button>
+          </div>
+  
+          <div class="filter-section" data-filter="price">
+            <button class="filter-heading">Price Range <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <div class="price-inputs">
+                <div class="price-field">
+                  <label>Min</label>
+                  <input type="number" id="priceMin" value="0" min="0" max="500" step="10" />
+                </div>
+                <span class="price-dash">&ndash;</span>
+                <div class="price-field">
+                  <label>Max</label>
+                  <input type="number" id="priceMax" value="500" min="0" max="500" step="10" />
+                </div>
+              </div>
+              <input type="range" class="price-slider" id="priceSlider" min="0" max="500" value="500" step="10" />
+              <div class="price-labels"><span>$0</span><span>$500</span></div>
+            </div>
+          </div>
+  
+          <div class="filter-section" data-filter="brand">
+            <button class="filter-heading">Brand <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <label class="check-label"><input type="checkbox" value="sony" /> Sony <span class="count">(12)</span></label>
+              <label class="check-label"><input type="checkbox" value="bose" /> Bose <span class="count">(9)</span></label>
+              <label class="check-label"><input type="checkbox" value="apple" /> Apple <span class="count">(8)</span></label>
+              <label class="check-label"><input type="checkbox" value="samsung" /> Samsung <span class="count">(7)</span></label>
+              <label class="check-label"><input type="checkbox" value="jbl" /> JBL <span class="count">(6)</span></label>
+              <label class="check-label"><input type="checkbox" value="sennheiser" /> Sennheiser <span class="count">(6)</span></label>
+            </div>
+          </div>
+  
+          <div class="filter-section" data-filter="rating">
+            <button class="filter-heading">Rating <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <label class="star-label" data-min="4"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span> &amp; up</label>
+              <label class="star-label" data-min="3"><span class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span> &amp; up</label>
+              <label class="star-label" data-min="2"><span class="stars">&#9733;&#9733;&#9734;&#9734;&#9734;</span> &amp; up</label>
+            </div>
+          </div>
+  
+          <div class="filter-section" data-filter="availability">
+            <button class="filter-heading">Availability <span class="chevron">&#9662;</span></button>
+            <div class="filter-body">
+              <label class="toggle-label">
+                <span>In Stock only</span>
+                <button class="toggle-switch" id="stockToggle" role="switch" aria-checked="false">
+                  <span class="toggle-knob"></span>
+                </button>
+              </label>
+            </div>
+          </div>
+  
+          <button class="clear-filters" id="clearFilters">Clear all filters</button>
+        </aside>
+  
+        <!-- Main Content -->
+        <main class="shop-main">
+          <!-- Toolbar -->
+          <div class="shop-toolbar">
+            <div class="active-filters" id="activeFilters"></div>
+            <div class="toolbar-right">
+              <div class="view-toggle">
+                <button class="view-btn active" data-view="grid" aria-label="Grid view">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+                </button>
+                <button class="view-btn" data-view="list" aria-label="List view">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                </button>
+              </div>
+              <select class="sort-select" id="sortSelect">
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="newest">Newest</option>
+                <option value="rating">Best Rating</option>
+              </select>
+              <span class="showing-count" id="showingCount">Showing 12 of 48 products</span>
+            </div>
+          </div>
+  
+          <!-- Product Grid -->
+          <div class="product-grid" id="productGrid">
+            <div class="product-card" data-brand="sony" data-price="349" data-rating="4.8" data-stock="true" data-date="2026-03-10">
+              <div class="product-img" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <span class="badge badge-new">New</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sony</span>
+                <h3 class="product-name">WH-1000XM6 Wireless</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.8">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.8</span></div>
+                <div class="product-price">
+                  <span class="price-current">$349.99</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="bose" data-price="279" data-rating="4.6" data-stock="true" data-date="2026-02-28">
+              <div class="product-img" style="background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Bose</span>
+                <h3 class="product-name">QuietComfort Ultra</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.6">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.6</span></div>
+                <div class="product-price">
+                  <span class="price-current">$279.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="apple" data-price="549" data-rating="4.7" data-stock="true" data-date="2026-03-15">
+              <div class="product-img" style="background: linear-gradient(135deg, #f5f5f7 0%, #d2d2d7 100%);">
+                <span class="badge badge-new">New</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Apple</span>
+                <h3 class="product-name">AirPods Max 2nd Gen</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.7">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.7</span></div>
+                <div class="product-price">
+                  <span class="price-current">$549.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="samsung" data-price="149" data-rating="4.3" data-stock="true" data-date="2026-01-20">
+              <div class="product-img" style="background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Samsung</span>
+                <h3 class="product-name">Galaxy Buds3 Pro</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.3">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.3</span></div>
+                <div class="product-price">
+                  <span class="price-original">$199.99</span>
+                  <span class="price-current price-sale">$149.99</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="jbl" data-price="99" data-rating="4.2" data-stock="true" data-date="2026-02-10">
+              <div class="product-img" style="background: linear-gradient(135deg, #ff6b35 0%, #f7c59f 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">JBL</span>
+                <h3 class="product-name">Tune 770NC Wireless</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.2">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.2</span></div>
+                <div class="product-price">
+                  <span class="price-current">$99.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="sennheiser" data-price="299" data-rating="4.9" data-stock="true" data-date="2026-03-05">
+              <div class="product-img" style="background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sennheiser</span>
+                <h3 class="product-name">Momentum 4 Wireless</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.9">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.9</span></div>
+                <div class="product-price">
+                  <span class="price-current">$299.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="sony" data-price="128" data-rating="4.4" data-stock="false" data-date="2025-12-15">
+              <div class="product-img" style="background: linear-gradient(135deg, #232526 0%, #414345 100%);">
+                <span class="badge badge-out">Out of Stock</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sony</span>
+                <h3 class="product-name">WF-1000XM5 Earbuds</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.4">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.4</span></div>
+                <div class="product-price">
+                  <span class="price-current">$128.00</span>
+                </div>
+                <button class="add-to-cart" disabled>Out of Stock</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="bose" data-price="199" data-rating="4.5" data-stock="true" data-date="2026-01-08">
+              <div class="product-img" style="background: linear-gradient(135deg, #434343 0%, #000000 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Bose</span>
+                <h3 class="product-name">Sport Open Earbuds</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.5">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.5</span></div>
+                <div class="product-price">
+                  <span class="price-original">$249.00</span>
+                  <span class="price-current price-sale">$199.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="apple" data-price="179" data-rating="4.6" data-stock="true" data-date="2026-02-20">
+              <div class="product-img" style="background: linear-gradient(135deg, #e8e8ed 0%, #c7c7cc 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Apple</span>
+                <h3 class="product-name">AirPods Pro 3rd Gen</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.6">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-num">4.6</span></div>
+                <div class="product-price">
+                  <span class="price-current">$179.00</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="jbl" data-price="49" data-rating="3.9" data-stock="true" data-date="2025-11-30">
+              <div class="product-img" style="background: linear-gradient(135deg, #e55d87 0%, #5fc3e4 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">JBL</span>
+                <h3 class="product-name">Tune 510BT On-Ear</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="3.9">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">3.9</span></div>
+                <div class="product-price">
+                  <span class="price-original">$69.95</span>
+                  <span class="price-current price-sale">$49.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="sennheiser" data-price="89" data-rating="4.1" data-stock="true" data-date="2026-01-15">
+              <div class="product-img" style="background: linear-gradient(135deg, #373b44 0%, #4286f4 100%);">
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Sennheiser</span>
+                <h3 class="product-name">HD 560S Open-Back</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="4.1">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-num">4.1</span></div>
+                <div class="product-price">
+                  <span class="price-current">$89.95</span>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+  
+            <div class="product-card" data-brand="samsung" data-price="29" data-rating="3.5" data-stock="false" data-date="2025-10-01">
+              <div class="product-img" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
+                <span class="badge badge-out">Out of Stock</span>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Samsung</span>
+                <h3 class="product-name">Galaxy Buds FE</h3>
+                <div class="product-rating"><span class="stars-display" data-rating="3.5">&#9733;&#9733;&#9733;&#9734;&#9734;</span><span class="rating-num">3.5</span></div>
+                <div class="product-price">
+                  <span class="price-original">$49.99</span>
+                  <span class="price-current price-sale">$29.99</span>
+                </div>
+                <button class="add-to-cart" disabled>Out of Stock</button>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Pagination -->
+          <nav class="pagination" id="pagination" aria-label="Pagination">
+            <button class="page-btn prev" disabled aria-label="Previous">&larr;</button>
+            <button class="page-btn active" data-page="1">1</button>
+            <button class="page-btn" data-page="2">2</button>
+            <button class="page-btn" data-page="3">3</button>
+            <button class="page-btn" data-page="4">4</button>
+            <button class="page-btn next" aria-label="Next">&rarr;</button>
+          </nav>
+        </main>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const grid = document.getElementById("productGrid");
+    const sortSelect = document.getElementById("sortSelect");
+    const priceMin = document.getElementById("priceMin");
+    const priceMax = document.getElementById("priceMax");
+    const priceSlider = document.getElementById("priceSlider");
+    const stockToggle = document.getElementById("stockToggle");
+    const clearBtn = document.getElementById("clearFilters");
+    const activeFiltersEl = document.getElementById("activeFilters");
+    const showingCount = document.getElementById("showingCount");
+    const productTotal = document.getElementById("productTotal");
+    const pagination = document.getElementById("pagination");
+    const sidebar = document.getElementById("shopSidebar");
+    const mobileToggle = document.getElementById("mobileFilterToggle");
+    const sidebarClose = document.getElementById("sidebarClose");
+  
+    let ratingFilter = 0;
+    let currentPage = 1;
+  
+    function getCards() {
+      return Array.from(grid.querySelectorAll(".product-card"));
+    }
+  
+    /* ── Price Filter ──────────────────────────── */
+  
+    priceSlider.addEventListener("input", () => {
+      priceMax.value = priceSlider.value;
+      applyFilters();
+    });
+  
+    priceMin.addEventListener("change", () => applyFilters());
+    priceMax.addEventListener("change", () => {
+      priceSlider.value = priceMax.value;
+      applyFilters();
+    });
+  
+    /* ── Brand Filter ──────────────────────────── */
+  
+    sidebar.querySelectorAll('.check-label input[type="checkbox"]').forEach((cb) => {
+      cb.addEventListener("change", () => applyFilters());
+    });
+  
+    /* ── Rating Filter ─────────────────────────── */
+  
+    sidebar.querySelectorAll(".star-label").forEach((label) => {
+      label.addEventListener("click", () => {
+        const min = parseInt(label.getAttribute("data-min"), 10);
+        if (ratingFilter === min) {
+          ratingFilter = 0;
+          label.classList.remove("active");
+        } else {
+          sidebar.querySelectorAll(".star-label").forEach((l) => l.classList.remove("active"));
+          ratingFilter = min;
+          label.classList.add("active");
+        }
+        applyFilters();
+      });
+    });
+  
+    /* ── Stock Toggle ──────────────────────────── */
+  
+    stockToggle.addEventListener("click", () => {
+      const current = stockToggle.getAttribute("aria-checked") === "true";
+      stockToggle.setAttribute("aria-checked", !current);
+      applyFilters();
+    });
+  
+    /* ── Sort ───────────────────────────────────── */
+  
+    sortSelect.addEventListener("change", () => applyFilters());
+  
+    /* ── View Toggle ───────────────────────────── */
+  
+    document.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".view-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const view = btn.getAttribute("data-view");
+        grid.classList.toggle("list-view", view === "list");
+      });
+    });
+  
+    /* ── Collapsible Sections ──────────────────── */
+  
+    sidebar.querySelectorAll(".filter-heading").forEach((heading) => {
+      heading.addEventListener("click", () => {
+        heading.closest(".filter-section").classList.toggle("collapsed");
+      });
+    });
+  
+    /* ── Clear All ─────────────────────────────── */
+  
+    clearBtn.addEventListener("click", () => {
+      priceMin.value = 0;
+      priceMax.value = 500;
+      priceSlider.value = 500;
+      sidebar.querySelectorAll('.check-label input[type="checkbox"]').forEach((cb) => {
+        cb.checked = false;
+      });
+      ratingFilter = 0;
+      sidebar.querySelectorAll(".star-label").forEach((l) => l.classList.remove("active"));
+      stockToggle.setAttribute("aria-checked", "false");
+      sortSelect.value = "featured";
+      applyFilters();
+    });
+  
+    /* ── Mobile Sidebar ────────────────────────── */
+  
+    mobileToggle.addEventListener("click", () => {
+      sidebar.classList.add("open");
+      document.body.style.overflow = "hidden";
+    });
+  
+    sidebarClose.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      document.body.style.overflow = "";
+    });
+  
+    /* ── Apply Filters ─────────────────────────── */
+  
+    function applyFilters() {
+      const cards = getCards();
+      const minPrice = parseInt(priceMin.value, 10) || 0;
+      const maxPrice = parseInt(priceMax.value, 10) || 500;
+      const stockOnly = stockToggle.getAttribute("aria-checked") === "true";
+  
+      const selectedBrands = Array.from(sidebar.querySelectorAll(".check-label input:checked")).map(
+        (cb) => cb.value
+      );
+  
+      let visibleCount = 0;
+  
+      cards.forEach((card) => {
+        const price = parseInt(card.getAttribute("data-price"), 10);
+        const brand = card.getAttribute("data-brand");
+        const rating = parseFloat(card.getAttribute("data-rating"));
+        const inStock = card.getAttribute("data-stock") === "true";
+  
+        let show = true;
+  
+        if (price < minPrice || price > maxPrice) show = false;
+        if (selectedBrands.length > 0 && !selectedBrands.includes(brand)) show = false;
+        if (ratingFilter > 0 && rating < ratingFilter) show = false;
+        if (stockOnly && !inStock) show = false;
+  
+        card.style.display = show ? "" : "none";
+        if (show) visibleCount++;
+      });
+  
+      /* Sort visible cards */
+      sortCards();
+  
+      /* Update counts */
+      showingCount.textContent = `Showing ${visibleCount} of 48 products`;
+      productTotal.textContent = `${visibleCount} products`;
+  
+      /* Update active filter pills */
+      updateFilterPills(minPrice, maxPrice, selectedBrands, stockOnly);
+    }
+  
+    function sortCards() {
+      const val = sortSelect.value;
+      const cards = getCards();
+  
+      cards.sort((a, b) => {
+        const pa = parseInt(a.getAttribute("data-price"), 10);
+        const pb = parseInt(b.getAttribute("data-price"), 10);
+        const ra = parseFloat(a.getAttribute("data-rating"));
+        const rb = parseFloat(b.getAttribute("data-rating"));
+        const da = new Date(a.getAttribute("data-date"));
+        const db = new Date(b.getAttribute("data-date"));
+  
+        switch (val) {
+          case "price-asc":
+            return pa - pb;
+          case "price-desc":
+            return pb - pa;
+          case "newest":
+            return db - da;
+          case "rating":
+            return rb - ra;
+          default:
+            return 0;
+        }
+      });
+  
+      cards.forEach((card) => grid.appendChild(card));
+    }
+  
+    /* ── Active Filter Pills ───────────────────── */
+  
+    function updateFilterPills(minPrice, maxPrice, brands, stockOnly) {
+      activeFiltersEl.innerHTML = "";
+  
+      if (minPrice > 0 || maxPrice < 500) {
+        addPill(`$${minPrice} – $${maxPrice}`, () => {
+          priceMin.value = 0;
+          priceMax.value = 500;
+          priceSlider.value = 500;
+          applyFilters();
+        });
+      }
+  
+      brands.forEach((brand) => {
+        addPill(capitalize(brand), () => {
+          const cb = sidebar.querySelector(`.check-label input[value="${brand}"]`);
+          if (cb) cb.checked = false;
+          applyFilters();
+        });
+      });
+  
+      if (ratingFilter > 0) {
+        addPill(`${ratingFilter}★ & up`, () => {
+          ratingFilter = 0;
+          sidebar.querySelectorAll(".star-label").forEach((l) => l.classList.remove("active"));
+          applyFilters();
+        });
+      }
+  
+      if (stockOnly) {
+        addPill("In Stock", () => {
+          stockToggle.setAttribute("aria-checked", "false");
+          applyFilters();
+        });
+      }
+    }
+  
+    function addPill(text, onRemove) {
+      const pill = document.createElement("span");
+      pill.className = "filter-pill";
+      pill.innerHTML = `${escapeHtml(text)} <button aria-label="Remove">&times;</button>`;
+      pill.querySelector("button").addEventListener("click", onRemove);
+      activeFiltersEl.appendChild(pill);
+    }
+  
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  
+    /* ── Pagination ────────────────────────────── */
+  
+    pagination.addEventListener("click", (e) => {
+      const btn = e.target.closest(".page-btn");
+      if (!btn || btn.disabled) return;
+  
+      if (btn.classList.contains("prev")) {
+        if (currentPage > 1) currentPage--;
+      } else if (btn.classList.contains("next")) {
+        currentPage++;
+      } else {
+        currentPage = parseInt(btn.getAttribute("data-page"), 10);
+      }
+  
+      pagination.querySelectorAll(".page-btn[data-page]").forEach((p) => {
+        p.classList.toggle("active", parseInt(p.getAttribute("data-page"), 10) === currentPage);
+      });
+  
+      pagination.querySelector(".prev").disabled = currentPage <= 1;
+      pagination.querySelector(".next").disabled = currentPage >= 4;
+  
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  
+    /* ── Render Stars ──────────────────────────── */
+  
+    document.querySelectorAll(".stars-display").forEach((el) => {
+      const rating = parseFloat(el.getAttribute("data-rating"));
+      const full = Math.floor(rating);
+      const half = rating % 1 >= 0.5 ? 1 : 0;
+      const empty = 5 - full - half;
+      el.textContent =
+        "\u2605".repeat(full) + (half ? "\u2605" : "") + "\u2606".repeat(empty - (half ? 0 : 0));
+      /* Re-render with proper full/empty */
+      let stars = "";
+      for (let i = 0; i < full; i++) stars += "\u2605";
+      for (let i = 0; i < 5 - full; i++) stars += "\u2606";
+      el.textContent = stars;
+    });
+  
+    /* ── Init ──────────────────────────────────── */
+    applyFilters();
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

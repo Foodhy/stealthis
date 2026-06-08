@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Night Audit · Aurelia Hotels</title>
+  </head>
+  <body>
+    <main class="audit">
+      <header class="topbar">
+        <div>
+          <p class="kicker">Night audit · Aurelia · Madrid</p>
+          <h1>Audit · <span id="bd">Sat 24 May 2026</span></h1>
+          <p class="sub">Auditor on duty · <strong>Sergio Méndez</strong> · started <span id="started">23:42</span></p>
+        </div>
+        <div class="topactions">
+          <button class="ghost">Export PDF</button>
+          <button class="ghost">Print summary</button>
+        </div>
+      </header>
+
+      <section class="kpis">
+        <article class="kpi">
+          <p class="kpi-label">Occupancy</p>
+          <p class="kpi-val">82<small>%</small></p>
+          <p class="kpi-meta">132 / 160 rooms sold</p>
+        </article>
+        <article class="kpi">
+          <p class="kpi-label">ADR</p>
+          <p class="kpi-val">€184</p>
+          <p class="kpi-meta">avg rate, sold rooms</p>
+        </article>
+        <article class="kpi">
+          <p class="kpi-label">RevPAR</p>
+          <p class="kpi-val">€151</p>
+          <p class="kpi-meta">revenue / available rm</p>
+        </article>
+        <article class="kpi">
+          <p class="kpi-label">Total revenue</p>
+          <p class="kpi-val">€31,420</p>
+          <p class="kpi-meta">net of refunds</p>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <header class="card-head">
+            <h2>Revenue by department</h2>
+            <span class="card-meta">7 sources</span>
+          </header>
+          <ul class="dept" id="dept"></ul>
+        </article>
+
+        <article class="card">
+          <header class="card-head">
+            <h2>Postings to apply</h2>
+            <span class="card-meta">automatic</span>
+          </header>
+          <ul class="posts">
+            <li><strong>Room &amp; tax</strong><span class="num">€24,288.00</span><small>132 rooms × ADR + VAT 10%</small></li>
+            <li><strong>City tax</strong><span class="num">€218.40</span><small>per-guest, per-night</small></li>
+            <li><strong>POS imports · F&amp;B</strong><span class="num">€4,182.10</span><small>34 tickets · auto-charged to rooms</small></li>
+            <li><strong>POS imports · Spa</strong><span class="num">€1,476.00</span><small>8 tickets</small></li>
+            <li><strong>Adjustments</strong><span class="num">−€144.50</span><small>1 manual void · 2 comps</small></li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <header class="card-head">
+            <h2>Discrepancies</h2>
+            <span class="pill warn" id="discN">3 to review</span>
+          </header>
+          <ul class="discr" id="discr">
+            <li class="warn">
+              <strong>No-show — 118</strong><small>Thomas Reuter · 1 night · charge no-show fee €92</small>
+              <button class="mini">Charge</button>
+            </li>
+            <li class="warn">
+              <strong>Open folio — 207</strong><small>Elena Vasquez · departed but balance €482 still open</small>
+              <button class="mini">Open</button>
+            </li>
+            <li class="info">
+              <strong>Cash overage — Front desk drawer 1</strong><small>+€2.40 reported · post to overages account</small>
+              <button class="mini">Post</button>
+            </li>
+            <li class="ok">
+              <strong>All other folios balanced</strong><small>129 in-house folios reconciled · no variance</small>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <header class="card-head">
+            <h2>System checks</h2>
+            <span class="pill ok">All green</span>
+          </header>
+          <ul class="checks">
+            <li><span class="dot ok"></span>Channel manager sync up to date</li>
+            <li><span class="dot ok"></span>Payment gateway · 0 unsettled charges</li>
+            <li><span class="dot ok"></span>Backup · last 21:30 · 100% complete</li>
+            <li><span class="dot warn"></span>POS terminal 4 · last ping 22:14 (recheck recommended)</li>
+            <li><span class="dot ok"></span>Door lock system · 0 alarms</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="runbox" id="runbox">
+        <header>
+          <div>
+            <p class="kicker">Final step</p>
+            <h2>Run night audit</h2>
+            <p class="sub">Posts pending charges, closes cash drawers and rolls business date to <strong id="nextBd">Sun 25 May 2026</strong>.</p>
+          </div>
+          <button class="run" id="run">Run audit ▸</button>
+        </header>
+        <ol class="pipeline" id="pipeline">
+          <li data-stage="0">
+            <span class="stg">①</span>
+            <div><strong>Post room &amp; tax charges</strong><small>Apply nightly room rate and VAT to in-house folios</small></div>
+            <span class="state">queued</span>
+          </li>
+          <li data-stage="1">
+            <span class="stg">②</span>
+            <div><strong>Apply discrepancy actions</strong><small>No-show fee · adjust folios · post cash variance</small></div>
+            <span class="state">queued</span>
+          </li>
+          <li data-stage="2">
+            <span class="stg">③</span>
+            <div><strong>Close cash drawers &amp; deposits</strong><small>Settle floor floats and post deposit to safe</small></div>
+            <span class="state">queued</span>
+          </li>
+          <li data-stage="3">
+            <span class="stg">④</span>
+            <div><strong>Roll business date &amp; lock</strong><small>Finalise day · open the next business date</small></div>
+            <span class="state">queued</span>
+          </li>
+        </ol>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

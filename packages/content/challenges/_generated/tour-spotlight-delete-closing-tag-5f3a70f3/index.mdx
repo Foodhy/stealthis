@@ -1,0 +1,1682 @@
+---
+slug: "tour-spotlight-delete-closing-tag-5f3a70f3"
+topic: "tour"
+title: "Fix the broken HTML structure in Tour Spotlight"
+type: "fix"
+difficulty: 2
+resourceSlug: "tour-spotlight"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  /* ═══════════ Page / Dashboard ═══════════ */
+  .page {
+    width: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  /* Header */
+  .dash-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.875rem 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.875rem;
+  }
+  
+  .dash-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-right: auto;
+  }
+  
+  .dash-logo__mark {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.35rem;
+    background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+    display: block;
+  }
+  
+  .dash-logo__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c5d3f0;
+  }
+  
+  .dash-nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .dash-nav__link {
+    font-size: 0.82rem;
+    color: #5a6a8a;
+    text-decoration: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.4rem;
+    transition: color 0.15s, background 0.15s;
+  }
+  
+  .dash-nav__link:hover {
+    color: #c5d3f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .dash-nav__link.is-active {
+    color: #f2f6ff;
+    background: rgba(255, 255, 255, 0.07);
+  }
+  
+  .dash-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+  }
+  
+  /* Main */
+  .dash-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  /* Stats */
+  .dash-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.875rem;
+  }
+  
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1.1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.75rem;
+  }
+  
+  .stat-card__label {
+    font-size: 0.75rem;
+    color: #5a6a8a;
+    font-weight: 500;
+  }
+  
+  .stat-card__value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f2f6ff;
+    letter-spacing: -0.02em;
+  }
+  
+  .stat-card__change {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .stat-card__change--up {
+    color: #4ade80;
+  }
+  .stat-card__change--down {
+    color: #f87171;
+  }
+  
+  /* Chart */
+  .dash-chart {
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.875rem;
+  }
+  
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  
+  .chart-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c5d3f0;
+  }
+  
+  .chart-filters {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .chart-filter {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 0.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    color: #5a6a8a;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  
+  .chart-filter:hover {
+    color: #c5d3f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .chart-filter.is-active {
+    color: #f2f6ff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  
+  .chart-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .chart-bars {
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .chart-bar {
+    flex: 1;
+    height: var(--h);
+    border-radius: 0.25rem 0.25rem 0 0;
+    background: rgba(79, 110, 247, 0.25);
+    transition: background 0.2s;
+  }
+  
+  .chart-bar.is-selected {
+    background: rgba(79, 110, 247, 0.8);
+  }
+  .chart-bar:hover {
+    background: rgba(79, 110, 247, 0.5);
+  }
+  
+  .chart-axis {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0.1rem;
+  }
+  
+  .chart-axis span {
+    font-size: 0.7rem;
+    color: #3a4a6a;
+  }
+  
+  /* Actions */
+  .dash-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: 0.55rem;
+    border: none;
+    cursor: pointer;
+    font-size: 0.87rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(79, 110, 247, 0.35);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  
+  .action-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  /* Start tour CTA */
+  .tour-start {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+  
+  .tour-start__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(20, 30, 50, 0.9);
+    color: #c5d3f0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+  }
+  
+  .tour-start__btn:hover {
+    background: rgba(30, 45, 70, 0.95);
+    color: #f2f6ff;
+    transform: translateY(-2px);
+  }
+  
+  /* ═══════════ Tour overlay ═══════════ */
+  .tour-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .tour-overlay.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  /* Hole rect animation via CSS transition on SVG element */
+  #mask-hole {
+    transition: x 0.4s cubic-bezier(0.4, 0, 0.2, 1), y 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s
+      cubic-bezier(0.4, 0, 0.2, 1), height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* ═══════════ Tooltip ═══════════ */
+  .tour-tooltip {
+    position: fixed;
+    z-index: 110;
+    width: 280px;
+    background: #0d1526;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.875rem;
+    padding: 1.1rem 1.2rem;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.94) translateY(4px);
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  
+  .tour-tooltip.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1) translateY(0);
+  }
+  
+  .tour-tooltip__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  
+  .tour-tooltip__step {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #4f6ef7;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  
+  .tour-tooltip__skip {
+    font-size: 0.75rem;
+    color: #4a5a7a;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.3rem;
+    transition: color 0.15s, background 0.15s;
+  }
+  
+  .tour-tooltip__skip:hover {
+    color: #c5d3f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .tour-tooltip__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f2f6ff;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  
+  .tour-tooltip__body {
+    font-size: 0.84rem;
+    color: #7888a8;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  
+  .tour-tooltip__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Dots */
+  .tour-dots {
+    display: flex;
+    gap: 0.35rem;
+  }
+  
+  .tour-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.2s, transform 0.2s;
+  }
+  
+  .tour-dot.is-active {
+    background: #4f6ef7;
+    transform: scale(1.25);
+  }
+  
+  /* Nav buttons */
+  .tour-tooltip__nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .tour-btn {
+    padding: 0.45rem 0.9rem;
+    border-radius: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s, color 0.15s, opacity 0.15s;
+  }
+  
+  .tour-btn--ghost {
+    background: rgba(255, 255, 255, 0.06);
+    color: #7888a8;
+  }
+  
+  .tour-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #c5d3f0;
+  }
+  .tour-btn--ghost:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  
+  .tour-btn--primary {
+    background: #4f6ef7;
+    color: #fff;
+  }
+  
+  .tour-btn--primary:hover {
+    background: #6080ff;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .dash-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .dash-nav {
+      display: none;
+    }
+    .tour-tooltip {
+      width: 240px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tour Spotlight
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- ═══════════ Mock Dashboard UI ═══════════ -->
+    <div class="page">
+  
+      <!-- Header -->
+      <header class="dash-header" id="tour-header">
+        <div class="dash-logo">
+          <span class="dash-logo__mark"></span>
+          <span class="dash-logo__name">Dashboard</span>
+        </div>
+        <nav class="dash-nav">
+          <a href="#" class="dash-nav__link is-active">Overview</a>
+          <a href="#" class="dash-nav__link">Analytics</a>
+          <a href="#" class="dash-nav__link">Reports</a>
+        </nav>
+        <div class="dash-header__actions">
+          <div class="dash-avatar"></div>
+        </div>
+      </header>
+  
+      <!-- Main content -->
+      <main class="dash-main">
+  
+        <!-- Stats -->
+        <section class="dash-stats" id="tour-stats">
+          <div class="stat-card">
+            <span class="stat-card__label">Total Revenue</span>
+            <span class="stat-card__value">$84,250</span>
+            <span class="stat-card__change stat-card__change--up">+12.4%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Active Users</span>
+            <span class="stat-card__value">3,821</span>
+            <span class="stat-card__change stat-card__change--up">+5.1%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Conversion</span>
+            <span class="stat-card__value">4.6%</span>
+            <span class="stat-card__change stat-card__change--down">-0.3%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Churn Rate</span>
+            <span class="stat-card__value">1.2%</span>
+            <span class="stat-card__change stat-card__change--up">+0.1%</span>
+          </div>
+        </section>
+  
+        <!-- Chart -->
+        <section class="dash-chart" id="tour-chart">
+          <div class="chart-header">
+            <span class="chart-title">Revenue over time</span>
+            <div class="chart-filters">
+              <button class="chart-filter is-active">7d</button>
+              <button class="chart-filter">30d</button>
+              <button class="chart-filter">90d</button>
+            </div>
+          </div>
+          <div class="chart-body">
+            <!-- Fake bar chart -->
+            <div class="chart-bars">
+              <div class="chart-bar" style="--h:55%"></div>
+              <div class="chart-bar" style="--h:72%"></div>
+              <div class="chart-bar" style="--h:48%"></div>
+              <div class="chart-bar" style="--h:85%"></div>
+              <div class="chart-bar" style="--h:63%"></div>
+              <div class="chart-bar" style="--h:91%"></div>
+              <div class="chart-bar is-selected" style="--h:78%"></div>
+            </div>
+            <div class="chart-axis">
+              <span>Mon</span><span>Tue</span><span>Wed</span>
+              <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Action area -->
+        <section class="dash-actions">
+          <button class="action-btn" id="tour-action">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Export Report
+          </button>
+        </section>
+  
+      </main>
+    </div>
+  
+    <!-- Start tour CTA -->
+    <div class="tour-start" id="tour-start">
+      <button class="tour-start__btn" id="start-tour-btn">
+        Start Tour
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    </div>
+  
+    <!-- ═══════════ Tour overlay ═══════════ -->
+    <!-- SVG backdrop with spotlight cutout -->
+    <svg
+      class="tour-overlay"
+      id="tour-overlay"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <mask id="spotlight-mask">
+          <!-- Full white = show overlay -->
+          <rect id="mask-bg" x="0" y="0" width="100%" height="100%" fill="white"/>
+          <!-- Black rect = cut out spotlight -->
+          <rect id="mask-hole" x="0" y="0" width="0" height="0" rx="8" ry="8" fill="black"/>
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="100%" height="100%" fill="rgba(5,9,16,0.82)" mask="url(#spotlight-mask)"/>
+    </svg>
+  
+    <!-- Tooltip -->
+    <div
+      class="tour-tooltip"
+      id="tour-tooltip"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Product tour"
+      aria-live="polite"
+    >
+      <div class="tour-tooltip__header">
+        <span class="tour-tooltip__step" id="tour-step-label"></span>
+        <button class="tour-tooltip__skip" id="tour-skip" aria-label="Skip tour">Skip</button>
+      </div>
+      <h3 class="tour-tooltip__title" id="tour-title"></h3>
+      <p class="tour-tooltip__body" id="tour-body"></p>
+      <div class="tour-tooltip__footer">
+        <div class="tour-dots" id="tour-dots" aria-hidden="true"></div>
+        <div class="tour-tooltip__nav">
+          <button class="tour-btn tour-btn--ghost" id="tour-prev">Prev</button>
+          <button class="tour-btn tour-btn--primary" id="tour-next">Next</button>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    // ─── Tour steps ───────────────────────────────────────────────
+    const STEPS = [
+      {
+        target: "tour-header",
+        title: "Navigation",
+        body: "The header gives you quick access to all major sections. Jump between Overview, Analytics, and Reports instantly.",
+        placement: "bottom",
+      },
+      {
+        target: "tour-stats",
+        title: "Key Metrics",
+        body: "Your four most important KPIs are always visible here — Revenue, Active Users, Conversion, and Churn.",
+        placement: "bottom",
+      },
+      {
+        target: "tour-chart",
+        title: "Revenue Chart",
+        body: "Visualize trends over time. Switch between 7-day, 30-day, and 90-day windows to spot patterns.",
+        placement: "top",
+      },
+      {
+        target: "tour-action",
+        title: "Export Report",
+        body: "Download a full PDF or CSV snapshot of the current view — great for weekly stakeholder updates.",
+        placement: "top",
+      },
+    ];
+  
+    // ─── DOM refs ─────────────────────────────────────────────────
+    const overlay = document.getElementById("tour-overlay");
+    const tooltip = document.getElementById("tour-tooltip");
+    const titleEl = document.getElementById("tour-title");
+    const bodyEl = document.getElementById("tour-body");
+    const stepLabel = document.getElementById("tour-step-label");
+    const dotsEl = document.getElementById("tour-dots");
+    const prevBtn = document.getElementById("tour-prev");
+    const nextBtn = document.getElementById("tour-next");
+    const skipBtn = document.getElementById("tour-skip");
+    const startBtn = document.getElementById("start-tour-btn");
+    const tourStart = document.getElementById("tour-start");
+    const maskHole = document.getElementById("mask-hole");
+  
+    const PAD = 10; // spotlight padding around element
+  
+    let currentStep = 0;
+    let active = false;
+  
+    // ─── Build dots ───────────────────────────────────────────────
+    function buildDots() {
+      dotsEl.innerHTML = "";
+      STEPS.forEach((_, i) => {
+        const dot = document.createElement("span");
+        dot.className = "tour-dot" + (i === currentStep ? " is-active" : "");
+        dotsEl.appendChild(dot);
+      });
+    }
+  
+    // ─── Position tooltip near the target ─────────────────────────
+    function positionTooltip(rect, placement) {
+      const TW = tooltip.offsetWidth || 280;
+      const TH = tooltip.offsetHeight || 180;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const GAP = 16;
+  
+      let top, left;
+  
+      if (placement === "bottom") {
+        top = rect.bottom + PAD + GAP;
+        left = rect.left + rect.width / 2 - TW / 2;
+      } else {
+        top = rect.top - PAD - GAP - TH;
+        left = rect.left + rect.width / 2 - TW / 2;
+      }
+  
+      // Clamp to viewport
+      left = Math.max(GAP, Math.min(left, vw - TW - GAP));
+      top = Math.max(GAP, Math.min(top, vh - TH - GAP));
+  
+      tooltip.style.left = left + "px";
+      tooltip.style.top = top + "px";
+    }
+  
+    // ─── Update spotlight hole ─────────────────────────────────────
+    function updateHole(rect) {
+      const x = rect.left - PAD;
+      const y = rect.top - PAD;
+      const w = rect.width + PAD * 2;
+      const h = rect.height + PAD * 2;
+  
+      maskHole.setAttribute("x", x);
+      maskHole.setAttribute("y", y);
+      maskHole.setAttribute("width", w);
+      maskHole.setAttribute("height", h);
+    }
+  
+    // ─── Render step ──────────────────────────────────────────────
+    function renderStep(idx) {
+      const step = STEPS[idx];
+      const target = document.getElementById(step.target);
+      if (!target) return;
+  
+      // Scroll target into view
+      target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  
+      // Small delay to let scroll settle, then position
+      requestAnimationFrame(() => {
+        const rect = target.getBoundingClientRect();
+  
+        // Update SVG hole
+        updateHole(rect);
+  
+        // Update tooltip content
+        stepLabel.textContent = `Step ${idx + 1} of ${STEPS.length}`;
+        titleEl.textContent = step.title;
+        bodyEl.textContent = step.body;
+  
+        // Dots
+        buildDots();
+  
+        // Nav buttons
+        prevBtn.disabled = idx === 0;
+        nextBtn.textContent = idx === STEPS.length - 1 ? "Done" : "Next";
+  
+        // Position tooltip
+        positionTooltip(rect, step.placement);
+      });
+    }
+  
+    // ─── Start tour ───────────────────────────────────────────────
+    function startTour() {
+      active = true;
+      currentStep = 0;
+  
+      tourStart.style.display = "none";
+      overlay.classList.add("is-active");
+      tooltip.classList.add("is-active");
+  
+      renderStep(currentStep);
+  
+      // Focus tooltip for screen readers
+      setTimeout(() => tooltip.focus(), 350);
+    }
+  
+    // ─── End tour ─────────────────────────────────────────────────
+    function endTour() {
+      active = false;
+  
+      overlay.classList.remove("is-active");
+      tooltip.classList.remove("is-active");
+  
+      // Reset hole size (animate out)
+      maskHole.setAttribute("width", 0);
+      maskHole.setAttribute("height", 0);
+  
+      setTimeout(() => {
+        tourStart.style.display = "";
+        startBtn.focus();
+      }, 300);
+    }
+  
+    // ─── Navigate ─────────────────────────────────────────────────
+    function goNext() {
+      if (currentStep >= STEPS.length - 1) {
+        endTour();
+        return;
+      }
+      currentStep++;
+      renderStep(currentStep);
+    }
+  
+    function goPrev() {
+      if (currentStep <= 0) return;
+      currentStep--;
+      renderStep(currentStep);
+    }
+  
+    // ─── Events ───────────────────────────────────────────────────
+    startBtn.addEventListener("click", startTour);
+    nextBtn.addEventListener("click", goNext);
+    prevBtn.addEventListener("click", goPrev);
+    skipBtn.addEventListener("click", endTour);
+  
+    // Click on overlay (outside tooltip) also skips
+    overlay.addEventListener("click", endTour);
+  
+    // Prevent overlay click from firing when clicking inside tooltip
+    tooltip.addEventListener("click", (e) => e.stopPropagation());
+  
+    // Keyboard
+    document.addEventListener("keydown", (e) => {
+      if (!active) return;
+      if (e.key === "Escape") {
+        endTour();
+      }
+      if (e.key === "ArrowRight") {
+        goNext();
+      }
+      if (e.key === "ArrowLeft") {
+        goPrev();
+      }
+    });
+  
+    // Reposition on resize
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (active) renderStep(currentStep);
+      }, 100);
+    });
+  
+    // Allow tooltip to be focusable
+    tooltip.setAttribute("tabindex", "-1");
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  /* ═══════════ Page / Dashboard ═══════════ */
+  .page {
+    width: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  /* Header */
+  .dash-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.875rem 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.875rem;
+  }
+  
+  .dash-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-right: auto;
+  }
+  
+  .dash-logo__mark {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.35rem;
+    background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+    display: block;
+  }
+  
+  .dash-logo__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c5d3f0;
+  }
+  
+  .dash-nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .dash-nav__link {
+    font-size: 0.82rem;
+    color: #5a6a8a;
+    text-decoration: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.4rem;
+    transition: color 0.15s, background 0.15s;
+  }
+  
+  .dash-nav__link:hover {
+    color: #c5d3f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .dash-nav__link.is-active {
+    color: #f2f6ff;
+    background: rgba(255, 255, 255, 0.07);
+  }
+  
+  .dash-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+  }
+  
+  /* Main */
+  .dash-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  /* Stats */
+  .dash-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.875rem;
+  }
+  
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1.1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.75rem;
+  }
+  
+  .stat-card__label {
+    font-size: 0.75rem;
+    color: #5a6a8a;
+    font-weight: 500;
+  }
+  
+  .stat-card__value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f2f6ff;
+    letter-spacing: -0.02em;
+  }
+  
+  .stat-card__change {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .stat-card__change--up {
+    color: #4ade80;
+  }
+  .stat-card__change--down {
+    color: #f87171;
+  }
+  
+  /* Chart */
+  .dash-chart {
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.875rem;
+  }
+  
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  
+  .chart-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c5d3f0;
+  }
+  
+  .chart-filters {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .chart-filter {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 0.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    color: #5a6a8a;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  
+  .chart-filter:hover {
+    color: #c5d3f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .chart-filter.is-active {
+    color: #f2f6ff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  
+  .chart-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .chart-bars {
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .chart-bar {
+    flex: 1;
+    height: var(--h);
+    border-radius: 0.25rem 0.25rem 0 0;
+    background: rgba(79, 110, 247, 0.25);
+    transition: background 0.2s;
+  }
+  
+  .chart-bar.is-selected {
+    background: rgba(79, 110, 247, 0.8);
+  }
+  .chart-bar:hover {
+    background: rgba(79, 110, 247, 0.5);
+  }
+  
+  .chart-axis {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0.1rem;
+  }
+  
+  .chart-axis span {
+    font-size: 0.7rem;
+    color: #3a4a6a;
+  }
+  
+  /* Actions */
+  .dash-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: 0.55rem;
+    border: none;
+    cursor: pointer;
+    font-size: 0.87rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(79, 110, 247, 0.35);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  
+  .action-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  /* Start tour CTA */
+  .tour-start {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+  
+  .tour-start__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(20, 30, 50, 0.9);
+    color: #c5d3f0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+  }
+  
+  .tour-start__btn:hover {
+    background: rgba(30, 45, 70, 0.95);
+    color: #f2f6ff;
+    transform: translateY(-2px);
+  }
+  
+  /* ═══════════ Tour overlay ═══════════ */
+  .tour-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .tour-overlay.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  /* Hole rect animation via CSS transition on SVG element */
+  #mask-hole {
+    transition: x 0.4s cubic-bezier(0.4, 0, 0.2, 1), y 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s
+      cubic-bezier(0.4, 0, 0.2, 1), height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* ═══════════ Tooltip ═══════════ */
+  .tour-tooltip {
+    position: fixed;
+    z-index: 110;
+    width: 280px;
+    background: #0d1526;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.875rem;
+    padding: 1.1rem 1.2rem;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.94) translateY(4px);
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  
+  .tour-tooltip.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1) translateY(0);
+  }
+  
+  .tour-tooltip__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  
+  .tour-tooltip__step {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #4f6ef7;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  
+  .tour-tooltip__skip {
+    font-size: 0.75rem;
+    color: #4a5a7a;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.3rem;
+    transition: color 0.15s, background 0.15s;
+  }
+  
+  .tour-tooltip__skip:hover {
+    color: #c5d3f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .tour-tooltip__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f2f6ff;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  
+  .tour-tooltip__body {
+    font-size: 0.84rem;
+    color: #7888a8;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  
+  .tour-tooltip__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Dots */
+  .tour-dots {
+    display: flex;
+    gap: 0.35rem;
+  }
+  
+  .tour-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.2s, transform 0.2s;
+  }
+  
+  .tour-dot.is-active {
+    background: #4f6ef7;
+    transform: scale(1.25);
+  }
+  
+  /* Nav buttons */
+  .tour-tooltip__nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .tour-btn {
+    padding: 0.45rem 0.9rem;
+    border-radius: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s, color 0.15s, opacity 0.15s;
+  }
+  
+  .tour-btn--ghost {
+    background: rgba(255, 255, 255, 0.06);
+    color: #7888a8;
+  }
+  
+  .tour-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #c5d3f0;
+  }
+  .tour-btn--ghost:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  
+  .tour-btn--primary {
+    background: #4f6ef7;
+    color: #fff;
+  }
+  
+  .tour-btn--primary:hover {
+    background: #6080ff;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .dash-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .dash-nav {
+      display: none;
+    }
+    .tour-tooltip {
+      width: 240px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tour Spotlight</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- ═══════════ Mock Dashboard UI ═══════════ -->
+    <div class="page">
+  
+      <!-- Header -->
+      <header class="dash-header" id="tour-header">
+        <div class="dash-logo">
+          <span class="dash-logo__mark"></span>
+          <span class="dash-logo__name">Dashboard</span>
+        </div>
+        <nav class="dash-nav">
+          <a href="#" class="dash-nav__link is-active">Overview</a>
+          <a href="#" class="dash-nav__link">Analytics</a>
+          <a href="#" class="dash-nav__link">Reports</a>
+        </nav>
+        <div class="dash-header__actions">
+          <div class="dash-avatar"></div>
+        </div>
+      </header>
+  
+      <!-- Main content -->
+      <main class="dash-main">
+  
+        <!-- Stats -->
+        <section class="dash-stats" id="tour-stats">
+          <div class="stat-card">
+            <span class="stat-card__label">Total Revenue</span>
+            <span class="stat-card__value">$84,250</span>
+            <span class="stat-card__change stat-card__change--up">+12.4%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Active Users</span>
+            <span class="stat-card__value">3,821</span>
+            <span class="stat-card__change stat-card__change--up">+5.1%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Conversion</span>
+            <span class="stat-card__value">4.6%</span>
+            <span class="stat-card__change stat-card__change--down">-0.3%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Churn Rate</span>
+            <span class="stat-card__value">1.2%</span>
+            <span class="stat-card__change stat-card__change--up">+0.1%</span>
+          </div>
+        </section>
+  
+        <!-- Chart -->
+        <section class="dash-chart" id="tour-chart">
+          <div class="chart-header">
+            <span class="chart-title">Revenue over time</span>
+            <div class="chart-filters">
+              <button class="chart-filter is-active">7d</button>
+              <button class="chart-filter">30d</button>
+              <button class="chart-filter">90d</button>
+            </div>
+          </div>
+          <div class="chart-body">
+            <!-- Fake bar chart -->
+            <div class="chart-bars">
+              <div class="chart-bar" style="--h:55%"></div>
+              <div class="chart-bar" style="--h:72%"></div>
+              <div class="chart-bar" style="--h:48%"></div>
+              <div class="chart-bar" style="--h:85%"></div>
+              <div class="chart-bar" style="--h:63%"></div>
+              <div class="chart-bar" style="--h:91%"></div>
+              <div class="chart-bar is-selected" style="--h:78%"></div>
+            </div>
+            <div class="chart-axis">
+              <span>Mon</span><span>Tue</span><span>Wed</span>
+              <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Action area -->
+        <section class="dash-actions">
+          <button class="action-btn" id="tour-action">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Export Report
+          </button>
+        </section>
+  
+      </main>
+    </div>
+  
+    <!-- Start tour CTA -->
+    <div class="tour-start" id="tour-start">
+      <button class="tour-start__btn" id="start-tour-btn">
+        Start Tour
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    </div>
+  
+    <!-- ═══════════ Tour overlay ═══════════ -->
+    <!-- SVG backdrop with spotlight cutout -->
+    <svg
+      class="tour-overlay"
+      id="tour-overlay"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <mask id="spotlight-mask">
+          <!-- Full white = show overlay -->
+          <rect id="mask-bg" x="0" y="0" width="100%" height="100%" fill="white"/>
+          <!-- Black rect = cut out spotlight -->
+          <rect id="mask-hole" x="0" y="0" width="0" height="0" rx="8" ry="8" fill="black"/>
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="100%" height="100%" fill="rgba(5,9,16,0.82)" mask="url(#spotlight-mask)"/>
+    </svg>
+  
+    <!-- Tooltip -->
+    <div
+      class="tour-tooltip"
+      id="tour-tooltip"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Product tour"
+      aria-live="polite"
+    >
+      <div class="tour-tooltip__header">
+        <span class="tour-tooltip__step" id="tour-step-label"></span>
+        <button class="tour-tooltip__skip" id="tour-skip" aria-label="Skip tour">Skip</button>
+      </div>
+      <h3 class="tour-tooltip__title" id="tour-title"></h3>
+      <p class="tour-tooltip__body" id="tour-body"></p>
+      <div class="tour-tooltip__footer">
+        <div class="tour-dots" id="tour-dots" aria-hidden="true"></div>
+        <div class="tour-tooltip__nav">
+          <button class="tour-btn tour-btn--ghost" id="tour-prev">Prev</button>
+          <button class="tour-btn tour-btn--primary" id="tour-next">Next</button>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    // ─── Tour steps ───────────────────────────────────────────────
+    const STEPS = [
+      {
+        target: "tour-header",
+        title: "Navigation",
+        body: "The header gives you quick access to all major sections. Jump between Overview, Analytics, and Reports instantly.",
+        placement: "bottom",
+      },
+      {
+        target: "tour-stats",
+        title: "Key Metrics",
+        body: "Your four most important KPIs are always visible here — Revenue, Active Users, Conversion, and Churn.",
+        placement: "bottom",
+      },
+      {
+        target: "tour-chart",
+        title: "Revenue Chart",
+        body: "Visualize trends over time. Switch between 7-day, 30-day, and 90-day windows to spot patterns.",
+        placement: "top",
+      },
+      {
+        target: "tour-action",
+        title: "Export Report",
+        body: "Download a full PDF or CSV snapshot of the current view — great for weekly stakeholder updates.",
+        placement: "top",
+      },
+    ];
+  
+    // ─── DOM refs ─────────────────────────────────────────────────
+    const overlay = document.getElementById("tour-overlay");
+    const tooltip = document.getElementById("tour-tooltip");
+    const titleEl = document.getElementById("tour-title");
+    const bodyEl = document.getElementById("tour-body");
+    const stepLabel = document.getElementById("tour-step-label");
+    const dotsEl = document.getElementById("tour-dots");
+    const prevBtn = document.getElementById("tour-prev");
+    const nextBtn = document.getElementById("tour-next");
+    const skipBtn = document.getElementById("tour-skip");
+    const startBtn = document.getElementById("start-tour-btn");
+    const tourStart = document.getElementById("tour-start");
+    const maskHole = document.getElementById("mask-hole");
+  
+    const PAD = 10; // spotlight padding around element
+  
+    let currentStep = 0;
+    let active = false;
+  
+    // ─── Build dots ───────────────────────────────────────────────
+    function buildDots() {
+      dotsEl.innerHTML = "";
+      STEPS.forEach((_, i) => {
+        const dot = document.createElement("span");
+        dot.className = "tour-dot" + (i === currentStep ? " is-active" : "");
+        dotsEl.appendChild(dot);
+      });
+    }
+  
+    // ─── Position tooltip near the target ─────────────────────────
+    function positionTooltip(rect, placement) {
+      const TW = tooltip.offsetWidth || 280;
+      const TH = tooltip.offsetHeight || 180;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const GAP = 16;
+  
+      let top, left;
+  
+      if (placement === "bottom") {
+        top = rect.bottom + PAD + GAP;
+        left = rect.left + rect.width / 2 - TW / 2;
+      } else {
+        top = rect.top - PAD - GAP - TH;
+        left = rect.left + rect.width / 2 - TW / 2;
+      }
+  
+      // Clamp to viewport
+      left = Math.max(GAP, Math.min(left, vw - TW - GAP));
+      top = Math.max(GAP, Math.min(top, vh - TH - GAP));
+  
+      tooltip.style.left = left + "px";
+      tooltip.style.top = top + "px";
+    }
+  
+    // ─── Update spotlight hole ─────────────────────────────────────
+    function updateHole(rect) {
+      const x = rect.left - PAD;
+      const y = rect.top - PAD;
+      const w = rect.width + PAD * 2;
+      const h = rect.height + PAD * 2;
+  
+      maskHole.setAttribute("x", x);
+      maskHole.setAttribute("y", y);
+      maskHole.setAttribute("width", w);
+      maskHole.setAttribute("height", h);
+    }
+  
+    // ─── Render step ──────────────────────────────────────────────
+    function renderStep(idx) {
+      const step = STEPS[idx];
+      const target = document.getElementById(step.target);
+      if (!target) return;
+  
+      // Scroll target into view
+      target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  
+      // Small delay to let scroll settle, then position
+      requestAnimationFrame(() => {
+        const rect = target.getBoundingClientRect();
+  
+        // Update SVG hole
+        updateHole(rect);
+  
+        // Update tooltip content
+        stepLabel.textContent = `Step ${idx + 1} of ${STEPS.length}`;
+        titleEl.textContent = step.title;
+        bodyEl.textContent = step.body;
+  
+        // Dots
+        buildDots();
+  
+        // Nav buttons
+        prevBtn.disabled = idx === 0;
+        nextBtn.textContent = idx === STEPS.length - 1 ? "Done" : "Next";
+  
+        // Position tooltip
+        positionTooltip(rect, step.placement);
+      });
+    }
+  
+    // ─── Start tour ───────────────────────────────────────────────
+    function startTour() {
+      active = true;
+      currentStep = 0;
+  
+      tourStart.style.display = "none";
+      overlay.classList.add("is-active");
+      tooltip.classList.add("is-active");
+  
+      renderStep(currentStep);
+  
+      // Focus tooltip for screen readers
+      setTimeout(() => tooltip.focus(), 350);
+    }
+  
+    // ─── End tour ─────────────────────────────────────────────────
+    function endTour() {
+      active = false;
+  
+      overlay.classList.remove("is-active");
+      tooltip.classList.remove("is-active");
+  
+      // Reset hole size (animate out)
+      maskHole.setAttribute("width", 0);
+      maskHole.setAttribute("height", 0);
+  
+      setTimeout(() => {
+        tourStart.style.display = "";
+        startBtn.focus();
+      }, 300);
+    }
+  
+    // ─── Navigate ─────────────────────────────────────────────────
+    function goNext() {
+      if (currentStep >= STEPS.length - 1) {
+        endTour();
+        return;
+      }
+      currentStep++;
+      renderStep(currentStep);
+    }
+  
+    function goPrev() {
+      if (currentStep <= 0) return;
+      currentStep--;
+      renderStep(currentStep);
+    }
+  
+    // ─── Events ───────────────────────────────────────────────────
+    startBtn.addEventListener("click", startTour);
+    nextBtn.addEventListener("click", goNext);
+    prevBtn.addEventListener("click", goPrev);
+    skipBtn.addEventListener("click", endTour);
+  
+    // Click on overlay (outside tooltip) also skips
+    overlay.addEventListener("click", endTour);
+  
+    // Prevent overlay click from firing when clicking inside tooltip
+    tooltip.addEventListener("click", (e) => e.stopPropagation());
+  
+    // Keyboard
+    document.addEventListener("keydown", (e) => {
+      if (!active) return;
+      if (e.key === "Escape") {
+        endTour();
+      }
+      if (e.key === "ArrowRight") {
+        goNext();
+      }
+      if (e.key === "ArrowLeft") {
+        goPrev();
+      }
+    });
+  
+    // Reposition on resize
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (active) renderStep(currentStep);
+      }, 100);
+    });
+  
+    // Allow tooltip to be focusable
+    tooltip.setAttribute("tabindex", "-1");
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

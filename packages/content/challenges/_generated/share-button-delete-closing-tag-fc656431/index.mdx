@@ -1,0 +1,558 @@
+---
+slug: "share-button-delete-closing-tag-fc656431"
+topic: "social"
+title: "Fix the broken HTML structure in Smart Share Button"
+type: "fix"
+difficulty: 2
+resourceSlug: "share-button"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  body {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  :root {
+    --share-bg: rgba(15, 23, 42, 0.95);
+    --share-border: rgba(255, 255, 255, 0.1);
+    --share-text: #f8fafc;
+    --share-muted: #94a3b8;
+    --share-accent: #8b5cf6;
+    --share-accent-glow: rgba(139, 92, 246, 0.3);
+    --share-opt-hover: rgba(255, 255, 255, 0.06);
+  }
+  
+  .share-widget {
+    position: relative;
+    display: inline-block;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  
+  .share-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--share-accent), #a78bfa);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.375rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 24px var(--share-accent-glow);
+  }
+  
+  .share-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px var(--share-accent-glow);
+  }
+  
+  .share-menu {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 0;
+    width: 232px;
+    background: var(--share-bg);
+    border: 1px solid var(--share-border);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    display: none;
+    z-index: 100;
+    animation: menuIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(20px);
+  }
+  
+  .share-menu.active {
+    display: block;
+  }
+  
+  .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  
+  .menu-header h4 {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--share-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--share-muted);
+    line-height: 1;
+    padding: 2px;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+  
+  .close-btn:hover {
+    color: var(--share-text);
+  }
+  
+  .share-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  
+  .share-opt {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.6rem 0.75rem;
+    text-decoration: none;
+    color: var(--share-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: all 0.15s;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .share-opt:hover {
+    background: var(--share-opt-hover);
+    color: var(--share-text);
+  }
+  
+  .share-opt.copy {
+    border-top: 1px solid var(--share-border);
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+  }
+  
+  .share-opt.copy:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+  }
+  
+  @keyframes menuIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
+    }
+  
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Share Button
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="share-widget">
+          <button id="share-toggle" class="share-btn">
+              <span class="share-icon">📤</span>
+              <span>Share Result</span>
+          </button>
+  
+          <div id="share-menu" class="share-menu">
+              <div class="menu-header">
+                  <h4>Share via</h4>
+                  <button id="close-share" class="close-btn">×</button>
+              </div>
+              <div class="share-options">
+                  <a href="#" class="share-opt" data-platform="twitter">𝕏 (Twitter)</a>
+                  <a href="#" class="share-opt" data-platform="facebook">Facebook</a>
+                  <a href="#" class="share-opt" data-platform="linkedin">LinkedIn</a>
+                  <button id="copy-link" class="share-opt copy">Copy Link</button>
+              </div>
+          </div>
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const shareToggle = document.getElementById("share-toggle");
+  const shareMenu = document.getElementById("share-menu");
+  const closeShare = document.getElementById("close-share");
+  const copyLinkBtn = document.getElementById("copy-link");
+  
+  const shareData = {
+    title: "Check this out!",
+    text: "I found this amazing component on Stealthis.",
+    url: window.location.href,
+  };
+  
+  async function handleShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Error sharing:", err);
+        toggleMenu();
+      }
+    } else {
+      toggleMenu();
+    }
+  }
+  
+  function toggleMenu() {
+    shareMenu.classList.toggle("active");
+  }
+  
+  shareToggle.addEventListener("click", handleShare);
+  closeShare.addEventListener("click", toggleMenu);
+  
+  // Social Links Implementation
+  document.querySelectorAll(".share-opt").forEach((opt) => {
+    const platform = opt.dataset.platform;
+    if (!platform) return;
+  
+    opt.addEventListener("click", (e) => {
+      e.preventDefault();
+      let url = "";
+      const encodedUrl = encodeURIComponent(shareData.url);
+      const encodedText = encodeURIComponent(shareData.text);
+  
+      switch (platform) {
+        case "twitter":
+          url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+          break;
+        case "facebook":
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+          break;
+        case "linkedin":
+          url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+          break;
+      }
+  
+      window.open(url, "_blank", "width=600,height=400");
+      toggleMenu();
+    });
+  });
+  
+  copyLinkBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(shareData.url).then(() => {
+      const originalText = copyLinkBtn.textContent;
+      copyLinkBtn.textContent = "Link Copied!";
+      setTimeout(() => {
+        copyLinkBtn.textContent = originalText;
+        toggleMenu();
+      }, 1500);
+    });
+  });
+  
+  // Close menu when clicking outside
+  window.addEventListener("click", (e) => {
+    if (!shareMenu.contains(e.target) && !shareToggle.contains(e.target)) {
+      shareMenu.classList.remove("active");
+    }
+  });
+  
+  </script>
+solution: |
+  <style>
+  body {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  :root {
+    --share-bg: rgba(15, 23, 42, 0.95);
+    --share-border: rgba(255, 255, 255, 0.1);
+    --share-text: #f8fafc;
+    --share-muted: #94a3b8;
+    --share-accent: #8b5cf6;
+    --share-accent-glow: rgba(139, 92, 246, 0.3);
+    --share-opt-hover: rgba(255, 255, 255, 0.06);
+  }
+  
+  .share-widget {
+    position: relative;
+    display: inline-block;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  
+  .share-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--share-accent), #a78bfa);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.375rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 24px var(--share-accent-glow);
+  }
+  
+  .share-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px var(--share-accent-glow);
+  }
+  
+  .share-menu {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 0;
+    width: 232px;
+    background: var(--share-bg);
+    border: 1px solid var(--share-border);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    display: none;
+    z-index: 100;
+    animation: menuIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(20px);
+  }
+  
+  .share-menu.active {
+    display: block;
+  }
+  
+  .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  
+  .menu-header h4 {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--share-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--share-muted);
+    line-height: 1;
+    padding: 2px;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+  
+  .close-btn:hover {
+    color: var(--share-text);
+  }
+  
+  .share-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  
+  .share-opt {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.6rem 0.75rem;
+    text-decoration: none;
+    color: var(--share-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: all 0.15s;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .share-opt:hover {
+    background: var(--share-opt-hover);
+    color: var(--share-text);
+  }
+  
+  .share-opt.copy {
+    border-top: 1px solid var(--share-border);
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+  }
+  
+  .share-opt.copy:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+  }
+  
+  @keyframes menuIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
+    }
+  
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Share Button</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="share-widget">
+          <button id="share-toggle" class="share-btn">
+              <span class="share-icon">📤</span>
+              <span>Share Result</span>
+          </button>
+  
+          <div id="share-menu" class="share-menu">
+              <div class="menu-header">
+                  <h4>Share via</h4>
+                  <button id="close-share" class="close-btn">×</button>
+              </div>
+              <div class="share-options">
+                  <a href="#" class="share-opt" data-platform="twitter">𝕏 (Twitter)</a>
+                  <a href="#" class="share-opt" data-platform="facebook">Facebook</a>
+                  <a href="#" class="share-opt" data-platform="linkedin">LinkedIn</a>
+                  <button id="copy-link" class="share-opt copy">Copy Link</button>
+              </div>
+          </div>
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const shareToggle = document.getElementById("share-toggle");
+  const shareMenu = document.getElementById("share-menu");
+  const closeShare = document.getElementById("close-share");
+  const copyLinkBtn = document.getElementById("copy-link");
+  
+  const shareData = {
+    title: "Check this out!",
+    text: "I found this amazing component on Stealthis.",
+    url: window.location.href,
+  };
+  
+  async function handleShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Error sharing:", err);
+        toggleMenu();
+      }
+    } else {
+      toggleMenu();
+    }
+  }
+  
+  function toggleMenu() {
+    shareMenu.classList.toggle("active");
+  }
+  
+  shareToggle.addEventListener("click", handleShare);
+  closeShare.addEventListener("click", toggleMenu);
+  
+  // Social Links Implementation
+  document.querySelectorAll(".share-opt").forEach((opt) => {
+    const platform = opt.dataset.platform;
+    if (!platform) return;
+  
+    opt.addEventListener("click", (e) => {
+      e.preventDefault();
+      let url = "";
+      const encodedUrl = encodeURIComponent(shareData.url);
+      const encodedText = encodeURIComponent(shareData.text);
+  
+      switch (platform) {
+        case "twitter":
+          url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+          break;
+        case "facebook":
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+          break;
+        case "linkedin":
+          url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+          break;
+      }
+  
+      window.open(url, "_blank", "width=600,height=400");
+      toggleMenu();
+    });
+  });
+  
+  copyLinkBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(shareData.url).then(() => {
+      const originalText = copyLinkBtn.textContent;
+      copyLinkBtn.textContent = "Link Copied!";
+      setTimeout(() => {
+        copyLinkBtn.textContent = originalText;
+        toggleMenu();
+      }, 1500);
+    });
+  });
+  
+  // Close menu when clicking outside
+  window.addEventListener("click", (e) => {
+    if (!shareMenu.contains(e.target) && !shareToggle.contains(e.target)) {
+      shareMenu.classList.remove("active");
+    }
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

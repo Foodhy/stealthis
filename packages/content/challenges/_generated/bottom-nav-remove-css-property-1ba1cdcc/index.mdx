@@ -1,0 +1,797 @@
+---
+slug: "bottom-nav-remove-css-property-1ba1cdcc"
+topic: "navigation"
+title: "Restore missing CSS property in Bottom Navigation"
+type: "fix"
+difficulty: 1
+resourceSlug: "bottom-nav"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #050910;
+    --text: #f2f6ff;
+    --muted: #475569;
+    --accent: #38bdf8;
+    --nav-bg: #0d1117;
+    --border: rgba(255, 255, 255, 0.08);
+    --tab-count: 5;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  /* ── Demo wrapper ── */
+  .demo {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.375rem;
+    text-align: center;
+  }
+  .demo-sub {
+    color: var(--muted);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+  
+  /* ── Phone frame ── */
+  .phone-frame {
+    width: 320px;
+    border-radius: 32px;
+    border: 1.5px solid var(--border);
+    background: var(--nav-bg);
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+  
+  .phone-screen {
+    height: 280px;
+    background: linear-gradient(135deg, #0d1117 0%, #0a0f1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .screen-content {
+    text-align: center;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  
+  .screen-content.fade {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  
+  .screen-icon {
+    font-size: 3rem;
+    margin-bottom: 0.625rem;
+  }
+  .screen-label {
+    color: var(--muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    height: 68px;
+    background: var(--nav-bg);
+    padding: 0 0.25rem;
+  }
+  
+  /* Sliding indicator */
+  .bottom-nav__indicator {
+    position: absolute;
+    top: 0;
+    left: calc(var(--active-index, 0) / var(--tab-count) * 100%);
+    width: calc(100% / var(--tab-count));
+    height: 2px;
+    background: var(--accent);
+    border-radius: 0 0 3px 3px;
+    transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* ── Tab ── */
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 0.5rem 0;
+    transition: color 0.2s;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: 8px;
+  }
+  
+  .tab--active {
+    color: var(--accent);
+  }
+  
+  .tab__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 24px;
+    height: 24px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .tab--active .tab__icon {
+    transform: translateY(-2px);
+  }
+  
+  .tab__label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: opacity 0.2s;
+  }
+  
+  /* ── Add tab ── */
+  .tab--add {
+    color: #050910;
+    gap: 0;
+  }
+  
+  .tab--add .tab__icon {
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: -16px;
+    box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  }
+  
+  .tab--add:hover .tab__icon,
+  .tab--add.tab--active .tab__icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+  }
+  
+  .tab--add svg {
+    color: #050910;
+  }
+  
+  /* ── Badge ── */
+  .tab__icon--badge {
+    position: relative;
+  }
+  
+  .tab__badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 1.5px solid var(--nav-bg);
+    line-height: 1;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bottom Navigation</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- Page preview area -->
+    <div class="demo">
+      <h1 class="demo-title">Bottom Navigation</h1>
+      <p class="demo-sub">Mobile-style bottom nav with icon + label, active state, and badge counter.</p>
+  
+      <div class="phone-frame" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="screen-content" id="screen-content">
+            <div class="screen-icon">🏠</div>
+            <p class="screen-label">Home</p>
+          </div>
+        </div>
+  
+        <!-- Bottom nav bar -->
+        <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
+  
+          <button
+            class="tab tab--active"
+            role="tab"
+            aria-selected="true"
+            data-index="0"
+            data-icon="🏠"
+            data-label="Home"
+            aria-label="Home"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                <polyline points="9 21 9 12 15 12 15 21"/>
+              </svg>
+            </span>
+            <span class="tab__label">Home</span>
+          </button>
+  
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            data-index="1"
+            data-icon="🔍"
+            data-label="Search"
+            aria-label="Search"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <span class="tab__label">Search</span>
+          </button>
+  
+          <button
+            class="tab tab--add"
+            role="tab"
+            aria-selected="false"
+            data-index="2"
+            data-icon="➕"
+            data-label="Add"
+            aria-label="Add"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </button>
+  
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            data-index="3"
+            data-icon="🔔"
+            data-label="Notifications"
+            aria-label="Notifications (3 unread)"
+          >
+            <span class="tab__icon tab__icon--badge" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span class="tab__badge" aria-label="3 unread">3</span>
+            </span>
+            <span class="tab__label">Alerts</span>
+          </button>
+  
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            data-index="4"
+            data-icon="👤"
+            data-label="Profile"
+            aria-label="Profile"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <span class="tab__label">Profile</span>
+          </button>
+  
+          <!-- Active indicator bar -->
+          <span class="bottom-nav__indicator" aria-hidden="true"></span>
+        </nav>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    var tabs = document.querySelectorAll(".tab");
+    var indicator = document.querySelector(".bottom-nav__indicator");
+    var screenContent = document.getElementById("screen-content");
+    var screenIcon = screenContent ? screenContent.querySelector(".screen-icon") : null;
+    var screenLabel = screenContent ? screenContent.querySelector(".screen-label") : null;
+  
+    function setActive(index) {
+      tabs.forEach(function (tab, i) {
+        var isActive = i === index;
+        tab.classList.toggle("tab--active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+  
+      // Move indicator — skip the Add button (index 2) visually but still track
+      document.documentElement.style.setProperty("--active-index", index);
+  
+      // Update screen content with transition
+      var tab = tabs[index];
+      if (screenContent && tab) {
+        screenContent.classList.add("fade");
+        setTimeout(function () {
+          if (screenIcon) screenIcon.textContent = tab.dataset.icon || "";
+          if (screenLabel) screenLabel.textContent = tab.dataset.label || "";
+          screenContent.classList.remove("fade");
+        }, 180);
+      }
+    }
+  
+    tabs.forEach(function (tab, index) {
+      tab.addEventListener("click", function () {
+        setActive(index);
+      });
+  
+      tab.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          setActive((index + 1) % tabs.length);
+          tabs[(index + 1) % tabs.length].focus();
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          setActive((index - 1 + tabs.length) % tabs.length);
+          tabs[(index - 1 + tabs.length) % tabs.length].focus();
+        }
+      });
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #050910;
+    --text: #f2f6ff;
+    --muted: #475569;
+    --accent: #38bdf8;
+    --nav-bg: #0d1117;
+    --border: rgba(255, 255, 255, 0.08);
+    --tab-count: 5;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  /* ── Demo wrapper ── */
+  .demo {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.375rem;
+    text-align: center;
+  }
+  .demo-sub {
+    color: var(--muted);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+  
+  /* ── Phone frame ── */
+  .phone-frame {
+    width: 320px;
+    border-radius: 32px;
+    border: 1.5px solid var(--border);
+    background: var(--nav-bg);
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+  
+  .phone-screen {
+    height: 280px;
+    background: linear-gradient(135deg, #0d1117 0%, #0a0f1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .screen-content {
+    text-align: center;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  
+  .screen-content.fade {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  
+  .screen-icon {
+    font-size: 3rem;
+    margin-bottom: 0.625rem;
+  }
+  .screen-label {
+    color: var(--muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    height: 68px;
+    background: var(--nav-bg);
+    padding: 0 0.25rem;
+  }
+  
+  /* Sliding indicator */
+  .bottom-nav__indicator {
+    position: absolute;
+    top: 0;
+    left: calc(var(--active-index, 0) / var(--tab-count) * 100%);
+    width: calc(100% / var(--tab-count));
+    height: 2px;
+    background: var(--accent);
+    border-radius: 0 0 3px 3px;
+    transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* ── Tab ── */
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 0.5rem 0;
+    transition: color 0.2s;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: 8px;
+  }
+  
+  .tab--active {
+    color: var(--accent);
+  }
+  
+  .tab__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 24px;
+    height: 24px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .tab--active .tab__icon {
+    transform: translateY(-2px);
+  }
+  
+  .tab__label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: opacity 0.2s;
+  }
+  
+  /* ── Add tab ── */
+  .tab--add {
+    color: #050910;
+    gap: 0;
+  }
+  
+  .tab--add .tab__icon {
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: -16px;
+    box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  }
+  
+  .tab--add:hover .tab__icon,
+  .tab--add.tab--active .tab__icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+  }
+  
+  .tab--add svg {
+    color: #050910;
+  }
+  
+  /* ── Badge ── */
+  .tab__icon--badge {
+    position: relative;
+  }
+  
+  .tab__badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 1.5px solid var(--nav-bg);
+    line-height: 1;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bottom Navigation</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- Page preview area -->
+    <div class="demo">
+      <h1 class="demo-title">Bottom Navigation</h1>
+      <p class="demo-sub">Mobile-style bottom nav with icon + label, active state, and badge counter.</p>
+  
+      <div class="phone-frame" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="screen-content" id="screen-content">
+            <div class="screen-icon">🏠</div>
+            <p class="screen-label">Home</p>
+          </div>
+        </div>
+  
+        <!-- Bottom nav bar -->
+        <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
+  
+          <button
+            class="tab tab--active"
+            role="tab"
+            aria-selected="true"
+            data-index="0"
+            data-icon="🏠"
+            data-label="Home"
+            aria-label="Home"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                <polyline points="9 21 9 12 15 12 15 21"/>
+              </svg>
+            </span>
+            <span class="tab__label">Home</span>
+          </button>
+  
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            data-index="1"
+            data-icon="🔍"
+            data-label="Search"
+            aria-label="Search"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <span class="tab__label">Search</span>
+          </button>
+  
+          <button
+            class="tab tab--add"
+            role="tab"
+            aria-selected="false"
+            data-index="2"
+            data-icon="➕"
+            data-label="Add"
+            aria-label="Add"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </button>
+  
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            data-index="3"
+            data-icon="🔔"
+            data-label="Notifications"
+            aria-label="Notifications (3 unread)"
+          >
+            <span class="tab__icon tab__icon--badge" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span class="tab__badge" aria-label="3 unread">3</span>
+            </span>
+            <span class="tab__label">Alerts</span>
+          </button>
+  
+          <button
+            class="tab"
+            role="tab"
+            aria-selected="false"
+            data-index="4"
+            data-icon="👤"
+            data-label="Profile"
+            aria-label="Profile"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <span class="tab__label">Profile</span>
+          </button>
+  
+          <!-- Active indicator bar -->
+          <span class="bottom-nav__indicator" aria-hidden="true"></span>
+        </nav>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    var tabs = document.querySelectorAll(".tab");
+    var indicator = document.querySelector(".bottom-nav__indicator");
+    var screenContent = document.getElementById("screen-content");
+    var screenIcon = screenContent ? screenContent.querySelector(".screen-icon") : null;
+    var screenLabel = screenContent ? screenContent.querySelector(".screen-label") : null;
+  
+    function setActive(index) {
+      tabs.forEach(function (tab, i) {
+        var isActive = i === index;
+        tab.classList.toggle("tab--active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+  
+      // Move indicator — skip the Add button (index 2) visually but still track
+      document.documentElement.style.setProperty("--active-index", index);
+  
+      // Update screen content with transition
+      var tab = tabs[index];
+      if (screenContent && tab) {
+        screenContent.classList.add("fade");
+        setTimeout(function () {
+          if (screenIcon) screenIcon.textContent = tab.dataset.icon || "";
+          if (screenLabel) screenLabel.textContent = tab.dataset.label || "";
+          screenContent.classList.remove("fade");
+        }, 180);
+      }
+    }
+  
+    tabs.forEach(function (tab, index) {
+      tab.addEventListener("click", function () {
+        setActive(index);
+      });
+  
+      tab.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          setActive((index + 1) % tabs.length);
+          tabs[(index + 1) % tabs.length].focus();
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          setActive((index - 1 + tabs.length) % tabs.length);
+          tabs[(index - 1 + tabs.length) % tabs.length].focus();
+        }
+      });
+    });
+  })();
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

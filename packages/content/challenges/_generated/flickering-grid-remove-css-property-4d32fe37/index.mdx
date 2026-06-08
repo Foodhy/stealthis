@@ -1,0 +1,527 @@
+---
+slug: "flickering-grid-remove-css-property-4d32fe37"
+topic: "canvas"
+title: "Restore missing CSS property in Flickering Grid"
+type: "fix"
+difficulty: 1
+resourceSlug: "flickering-grid"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: #000;
+  }
+  
+  /* --- Container --- */
+  .flicker-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #000;
+    overflow: hidden;
+  }
+  
+  /* --- Canvas fills the container --- */
+  .flicker-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  /* --- Centered content overlay --- */
+  .flicker-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 2rem;
+  }
+  
+  .flicker-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  
+  .flicker-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #fafafa;
+  }
+  
+  .flicker-description {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #71717a;
+    max-width: 400px;
+  }
+  
+  .flicker-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .flicker-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  
+  .flicker-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #10b981;
+  }
+  
+  .flicker-stat-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #52525b;
+  }
+  
+  .flicker-stat-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flickering Grid</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="flicker-container">
+      <canvas class="flicker-canvas"></canvas>
+      <div class="flicker-content">
+        <div class="flicker-glow"></div>
+        <h1 class="flicker-title">Flickering Grid</h1>
+        <p class="flicker-description">
+          Canvas-based animated grid where cells randomly pulse opacity, creating
+          a living, breathing background.
+        </p>
+        <div class="flicker-stats">
+          <div class="flicker-stat">
+            <span class="flicker-stat-value">60</span>
+            <span class="flicker-stat-label">FPS</span>
+          </div>
+          <div class="flicker-stat-divider"></div>
+          <div class="flicker-stat">
+            <span class="flicker-stat-value">&lt;2%</span>
+            <span class="flicker-stat-label">CPU</span>
+          </div>
+          <div class="flicker-stat-divider"></div>
+          <div class="flicker-stat">
+            <span class="flicker-stat-value">Canvas</span>
+            <span class="flicker-stat-label">2D API</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Flickering Grid — Canvas-based animated grid with randomly flickering cells.
+  (function () {
+    "use strict";
+  
+    const canvas = document.querySelector(".flicker-canvas");
+    if (!canvas) return;
+  
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+  
+    // Configuration
+    const CELL_SIZE = 24;
+    const GAP = 2;
+    const BASE_OPACITY = 0.06;
+    const MAX_OPACITY = 0.35;
+    const FLICKER_CHANCE = 0.005; // chance per cell per frame
+    const LERP_SPEED = 0.04;
+    const COLOR = { r: 16, g: 185, b: 129 }; // emerald
+  
+    let cols = 0;
+    let rows = 0;
+    let cells = [];
+    let animId = null;
+    let dpr = 1;
+  
+    function resize() {
+      dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
+      ctx.scale(dpr, dpr);
+  
+      cols = Math.ceil(rect.width / (CELL_SIZE + GAP));
+      rows = Math.ceil(rect.height / (CELL_SIZE + GAP));
+  
+      // Re-initialize cells
+      cells = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          cells.push({
+            x: c * (CELL_SIZE + GAP),
+            y: r * (CELL_SIZE + GAP),
+            opacity: BASE_OPACITY + Math.random() * 0.03,
+            target: BASE_OPACITY,
+          });
+        }
+      }
+    }
+  
+    function animate() {
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+      ctx.clearRect(0, 0, w, h);
+  
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+  
+        // Random chance to start a flicker
+        if (Math.random() < FLICKER_CHANCE) {
+          cell.target = BASE_OPACITY + Math.random() * (MAX_OPACITY - BASE_OPACITY);
+        }
+  
+        // Lerp opacity toward target
+        cell.opacity += (cell.target - cell.opacity) * LERP_SPEED;
+  
+        // Fade target back to base
+        cell.target += (BASE_OPACITY - cell.target) * 0.01;
+  
+        // Draw
+        ctx.fillStyle = `rgba(${COLOR.r}, ${COLOR.g}, ${COLOR.b}, ${cell.opacity})`;
+        ctx.beginPath();
+        ctx.roundRect(cell.x, cell.y, CELL_SIZE, CELL_SIZE, 2);
+        ctx.fill();
+      }
+  
+      animId = requestAnimationFrame(animate);
+    }
+  
+    // Initialize
+    resize();
+    animate();
+  
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        cancelAnimationFrame(animId);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        resize();
+        animate();
+      }, 100);
+    });
+  
+    // Cleanup on page unload
+    window.addEventListener("beforeunload", () => {
+      cancelAnimationFrame(animId);
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: #000;
+  }
+  
+  /* --- Container --- */
+  .flicker-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #000;
+    overflow: hidden;
+  }
+  
+  /* --- Canvas fills the container --- */
+  .flicker-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  /* --- Centered content overlay --- */
+  .flicker-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 2rem;
+  }
+  
+  .flicker-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  
+  .flicker-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #fafafa;
+  }
+  
+  .flicker-description {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #71717a;
+    max-width: 400px;
+  }
+  
+  .flicker-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .flicker-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  
+  .flicker-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #10b981;
+  }
+  
+  .flicker-stat-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #52525b;
+  }
+  
+  .flicker-stat-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flickering Grid</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="flicker-container">
+      <canvas class="flicker-canvas"></canvas>
+      <div class="flicker-content">
+        <div class="flicker-glow"></div>
+        <h1 class="flicker-title">Flickering Grid</h1>
+        <p class="flicker-description">
+          Canvas-based animated grid where cells randomly pulse opacity, creating
+          a living, breathing background.
+        </p>
+        <div class="flicker-stats">
+          <div class="flicker-stat">
+            <span class="flicker-stat-value">60</span>
+            <span class="flicker-stat-label">FPS</span>
+          </div>
+          <div class="flicker-stat-divider"></div>
+          <div class="flicker-stat">
+            <span class="flicker-stat-value">&lt;2%</span>
+            <span class="flicker-stat-label">CPU</span>
+          </div>
+          <div class="flicker-stat-divider"></div>
+          <div class="flicker-stat">
+            <span class="flicker-stat-value">Canvas</span>
+            <span class="flicker-stat-label">2D API</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Flickering Grid — Canvas-based animated grid with randomly flickering cells.
+  (function () {
+    "use strict";
+  
+    const canvas = document.querySelector(".flicker-canvas");
+    if (!canvas) return;
+  
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+  
+    // Configuration
+    const CELL_SIZE = 24;
+    const GAP = 2;
+    const BASE_OPACITY = 0.06;
+    const MAX_OPACITY = 0.35;
+    const FLICKER_CHANCE = 0.005; // chance per cell per frame
+    const LERP_SPEED = 0.04;
+    const COLOR = { r: 16, g: 185, b: 129 }; // emerald
+  
+    let cols = 0;
+    let rows = 0;
+    let cells = [];
+    let animId = null;
+    let dpr = 1;
+  
+    function resize() {
+      dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
+      ctx.scale(dpr, dpr);
+  
+      cols = Math.ceil(rect.width / (CELL_SIZE + GAP));
+      rows = Math.ceil(rect.height / (CELL_SIZE + GAP));
+  
+      // Re-initialize cells
+      cells = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          cells.push({
+            x: c * (CELL_SIZE + GAP),
+            y: r * (CELL_SIZE + GAP),
+            opacity: BASE_OPACITY + Math.random() * 0.03,
+            target: BASE_OPACITY,
+          });
+        }
+      }
+    }
+  
+    function animate() {
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+      ctx.clearRect(0, 0, w, h);
+  
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+  
+        // Random chance to start a flicker
+        if (Math.random() < FLICKER_CHANCE) {
+          cell.target = BASE_OPACITY + Math.random() * (MAX_OPACITY - BASE_OPACITY);
+        }
+  
+        // Lerp opacity toward target
+        cell.opacity += (cell.target - cell.opacity) * LERP_SPEED;
+  
+        // Fade target back to base
+        cell.target += (BASE_OPACITY - cell.target) * 0.01;
+  
+        // Draw
+        ctx.fillStyle = `rgba(${COLOR.r}, ${COLOR.g}, ${COLOR.b}, ${cell.opacity})`;
+        ctx.beginPath();
+        ctx.roundRect(cell.x, cell.y, CELL_SIZE, CELL_SIZE, 2);
+        ctx.fill();
+      }
+  
+      animId = requestAnimationFrame(animate);
+    }
+  
+    // Initialize
+    resize();
+    animate();
+  
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        cancelAnimationFrame(animId);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        resize();
+        animate();
+      }, 100);
+    });
+  
+    // Cleanup on page unload
+    window.addEventListener("beforeunload", () => {
+      cancelAnimationFrame(animId);
+    });
+  })();
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

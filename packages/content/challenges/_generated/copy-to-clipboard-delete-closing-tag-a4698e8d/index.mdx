@@ -1,0 +1,394 @@
+---
+slug: "copy-to-clipboard-delete-closing-tag-a4698e8d"
+topic: "clipboard"
+title: "Fix the broken HTML structure in Copy to Clipboard"
+type: "fix"
+difficulty: 2
+resourceSlug: "copy-to-clipboard"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    background: #090f1b;
+    color: #e2e8f0;
+    font-family: "Sora", system-ui, sans-serif;
+  }
+  
+  .shell {
+    width: min(960px, calc(100% - 2rem));
+    margin: 2rem auto;
+  }
+  
+  p {
+    color: #94a3b8;
+  }
+  
+  .copy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0.8rem;
+  }
+  
+  .copy-card {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    background: #111a2d;
+    padding: 0.8rem;
+    display: grid;
+    gap: 0.6rem;
+  }
+  
+  .copy-card h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  pre,
+  input,
+  .copy-card p {
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 8px;
+    background: #0a1222;
+    color: #dbeafe;
+    padding: 0.55rem;
+    font-size: 0.85rem;
+  }
+  
+  input {
+    width: 100%;
+  }
+  
+  .copy-card button {
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    background: rgba(56, 189, 248, 0.13);
+    color: #bae6fd;
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+  }
+  
+  .copy-card.success {
+    border-color: rgba(16, 185, 129, 0.75);
+  }
+  
+  .copy-card.error {
+    border-color: rgba(248, 113, 113, 0.75);
+  }
+  
+  #status {
+    min-height: 1.25rem;
+    margin-top: 0.8rem;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Copy to Clipboard
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <h1>Copy to Clipboard Pattern</h1>
+      <p>Copy from code, URL text, and input fields using one shared handler.</p>
+  
+      <section class="copy-grid">
+        <article class="copy-card" id="code-card">
+          <h2>Code Block</h2>
+          <pre id="target-code">npm run build && npm run deploy</pre>
+          <button data-copy-target="#target-code" type="button">Copy command</button>
+        </article>
+  
+        <article class="copy-card" id="url-card">
+          <h2>Share URL</h2>
+          <p id="target-url">https://stealthis.dev/library?category=patterns</p>
+          <button data-copy-target="#target-url" type="button">Copy URL</button>
+        </article>
+  
+        <article class="copy-card" id="input-card">
+          <h2>Token</h2>
+          <input id="target-input" value="st_demo_token_2026" readonly />
+          <button data-copy-target="#target-input" type="button">Copy token</button>
+        </article>
+      </section>
+  
+      <p id="status" role="status" aria-live="polite"></p>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const status = document.getElementById("status");
+  
+    const getTextFromTarget = (target) => {
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        return target.value;
+      }
+      return target.textContent?.trim() ?? "";
+    };
+  
+    const fallbackCopy = (text) => {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "true");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return ok;
+    };
+  
+    const copyText = async (text) => {
+      if (!text) return false;
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      return fallbackCopy(text);
+    };
+  
+    const clearState = () => {
+      const cards = document.querySelectorAll(".copy-card");
+      for (const card of cards) {
+        card.classList.remove("success", "error");
+      }
+    };
+  
+    const buttons = document.querySelectorAll("button[data-copy-target]");
+    for (const button of buttons) {
+      button.addEventListener("click", async () => {
+        const selector = button.getAttribute("data-copy-target");
+        if (!selector) return;
+        const target = document.querySelector(selector);
+        if (!target) return;
+  
+        const text = getTextFromTarget(target);
+        clearState();
+  
+        try {
+          const ok = await copyText(text);
+          const card = button.closest(".copy-card");
+          if (!ok) throw new Error("Copy failed");
+          card?.classList.add("success");
+          status.textContent = `Copied: ${text}`;
+        } catch (_error) {
+          const card = button.closest(".copy-card");
+          card?.classList.add("error");
+          status.textContent = "Copy failed. Clipboard permissions may be blocked.";
+        }
+      });
+    }
+  })();
+  
+  </script>
+solution: |
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    background: #090f1b;
+    color: #e2e8f0;
+    font-family: "Sora", system-ui, sans-serif;
+  }
+  
+  .shell {
+    width: min(960px, calc(100% - 2rem));
+    margin: 2rem auto;
+  }
+  
+  p {
+    color: #94a3b8;
+  }
+  
+  .copy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0.8rem;
+  }
+  
+  .copy-card {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    background: #111a2d;
+    padding: 0.8rem;
+    display: grid;
+    gap: 0.6rem;
+  }
+  
+  .copy-card h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  pre,
+  input,
+  .copy-card p {
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 8px;
+    background: #0a1222;
+    color: #dbeafe;
+    padding: 0.55rem;
+    font-size: 0.85rem;
+  }
+  
+  input {
+    width: 100%;
+  }
+  
+  .copy-card button {
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    background: rgba(56, 189, 248, 0.13);
+    color: #bae6fd;
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+  }
+  
+  .copy-card.success {
+    border-color: rgba(16, 185, 129, 0.75);
+  }
+  
+  .copy-card.error {
+    border-color: rgba(248, 113, 113, 0.75);
+  }
+  
+  #status {
+    min-height: 1.25rem;
+    margin-top: 0.8rem;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Copy to Clipboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <h1>Copy to Clipboard Pattern</h1>
+      <p>Copy from code, URL text, and input fields using one shared handler.</p>
+  
+      <section class="copy-grid">
+        <article class="copy-card" id="code-card">
+          <h2>Code Block</h2>
+          <pre id="target-code">npm run build && npm run deploy</pre>
+          <button data-copy-target="#target-code" type="button">Copy command</button>
+        </article>
+  
+        <article class="copy-card" id="url-card">
+          <h2>Share URL</h2>
+          <p id="target-url">https://stealthis.dev/library?category=patterns</p>
+          <button data-copy-target="#target-url" type="button">Copy URL</button>
+        </article>
+  
+        <article class="copy-card" id="input-card">
+          <h2>Token</h2>
+          <input id="target-input" value="st_demo_token_2026" readonly />
+          <button data-copy-target="#target-input" type="button">Copy token</button>
+        </article>
+      </section>
+  
+      <p id="status" role="status" aria-live="polite"></p>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const status = document.getElementById("status");
+  
+    const getTextFromTarget = (target) => {
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        return target.value;
+      }
+      return target.textContent?.trim() ?? "";
+    };
+  
+    const fallbackCopy = (text) => {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "true");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return ok;
+    };
+  
+    const copyText = async (text) => {
+      if (!text) return false;
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      return fallbackCopy(text);
+    };
+  
+    const clearState = () => {
+      const cards = document.querySelectorAll(".copy-card");
+      for (const card of cards) {
+        card.classList.remove("success", "error");
+      }
+    };
+  
+    const buttons = document.querySelectorAll("button[data-copy-target]");
+    for (const button of buttons) {
+      button.addEventListener("click", async () => {
+        const selector = button.getAttribute("data-copy-target");
+        if (!selector) return;
+        const target = document.querySelector(selector);
+        if (!target) return;
+  
+        const text = getTextFromTarget(target);
+        clearState();
+  
+        try {
+          const ok = await copyText(text);
+          const card = button.closest(".copy-card");
+          if (!ok) throw new Error("Copy failed");
+          card?.classList.add("success");
+          status.textContent = `Copied: ${text}`;
+        } catch (_error) {
+          const card = button.closest(".copy-card");
+          card?.classList.add("error");
+          status.textContent = "Copy failed. Clipboard permissions may be blocked.";
+        }
+      });
+    }
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

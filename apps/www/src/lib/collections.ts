@@ -8,6 +8,7 @@ export const RESOURCE_COLLECTION_IDS = [
   "effects",
   "mobile-nav",
   "charts",
+  "restaurant",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -86,6 +87,13 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.charts.desc",
     accentToken: "collection-charts",
     order: 9,
+  },
+  {
+    id: "restaurant",
+    titleKey: "collection.restaurant.title",
+    descriptionKey: "collection.restaurant.desc",
+    accentToken: "collection-restaurant",
+    order: 10,
   },
 ];
 

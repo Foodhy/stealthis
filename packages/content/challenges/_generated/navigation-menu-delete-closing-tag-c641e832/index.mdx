@@ -1,0 +1,1316 @@
+---
+slug: "navigation-menu-delete-closing-tag-c641e832"
+topic: "navigation"
+title: "Fix the broken HTML structure in Navigation Menu"
+type: "fix"
+difficulty: 2
+resourceSlug: "navigation-menu"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #050910;
+    --card: #0d1117;
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #f2f6ff;
+    --muted: #475569;
+    --accent: #38bdf8;
+    --radius: 10px;
+    --nav-h: 60px;
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  
+  /* ── Navbar ── */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: rgba(5, 9, 16, 0.72);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  
+  .navbar__inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 0 1.25rem;
+  }
+  
+  /* ── Logo ── */
+  .navbar__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  
+  .logo-mark {
+    color: var(--accent);
+    font-size: 1.1rem;
+  }
+  
+  /* ── Desktop nav ── */
+  .navbar__nav {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .nav-items {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .nav-link,
+  .nav-link--trigger {
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color var(--transition);
+    white-space: nowrap;
+  }
+  
+  .nav-link:hover,
+  .nav-link--trigger:hover,
+  .nav-link--active {
+    color: var(--text);
+  }
+  
+  .nav-link--active {
+    font-weight: 600;
+  }
+  
+  .nav-chevron {
+    transition: transform var(--transition);
+    flex-shrink: 0;
+  }
+  
+  .nav-link--trigger[aria-expanded="true"] .nav-chevron {
+    transform: rotate(180deg);
+  }
+  
+  /* Animated underline */
+  .nav-indicator {
+    position: absolute;
+    bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+    transition: left var(--transition), width var(--transition), opacity var(--transition);
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  /* ── Mega-menu ── */
+  .nav-item-wrap {
+    position: static;
+  }
+  
+  .mega-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(680px, 96vw);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3);
+    padding: 1.25rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-6px);
+    transition: opacity var(--transition), transform var(--transition);
+    z-index: 300;
+  }
+  
+  .mega-menu.open {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+  
+  .mega-menu__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  
+  .mega-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 0.875rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background var(--transition);
+  }
+  
+  .mega-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  
+  .mega-card__icon {
+    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: rgba(56, 189, 248, 0.08);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  
+  .mega-card__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .mega-card__desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  
+  .mega-menu__footer {
+    margin-top: 1rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--border);
+  }
+  
+  .mega-footer-link {
+    font-size: 0.825rem;
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  
+  .mega-footer-link:hover {
+    opacity: 0.75;
+  }
+  
+  /* ── CTA ── */
+  .navbar__cta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+  
+  .cta-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .cta-link:hover {
+    color: var(--text);
+  }
+  
+  .cta-btn {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #050910;
+    background: var(--accent);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  
+  .cta-btn:hover {
+    opacity: 0.85;
+  }
+  
+  /* ── Hamburger ── */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    margin-left: auto;
+  }
+  
+  .hamburger__bar {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: var(--text);
+    border-radius: 1px;
+    transition: transform 0.25s, opacity 0.25s;
+  }
+  
+  .hamburger.open .hamburger__bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .hamburger.open .hamburger__bar:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.open .hamburger__bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+  
+  /* ── Mobile nav ── */
+  .mobile-nav {
+    padding: 0.75rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    border-top: 1px solid var(--border);
+    animation: mobile-in 0.22s ease;
+  }
+  
+  @keyframes mobile-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .mobile-nav__link {
+    padding: 0.625rem 0.75rem;
+    border-radius: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  .mobile-nav__link:hover,
+  .mobile-nav__link--active {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+  }
+  
+  .mobile-nav__divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.25rem 0;
+  }
+  
+  .mobile-nav__cta-btn {
+    display: block;
+    padding: 0.625rem 1rem;
+    background: var(--accent);
+    color: #050910;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    margin-top: 0.25rem;
+    transition: opacity 0.2s;
+  }
+  
+  .mobile-nav__cta-btn:hover {
+    opacity: 0.85;
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .navbar__nav,
+    .navbar__cta {
+      display: none;
+    }
+    .hamburger {
+      display: flex;
+    }
+  }
+  
+  /* ── Page content ── */
+  .page-content {
+    padding-top: calc(var(--nav-h) + 4rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  .hero {
+    text-align: center;
+    max-width: 480px;
+    padding: 2rem;
+  }
+  
+  .hero__title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  
+  .hero__desc {
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Navigation Menu
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- ── Navbar ── -->
+    <header class="navbar" id="navbar">
+      <div class="navbar__inner">
+  
+        <!-- Logo -->
+        <a href="#" class="navbar__logo" aria-label="Home">
+          <span class="logo-mark">✦</span> Stealthis
+        </a>
+  
+        <!-- Desktop nav -->
+        <nav class="navbar__nav" id="desktop-nav" aria-label="Main navigation">
+  
+          <div class="nav-items" id="nav-items">
+  
+            <a href="#" class="nav-link nav-link--active" data-item="home">Home</a>
+  
+            <!-- Products with mega-menu -->
+            <div class="nav-item-wrap" data-item="products">
+              <button class="nav-link nav-link--trigger" aria-haspopup="true" aria-expanded="false" id="products-trigger">
+                Products
+                <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+  
+              <!-- Mega-menu panel -->
+              <div class="mega-menu" id="mega-menu" role="region" aria-label="Products menu">
+                <div class="mega-menu__grid">
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">⚡</div>
+                    <div>
+                      <div class="mega-card__title">Components</div>
+                      <div class="mega-card__desc">50+ copy-paste UI components for any project.</div>
+                    </div>
+                  </a>
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">🎨</div>
+                    <div>
+                      <div class="mega-card__title">Animations</div>
+                      <div class="mega-card__desc">GSAP, CSS, and Three.js motion snippets.</div>
+                    </div>
+                  </a>
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">🔧</div>
+                    <div>
+                      <div class="mega-card__title">MCP Server</div>
+                      <div class="mega-card__desc">Access all resources via the Model Context Protocol.</div>
+                    </div>
+                  </a>
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">📦</div>
+                    <div>
+                      <div class="mega-card__title">Boilerplates</div>
+                      <div class="mega-card__desc">Production-ready starters for Astro, Next, and more.</div>
+                    </div>
+                  </a>
+  
+                </div>
+  
+                <div class="mega-menu__footer">
+                  <a href="#" class="mega-footer-link">Browse all resources →</a>
+                </div>
+              </div>
+            </div>
+  
+            <a href="#" class="nav-link" data-item="docs">Docs</a>
+            <a href="#" class="nav-link" data-item="pricing">Pricing</a>
+            <a href="#" class="nav-link" data-item="blog">Blog</a>
+  
+          </div>
+  
+          <!-- Animated underline indicator -->
+          <span class="nav-indicator" id="nav-indicator" aria-hidden="true"></span>
+        </nav>
+  
+        <!-- CTA -->
+        <div class="navbar__cta">
+          <a href="#" class="cta-link">Sign in</a>
+          <a href="#" class="cta-btn">Get started</a>
+        </div>
+  
+        <!-- Hamburger -->
+        <button class="hamburger" id="hamburger" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav">
+          <span class="hamburger__bar"></span>
+          <span class="hamburger__bar"></span>
+          <span class="hamburger__bar"></span>
+        </button>
+  
+      </div>
+  
+      <!-- Mobile nav -->
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
+        <a href="#" class="mobile-nav__link mobile-nav__link--active">Home</a>
+        <a href="#" class="mobile-nav__link">Products</a>
+        <a href="#" class="mobile-nav__link">Docs</a>
+        <a href="#" class="mobile-nav__link">Pricing</a>
+        <a href="#" class="mobile-nav__link">Blog</a>
+        <div class="mobile-nav__divider"></div>
+        <a href="#" class="mobile-nav__link">Sign in</a>
+        <a href="#" class="mobile-nav__cta-btn">Get started</a>
+      </nav>
+    </header>
+  
+    <!-- Page content placeholder -->
+    <main class="page-content">
+      <div class="hero">
+        <h1 class="hero__title">Navigation Menu</h1>
+        <p class="hero__desc">Hover "Products" for the mega-menu. Resize the window for mobile hamburger view.</p>
+      </div>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    const trigger = document.getElementById("products-trigger");
+    const megaMenu = document.getElementById("mega-menu");
+    const indicator = document.getElementById("nav-indicator");
+    const navItems = document.getElementById("nav-items");
+    const hamburger = document.getElementById("hamburger");
+    const mobileNav = document.getElementById("mobile-nav");
+    const navbar = document.getElementById("navbar");
+  
+    let megaOpen = false;
+    let mobileOpen = false;
+  
+    // ── Mega-menu ───────────────────────────────────────────────────────────────
+  
+    function openMega() {
+      megaOpen = true;
+      megaMenu.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+  
+    function closeMega() {
+      megaOpen = false;
+      megaMenu.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+  
+    trigger.addEventListener("click", function () {
+      megaOpen ? closeMega() : openMega();
+    });
+  
+    trigger.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        megaOpen ? closeMega() : openMega();
+      }
+      if (e.key === "Escape") closeMega();
+    });
+  
+    // Close on outside click
+    document.addEventListener("click", function (e) {
+      if (!navbar.contains(e.target)) {
+        closeMega();
+      }
+    });
+  
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeMega();
+        if (mobileOpen) toggleMobile();
+      }
+    });
+  
+    // ── Animated underline indicator ─────────────────────────────────────────────
+  
+    function moveIndicator(el) {
+      if (!el || !navItems) return;
+      const navRect = navItems.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      indicator.style.left = elRect.left - navRect.left + "px";
+      indicator.style.width = elRect.width + "px";
+      indicator.style.opacity = "1";
+    }
+  
+    function hideIndicator() {
+      // Keep it under the active item
+      const active = navItems.querySelector(".nav-link--active");
+      if (active) {
+        moveIndicator(active);
+      } else {
+        indicator.style.opacity = "0";
+      }
+    }
+  
+    // Hover behaviour for all nav links + trigger
+    const allNavEls = Array.from(navItems.querySelectorAll(".nav-link, .nav-link--trigger"));
+    allNavEls.forEach(function (el) {
+      el.addEventListener("mouseenter", function () {
+        moveIndicator(el);
+      });
+      el.addEventListener("focus", function () {
+        moveIndicator(el);
+      });
+    });
+  
+    navItems.addEventListener("mouseleave", hideIndicator);
+    navItems.addEventListener("focusout", function (e) {
+      if (!navItems.contains(e.relatedTarget)) hideIndicator();
+    });
+  
+    // Init indicator under active link
+    const activeLink = navItems.querySelector(".nav-link--active");
+    if (activeLink) {
+      // Slight delay to ensure layout is complete
+      requestAnimationFrame(function () {
+        moveIndicator(activeLink);
+      });
+    }
+  
+    // Re-position on resize
+    window.addEventListener("resize", function () {
+      const active = navItems.querySelector(".nav-link--active");
+      if (active) moveIndicator(active);
+      // Close mobile nav on widen
+      if (window.innerWidth > 768 && mobileOpen) toggleMobile();
+    });
+  
+    // ── Mobile hamburger ─────────────────────────────────────────────────────────
+  
+    function toggleMobile() {
+      mobileOpen = !mobileOpen;
+      hamburger.classList.toggle("open", mobileOpen);
+      hamburger.setAttribute("aria-expanded", String(mobileOpen));
+      if (mobileOpen) {
+        mobileNav.removeAttribute("hidden");
+      } else {
+        mobileNav.setAttribute("hidden", "");
+      }
+    }
+  
+    hamburger.addEventListener("click", toggleMobile);
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #050910;
+    --card: #0d1117;
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #f2f6ff;
+    --muted: #475569;
+    --accent: #38bdf8;
+    --radius: 10px;
+    --nav-h: 60px;
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  
+  /* ── Navbar ── */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: rgba(5, 9, 16, 0.72);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  
+  .navbar__inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 0 1.25rem;
+  }
+  
+  /* ── Logo ── */
+  .navbar__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  
+  .logo-mark {
+    color: var(--accent);
+    font-size: 1.1rem;
+  }
+  
+  /* ── Desktop nav ── */
+  .navbar__nav {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .nav-items {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .nav-link,
+  .nav-link--trigger {
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color var(--transition);
+    white-space: nowrap;
+  }
+  
+  .nav-link:hover,
+  .nav-link--trigger:hover,
+  .nav-link--active {
+    color: var(--text);
+  }
+  
+  .nav-link--active {
+    font-weight: 600;
+  }
+  
+  .nav-chevron {
+    transition: transform var(--transition);
+    flex-shrink: 0;
+  }
+  
+  .nav-link--trigger[aria-expanded="true"] .nav-chevron {
+    transform: rotate(180deg);
+  }
+  
+  /* Animated underline */
+  .nav-indicator {
+    position: absolute;
+    bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+    transition: left var(--transition), width var(--transition), opacity var(--transition);
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  /* ── Mega-menu ── */
+  .nav-item-wrap {
+    position: static;
+  }
+  
+  .mega-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(680px, 96vw);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3);
+    padding: 1.25rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-6px);
+    transition: opacity var(--transition), transform var(--transition);
+    z-index: 300;
+  }
+  
+  .mega-menu.open {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+  
+  .mega-menu__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  
+  .mega-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 0.875rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background var(--transition);
+  }
+  
+  .mega-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  
+  .mega-card__icon {
+    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: rgba(56, 189, 248, 0.08);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  
+  .mega-card__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .mega-card__desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  
+  .mega-menu__footer {
+    margin-top: 1rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--border);
+  }
+  
+  .mega-footer-link {
+    font-size: 0.825rem;
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  
+  .mega-footer-link:hover {
+    opacity: 0.75;
+  }
+  
+  /* ── CTA ── */
+  .navbar__cta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+  
+  .cta-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .cta-link:hover {
+    color: var(--text);
+  }
+  
+  .cta-btn {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #050910;
+    background: var(--accent);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  
+  .cta-btn:hover {
+    opacity: 0.85;
+  }
+  
+  /* ── Hamburger ── */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    margin-left: auto;
+  }
+  
+  .hamburger__bar {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: var(--text);
+    border-radius: 1px;
+    transition: transform 0.25s, opacity 0.25s;
+  }
+  
+  .hamburger.open .hamburger__bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .hamburger.open .hamburger__bar:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.open .hamburger__bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+  
+  /* ── Mobile nav ── */
+  .mobile-nav {
+    padding: 0.75rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    border-top: 1px solid var(--border);
+    animation: mobile-in 0.22s ease;
+  }
+  
+  @keyframes mobile-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .mobile-nav__link {
+    padding: 0.625rem 0.75rem;
+    border-radius: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  .mobile-nav__link:hover,
+  .mobile-nav__link--active {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+  }
+  
+  .mobile-nav__divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.25rem 0;
+  }
+  
+  .mobile-nav__cta-btn {
+    display: block;
+    padding: 0.625rem 1rem;
+    background: var(--accent);
+    color: #050910;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    margin-top: 0.25rem;
+    transition: opacity 0.2s;
+  }
+  
+  .mobile-nav__cta-btn:hover {
+    opacity: 0.85;
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .navbar__nav,
+    .navbar__cta {
+      display: none;
+    }
+    .hamburger {
+      display: flex;
+    }
+  }
+  
+  /* ── Page content ── */
+  .page-content {
+    padding-top: calc(var(--nav-h) + 4rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  .hero {
+    text-align: center;
+    max-width: 480px;
+    padding: 2rem;
+  }
+  
+  .hero__title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  
+  .hero__desc {
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Navigation Menu</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <!-- ── Navbar ── -->
+    <header class="navbar" id="navbar">
+      <div class="navbar__inner">
+  
+        <!-- Logo -->
+        <a href="#" class="navbar__logo" aria-label="Home">
+          <span class="logo-mark">✦</span> Stealthis
+        </a>
+  
+        <!-- Desktop nav -->
+        <nav class="navbar__nav" id="desktop-nav" aria-label="Main navigation">
+  
+          <div class="nav-items" id="nav-items">
+  
+            <a href="#" class="nav-link nav-link--active" data-item="home">Home</a>
+  
+            <!-- Products with mega-menu -->
+            <div class="nav-item-wrap" data-item="products">
+              <button class="nav-link nav-link--trigger" aria-haspopup="true" aria-expanded="false" id="products-trigger">
+                Products
+                <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+  
+              <!-- Mega-menu panel -->
+              <div class="mega-menu" id="mega-menu" role="region" aria-label="Products menu">
+                <div class="mega-menu__grid">
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">⚡</div>
+                    <div>
+                      <div class="mega-card__title">Components</div>
+                      <div class="mega-card__desc">50+ copy-paste UI components for any project.</div>
+                    </div>
+                  </a>
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">🎨</div>
+                    <div>
+                      <div class="mega-card__title">Animations</div>
+                      <div class="mega-card__desc">GSAP, CSS, and Three.js motion snippets.</div>
+                    </div>
+                  </a>
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">🔧</div>
+                    <div>
+                      <div class="mega-card__title">MCP Server</div>
+                      <div class="mega-card__desc">Access all resources via the Model Context Protocol.</div>
+                    </div>
+                  </a>
+  
+                  <a href="#" class="mega-card">
+                    <div class="mega-card__icon">📦</div>
+                    <div>
+                      <div class="mega-card__title">Boilerplates</div>
+                      <div class="mega-card__desc">Production-ready starters for Astro, Next, and more.</div>
+                    </div>
+                  </a>
+  
+                </div>
+  
+                <div class="mega-menu__footer">
+                  <a href="#" class="mega-footer-link">Browse all resources →</a>
+                </div>
+              </div>
+            </div>
+  
+            <a href="#" class="nav-link" data-item="docs">Docs</a>
+            <a href="#" class="nav-link" data-item="pricing">Pricing</a>
+            <a href="#" class="nav-link" data-item="blog">Blog</a>
+  
+          </div>
+  
+          <!-- Animated underline indicator -->
+          <span class="nav-indicator" id="nav-indicator" aria-hidden="true"></span>
+        </nav>
+  
+        <!-- CTA -->
+        <div class="navbar__cta">
+          <a href="#" class="cta-link">Sign in</a>
+          <a href="#" class="cta-btn">Get started</a>
+        </div>
+  
+        <!-- Hamburger -->
+        <button class="hamburger" id="hamburger" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav">
+          <span class="hamburger__bar"></span>
+          <span class="hamburger__bar"></span>
+          <span class="hamburger__bar"></span>
+        </button>
+  
+      </div>
+  
+      <!-- Mobile nav -->
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
+        <a href="#" class="mobile-nav__link mobile-nav__link--active">Home</a>
+        <a href="#" class="mobile-nav__link">Products</a>
+        <a href="#" class="mobile-nav__link">Docs</a>
+        <a href="#" class="mobile-nav__link">Pricing</a>
+        <a href="#" class="mobile-nav__link">Blog</a>
+        <div class="mobile-nav__divider"></div>
+        <a href="#" class="mobile-nav__link">Sign in</a>
+        <a href="#" class="mobile-nav__cta-btn">Get started</a>
+      </nav>
+    </header>
+  
+    <!-- Page content placeholder -->
+    <main class="page-content">
+      <div class="hero">
+        <h1 class="hero__title">Navigation Menu</h1>
+        <p class="hero__desc">Hover "Products" for the mega-menu. Resize the window for mobile hamburger view.</p>
+      </div>
+    </main>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    const trigger = document.getElementById("products-trigger");
+    const megaMenu = document.getElementById("mega-menu");
+    const indicator = document.getElementById("nav-indicator");
+    const navItems = document.getElementById("nav-items");
+    const hamburger = document.getElementById("hamburger");
+    const mobileNav = document.getElementById("mobile-nav");
+    const navbar = document.getElementById("navbar");
+  
+    let megaOpen = false;
+    let mobileOpen = false;
+  
+    // ── Mega-menu ───────────────────────────────────────────────────────────────
+  
+    function openMega() {
+      megaOpen = true;
+      megaMenu.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+  
+    function closeMega() {
+      megaOpen = false;
+      megaMenu.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+  
+    trigger.addEventListener("click", function () {
+      megaOpen ? closeMega() : openMega();
+    });
+  
+    trigger.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        megaOpen ? closeMega() : openMega();
+      }
+      if (e.key === "Escape") closeMega();
+    });
+  
+    // Close on outside click
+    document.addEventListener("click", function (e) {
+      if (!navbar.contains(e.target)) {
+        closeMega();
+      }
+    });
+  
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeMega();
+        if (mobileOpen) toggleMobile();
+      }
+    });
+  
+    // ── Animated underline indicator ─────────────────────────────────────────────
+  
+    function moveIndicator(el) {
+      if (!el || !navItems) return;
+      const navRect = navItems.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      indicator.style.left = elRect.left - navRect.left + "px";
+      indicator.style.width = elRect.width + "px";
+      indicator.style.opacity = "1";
+    }
+  
+    function hideIndicator() {
+      // Keep it under the active item
+      const active = navItems.querySelector(".nav-link--active");
+      if (active) {
+        moveIndicator(active);
+      } else {
+        indicator.style.opacity = "0";
+      }
+    }
+  
+    // Hover behaviour for all nav links + trigger
+    const allNavEls = Array.from(navItems.querySelectorAll(".nav-link, .nav-link--trigger"));
+    allNavEls.forEach(function (el) {
+      el.addEventListener("mouseenter", function () {
+        moveIndicator(el);
+      });
+      el.addEventListener("focus", function () {
+        moveIndicator(el);
+      });
+    });
+  
+    navItems.addEventListener("mouseleave", hideIndicator);
+    navItems.addEventListener("focusout", function (e) {
+      if (!navItems.contains(e.relatedTarget)) hideIndicator();
+    });
+  
+    // Init indicator under active link
+    const activeLink = navItems.querySelector(".nav-link--active");
+    if (activeLink) {
+      // Slight delay to ensure layout is complete
+      requestAnimationFrame(function () {
+        moveIndicator(activeLink);
+      });
+    }
+  
+    // Re-position on resize
+    window.addEventListener("resize", function () {
+      const active = navItems.querySelector(".nav-link--active");
+      if (active) moveIndicator(active);
+      // Close mobile nav on widen
+      if (window.innerWidth > 768 && mobileOpen) toggleMobile();
+    });
+  
+    // ── Mobile hamburger ─────────────────────────────────────────────────────────
+  
+    function toggleMobile() {
+      mobileOpen = !mobileOpen;
+      hamburger.classList.toggle("open", mobileOpen);
+      hamburger.setAttribute("aria-expanded", String(mobileOpen));
+      if (mobileOpen) {
+        mobileNav.removeAttribute("hidden");
+      } else {
+        mobileNav.setAttribute("hidden", "");
+      }
+    }
+  
+    hamburger.addEventListener("click", toggleMobile);
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

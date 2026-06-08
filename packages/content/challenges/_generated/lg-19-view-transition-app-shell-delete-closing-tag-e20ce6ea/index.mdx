@@ -1,0 +1,846 @@
+---
+slug: "lg-19-view-transition-app-shell-delete-closing-tag-e20ce6ea"
+topic: "imported-libs-gen"
+title: "Fix the broken HTML structure in View Transition App Shell"
+type: "fix"
+difficulty: 2
+resourceSlug: "lg-19-view-transition-app-shell"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --bg: #0a0f19;
+    --panel: #131c2f;
+    --line: #2a3750;
+    --text: #edf4ff;
+    --muted: #bfd0e8;
+    --accent: #92e7ff;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    color: var(--text);
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    background: radial-gradient(circle at 8% 8%, rgba(88, 140, 255, 0.2), transparent 44%),
+      radial-gradient(circle at 86% 82%, rgba(173, 88, 255, 0.2), transparent 42%), var(--bg);
+  }
+  
+  .topbar {
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  
+  .topbar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  
+  .support {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+  }
+  .support.ok {
+    color: #aff0cc;
+  }
+  .support.warn {
+    color: #ffd6ad;
+  }
+  
+  .shell {
+    width: min(1160px, 94%);
+    margin: 0 auto 2rem;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 280px 1fr;
+  }
+  
+  .sidebar {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    align-content: start;
+    gap: 0.7rem;
+  }
+  
+  .eyebrow {
+    margin: 0;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+  }
+  
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+  
+  .muted {
+    color: var(--muted);
+  }
+  
+  .nav {
+    margin-top: 0.4rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+  
+  .nav-btn,
+  .sub-btn {
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 0.45rem 0.62rem;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    cursor: pointer;
+  }
+  
+  .nav-btn.active,
+  .sub-btn.active {
+    border-color: rgba(146, 231, 255, 0.72);
+    box-shadow: 0 0 0 1px rgba(146, 231, 255, 0.38) inset;
+  }
+  
+  .content-area {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+  }
+  
+  .subnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  
+  .content {
+    display: grid;
+    gap: 0.9rem;
+  }
+  
+  .content-head {
+    display: grid;
+    gap: 0.35rem;
+  }
+  
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 0.7rem;
+  }
+  
+  .card {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    padding: 0.7rem;
+    background: rgba(255, 255, 255, 0.02);
+    display: grid;
+    gap: 0.2rem;
+  }
+  
+  .card p {
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  
+  @media (max-width: 930px) {
+    .shell {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 19 - App Shell Nested Transitions
+      <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+      <header class="topbar">
+        <a href="../">Back to demos</a>
+        <p id="support" class="support"></p>
+      </header>
+  
+      <main class="shell">
+        <aside class="sidebar">
+          <p class="eyebrow">Demo 19</p>
+          <h1>App Shell</h1>
+          <p class="muted">Primary nav + nested tab transitions in one shell layout.</p>
+          <nav id="primaryNav" class="nav"></nav>
+        </aside>
+  
+        <section class="content-area">
+          <div id="subNav" class="subnav"></div>
+          <article id="content" class="content"></article>
+        </section>
+      </main>
+  
+      <script src="script.js"></script>
+        </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  const routes = {
+    overview: {
+      title: "Overview",
+      sections: {
+        summary: {
+          title: "Executive Summary",
+          text: "High-level status modules with minimal noise and clear signal.",
+          cards: [
+            { k: "Health", v: "97%", d: "All systems nominal" },
+            { k: "Velocity", v: "+18%", d: "vs previous cycle" },
+            { k: "Focus", v: "4 themes", d: "active initiatives" },
+          ],
+        },
+        activity: {
+          title: "Recent Activity",
+          text: "Stream of notable state changes and deployment checkpoints.",
+          cards: [
+            { k: "Releases", v: "3", d: "this week" },
+            { k: "Rollbacks", v: "0", d: "stable channel" },
+            { k: "Incidents", v: "1", d: "resolved" },
+          ],
+        },
+      },
+    },
+    analytics: {
+      title: "Analytics",
+      sections: {
+        trends: {
+          title: "Trend View",
+          text: "Behavior and conversion movement over the current window.",
+          cards: [
+            { k: "CTR", v: "4.8%", d: "upward trend" },
+            { k: "Retention", v: "72%", d: "week 4" },
+            { k: "Bounce", v: "21%", d: "improved" },
+          ],
+        },
+        funnels: {
+          title: "Funnel View",
+          text: "Step-to-step conversion and drop-off highlights.",
+          cards: [
+            { k: "Visit > Signup", v: "26%", d: "strong top funnel" },
+            { k: "Signup > Trial", v: "58%", d: "good activation" },
+            { k: "Trial > Paid", v: "31%", d: "optimize onboarding" },
+          ],
+        },
+      },
+    },
+    settings: {
+      title: "Settings",
+      sections: {
+        profile: {
+          title: "Profile Preferences",
+          text: "Identity, workspace defaults, and appearance settings.",
+          cards: [
+            { k: "Locale", v: "en-US", d: "default language" },
+            { k: "Time zone", v: "Local", d: "automatic" },
+            { k: "Density", v: "Comfort", d: "balanced layout" },
+          ],
+        },
+        access: {
+          title: "Access Control",
+          text: "Role assignment and policy visibility in one place.",
+          cards: [
+            { k: "Admins", v: "2", d: "full access" },
+            { k: "Editors", v: "5", d: "project scope" },
+            { k: "Viewers", v: "12", d: "read-only" },
+          ],
+        },
+      },
+    },
+  };
+  
+  const state = { route: "overview", section: "summary" };
+  const reduced = window.MotionPreference.prefersReducedMotion();
+  
+  const primaryNav = document.getElementById("primaryNav");
+  const subNav = document.getElementById("subNav");
+  const content = document.getElementById("content");
+  const support = document.getElementById("support");
+  
+  function transition(update) {
+    if (!reduced && document.startViewTransition) {
+      document.startViewTransition(update);
+    } else {
+      update();
+    }
+  }
+  
+  function routeSections(route) {
+    return Object.keys(routes[route].sections);
+  }
+  
+  function renderPrimaryNav() {
+    primaryNav.innerHTML = "";
+  
+    Object.keys(routes).forEach((routeKey) => {
+      const btn = document.createElement("button");
+      btn.className = `nav-btn ${state.route === routeKey ? "active" : ""}`;
+      btn.textContent = routes[routeKey].title;
+      btn.addEventListener("click", () => {
+        if (state.route === routeKey) return;
+        transition(() => {
+          state.route = routeKey;
+          state.section = routeSections(routeKey)[0];
+          render();
+        });
+      });
+      primaryNav.appendChild(btn);
+    });
+  }
+  
+  function renderSubNav() {
+    subNav.innerHTML = "";
+  
+    routeSections(state.route).forEach((sectionKey) => {
+      const btn = document.createElement("button");
+      btn.className = `sub-btn ${state.section === sectionKey ? "active" : ""}`;
+      btn.textContent = sectionKey;
+      btn.addEventListener("click", () => {
+        if (state.section === sectionKey) return;
+        transition(() => {
+          state.section = sectionKey;
+          renderContent();
+          renderSubNav();
+        });
+      });
+      subNav.appendChild(btn);
+    });
+  }
+  
+  function renderContent() {
+    const section = routes[state.route].sections[state.section];
+  
+    content.innerHTML = `
+      <div class="content-head">
+        <p class="eyebrow" style="view-transition-name:app-kicker">${routes[state.route].title}</p>
+        <h2 style="view-transition-name:app-title">${section.title}</h2>
+        <p class="muted" style="view-transition-name:app-desc">${section.text}</p>
+      </div>
+      <div class="cards">
+        ${section.cards
+          .map(
+            (card) => `
+              <article class="card">
+                <h3>${card.k}</h3>
+                <strong>${card.v}</strong>
+                <p>${card.d}</p>
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+  
+  function renderSupport() {
+    if (document.startViewTransition && !reduced) {
+      support.textContent = "App-shell transitions enabled with nested state updates.";
+      support.classList.add("ok");
+    } else {
+      support.textContent = "Fallback mode: nested navigation updates instantly.";
+      support.classList.add("warn");
+    }
+  }
+  
+  function render() {
+    renderPrimaryNav();
+    renderSubNav();
+    renderContent();
+  }
+  
+  renderSupport();
+  render();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --bg: #0a0f19;
+    --panel: #131c2f;
+    --line: #2a3750;
+    --text: #edf4ff;
+    --muted: #bfd0e8;
+    --accent: #92e7ff;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    color: var(--text);
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    background: radial-gradient(circle at 8% 8%, rgba(88, 140, 255, 0.2), transparent 44%),
+      radial-gradient(circle at 86% 82%, rgba(173, 88, 255, 0.2), transparent 42%), var(--bg);
+  }
+  
+  .topbar {
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  
+  .topbar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  
+  .support {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+  }
+  .support.ok {
+    color: #aff0cc;
+  }
+  .support.warn {
+    color: #ffd6ad;
+  }
+  
+  .shell {
+    width: min(1160px, 94%);
+    margin: 0 auto 2rem;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 280px 1fr;
+  }
+  
+  .sidebar {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    align-content: start;
+    gap: 0.7rem;
+  }
+  
+  .eyebrow {
+    margin: 0;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+  }
+  
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+  
+  .muted {
+    color: var(--muted);
+  }
+  
+  .nav {
+    margin-top: 0.4rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+  
+  .nav-btn,
+  .sub-btn {
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 0.45rem 0.62rem;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    cursor: pointer;
+  }
+  
+  .nav-btn.active,
+  .sub-btn.active {
+    border-color: rgba(146, 231, 255, 0.72);
+    box-shadow: 0 0 0 1px rgba(146, 231, 255, 0.38) inset;
+  }
+  
+  .content-area {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+  }
+  
+  .subnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  
+  .content {
+    display: grid;
+    gap: 0.9rem;
+  }
+  
+  .content-head {
+    display: grid;
+    gap: 0.35rem;
+  }
+  
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 0.7rem;
+  }
+  
+  .card {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    padding: 0.7rem;
+    background: rgba(255, 255, 255, 0.02);
+    display: grid;
+    gap: 0.2rem;
+  }
+  
+  .card p {
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  
+  @media (max-width: 930px) {
+    .shell {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 19 - App Shell Nested Transitions</title>
+      <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+      <header class="topbar">
+        <a href="../">Back to demos</a>
+        <p id="support" class="support"></p>
+      </header>
+  
+      <main class="shell">
+        <aside class="sidebar">
+          <p class="eyebrow">Demo 19</p>
+          <h1>App Shell</h1>
+          <p class="muted">Primary nav + nested tab transitions in one shell layout.</p>
+          <nav id="primaryNav" class="nav"></nav>
+        </aside>
+  
+        <section class="content-area">
+          <div id="subNav" class="subnav"></div>
+          <article id="content" class="content"></article>
+        </section>
+      </main>
+  
+      <script src="script.js"></script>
+        </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  const routes = {
+    overview: {
+      title: "Overview",
+      sections: {
+        summary: {
+          title: "Executive Summary",
+          text: "High-level status modules with minimal noise and clear signal.",
+          cards: [
+            { k: "Health", v: "97%", d: "All systems nominal" },
+            { k: "Velocity", v: "+18%", d: "vs previous cycle" },
+            { k: "Focus", v: "4 themes", d: "active initiatives" },
+          ],
+        },
+        activity: {
+          title: "Recent Activity",
+          text: "Stream of notable state changes and deployment checkpoints.",
+          cards: [
+            { k: "Releases", v: "3", d: "this week" },
+            { k: "Rollbacks", v: "0", d: "stable channel" },
+            { k: "Incidents", v: "1", d: "resolved" },
+          ],
+        },
+      },
+    },
+    analytics: {
+      title: "Analytics",
+      sections: {
+        trends: {
+          title: "Trend View",
+          text: "Behavior and conversion movement over the current window.",
+          cards: [
+            { k: "CTR", v: "4.8%", d: "upward trend" },
+            { k: "Retention", v: "72%", d: "week 4" },
+            { k: "Bounce", v: "21%", d: "improved" },
+          ],
+        },
+        funnels: {
+          title: "Funnel View",
+          text: "Step-to-step conversion and drop-off highlights.",
+          cards: [
+            { k: "Visit > Signup", v: "26%", d: "strong top funnel" },
+            { k: "Signup > Trial", v: "58%", d: "good activation" },
+            { k: "Trial > Paid", v: "31%", d: "optimize onboarding" },
+          ],
+        },
+      },
+    },
+    settings: {
+      title: "Settings",
+      sections: {
+        profile: {
+          title: "Profile Preferences",
+          text: "Identity, workspace defaults, and appearance settings.",
+          cards: [
+            { k: "Locale", v: "en-US", d: "default language" },
+            { k: "Time zone", v: "Local", d: "automatic" },
+            { k: "Density", v: "Comfort", d: "balanced layout" },
+          ],
+        },
+        access: {
+          title: "Access Control",
+          text: "Role assignment and policy visibility in one place.",
+          cards: [
+            { k: "Admins", v: "2", d: "full access" },
+            { k: "Editors", v: "5", d: "project scope" },
+            { k: "Viewers", v: "12", d: "read-only" },
+          ],
+        },
+      },
+    },
+  };
+  
+  const state = { route: "overview", section: "summary" };
+  const reduced = window.MotionPreference.prefersReducedMotion();
+  
+  const primaryNav = document.getElementById("primaryNav");
+  const subNav = document.getElementById("subNav");
+  const content = document.getElementById("content");
+  const support = document.getElementById("support");
+  
+  function transition(update) {
+    if (!reduced && document.startViewTransition) {
+      document.startViewTransition(update);
+    } else {
+      update();
+    }
+  }
+  
+  function routeSections(route) {
+    return Object.keys(routes[route].sections);
+  }
+  
+  function renderPrimaryNav() {
+    primaryNav.innerHTML = "";
+  
+    Object.keys(routes).forEach((routeKey) => {
+      const btn = document.createElement("button");
+      btn.className = `nav-btn ${state.route === routeKey ? "active" : ""}`;
+      btn.textContent = routes[routeKey].title;
+      btn.addEventListener("click", () => {
+        if (state.route === routeKey) return;
+        transition(() => {
+          state.route = routeKey;
+          state.section = routeSections(routeKey)[0];
+          render();
+        });
+      });
+      primaryNav.appendChild(btn);
+    });
+  }
+  
+  function renderSubNav() {
+    subNav.innerHTML = "";
+  
+    routeSections(state.route).forEach((sectionKey) => {
+      const btn = document.createElement("button");
+      btn.className = `sub-btn ${state.section === sectionKey ? "active" : ""}`;
+      btn.textContent = sectionKey;
+      btn.addEventListener("click", () => {
+        if (state.section === sectionKey) return;
+        transition(() => {
+          state.section = sectionKey;
+          renderContent();
+          renderSubNav();
+        });
+      });
+      subNav.appendChild(btn);
+    });
+  }
+  
+  function renderContent() {
+    const section = routes[state.route].sections[state.section];
+  
+    content.innerHTML = `
+      <div class="content-head">
+        <p class="eyebrow" style="view-transition-name:app-kicker">${routes[state.route].title}</p>
+        <h2 style="view-transition-name:app-title">${section.title}</h2>
+        <p class="muted" style="view-transition-name:app-desc">${section.text}</p>
+      </div>
+      <div class="cards">
+        ${section.cards
+          .map(
+            (card) => `
+              <article class="card">
+                <h3>${card.k}</h3>
+                <strong>${card.v}</strong>
+                <p>${card.d}</p>
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+  
+  function renderSupport() {
+    if (document.startViewTransition && !reduced) {
+      support.textContent = "App-shell transitions enabled with nested state updates.";
+      support.classList.add("ok");
+    } else {
+      support.textContent = "Fallback mode: nested navigation updates instantly.";
+      support.classList.add("warn");
+    }
+  }
+  
+  function render() {
+    renderPrimaryNav();
+    renderSubNav();
+    renderContent();
+  }
+  
+  renderSupport();
+  render();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

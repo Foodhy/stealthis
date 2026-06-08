@@ -1,0 +1,756 @@
+---
+slug: "mobile-nav-card-delete-closing-tag-8443b8d2"
+topic: "navigation"
+title: "Fix the broken HTML structure in Card Navigation"
+type: "fix"
+difficulty: 2
+resourceSlug: "mobile-nav-card"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #050910;
+    --nav-bg: #0d1117;
+    --card-bg: #3b82f6;
+    --card-hover: #2563eb;
+    --accent: #38bdf8;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --muted: #475569;
+  }
+  
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    padding: 2rem;
+  }
+  
+  /* ── Demo wrapper ── */
+  .demo {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+  }
+  .demo-sub {
+    color: var(--muted);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+  
+  /* ── Phone frame ── */
+  .phone-frame {
+    width: 320px;
+    height: 520px;
+    background: var(--nav-bg);
+    border-radius: 32px;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* ── Screens ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    padding: 36px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .grid-screen {
+    transform: translateX(-100%);
+  }
+  .grid-screen.active {
+    transform: translateX(0);
+  }
+  .detail-screen {
+    transform: translateX(100%);
+  }
+  .detail-screen.active {
+    transform: translateX(0);
+  }
+  
+  /* ── Grid screen title ── */
+  .screen-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  
+  /* ── Card grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    aspect-ratio: 1;
+    background: var(--card-bg);
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .nav-card:hover {
+    background: var(--card-hover);
+  }
+  .nav-card:active {
+    transform: scale(0.95);
+  }
+  .nav-card svg {
+    width: 26px;
+    height: 26px;
+  }
+  
+  /* ── Detail screens ── */
+  .detail-screen h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .detail-screen p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  
+  /* ── Back button ── */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-bottom: 14px;
+    align-self: flex-start;
+  }
+  
+  .back-btn:hover {
+    opacity: 0.8;
+  }
+  .back-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* ── Placeholder content ── */
+  .placeholder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .placeholder-bar {
+    height: 40px;
+    background: #1e293b;
+    border-radius: 8px;
+  }
+  .placeholder-bar.short {
+    height: 32px;
+    width: 75%;
+  }
+  
+  .search-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #1e293b;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  
+  .search-input svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .photo-tile {
+    aspect-ratio: 1;
+    background: #1e293b;
+    border-radius: 8px;
+  }
+  
+  .profile-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--card-bg), var(--accent));
+  }
+  
+  .profile-label {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Navigation
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="demo">
+      <h1 class="demo-title">Card Navigation</h1>
+      <p class="demo-sub">Tap a card tile to navigate with slide transition.</p>
+  
+      <div class="phone-frame">
+        <!-- Grid screen -->
+        <div class="screen grid-screen active">
+          <h2 class="screen-title">Apps</h2>
+          <div class="card-grid">
+            <button class="nav-card" data-target="home" aria-label="Home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span>Home</span>
+            </button>
+            <button class="nav-card" data-target="search" aria-label="Search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span>Search</span>
+            </button>
+            <button class="nav-card" data-target="messages" aria-label="Messages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span>Messages</span>
+            </button>
+            <button class="nav-card" data-target="photos" aria-label="Photos">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>Photos</span>
+            </button>
+            <button class="nav-card" data-target="settings" aria-label="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </button>
+            <button class="nav-card" data-target="profile" aria-label="Profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Profile</span>
+            </button>
+          </div>
+        </div>
+  
+        <!-- Detail screens -->
+        <div class="screen detail-screen" data-screen="home">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Home</h2>
+          <p>Welcome to your home feed.</p>
+          <div class="placeholder-list"><div class="placeholder-bar"></div><div class="placeholder-bar short"></div><div class="placeholder-bar"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="search">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Search</h2>
+          <p>Find anything you need.</p>
+          <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search&hellip;</span></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="messages">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Messages</h2>
+          <p>Your conversations appear here.</p>
+          <div class="placeholder-list"><div class="placeholder-bar"></div><div class="placeholder-bar"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="photos">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Photos</h2>
+          <p>Your photo gallery.</p>
+          <div class="photo-grid"><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="settings">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Settings</h2>
+          <p>Configure your preferences.</p>
+          <div class="placeholder-list"><div class="placeholder-bar short"></div><div class="placeholder-bar"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="profile">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Profile</h2>
+          <p>Manage your account.</p>
+          <div class="profile-circle"></div>
+          <div class="profile-label">Your Name</div>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const gridScreen = document.querySelector(".grid-screen");
+  const detailScreens = document.querySelectorAll(".detail-screen");
+  const navCards = document.querySelectorAll(".nav-card");
+  const backBtns = document.querySelectorAll(".back-btn");
+  
+  function showDetail(target) {
+    gridScreen.classList.remove("active");
+    detailScreens.forEach((s) => {
+      s.classList.toggle("active", s.dataset.screen === target);
+    });
+  }
+  
+  function showGrid() {
+    detailScreens.forEach((s) => s.classList.remove("active"));
+    gridScreen.classList.add("active");
+  }
+  
+  navCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      showDetail(card.dataset.target);
+    });
+  });
+  
+  backBtns.forEach((btn) => {
+    btn.addEventListener("click", showGrid);
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #050910;
+    --nav-bg: #0d1117;
+    --card-bg: #3b82f6;
+    --card-hover: #2563eb;
+    --accent: #38bdf8;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --muted: #475569;
+  }
+  
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    padding: 2rem;
+  }
+  
+  /* ── Demo wrapper ── */
+  .demo {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+  }
+  .demo-sub {
+    color: var(--muted);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+  
+  /* ── Phone frame ── */
+  .phone-frame {
+    width: 320px;
+    height: 520px;
+    background: var(--nav-bg);
+    border-radius: 32px;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* ── Screens ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    padding: 36px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .grid-screen {
+    transform: translateX(-100%);
+  }
+  .grid-screen.active {
+    transform: translateX(0);
+  }
+  .detail-screen {
+    transform: translateX(100%);
+  }
+  .detail-screen.active {
+    transform: translateX(0);
+  }
+  
+  /* ── Grid screen title ── */
+  .screen-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  
+  /* ── Card grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    aspect-ratio: 1;
+    background: var(--card-bg);
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .nav-card:hover {
+    background: var(--card-hover);
+  }
+  .nav-card:active {
+    transform: scale(0.95);
+  }
+  .nav-card svg {
+    width: 26px;
+    height: 26px;
+  }
+  
+  /* ── Detail screens ── */
+  .detail-screen h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .detail-screen p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  
+  /* ── Back button ── */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-bottom: 14px;
+    align-self: flex-start;
+  }
+  
+  .back-btn:hover {
+    opacity: 0.8;
+  }
+  .back-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* ── Placeholder content ── */
+  .placeholder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .placeholder-bar {
+    height: 40px;
+    background: #1e293b;
+    border-radius: 8px;
+  }
+  .placeholder-bar.short {
+    height: 32px;
+    width: 75%;
+  }
+  
+  .search-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #1e293b;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  
+  .search-input svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .photo-tile {
+    aspect-ratio: 1;
+    background: #1e293b;
+    border-radius: 8px;
+  }
+  
+  .profile-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--card-bg), var(--accent));
+  }
+  
+  .profile-label {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Navigation</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="demo">
+      <h1 class="demo-title">Card Navigation</h1>
+      <p class="demo-sub">Tap a card tile to navigate with slide transition.</p>
+  
+      <div class="phone-frame">
+        <!-- Grid screen -->
+        <div class="screen grid-screen active">
+          <h2 class="screen-title">Apps</h2>
+          <div class="card-grid">
+            <button class="nav-card" data-target="home" aria-label="Home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span>Home</span>
+            </button>
+            <button class="nav-card" data-target="search" aria-label="Search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span>Search</span>
+            </button>
+            <button class="nav-card" data-target="messages" aria-label="Messages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span>Messages</span>
+            </button>
+            <button class="nav-card" data-target="photos" aria-label="Photos">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>Photos</span>
+            </button>
+            <button class="nav-card" data-target="settings" aria-label="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </button>
+            <button class="nav-card" data-target="profile" aria-label="Profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Profile</span>
+            </button>
+          </div>
+        </div>
+  
+        <!-- Detail screens -->
+        <div class="screen detail-screen" data-screen="home">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Home</h2>
+          <p>Welcome to your home feed.</p>
+          <div class="placeholder-list"><div class="placeholder-bar"></div><div class="placeholder-bar short"></div><div class="placeholder-bar"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="search">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Search</h2>
+          <p>Find anything you need.</p>
+          <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search&hellip;</span></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="messages">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Messages</h2>
+          <p>Your conversations appear here.</p>
+          <div class="placeholder-list"><div class="placeholder-bar"></div><div class="placeholder-bar"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="photos">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Photos</h2>
+          <p>Your photo gallery.</p>
+          <div class="photo-grid"><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div><div class="photo-tile"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="settings">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Settings</h2>
+          <p>Configure your preferences.</p>
+          <div class="placeholder-list"><div class="placeholder-bar short"></div><div class="placeholder-bar"></div></div>
+        </div>
+  
+        <div class="screen detail-screen" data-screen="profile">
+          <button class="back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+          <h2>Profile</h2>
+          <p>Manage your account.</p>
+          <div class="profile-circle"></div>
+          <div class="profile-label">Your Name</div>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const gridScreen = document.querySelector(".grid-screen");
+  const detailScreens = document.querySelectorAll(".detail-screen");
+  const navCards = document.querySelectorAll(".nav-card");
+  const backBtns = document.querySelectorAll(".back-btn");
+  
+  function showDetail(target) {
+    gridScreen.classList.remove("active");
+    detailScreens.forEach((s) => {
+      s.classList.toggle("active", s.dataset.screen === target);
+    });
+  }
+  
+  function showGrid() {
+    detailScreens.forEach((s) => s.classList.remove("active"));
+    gridScreen.classList.add("active");
+  }
+  
+  navCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      showDetail(card.dataset.target);
+    });
+  });
+  
+  backBtns.forEach((btn) => {
+    btn.addEventListener("click", showGrid);
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

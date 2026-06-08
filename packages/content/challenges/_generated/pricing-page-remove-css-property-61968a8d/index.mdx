@@ -1,0 +1,1037 @@
+---
+slug: "pricing-page-remove-css-property-61968a8d"
+topic: "pricing"
+title: "Restore missing CSS property in Pricing Page"
+type: "fix"
+difficulty: 1
+resourceSlug: "pricing-page"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f8fafc;
+    color: #111;
+  }
+  
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    text-decoration: none;
+    color: #111;
+  }
+  
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  nav a {
+    font-size: 14px;
+    color: #555;
+    text-decoration: none;
+  }
+  nav a.nav-cta {
+    color: #6366f1;
+    font-weight: 600;
+  }
+  
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 64px 24px 48px;
+  }
+  
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 900;
+    color: #111;
+    margin-bottom: 14px;
+  }
+  .hero p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 32px;
+  }
+  
+  .billing-toggle {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+  }
+  
+  .toggle-label {
+    font-size: 15px;
+    color: #555;
+    font-weight: 500;
+  }
+  
+  .toggle-btn {
+    width: 48px;
+    height: 26px;
+    background: #e5e7eb;
+    border-radius: 13px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.25s;
+  }
+  
+  .toggle-btn[aria-pressed="true"] {
+    background: #6366f1;
+  }
+  
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  .toggle-btn[aria-pressed="true"] .toggle-thumb {
+    transform: translateX(22px);
+  }
+  
+  .save-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  
+  /* Plans */
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+  
+  @media (max-width: 768px) {
+    .plans {
+      grid-template-columns: 1fr;
+      max-width: 420px;
+    }
+  }
+  
+  .plan-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    padding: 28px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .plan-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+  
+  .plan-card.featured {
+    border-color: #6366f1;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(99, 102, 241, 0.14);
+  }
+  
+  .popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #6366f1;
+    color: #fff;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  
+  .plan-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .price {
+    font-size: 42px;
+    font-weight: 900;
+    color: #111;
+    transition: all 0.25s;
+  }
+  .period {
+    font-size: 16px;
+    color: #888;
+  }
+  
+  .plan-desc {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  
+  .plan-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-bottom: 24px;
+  }
+  
+  .plan-btn:active {
+    opacity: 0.85;
+  }
+  .plan-btn.outline {
+    background: #fff;
+    color: #6366f1;
+    border: 1.5px solid #6366f1;
+  }
+  .plan-btn.outline:hover {
+    background: #eef2ff;
+  }
+  
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .feat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .feat::before {
+    content: "✓";
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  .feat.no {
+    color: #aaa;
+  }
+  .feat.no::before {
+    content: "×";
+    background: #f3f4f6;
+    color: #9ca3af;
+  }
+  
+  /* FAQ */
+  .faq-section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  
+  .faq-section h2 {
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  
+  .faq-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  
+  .faq-item summary {
+    padding: 18px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .faq-item summary::after {
+    content: "+";
+    font-size: 20px;
+    color: #6366f1;
+  }
+  .faq-item[open] summary::after {
+    content: "−";
+  }
+  
+  .faq-item p {
+    padding: 0 20px 18px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+  }
+  
+  /* CTA section */
+  .cta-section {
+    text-align: center;
+    padding: 64px 24px;
+    background: #0f0f13;
+    color: #fff;
+  }
+  
+  .cta-section h2 {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .cta-section p {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 32px;
+  }
+  
+  .cta-btn {
+    display: inline-block;
+    padding: 16px 40px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  
+  .cta-btn:active {
+    opacity: 0.85;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="style.css" />
+      <title>Pricing</title>
+    </head>
+    <body>
+      <header class="site-header">
+        <a href="#" class="logo">Brand</a>
+        <nav><a href="#">Features</a><a href="#">Docs</a><a href="#" class="nav-cta">Sign In</a></nav>
+      </header>
+  
+      <main>
+        <section class="hero">
+          <h1>Simple, transparent pricing</h1>
+          <p>Start for free. Scale as you grow. No hidden fees.</p>
+          <div class="billing-toggle">
+            <span class="toggle-label" id="labelMonthly">Monthly</span>
+            <button class="toggle-btn" id="billingToggle" aria-pressed="false" role="switch" aria-label="Switch to annual billing">
+              <span class="toggle-thumb"></span>
+            </button>
+            <span class="toggle-label" id="labelAnnual">Annual <span class="save-badge">Save 20%</span></span>
+          </div>
+        </section>
+  
+        <section class="plans">
+          <div class="plan-card">
+            <div class="plan-header">
+              <div class="plan-name">Starter</div>
+              <div class="plan-price">
+                <span class="price" data-monthly="0" data-annual="0">$0</span>
+                <span class="period">/mo</span>
+              </div>
+              <p class="plan-desc">For individuals and small projects.</p>
+            </div>
+            <a href="#" class="plan-btn outline">Get Started Free</a>
+            <ul class="feature-list">
+              <li class="feat yes">3 projects</li>
+              <li class="feat yes">1 GB storage</li>
+              <li class="feat yes">Community support</li>
+              <li class="feat yes">Basic analytics</li>
+              <li class="feat no">Custom domains</li>
+              <li class="feat no">Team members</li>
+              <li class="feat no">Priority support</li>
+            </ul>
+          </div>
+  
+          <div class="plan-card featured">
+            <div class="popular-badge">Most Popular</div>
+            <div class="plan-header">
+              <div class="plan-name">Pro</div>
+              <div class="plan-price">
+                <span class="price" data-monthly="29" data-annual="23">$29</span>
+                <span class="period">/mo</span>
+              </div>
+              <p class="plan-desc">For growing teams and professional use.</p>
+            </div>
+            <a href="#" class="plan-btn">Start Free Trial</a>
+            <ul class="feature-list">
+              <li class="feat yes">Unlimited projects</li>
+              <li class="feat yes">50 GB storage</li>
+              <li class="feat yes">Priority email support</li>
+              <li class="feat yes">Advanced analytics</li>
+              <li class="feat yes">Custom domains</li>
+              <li class="feat yes">Up to 10 members</li>
+              <li class="feat no">SLA guarantee</li>
+            </ul>
+          </div>
+  
+          <div class="plan-card">
+            <div class="plan-header">
+              <div class="plan-name">Enterprise</div>
+              <div class="plan-price">
+                <span class="price" data-monthly="99" data-annual="79">$99</span>
+                <span class="period">/mo</span>
+              </div>
+              <p class="plan-desc">For large organizations with custom needs.</p>
+            </div>
+            <a href="#" class="plan-btn outline">Contact Sales</a>
+            <ul class="feature-list">
+              <li class="feat yes">Unlimited everything</li>
+              <li class="feat yes">500 GB storage</li>
+              <li class="feat yes">Dedicated support</li>
+              <li class="feat yes">Custom analytics</li>
+              <li class="feat yes">Custom domains</li>
+              <li class="feat yes">Unlimited members</li>
+              <li class="feat yes">99.9% SLA guarantee</li>
+            </ul>
+          </div>
+        </section>
+  
+        <!-- FAQ -->
+        <section class="faq-section">
+          <h2>Frequently asked questions</h2>
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary>Can I change plans later?</summary>
+              <p>Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of the next billing cycle.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Is there a free trial?</summary>
+              <p>Pro and Enterprise plans come with a 14-day free trial. No credit card required.</p>
+            </details>
+            <details class="faq-item">
+              <summary>What payment methods do you accept?</summary>
+              <p>We accept all major credit cards, PayPal, and wire transfers for Enterprise plans.</p>
+            </details>
+            <details class="faq-item">
+              <summary>What happens to my data if I cancel?</summary>
+              <p>Your data is available for 30 days after cancellation, giving you time to export everything.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Do you offer discounts for nonprofits?</summary>
+              <p>Yes. We offer 50% off for registered nonprofit organizations. Contact our sales team for details.</p>
+            </details>
+          </div>
+        </section>
+  
+        <section class="cta-section">
+          <h2>Ready to get started?</h2>
+          <p>Join 10,000+ teams already using Brand.</p>
+          <a href="#" class="cta-btn">Start for Free</a>
+        </section>
+      </main>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  const toggle = document.getElementById("billingToggle");
+  const prices = document.querySelectorAll(".price[data-monthly]");
+  let isAnnual = false;
+  
+  toggle.addEventListener("click", () => {
+    isAnnual = !isAnnual;
+    toggle.setAttribute("aria-pressed", String(isAnnual));
+  
+    prices.forEach((el) => {
+      const monthly = Number(el.dataset.monthly);
+      const annual = Number(el.dataset.annual);
+      const value = isAnnual ? annual : monthly;
+      el.textContent = value === 0 ? "$0" : `$${value}`;
+    });
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f8fafc;
+    color: #111;
+  }
+  
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    text-decoration: none;
+    color: #111;
+  }
+  
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  nav a {
+    font-size: 14px;
+    color: #555;
+    text-decoration: none;
+  }
+  nav a.nav-cta {
+    color: #6366f1;
+    font-weight: 600;
+  }
+  
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 64px 24px 48px;
+  }
+  
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 900;
+    color: #111;
+    margin-bottom: 14px;
+  }
+  .hero p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 32px;
+  }
+  
+  .billing-toggle {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+  }
+  
+  .toggle-label {
+    font-size: 15px;
+    color: #555;
+    font-weight: 500;
+  }
+  
+  .toggle-btn {
+    width: 48px;
+    height: 26px;
+    background: #e5e7eb;
+    border-radius: 13px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.25s;
+  }
+  
+  .toggle-btn[aria-pressed="true"] {
+    background: #6366f1;
+  }
+  
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  .toggle-btn[aria-pressed="true"] .toggle-thumb {
+    transform: translateX(22px);
+  }
+  
+  .save-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  
+  /* Plans */
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+  
+  @media (max-width: 768px) {
+    .plans {
+      grid-template-columns: 1fr;
+      max-width: 420px;
+    }
+  }
+  
+  .plan-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    padding: 28px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .plan-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+  
+  .plan-card.featured {
+    border-color: #6366f1;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(99, 102, 241, 0.14);
+  }
+  
+  .popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #6366f1;
+    color: #fff;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  
+  .plan-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .price {
+    font-size: 42px;
+    font-weight: 900;
+    color: #111;
+    transition: all 0.25s;
+  }
+  .period {
+    font-size: 16px;
+    color: #888;
+  }
+  
+  .plan-desc {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  
+  .plan-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-bottom: 24px;
+  }
+  
+  .plan-btn:active {
+    opacity: 0.85;
+  }
+  .plan-btn.outline {
+    background: #fff;
+    color: #6366f1;
+    border: 1.5px solid #6366f1;
+  }
+  .plan-btn.outline:hover {
+    background: #eef2ff;
+  }
+  
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .feat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .feat::before {
+    content: "✓";
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  .feat.no {
+    color: #aaa;
+  }
+  .feat.no::before {
+    content: "×";
+    background: #f3f4f6;
+    color: #9ca3af;
+  }
+  
+  /* FAQ */
+  .faq-section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  
+  .faq-section h2 {
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  
+  .faq-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  
+  .faq-item summary {
+    padding: 18px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .faq-item summary::after {
+    content: "+";
+    font-size: 20px;
+    color: #6366f1;
+  }
+  .faq-item[open] summary::after {
+    content: "−";
+  }
+  
+  .faq-item p {
+    padding: 0 20px 18px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+  }
+  
+  /* CTA section */
+  .cta-section {
+    text-align: center;
+    padding: 64px 24px;
+    background: #0f0f13;
+    color: #fff;
+  }
+  
+  .cta-section h2 {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .cta-section p {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 32px;
+  }
+  
+  .cta-btn {
+    display: inline-block;
+    padding: 16px 40px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  
+  .cta-btn:active {
+    opacity: 0.85;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="style.css" />
+      <title>Pricing</title>
+    </head>
+    <body>
+      <header class="site-header">
+        <a href="#" class="logo">Brand</a>
+        <nav><a href="#">Features</a><a href="#">Docs</a><a href="#" class="nav-cta">Sign In</a></nav>
+      </header>
+  
+      <main>
+        <section class="hero">
+          <h1>Simple, transparent pricing</h1>
+          <p>Start for free. Scale as you grow. No hidden fees.</p>
+          <div class="billing-toggle">
+            <span class="toggle-label" id="labelMonthly">Monthly</span>
+            <button class="toggle-btn" id="billingToggle" aria-pressed="false" role="switch" aria-label="Switch to annual billing">
+              <span class="toggle-thumb"></span>
+            </button>
+            <span class="toggle-label" id="labelAnnual">Annual <span class="save-badge">Save 20%</span></span>
+          </div>
+        </section>
+  
+        <section class="plans">
+          <div class="plan-card">
+            <div class="plan-header">
+              <div class="plan-name">Starter</div>
+              <div class="plan-price">
+                <span class="price" data-monthly="0" data-annual="0">$0</span>
+                <span class="period">/mo</span>
+              </div>
+              <p class="plan-desc">For individuals and small projects.</p>
+            </div>
+            <a href="#" class="plan-btn outline">Get Started Free</a>
+            <ul class="feature-list">
+              <li class="feat yes">3 projects</li>
+              <li class="feat yes">1 GB storage</li>
+              <li class="feat yes">Community support</li>
+              <li class="feat yes">Basic analytics</li>
+              <li class="feat no">Custom domains</li>
+              <li class="feat no">Team members</li>
+              <li class="feat no">Priority support</li>
+            </ul>
+          </div>
+  
+          <div class="plan-card featured">
+            <div class="popular-badge">Most Popular</div>
+            <div class="plan-header">
+              <div class="plan-name">Pro</div>
+              <div class="plan-price">
+                <span class="price" data-monthly="29" data-annual="23">$29</span>
+                <span class="period">/mo</span>
+              </div>
+              <p class="plan-desc">For growing teams and professional use.</p>
+            </div>
+            <a href="#" class="plan-btn">Start Free Trial</a>
+            <ul class="feature-list">
+              <li class="feat yes">Unlimited projects</li>
+              <li class="feat yes">50 GB storage</li>
+              <li class="feat yes">Priority email support</li>
+              <li class="feat yes">Advanced analytics</li>
+              <li class="feat yes">Custom domains</li>
+              <li class="feat yes">Up to 10 members</li>
+              <li class="feat no">SLA guarantee</li>
+            </ul>
+          </div>
+  
+          <div class="plan-card">
+            <div class="plan-header">
+              <div class="plan-name">Enterprise</div>
+              <div class="plan-price">
+                <span class="price" data-monthly="99" data-annual="79">$99</span>
+                <span class="period">/mo</span>
+              </div>
+              <p class="plan-desc">For large organizations with custom needs.</p>
+            </div>
+            <a href="#" class="plan-btn outline">Contact Sales</a>
+            <ul class="feature-list">
+              <li class="feat yes">Unlimited everything</li>
+              <li class="feat yes">500 GB storage</li>
+              <li class="feat yes">Dedicated support</li>
+              <li class="feat yes">Custom analytics</li>
+              <li class="feat yes">Custom domains</li>
+              <li class="feat yes">Unlimited members</li>
+              <li class="feat yes">99.9% SLA guarantee</li>
+            </ul>
+          </div>
+        </section>
+  
+        <!-- FAQ -->
+        <section class="faq-section">
+          <h2>Frequently asked questions</h2>
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary>Can I change plans later?</summary>
+              <p>Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of the next billing cycle.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Is there a free trial?</summary>
+              <p>Pro and Enterprise plans come with a 14-day free trial. No credit card required.</p>
+            </details>
+            <details class="faq-item">
+              <summary>What payment methods do you accept?</summary>
+              <p>We accept all major credit cards, PayPal, and wire transfers for Enterprise plans.</p>
+            </details>
+            <details class="faq-item">
+              <summary>What happens to my data if I cancel?</summary>
+              <p>Your data is available for 30 days after cancellation, giving you time to export everything.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Do you offer discounts for nonprofits?</summary>
+              <p>Yes. We offer 50% off for registered nonprofit organizations. Contact our sales team for details.</p>
+            </details>
+          </div>
+        </section>
+  
+        <section class="cta-section">
+          <h2>Ready to get started?</h2>
+          <p>Join 10,000+ teams already using Brand.</p>
+          <a href="#" class="cta-btn">Start for Free</a>
+        </section>
+      </main>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  const toggle = document.getElementById("billingToggle");
+  const prices = document.querySelectorAll(".price[data-monthly]");
+  let isAnnual = false;
+  
+  toggle.addEventListener("click", () => {
+    isAnnual = !isAnnual;
+    toggle.setAttribute("aria-pressed", String(isAnnual));
+  
+    prices.forEach((el) => {
+      const monthly = Number(el.dataset.monthly);
+      const annual = Number(el.dataset.annual);
+      const value = isAnnual ? annual : monthly;
+      el.textContent = value === 0 ? "$0" : `$${value}`;
+    });
+  });
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

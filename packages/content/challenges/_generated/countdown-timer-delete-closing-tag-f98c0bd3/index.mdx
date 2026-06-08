@@ -1,0 +1,528 @@
+---
+slug: "countdown-timer-delete-closing-tag-f98c0bd3"
+topic: "timer"
+title: "Fix the broken HTML structure in Countdown Timer"
+type: "fix"
+difficulty: 2
+resourceSlug: "countdown-timer"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --timer-bg: #0f172a;
+    --timer-card: rgba(30, 41, 59, 0.7);
+    --timer-accent: #38bdf8;
+    --timer-text: #f8fafc;
+    --timer-muted: #94a3b8;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html,
+  body {
+    height: 100%;
+  }
+  
+  body {
+    background: var(--timer-bg);
+    color: var(--timer-text);
+    font-family: "Inter", system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+  }
+  
+  .countdown-widget {
+    width: 100%;
+    max-width: 500px;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  }
+  
+  .countdown-header {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  
+  .date-input {
+    flex: 1;
+    background: var(--timer-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  
+  .date-input:focus {
+    border-color: var(--timer-accent);
+  }
+  
+  .start-btn {
+    background: var(--timer-accent);
+    color: var(--timer-bg);
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  
+  .start-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  .countdown-display {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .timer-segment {
+    background: var(--timer-card);
+    padding: clamp(1rem, 3vw, 1.5rem) 0.25rem;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .value {
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    font-weight: 800;
+    color: var(--timer-accent);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .label {
+    font-size: clamp(0.6rem, 2vw, 0.75rem);
+    text-transform: uppercase;
+    color: var(--timer-muted);
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  
+  .status-message {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.813rem;
+    color: var(--timer-muted);
+  }
+  
+  @media (max-width: 480px) {
+    .countdown-header {
+      flex-direction: column;
+    }
+  
+    .countdown-display {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Countdown Timer
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="countdown-widget">
+          <div class="countdown-header">
+              <input type="datetime-local" id="target-date" class="date-input" />
+              <button id="start-timer" class="start-btn">Set Countdown</button>
+          </div>
+  
+          <div class="countdown-display" id="timer-display">
+              <div class="timer-segment">
+                  <span class="value" id="days">00</span>
+                  <span class="label">Days</span>
+              </div>
+              <div class="timer-segment">
+                  <span class="value" id="hours">00</span>
+                  <span class="label">Hours</span>
+              </div>
+              <div class="timer-segment">
+                  <span class="value" id="minutes">00</span>
+                  <span class="label">Mins</span>
+              </div>
+              <div class="timer-segment">
+                  <span class="value" id="seconds">00</span>
+                  <span class="label">Secs</span>
+              </div>
+          </div>
+  
+          <div id="countdown-status" class="status-message">Set a future date to begin</div>
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  let countdownInterval;
+  
+  function startCountdown() {
+    const targetDateInput = document.getElementById("target-date");
+    const targetTime = new Date(targetDateInput.value).getTime();
+  
+    if (isNaN(targetTime)) {
+      updateStatus("Please select a valid date and time.");
+      return;
+    }
+  
+    if (targetTime <= new Date().getTime()) {
+      updateStatus("Target date must be in the future.");
+      return;
+    }
+  
+    // Clear existing interval if any
+    if (countdownInterval) clearInterval(countdownInterval);
+  
+    updateStatus("Countdown active...");
+  
+    countdownInterval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetTime - now;
+  
+      if (distance < 0) {
+        clearInterval(countdownInterval);
+        updateDisplay(0, 0, 0, 0);
+        updateStatus("Countdown finished!");
+        return;
+      }
+  
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  
+      updateDisplay(days, hours, minutes, seconds);
+    }, 1000);
+  }
+  
+  function updateDisplay(days, hours, minutes, seconds) {
+    document.getElementById("days").textContent = String(days).padStart(2, "0");
+    document.getElementById("hours").textContent = String(hours).padStart(2, "0");
+    document.getElementById("minutes").textContent = String(minutes).padStart(2, "0");
+    document.getElementById("seconds").textContent = String(seconds).padStart(2, "0");
+  }
+  
+  function updateStatus(msg) {
+    const statusEl = document.getElementById("countdown-status");
+    if (statusEl) statusEl.textContent = msg;
+  }
+  
+  // Event Listeners
+  const startBtn = document.getElementById("start-timer");
+  if (startBtn) {
+    startBtn.addEventListener("click", startCountdown);
+  }
+  
+  // Set default target to 24 hours from now
+  const defaultTarget = new Date();
+  defaultTarget.setHours(defaultTarget.getHours() + 24);
+  const targetInput = document.getElementById("target-date");
+  if (targetInput) {
+    // Format for datetime-local: YYYY-MM-DDTHH:MM
+    const tzoffset = new Date().getTimezoneOffset() * 60000;
+    const localISOTime = new Date(defaultTarget.getTime() - tzoffset).toISOString().slice(0, 16);
+    targetInput.value = localISOTime;
+  }
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --timer-bg: #0f172a;
+    --timer-card: rgba(30, 41, 59, 0.7);
+    --timer-accent: #38bdf8;
+    --timer-text: #f8fafc;
+    --timer-muted: #94a3b8;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html,
+  body {
+    height: 100%;
+  }
+  
+  body {
+    background: var(--timer-bg);
+    color: var(--timer-text);
+    font-family: "Inter", system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+  }
+  
+  .countdown-widget {
+    width: 100%;
+    max-width: 500px;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  }
+  
+  .countdown-header {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  
+  .date-input {
+    flex: 1;
+    background: var(--timer-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  
+  .date-input:focus {
+    border-color: var(--timer-accent);
+  }
+  
+  .start-btn {
+    background: var(--timer-accent);
+    color: var(--timer-bg);
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  
+  .start-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  .countdown-display {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .timer-segment {
+    background: var(--timer-card);
+    padding: clamp(1rem, 3vw, 1.5rem) 0.25rem;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .value {
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    font-weight: 800;
+    color: var(--timer-accent);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .label {
+    font-size: clamp(0.6rem, 2vw, 0.75rem);
+    text-transform: uppercase;
+    color: var(--timer-muted);
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  
+  .status-message {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.813rem;
+    color: var(--timer-muted);
+  }
+  
+  @media (max-width: 480px) {
+    .countdown-header {
+      flex-direction: column;
+    }
+  
+    .countdown-display {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Countdown Timer</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="countdown-widget">
+          <div class="countdown-header">
+              <input type="datetime-local" id="target-date" class="date-input" />
+              <button id="start-timer" class="start-btn">Set Countdown</button>
+          </div>
+  
+          <div class="countdown-display" id="timer-display">
+              <div class="timer-segment">
+                  <span class="value" id="days">00</span>
+                  <span class="label">Days</span>
+              </div>
+              <div class="timer-segment">
+                  <span class="value" id="hours">00</span>
+                  <span class="label">Hours</span>
+              </div>
+              <div class="timer-segment">
+                  <span class="value" id="minutes">00</span>
+                  <span class="label">Mins</span>
+              </div>
+              <div class="timer-segment">
+                  <span class="value" id="seconds">00</span>
+                  <span class="label">Secs</span>
+              </div>
+          </div>
+  
+          <div id="countdown-status" class="status-message">Set a future date to begin</div>
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  let countdownInterval;
+  
+  function startCountdown() {
+    const targetDateInput = document.getElementById("target-date");
+    const targetTime = new Date(targetDateInput.value).getTime();
+  
+    if (isNaN(targetTime)) {
+      updateStatus("Please select a valid date and time.");
+      return;
+    }
+  
+    if (targetTime <= new Date().getTime()) {
+      updateStatus("Target date must be in the future.");
+      return;
+    }
+  
+    // Clear existing interval if any
+    if (countdownInterval) clearInterval(countdownInterval);
+  
+    updateStatus("Countdown active...");
+  
+    countdownInterval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetTime - now;
+  
+      if (distance < 0) {
+        clearInterval(countdownInterval);
+        updateDisplay(0, 0, 0, 0);
+        updateStatus("Countdown finished!");
+        return;
+      }
+  
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  
+      updateDisplay(days, hours, minutes, seconds);
+    }, 1000);
+  }
+  
+  function updateDisplay(days, hours, minutes, seconds) {
+    document.getElementById("days").textContent = String(days).padStart(2, "0");
+    document.getElementById("hours").textContent = String(hours).padStart(2, "0");
+    document.getElementById("minutes").textContent = String(minutes).padStart(2, "0");
+    document.getElementById("seconds").textContent = String(seconds).padStart(2, "0");
+  }
+  
+  function updateStatus(msg) {
+    const statusEl = document.getElementById("countdown-status");
+    if (statusEl) statusEl.textContent = msg;
+  }
+  
+  // Event Listeners
+  const startBtn = document.getElementById("start-timer");
+  if (startBtn) {
+    startBtn.addEventListener("click", startCountdown);
+  }
+  
+  // Set default target to 24 hours from now
+  const defaultTarget = new Date();
+  defaultTarget.setHours(defaultTarget.getHours() + 24);
+  const targetInput = document.getElementById("target-date");
+  if (targetInput) {
+    // Format for datetime-local: YYYY-MM-DDTHH:MM
+    const tzoffset = new Date().getTimezoneOffset() * 60000;
+    const localISOTime = new Date(defaultTarget.getTime() - tzoffset).toISOString().slice(0, 16);
+    targetInput.value = localISOTime;
+  }
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

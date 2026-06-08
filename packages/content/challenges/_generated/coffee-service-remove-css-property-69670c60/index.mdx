@@ -1,0 +1,2257 @@
+---
+slug: "coffee-service-remove-css-property-69670c60"
+topic: "portfolio"
+title: "Restore missing CSS property in CoffeeService — Coffee & Bakery Studio"
+type: "fix"
+difficulty: 1
+resourceSlug: "coffee-service"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --bg: #f7f1e8;
+    --panel: rgba(255, 255, 255, 0.82);
+    --stroke: rgba(82, 57, 46, 0.2);
+    --text: #3b2a22;
+    --muted: rgba(59, 42, 34, 0.6);
+    --accent: #b36b3e;
+    --accent-2: #f4b183;
+    --accent-3: #7b4f35;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Quicksand", sans-serif;
+    background: radial-gradient(circle at 10% 10%, rgba(244, 177, 131, 0.28), transparent 55%),
+      radial-gradient(circle at 90% 20%, rgba(179, 107, 62, 0.2), transparent 60%), #f6efe6;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+  
+  .loader {
+    position: fixed;
+    inset: 0;
+    background: #f6efe6;
+    display: grid;
+    place-items: center;
+    gap: 18px;
+    z-index: 999;
+    color: var(--text);
+    font-family: "Playfair Display", serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  
+  .loader-ring {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px solid rgba(179, 107, 62, 0.4);
+    border-top-color: var(--accent);
+    animation: spin 1.4s linear infinite;
+  }
+  
+  .loader-cup {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px 8px 12px 12px;
+    border: 2px solid var(--accent-3);
+    background: rgba(179, 107, 62, 0.1);
+    display: grid;
+    place-items: center;
+  }
+  
+  .steam {
+    position: absolute;
+    width: 6px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(179, 107, 62, 0.5);
+    top: -20px;
+    animation: steam 1.2s ease-in-out infinite;
+  }
+  
+  .steam:nth-child(2) {
+    left: 12px;
+    animation-delay: 0.2s;
+  }
+  
+  .steam:nth-child(3) {
+    left: -12px;
+    animation-delay: 0.4s;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes steam {
+    0%,
+    100% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-8px);
+    }
+  }
+  
+  .topbar {
+    position: sticky;
+    top: 16px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 clamp(16px, 4vw, 60px);
+    padding: 16px 24px;
+    border-radius: 999px;
+    background: rgba(255, 250, 243, 0.85);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(179, 107, 62, 0.2);
+    box-shadow: 0 18px 40px rgba(82, 57, 46, 0.15);
+  }
+  
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #fff7ef;
+    font-family: "Playfair Display", serif;
+  }
+  
+  .brand-title {
+    font-family: "Playfair Display", serif;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  
+  .brand-sub {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  
+  .nav a {
+    color: var(--muted);
+    position: relative;
+  }
+  
+  .nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  
+  .nav a:hover::after {
+    transform: scaleX(1);
+  }
+  
+  .cta {
+    padding: 0.5rem 1.3rem;
+    border-radius: 999px;
+    border: 1px solid rgba(179, 107, 62, 0.5);
+    background: rgba(179, 107, 62, 0.12);
+    color: var(--text);
+  }
+  
+  .page {
+    position: relative;
+    z-index: 2;
+    padding: 0 clamp(20px, 6vw, 80px) 80px;
+  }
+  
+  .hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+    padding: 80px 0 40px;
+  }
+  
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-family: "Playfair Display", serif;
+  }
+  
+  .hero-copy h1 {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(2.6rem, 5vw, 4.6rem);
+    margin: 16px 0;
+  }
+  
+  .lead {
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 55ch;
+  }
+  
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  
+  .btn {
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    border: 1px solid rgba(59, 42, 34, 0.25);
+    background: transparent;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.65rem;
+    cursor: pointer;
+  }
+  
+  .btn.primary {
+    background: linear-gradient(120deg, rgba(179, 107, 62, 0.25), rgba(244, 177, 131, 0.35));
+    border-color: rgba(179, 107, 62, 0.6);
+  }
+  
+  .btn.ghost {
+    border-color: rgba(244, 177, 131, 0.55);
+  }
+  
+  .hero-metrics {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .hero-metrics div {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  
+  .hero-panel {
+    display: grid;
+    gap: 18px;
+  }
+  
+  .panel-card {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(179, 107, 62, 0.12);
+  }
+  
+  .panel-title {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  
+  .marquee {
+    overflow: hidden;
+    border-top: 1px solid rgba(82, 57, 46, 0.1);
+    border-bottom: 1px solid rgba(82, 57, 46, 0.1);
+  }
+  
+  .marquee-track {
+    display: flex;
+    gap: 48px;
+    padding: 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-size: 0.65rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  
+  .section {
+    padding: 64px 0;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+  }
+  
+  .section-header p {
+    color: var(--muted);
+  }
+  
+  .section-header.subhead {
+    margin-top: 28px;
+  }
+  
+  .menu-grid,
+  .service-grid {
+    display: grid;
+    gap: 24px;
+    margin-top: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  
+  .menu-card,
+  .service-card {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 22px;
+  }
+  
+  .menu-card h3,
+  .service-card h3 {
+    margin: 14px 0 10px;
+  }
+  
+  .menu-card p,
+  .service-card p {
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  
+  .menu-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .shop-layout {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    align-items: start;
+  }
+  
+  .shop-grid,
+  .people-grid {
+    display: grid;
+    gap: 22px;
+    margin-top: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  
+  .product-card,
+  .person-card {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 20px;
+    display: grid;
+    gap: 10px;
+  }
+  
+  .product-image {
+    height: 140px;
+    border-radius: 14px;
+    background: linear-gradient(140deg, rgba(179, 107, 62, 0.4), rgba(244, 177, 131, 0.4));
+    border: 1px solid rgba(179, 107, 62, 0.25);
+    display: grid;
+    place-items: center;
+    font-family: "Playfair Display", serif;
+    font-size: 1.2rem;
+    color: var(--accent-3);
+  }
+  
+  .product-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .product-price {
+    font-family: "Playfair Display", serif;
+    font-size: 1.2rem;
+    color: var(--accent-3);
+  }
+  
+  .add-btn {
+    margin-top: 6px;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(179, 107, 62, 0.4);
+    background: rgba(179, 107, 62, 0.12);
+    cursor: pointer;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+  
+  .cart {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 20px;
+    display: grid;
+    gap: 14px;
+    position: sticky;
+    top: 110px;
+  }
+  
+  .cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  
+  .cart-items {
+    display: grid;
+    gap: 10px;
+    max-height: 280px;
+    overflow: auto;
+  }
+  
+  .cart-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+  
+  .person-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  
+  .avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    display: grid;
+    place-items: center;
+    color: #fff7ef;
+    font-weight: 700;
+    font-family: "Playfair Display", serif;
+  }
+  
+  .split {
+    display: grid;
+    gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  
+  .panel {
+    padding: 26px;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 18px;
+    border: 1px solid rgba(179, 107, 62, 0.2);
+  }
+  
+  .panel ul {
+    margin: 16px 0 0;
+    padding-left: 18px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  
+  .chips span {
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(179, 107, 62, 0.4);
+    font-size: 0.75rem;
+  }
+  
+  .stats {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    text-align: center;
+  }
+  
+  .stats h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+    color: var(--accent);
+  }
+  
+  .contact {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  
+  .contact-form {
+    display: grid;
+    gap: 16px;
+  }
+  
+  .contact-form input,
+  .contact-form textarea {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(82, 57, 46, 0.2);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  
+  .contact-form input:focus,
+  .contact-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 18px rgba(179, 107, 62, 0.2);
+  }
+  
+  .footer {
+    padding: 24px clamp(20px, 6vw, 80px) 40px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  @media (max-width: 900px) {
+    .topbar {
+      flex-direction: column;
+      align-items: flex-start;
+      border-radius: 28px;
+      top: 12px;
+    }
+  
+    .nav {
+      flex-wrap: wrap;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .shop-layout {
+      grid-template-columns: 1fr;
+    }
+  
+    .page {
+      padding: 0 18px 80px;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CoffeService — Coffee & Bakery Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="loader" id="loader">
+      <div class="loader-ring"></div>
+      <div class="loader-cup">
+        <span class="steam"></span>
+        <span class="steam"></span>
+        <span class="steam"></span>
+      </div>
+      <p>Brewing your experience…</p>
+    </div>
+  
+    <div id="bg"></div>
+  
+    <header class="topbar">
+      <div class="brand">
+        <span class="mark">CS</span>
+        <div>
+          <p class="brand-title">CoffeService</p>
+          <p class="brand-sub">Coffee, Bakery & Culinary Experiences</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#shop">Shop</a>
+        <a href="#services">Services</a>
+        <a href="#workshops">Workshops</a>
+        <a href="#contact" class="cta">Reserve</a>
+      </nav>
+    </header>
+  
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Crafted Daily</p>
+          <h1>Small-batch coffee, artisan bread, and pastry magic.</h1>
+          <p class="lead">
+            We blend specialty coffee, sourdough, and patisserie into a single studio.
+            Whether you’re here for brunch, a launch, or a workshop, we curate the entire experience.
+          </p>
+          <div class="hero-actions">
+            <button class="btn primary">Order tasting box</button>
+            <button class="btn ghost">View seasonal menu</button>
+          </div>
+          <div class="hero-metrics">
+            <div>
+              <span>Daily Bakes</span>
+              <strong>80+</strong>
+            </div>
+            <div>
+              <span>Roasts</span>
+              <strong>7 origins</strong>
+            </div>
+            <div>
+              <span>Events</span>
+              <strong>14 / month</strong>
+            </div>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="panel-card">
+            <p class="panel-title">Today’s Highlights</p>
+            <h3>Brown Butter Latte</h3>
+            <p>Notes of caramel, spice, and hazelnut foam.</p>
+          </div>
+          <div class="panel-card">
+            <p class="panel-title">Bake Lab</p>
+            <h3>Rustic Sourdough</h3>
+            <p>72-hour fermentation with toasted wheat.</p>
+          </div>
+        </div>
+      </section>
+  
+      <section class="marquee" aria-hidden="true">
+        <div class="marquee-track" id="marqueeTrack">
+          <span>Latte Art</span>
+          <span>Fresh Bread</span>
+          <span>Pastry Lab</span>
+          <span>Private Events</span>
+        </div>
+      </section>
+  
+      <section class="section" id="shop">
+        <div class="section-header">
+          <h2>E-commerce</h2>
+          <p>Shop small-batch coffee, bread, and pastry kits.</p>
+        </div>
+        <div class="shop-layout">
+          <div class="shop-grid" id="productGrid"></div>
+          <aside class="cart" id="cart">
+            <div class="cart-header">
+              <h3>Your Cart</h3>
+              <span class="cart-count" id="cartCount">0 items</span>
+            </div>
+            <div class="cart-items" id="cartItems"></div>
+            <div class="cart-total">
+              <span>Total</span>
+              <strong id="cartTotal">$0</strong>
+            </div>
+            <button class="btn primary">Checkout</button>
+          </aside>
+        </div>
+        <div class="section-header subhead">
+          <h2>People</h2>
+          <p>Artisans, baristas, and pastry leads.</p>
+        </div>
+        <div class="people-grid" id="peopleGrid"></div>
+      </section>
+  
+      <section class="section" id="services">
+        <div class="section-header">
+          <h2>Services</h2>
+          <p>Experience-driven hospitality and culinary programs.</p>
+        </div>
+        <div class="service-grid" id="serviceGrid"></div>
+      </section>
+  
+      <section class="section split" id="workshops">
+        <div class="panel">
+          <h2>Workshops</h2>
+          <ul id="workshopList"></ul>
+        </div>
+        <div class="panel">
+          <h2>Flavor Stack</h2>
+          <div class="chips" id="stackChips"></div>
+        </div>
+      </section>
+  
+      <section class="section stats" id="stats"></section>
+  
+      <section class="section contact" id="contact">
+        <div>
+          <h2>Reserve a Tasting</h2>
+          <p>Tell us about your event, menu, and headcount.</p>
+        </div>
+        <form class="contact-form">
+          <input type="text" placeholder="Name" />
+          <input type="email" placeholder="Email" />
+          <input type="text" placeholder="Event Date" />
+          <textarea rows="4" placeholder="Notes"></textarea>
+          <button class="btn primary" type="button">Submit request</button>
+        </form>
+      </section>
+    </main>
+  
+    <footer class="footer">
+      <span>© 2026 CoffeService Studio</span>
+      <span>Roast • Bake • Host</span>
+    </footer>
+  
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const services = [
+    {
+      title: "Coffee Catering",
+      copy: "Full espresso bar, seasonal menu, and barista team.",
+      meta: "Events",
+    },
+    {
+      title: "Bread & Bake Lab",
+      copy: "Custom bread programs for restaurants and hotels.",
+      meta: "Wholesale",
+    },
+    {
+      title: "Cake Studio",
+      copy: "Bespoke cakes with curated flavor journeys.",
+      meta: "Custom",
+    },
+  ];
+  
+  const products = [
+    {
+      title: "Single-Origin Espresso",
+      copy: "Chocolate notes with bright citrus finish.",
+      price: 18,
+      tag: "Coffee",
+    },
+    {
+      title: "Sourdough Starter Kit",
+      copy: "Active culture, rye blend, and care guide.",
+      price: 24,
+      tag: "Bakery",
+    },
+    {
+      title: "Vanilla Bean Cake",
+      copy: "Signature sponge with berry glaze.",
+      price: 42,
+      tag: "Cake",
+    },
+    {
+      title: "Brunch Box",
+      copy: "Croissant, jam, latte sachet, and granola.",
+      price: 32,
+      tag: "Bundle",
+    },
+  ];
+  
+  const people = [
+    {
+      name: "Lina Torres",
+      role: "Head Barista",
+      specialty: "Milk chemistry + latte art",
+    },
+    {
+      name: "Milo Chen",
+      role: "Bread Lead",
+      specialty: "Sourdough fermentation",
+    },
+    {
+      name: "Ava Ruiz",
+      role: "Pastry Chef",
+      specialty: "Seasonal tart design",
+    },
+  ];
+  
+  const workshops = [
+    "Latte Art Immersion",
+    "Sourdough Fundamentals",
+    "Seasonal Cake Design",
+    "Coffee + Dessert Pairings",
+  ];
+  
+  const stack = [
+    "Single-Origin",
+    "Stone Milling",
+    "Wild Yeast",
+    "Ganache",
+    "Milk Lab",
+    "Roast Profiles",
+  ];
+  
+  const stats = [
+    { value: "9", label: "Daily coffee origins" },
+    { value: "120", label: "Weekly loaves" },
+    { value: "46", label: "Signature pastries" },
+  ];
+  
+  const serviceGrid = document.getElementById("serviceGrid");
+  const productGrid = document.getElementById("productGrid");
+  const peopleGrid = document.getElementById("peopleGrid");
+  const workshopList = document.getElementById("workshopList");
+  const stackChips = document.getElementById("stackChips");
+  const statsGrid = document.getElementById("stats");
+  const cartItems = document.getElementById("cartItems");
+  const cartTotal = document.getElementById("cartTotal");
+  const cartCount = document.getElementById("cartCount");
+  
+  if (serviceGrid) {
+    serviceGrid.innerHTML = services
+      .map(
+        (item) => `
+          <article class="service-card">
+            <span class="menu-meta">${item.meta}</span>
+            <h3>${item.title}</h3>
+            <p>${item.copy}</p>
+          </article>
+        `
+      )
+      .join("");
+  }
+  
+  if (productGrid) {
+    productGrid.innerHTML = products
+      .map((item, index) => {
+        const priceLabel = `$${item.price}`;
+        return `
+          <article class="product-card">
+            <div class="product-image">${item.tag}</div>
+            <div class="product-meta">
+              <span>${item.title}</span>
+              <span class="product-price">${priceLabel}</span>
+            </div>
+            <p>${item.copy}</p>
+            <button class="add-btn" data-index="${index}">Add to cart</button>
+          </article>
+        `;
+      })
+      .join("");
+  }
+  
+  if (peopleGrid) {
+    peopleGrid.innerHTML = people
+      .map(
+        (person) => `
+          <article class="person-card">
+            <div class="avatar">${person.name
+              .split(" ")
+              .map((part) => part[0])
+              .join("")}</div>
+            <h3>${person.name}</h3>
+            <div class="person-chip">${person.role}</div>
+            <p>${person.specialty}</p>
+          </article>
+        `
+      )
+      .join("");
+  }
+  
+  if (workshopList) {
+    workshopList.innerHTML = workshops.map((item) => `<li>${item}</li>`).join("");
+  }
+  
+  if (stackChips) {
+    stackChips.innerHTML = stack.map((item) => `<span>${item}</span>`).join("");
+  }
+  
+  if (statsGrid) {
+    statsGrid.innerHTML = stats
+      .map(
+        (stat) => `
+          <div>
+            <h2>${stat.value}</h2>
+            <p>${stat.label}</p>
+          </div>
+        `
+      )
+      .join("");
+  }
+  
+  const cart = [];
+  
+  function renderCart() {
+    if (!cartItems || !cartTotal || !cartCount) return;
+  
+    if (!cart.length) {
+      cartItems.innerHTML = "<p>Your cart is empty.</p>";
+      cartTotal.textContent = "$0";
+      cartCount.textContent = "0 items";
+      return;
+    }
+  
+    let total = 0;
+    cartItems.innerHTML = cart
+      .map((item) => {
+        total += item.price;
+        return `
+          <div class="cart-item">
+            <span>${item.title}</span>
+            <strong>$${item.price}</strong>
+          </div>
+        `;
+      })
+      .join("");
+  
+    cartTotal.textContent = `$${total}`;
+    cartCount.textContent = `${cart.length} items`;
+  }
+  
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".add-btn");
+    if (!button) return;
+    const index = Number(button.dataset.index);
+    const product = products[index];
+    if (!product) return;
+    cart.push(product);
+    renderCart();
+  });
+  
+  renderCart();
+  
+  const lenis = window.Lenis
+    ? new Lenis({
+        smoothWheel: true,
+        smoothTouch: false,
+        lerp: 0.08,
+      })
+    : null;
+  
+  let scrollVelocity = 0;
+  let marqueeX = 0;
+  
+  function raf(time) {
+    if (lenis) lenis.raf(time);
+    scrollVelocity *= 0.9;
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+  
+  if (lenis) {
+    lenis.on("scroll", ({ velocity }) => {
+      scrollVelocity = Math.max(Math.min(velocity, 40), -40);
+    });
+  }
+  
+  const marquee = document.getElementById("marqueeTrack");
+  if (marquee) {
+    const loop = () => {
+      marqueeX -= 0.3 + Math.abs(scrollVelocity) * 0.02;
+      marquee.style.transform = `translateX(${marqueeX}px)`;
+      if (Math.abs(marqueeX) > marquee.scrollWidth / 2) {
+        marqueeX = 0;
+      }
+      requestAnimationFrame(loop);
+    };
+    loop();
+  }
+  
+  if (window.gsap) {
+    gsap.to("#loader", {
+      opacity: 0,
+      duration: 0.6,
+      delay: 1.2,
+      pointerEvents: "none",
+    });
+  
+    gsap.from(".hero-copy", { opacity: 0, y: 30, duration: 1, ease: "power3.out" });
+    gsap.from(".hero-panel", { opacity: 0, x: 30, duration: 1, delay: 0.2, ease: "power3.out" });
+    gsap.utils.toArray(".menu-card, .service-card, .panel, .stats div").forEach((item, index) => {
+      gsap.from(item, {
+        opacity: 0,
+        y: 24,
+        duration: 0.8,
+        delay: index * 0.05,
+        ease: "power2.out",
+      });
+    });
+  }
+  
+  class BeanField {
+    constructor(container) {
+      this.container = container;
+      this.scene = new THREE.Scene();
+      this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
+      this.camera.position.z = 24;
+  
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(this.renderer.domElement);
+  
+      this.clock = new THREE.Clock();
+      this.group = new THREE.Group();
+      this.scene.add(this.group);
+  
+      this.createBeans();
+      this.createSteam();
+      this.bindEvents();
+      this.animate();
+    }
+  
+    createBeans() {
+      const material = new THREE.MeshStandardMaterial({
+        color: 0xb36b3e,
+        metalness: 0.2,
+        roughness: 0.7,
+      });
+  
+      const light = new THREE.DirectionalLight(0xffffff, 0.9);
+      light.position.set(5, 10, 6);
+      this.scene.add(light);
+      this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  
+      for (let i = 0; i < 40; i++) {
+        const geometry = new THREE.SphereGeometry(0.45, 16, 16);
+        const bean = new THREE.Mesh(geometry, material.clone());
+        bean.scale.set(1.1, 0.7, 0.6);
+        bean.position.set(
+          (Math.random() - 0.5) * 20,
+          (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 20
+        );
+        bean.rotation.set(Math.random(), Math.random(), Math.random());
+        this.group.add(bean);
+      }
+    }
+  
+    createSteam() {
+      const count = 120;
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 16;
+        positions[i * 3 + 1] = Math.random() * 10;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 16;
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const material = new THREE.PointsMaterial({
+        color: 0xf4b183,
+        size: 0.1,
+        transparent: true,
+        opacity: 0.4,
+      });
+      this.steam = new THREE.Points(geometry, material);
+      this.scene.add(this.steam);
+    }
+  
+    bindEvents() {
+      window.addEventListener("resize", () => this.onResize());
+    }
+  
+    onResize() {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+  
+    animate() {
+      const t = this.clock.getElapsedTime();
+      this.group.rotation.y = t * 0.08;
+      this.group.rotation.x = t * 0.03;
+      this.steam.rotation.y = -t * 0.04;
+      this.renderer.render(this.scene, this.camera);
+      requestAnimationFrame(() => this.animate());
+    }
+  }
+  
+  const bg = document.getElementById("bg");
+  if (bg && window.THREE) {
+    new BeanField(bg);
+  }
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f1e8;
+    --panel: rgba(255, 255, 255, 0.82);
+    --stroke: rgba(82, 57, 46, 0.2);
+    --text: #3b2a22;
+    --muted: rgba(59, 42, 34, 0.6);
+    --accent: #b36b3e;
+    --accent-2: #f4b183;
+    --accent-3: #7b4f35;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Quicksand", sans-serif;
+    background: radial-gradient(circle at 10% 10%, rgba(244, 177, 131, 0.28), transparent 55%),
+      radial-gradient(circle at 90% 20%, rgba(179, 107, 62, 0.2), transparent 60%), #f6efe6;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+  
+  .loader {
+    position: fixed;
+    inset: 0;
+    background: #f6efe6;
+    display: grid;
+    place-items: center;
+    gap: 18px;
+    z-index: 999;
+    color: var(--text);
+    font-family: "Playfair Display", serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  
+  .loader-ring {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px solid rgba(179, 107, 62, 0.4);
+    border-top-color: var(--accent);
+    animation: spin 1.4s linear infinite;
+  }
+  
+  .loader-cup {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px 8px 12px 12px;
+    border: 2px solid var(--accent-3);
+    background: rgba(179, 107, 62, 0.1);
+    display: grid;
+    place-items: center;
+  }
+  
+  .steam {
+    position: absolute;
+    width: 6px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(179, 107, 62, 0.5);
+    top: -20px;
+    animation: steam 1.2s ease-in-out infinite;
+  }
+  
+  .steam:nth-child(2) {
+    left: 12px;
+    animation-delay: 0.2s;
+  }
+  
+  .steam:nth-child(3) {
+    left: -12px;
+    animation-delay: 0.4s;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes steam {
+    0%,
+    100% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-8px);
+    }
+  }
+  
+  .topbar {
+    position: sticky;
+    top: 16px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 clamp(16px, 4vw, 60px);
+    padding: 16px 24px;
+    border-radius: 999px;
+    background: rgba(255, 250, 243, 0.85);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(179, 107, 62, 0.2);
+    box-shadow: 0 18px 40px rgba(82, 57, 46, 0.15);
+  }
+  
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #fff7ef;
+    font-family: "Playfair Display", serif;
+  }
+  
+  .brand-title {
+    font-family: "Playfair Display", serif;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  
+  .brand-sub {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  
+  .nav a {
+    color: var(--muted);
+    position: relative;
+  }
+  
+  .nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  
+  .nav a:hover::after {
+    transform: scaleX(1);
+  }
+  
+  .cta {
+    padding: 0.5rem 1.3rem;
+    border-radius: 999px;
+    border: 1px solid rgba(179, 107, 62, 0.5);
+    background: rgba(179, 107, 62, 0.12);
+    color: var(--text);
+  }
+  
+  .page {
+    position: relative;
+    z-index: 2;
+    padding: 0 clamp(20px, 6vw, 80px) 80px;
+  }
+  
+  .hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+    padding: 80px 0 40px;
+  }
+  
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-family: "Playfair Display", serif;
+  }
+  
+  .hero-copy h1 {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(2.6rem, 5vw, 4.6rem);
+    margin: 16px 0;
+  }
+  
+  .lead {
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 55ch;
+  }
+  
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  
+  .btn {
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    border: 1px solid rgba(59, 42, 34, 0.25);
+    background: transparent;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.65rem;
+    cursor: pointer;
+  }
+  
+  .btn.primary {
+    background: linear-gradient(120deg, rgba(179, 107, 62, 0.25), rgba(244, 177, 131, 0.35));
+    border-color: rgba(179, 107, 62, 0.6);
+  }
+  
+  .btn.ghost {
+    border-color: rgba(244, 177, 131, 0.55);
+  }
+  
+  .hero-metrics {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .hero-metrics div {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  
+  .hero-panel {
+    display: grid;
+    gap: 18px;
+  }
+  
+  .panel-card {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(179, 107, 62, 0.12);
+  }
+  
+  .panel-title {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  
+  .marquee {
+    overflow: hidden;
+    border-top: 1px solid rgba(82, 57, 46, 0.1);
+    border-bottom: 1px solid rgba(82, 57, 46, 0.1);
+  }
+  
+  .marquee-track {
+    display: flex;
+    gap: 48px;
+    padding: 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-size: 0.65rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  
+  .section {
+    padding: 64px 0;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+  }
+  
+  .section-header p {
+    color: var(--muted);
+  }
+  
+  .section-header.subhead {
+    margin-top: 28px;
+  }
+  
+  .menu-grid,
+  .service-grid {
+    display: grid;
+    gap: 24px;
+    margin-top: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  
+  .menu-card,
+  .service-card {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 22px;
+  }
+  
+  .menu-card h3,
+  .service-card h3 {
+    margin: 14px 0 10px;
+  }
+  
+  .menu-card p,
+  .service-card p {
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  
+  .menu-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .shop-layout {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    align-items: start;
+  }
+  
+  .shop-grid,
+  .people-grid {
+    display: grid;
+    gap: 22px;
+    margin-top: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  
+  .product-card,
+  .person-card {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 20px;
+    display: grid;
+    gap: 10px;
+  }
+  
+  .product-image {
+    height: 140px;
+    border-radius: 14px;
+    background: linear-gradient(140deg, rgba(179, 107, 62, 0.4), rgba(244, 177, 131, 0.4));
+    border: 1px solid rgba(179, 107, 62, 0.25);
+    display: grid;
+    place-items: center;
+    font-family: "Playfair Display", serif;
+    font-size: 1.2rem;
+    color: var(--accent-3);
+  }
+  
+  .product-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .product-price {
+    font-family: "Playfair Display", serif;
+    font-size: 1.2rem;
+    color: var(--accent-3);
+  }
+  
+  .add-btn {
+    margin-top: 6px;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(179, 107, 62, 0.4);
+    background: rgba(179, 107, 62, 0.12);
+    cursor: pointer;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+  
+  .cart {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 20px;
+    display: grid;
+    gap: 14px;
+    position: sticky;
+    top: 110px;
+  }
+  
+  .cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  
+  .cart-items {
+    display: grid;
+    gap: 10px;
+    max-height: 280px;
+    overflow: auto;
+  }
+  
+  .cart-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+  
+  .person-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  
+  .avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    display: grid;
+    place-items: center;
+    color: #fff7ef;
+    font-weight: 700;
+    font-family: "Playfair Display", serif;
+  }
+  
+  .split {
+    display: grid;
+    gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  
+  .panel {
+    padding: 26px;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 18px;
+    border: 1px solid rgba(179, 107, 62, 0.2);
+  }
+  
+  .panel ul {
+    margin: 16px 0 0;
+    padding-left: 18px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  
+  .chips span {
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(179, 107, 62, 0.4);
+    font-size: 0.75rem;
+  }
+  
+  .stats {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    text-align: center;
+  }
+  
+  .stats h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+    color: var(--accent);
+  }
+  
+  .contact {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  
+  .contact-form {
+    display: grid;
+    gap: 16px;
+  }
+  
+  .contact-form input,
+  .contact-form textarea {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(82, 57, 46, 0.2);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  
+  .contact-form input:focus,
+  .contact-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 18px rgba(179, 107, 62, 0.2);
+  }
+  
+  .footer {
+    padding: 24px clamp(20px, 6vw, 80px) 40px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  @media (max-width: 900px) {
+    .topbar {
+      flex-direction: column;
+      align-items: flex-start;
+      border-radius: 28px;
+      top: 12px;
+    }
+  
+    .nav {
+      flex-wrap: wrap;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .shop-layout {
+      grid-template-columns: 1fr;
+    }
+  
+    .page {
+      padding: 0 18px 80px;
+    }
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CoffeService — Coffee & Bakery Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="loader" id="loader">
+      <div class="loader-ring"></div>
+      <div class="loader-cup">
+        <span class="steam"></span>
+        <span class="steam"></span>
+        <span class="steam"></span>
+      </div>
+      <p>Brewing your experience…</p>
+    </div>
+  
+    <div id="bg"></div>
+  
+    <header class="topbar">
+      <div class="brand">
+        <span class="mark">CS</span>
+        <div>
+          <p class="brand-title">CoffeService</p>
+          <p class="brand-sub">Coffee, Bakery & Culinary Experiences</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#shop">Shop</a>
+        <a href="#services">Services</a>
+        <a href="#workshops">Workshops</a>
+        <a href="#contact" class="cta">Reserve</a>
+      </nav>
+    </header>
+  
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Crafted Daily</p>
+          <h1>Small-batch coffee, artisan bread, and pastry magic.</h1>
+          <p class="lead">
+            We blend specialty coffee, sourdough, and patisserie into a single studio.
+            Whether you’re here for brunch, a launch, or a workshop, we curate the entire experience.
+          </p>
+          <div class="hero-actions">
+            <button class="btn primary">Order tasting box</button>
+            <button class="btn ghost">View seasonal menu</button>
+          </div>
+          <div class="hero-metrics">
+            <div>
+              <span>Daily Bakes</span>
+              <strong>80+</strong>
+            </div>
+            <div>
+              <span>Roasts</span>
+              <strong>7 origins</strong>
+            </div>
+            <div>
+              <span>Events</span>
+              <strong>14 / month</strong>
+            </div>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="panel-card">
+            <p class="panel-title">Today’s Highlights</p>
+            <h3>Brown Butter Latte</h3>
+            <p>Notes of caramel, spice, and hazelnut foam.</p>
+          </div>
+          <div class="panel-card">
+            <p class="panel-title">Bake Lab</p>
+            <h3>Rustic Sourdough</h3>
+            <p>72-hour fermentation with toasted wheat.</p>
+          </div>
+        </div>
+      </section>
+  
+      <section class="marquee" aria-hidden="true">
+        <div class="marquee-track" id="marqueeTrack">
+          <span>Latte Art</span>
+          <span>Fresh Bread</span>
+          <span>Pastry Lab</span>
+          <span>Private Events</span>
+        </div>
+      </section>
+  
+      <section class="section" id="shop">
+        <div class="section-header">
+          <h2>E-commerce</h2>
+          <p>Shop small-batch coffee, bread, and pastry kits.</p>
+        </div>
+        <div class="shop-layout">
+          <div class="shop-grid" id="productGrid"></div>
+          <aside class="cart" id="cart">
+            <div class="cart-header">
+              <h3>Your Cart</h3>
+              <span class="cart-count" id="cartCount">0 items</span>
+            </div>
+            <div class="cart-items" id="cartItems"></div>
+            <div class="cart-total">
+              <span>Total</span>
+              <strong id="cartTotal">$0</strong>
+            </div>
+            <button class="btn primary">Checkout</button>
+          </aside>
+        </div>
+        <div class="section-header subhead">
+          <h2>People</h2>
+          <p>Artisans, baristas, and pastry leads.</p>
+        </div>
+        <div class="people-grid" id="peopleGrid"></div>
+      </section>
+  
+      <section class="section" id="services">
+        <div class="section-header">
+          <h2>Services</h2>
+          <p>Experience-driven hospitality and culinary programs.</p>
+        </div>
+        <div class="service-grid" id="serviceGrid"></div>
+      </section>
+  
+      <section class="section split" id="workshops">
+        <div class="panel">
+          <h2>Workshops</h2>
+          <ul id="workshopList"></ul>
+        </div>
+        <div class="panel">
+          <h2>Flavor Stack</h2>
+          <div class="chips" id="stackChips"></div>
+        </div>
+      </section>
+  
+      <section class="section stats" id="stats"></section>
+  
+      <section class="section contact" id="contact">
+        <div>
+          <h2>Reserve a Tasting</h2>
+          <p>Tell us about your event, menu, and headcount.</p>
+        </div>
+        <form class="contact-form">
+          <input type="text" placeholder="Name" />
+          <input type="email" placeholder="Email" />
+          <input type="text" placeholder="Event Date" />
+          <textarea rows="4" placeholder="Notes"></textarea>
+          <button class="btn primary" type="button">Submit request</button>
+        </form>
+      </section>
+    </main>
+  
+    <footer class="footer">
+      <span>© 2026 CoffeService Studio</span>
+      <span>Roast • Bake • Host</span>
+    </footer>
+  
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const services = [
+    {
+      title: "Coffee Catering",
+      copy: "Full espresso bar, seasonal menu, and barista team.",
+      meta: "Events",
+    },
+    {
+      title: "Bread & Bake Lab",
+      copy: "Custom bread programs for restaurants and hotels.",
+      meta: "Wholesale",
+    },
+    {
+      title: "Cake Studio",
+      copy: "Bespoke cakes with curated flavor journeys.",
+      meta: "Custom",
+    },
+  ];
+  
+  const products = [
+    {
+      title: "Single-Origin Espresso",
+      copy: "Chocolate notes with bright citrus finish.",
+      price: 18,
+      tag: "Coffee",
+    },
+    {
+      title: "Sourdough Starter Kit",
+      copy: "Active culture, rye blend, and care guide.",
+      price: 24,
+      tag: "Bakery",
+    },
+    {
+      title: "Vanilla Bean Cake",
+      copy: "Signature sponge with berry glaze.",
+      price: 42,
+      tag: "Cake",
+    },
+    {
+      title: "Brunch Box",
+      copy: "Croissant, jam, latte sachet, and granola.",
+      price: 32,
+      tag: "Bundle",
+    },
+  ];
+  
+  const people = [
+    {
+      name: "Lina Torres",
+      role: "Head Barista",
+      specialty: "Milk chemistry + latte art",
+    },
+    {
+      name: "Milo Chen",
+      role: "Bread Lead",
+      specialty: "Sourdough fermentation",
+    },
+    {
+      name: "Ava Ruiz",
+      role: "Pastry Chef",
+      specialty: "Seasonal tart design",
+    },
+  ];
+  
+  const workshops = [
+    "Latte Art Immersion",
+    "Sourdough Fundamentals",
+    "Seasonal Cake Design",
+    "Coffee + Dessert Pairings",
+  ];
+  
+  const stack = [
+    "Single-Origin",
+    "Stone Milling",
+    "Wild Yeast",
+    "Ganache",
+    "Milk Lab",
+    "Roast Profiles",
+  ];
+  
+  const stats = [
+    { value: "9", label: "Daily coffee origins" },
+    { value: "120", label: "Weekly loaves" },
+    { value: "46", label: "Signature pastries" },
+  ];
+  
+  const serviceGrid = document.getElementById("serviceGrid");
+  const productGrid = document.getElementById("productGrid");
+  const peopleGrid = document.getElementById("peopleGrid");
+  const workshopList = document.getElementById("workshopList");
+  const stackChips = document.getElementById("stackChips");
+  const statsGrid = document.getElementById("stats");
+  const cartItems = document.getElementById("cartItems");
+  const cartTotal = document.getElementById("cartTotal");
+  const cartCount = document.getElementById("cartCount");
+  
+  if (serviceGrid) {
+    serviceGrid.innerHTML = services
+      .map(
+        (item) => `
+          <article class="service-card">
+            <span class="menu-meta">${item.meta}</span>
+            <h3>${item.title}</h3>
+            <p>${item.copy}</p>
+          </article>
+        `
+      )
+      .join("");
+  }
+  
+  if (productGrid) {
+    productGrid.innerHTML = products
+      .map((item, index) => {
+        const priceLabel = `$${item.price}`;
+        return `
+          <article class="product-card">
+            <div class="product-image">${item.tag}</div>
+            <div class="product-meta">
+              <span>${item.title}</span>
+              <span class="product-price">${priceLabel}</span>
+            </div>
+            <p>${item.copy}</p>
+            <button class="add-btn" data-index="${index}">Add to cart</button>
+          </article>
+        `;
+      })
+      .join("");
+  }
+  
+  if (peopleGrid) {
+    peopleGrid.innerHTML = people
+      .map(
+        (person) => `
+          <article class="person-card">
+            <div class="avatar">${person.name
+              .split(" ")
+              .map((part) => part[0])
+              .join("")}</div>
+            <h3>${person.name}</h3>
+            <div class="person-chip">${person.role}</div>
+            <p>${person.specialty}</p>
+          </article>
+        `
+      )
+      .join("");
+  }
+  
+  if (workshopList) {
+    workshopList.innerHTML = workshops.map((item) => `<li>${item}</li>`).join("");
+  }
+  
+  if (stackChips) {
+    stackChips.innerHTML = stack.map((item) => `<span>${item}</span>`).join("");
+  }
+  
+  if (statsGrid) {
+    statsGrid.innerHTML = stats
+      .map(
+        (stat) => `
+          <div>
+            <h2>${stat.value}</h2>
+            <p>${stat.label}</p>
+          </div>
+        `
+      )
+      .join("");
+  }
+  
+  const cart = [];
+  
+  function renderCart() {
+    if (!cartItems || !cartTotal || !cartCount) return;
+  
+    if (!cart.length) {
+      cartItems.innerHTML = "<p>Your cart is empty.</p>";
+      cartTotal.textContent = "$0";
+      cartCount.textContent = "0 items";
+      return;
+    }
+  
+    let total = 0;
+    cartItems.innerHTML = cart
+      .map((item) => {
+        total += item.price;
+        return `
+          <div class="cart-item">
+            <span>${item.title}</span>
+            <strong>$${item.price}</strong>
+          </div>
+        `;
+      })
+      .join("");
+  
+    cartTotal.textContent = `$${total}`;
+    cartCount.textContent = `${cart.length} items`;
+  }
+  
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".add-btn");
+    if (!button) return;
+    const index = Number(button.dataset.index);
+    const product = products[index];
+    if (!product) return;
+    cart.push(product);
+    renderCart();
+  });
+  
+  renderCart();
+  
+  const lenis = window.Lenis
+    ? new Lenis({
+        smoothWheel: true,
+        smoothTouch: false,
+        lerp: 0.08,
+      })
+    : null;
+  
+  let scrollVelocity = 0;
+  let marqueeX = 0;
+  
+  function raf(time) {
+    if (lenis) lenis.raf(time);
+    scrollVelocity *= 0.9;
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+  
+  if (lenis) {
+    lenis.on("scroll", ({ velocity }) => {
+      scrollVelocity = Math.max(Math.min(velocity, 40), -40);
+    });
+  }
+  
+  const marquee = document.getElementById("marqueeTrack");
+  if (marquee) {
+    const loop = () => {
+      marqueeX -= 0.3 + Math.abs(scrollVelocity) * 0.02;
+      marquee.style.transform = `translateX(${marqueeX}px)`;
+      if (Math.abs(marqueeX) > marquee.scrollWidth / 2) {
+        marqueeX = 0;
+      }
+      requestAnimationFrame(loop);
+    };
+    loop();
+  }
+  
+  if (window.gsap) {
+    gsap.to("#loader", {
+      opacity: 0,
+      duration: 0.6,
+      delay: 1.2,
+      pointerEvents: "none",
+    });
+  
+    gsap.from(".hero-copy", { opacity: 0, y: 30, duration: 1, ease: "power3.out" });
+    gsap.from(".hero-panel", { opacity: 0, x: 30, duration: 1, delay: 0.2, ease: "power3.out" });
+    gsap.utils.toArray(".menu-card, .service-card, .panel, .stats div").forEach((item, index) => {
+      gsap.from(item, {
+        opacity: 0,
+        y: 24,
+        duration: 0.8,
+        delay: index * 0.05,
+        ease: "power2.out",
+      });
+    });
+  }
+  
+  class BeanField {
+    constructor(container) {
+      this.container = container;
+      this.scene = new THREE.Scene();
+      this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
+      this.camera.position.z = 24;
+  
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(this.renderer.domElement);
+  
+      this.clock = new THREE.Clock();
+      this.group = new THREE.Group();
+      this.scene.add(this.group);
+  
+      this.createBeans();
+      this.createSteam();
+      this.bindEvents();
+      this.animate();
+    }
+  
+    createBeans() {
+      const material = new THREE.MeshStandardMaterial({
+        color: 0xb36b3e,
+        metalness: 0.2,
+        roughness: 0.7,
+      });
+  
+      const light = new THREE.DirectionalLight(0xffffff, 0.9);
+      light.position.set(5, 10, 6);
+      this.scene.add(light);
+      this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  
+      for (let i = 0; i < 40; i++) {
+        const geometry = new THREE.SphereGeometry(0.45, 16, 16);
+        const bean = new THREE.Mesh(geometry, material.clone());
+        bean.scale.set(1.1, 0.7, 0.6);
+        bean.position.set(
+          (Math.random() - 0.5) * 20,
+          (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 20
+        );
+        bean.rotation.set(Math.random(), Math.random(), Math.random());
+        this.group.add(bean);
+      }
+    }
+  
+    createSteam() {
+      const count = 120;
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 16;
+        positions[i * 3 + 1] = Math.random() * 10;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 16;
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const material = new THREE.PointsMaterial({
+        color: 0xf4b183,
+        size: 0.1,
+        transparent: true,
+        opacity: 0.4,
+      });
+      this.steam = new THREE.Points(geometry, material);
+      this.scene.add(this.steam);
+    }
+  
+    bindEvents() {
+      window.addEventListener("resize", () => this.onResize());
+    }
+  
+    onResize() {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+  
+    animate() {
+      const t = this.clock.getElapsedTime();
+      this.group.rotation.y = t * 0.08;
+      this.group.rotation.x = t * 0.03;
+      this.steam.rotation.y = -t * 0.04;
+      this.renderer.render(this.scene, this.camera);
+      requestAnimationFrame(() => this.animate());
+    }
+  }
+  
+  const bg = document.getElementById("bg");
+  if (bg && window.THREE) {
+    new BeanField(bg);
+  }
+  
+  </script>
+explanation: "The declaration `color-scheme: light;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

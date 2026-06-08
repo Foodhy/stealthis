@@ -1,0 +1,746 @@
+---
+slug: "alert-dialog-delete-closing-tag-a181e866"
+topic: "dialog"
+title: "Fix the broken HTML structure in Alert Dialog"
+type: "fix"
+difficulty: 2
+resourceSlug: "alert-dialog"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  .demo {
+    text-align: center;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.375rem;
+  }
+  .demo-sub {
+    color: #475569;
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+  .triggers {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    font-family: inherit;
+  }
+  .btn--primary {
+    background: #38bdf8;
+    color: #0f172a;
+  }
+  .btn--primary:hover {
+    background: #7dd3fc;
+  }
+  .btn--ghost {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f2f6ff;
+  }
+  .btn--danger {
+    background: #ef4444;
+    color: #fff;
+  }
+  .btn--danger:hover {
+    background: #f87171;
+  }
+  .btn--warning {
+    background: #f59e0b;
+    color: #0f172a;
+  }
+  .btn--warning:hover {
+    background: #fbbf24;
+  }
+  
+  /* ── Backdrop ── */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  /* ── Dialog panel ── */
+  .dialog {
+    background: #0d1320;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem 2rem 1.75rem;
+    text-align: center;
+    transform: translateY(16px) scale(0.96);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    outline: none;
+  }
+  .backdrop.is-open .dialog {
+    transform: translateY(0) scale(1);
+  }
+  
+  /* ── Icon ── */
+  .dialog-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+  .dialog-icon--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+  .dialog-icon--neutral {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+  }
+  .dialog-icon--warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+  
+  /* ── Content ── */
+  .dialog-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #f2f6ff;
+    margin-bottom: 0.625rem;
+  }
+  .dialog-desc {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.65;
+    margin-bottom: 1.75rem;
+  }
+  
+  /* ── Actions ── */
+  .dialog-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .dialog-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alert Dialog
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo">
+      <h1 class="demo-title">Alert Dialog</h1>
+      <p class="demo-sub">Confirmation dialogs — focus trap, Escape to close, backdrop click.</p>
+      <div class="triggers">
+        <button class="btn btn--danger" id="open-delete">Delete Account</button>
+        <button class="btn btn--ghost" id="open-logout">Sign Out</button>
+        <button class="btn btn--warning" id="open-revoke">Revoke Access</button>
+      </div>
+    </div>
+  
+    <!-- Delete account dialog -->
+    <div
+      class="backdrop"
+      id="dialog-delete"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dd-title"
+      aria-describedby="dd-desc"
+    >
+      <div class="dialog" tabindex="-1">
+        <div class="dialog-icon dialog-icon--danger" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+        <h2 class="dialog-title" id="dd-title">Delete Account</h2>
+        <p class="dialog-desc" id="dd-desc">
+          This will permanently delete your account, all your data, and cannot be undone.
+          You will lose access immediately.
+        </p>
+        <div class="dialog-actions">
+          <button class="btn btn--ghost dialog-cancel" data-dialog="dialog-delete">Cancel</button>
+          <button class="btn btn--danger">Delete Account</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Sign out dialog -->
+    <div
+      class="backdrop"
+      id="dialog-logout"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dl-title"
+      aria-describedby="dl-desc"
+    >
+      <div class="dialog" tabindex="-1">
+        <div class="dialog-icon dialog-icon--neutral" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </div>
+        <h2 class="dialog-title" id="dl-title">Sign Out?</h2>
+        <p class="dialog-desc" id="dl-desc">
+          You will be signed out of your account on this device. Any unsaved changes will be lost.
+        </p>
+        <div class="dialog-actions">
+          <button class="btn btn--ghost dialog-cancel" data-dialog="dialog-logout">Stay Signed In</button>
+          <button class="btn btn--primary">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Revoke access dialog -->
+    <div
+      class="backdrop"
+      id="dialog-revoke"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dr-title"
+      aria-describedby="dr-desc"
+    >
+      <div class="dialog" tabindex="-1">
+        <div class="dialog-icon dialog-icon--warning" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h2 class="dialog-title" id="dr-title">Revoke API Access</h2>
+        <p class="dialog-desc" id="dr-desc">
+          Revoking this token will immediately break any integrations using it.
+          You will need to generate a new token to restore access.
+        </p>
+        <div class="dialog-actions">
+          <button class="btn btn--ghost dialog-cancel" data-dialog="dialog-revoke">Cancel</button>
+          <button class="btn btn--warning">Revoke Token</button>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const FOCUSABLE =
+      'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+  
+    let currentDialog = null;
+    let previousFocus = null;
+  
+    function getFocusable(el) {
+      return [...el.querySelectorAll(FOCUSABLE)].filter(
+        (n) => !n.closest("[hidden]") && n.offsetParent !== null
+      );
+    }
+  
+    function openDialog(dialog) {
+      if (currentDialog) closeDialog(currentDialog);
+      previousFocus = document.activeElement;
+      currentDialog = dialog;
+      dialog.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      const panel = dialog.querySelector(".dialog");
+      panel.focus();
+      trapFocus(dialog);
+    }
+  
+    function closeDialog(dialog) {
+      dialog.classList.remove("is-open");
+      document.body.style.overflow = "";
+      if (previousFocus) previousFocus.focus();
+      currentDialog = null;
+      previousFocus = null;
+    }
+  
+    function trapFocus(dialog) {
+      dialog.addEventListener("keydown", onKeyDown);
+    }
+  
+    function onKeyDown(e) {
+      const dialog = e.currentTarget;
+      if (e.key === "Escape") {
+        closeDialog(dialog);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable(dialog);
+      if (!focusable.length) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+  
+    // Wire open triggers
+    document
+      .getElementById("open-delete")
+      .addEventListener("click", () => openDialog(document.getElementById("dialog-delete")));
+    document
+      .getElementById("open-logout")
+      .addEventListener("click", () => openDialog(document.getElementById("dialog-logout")));
+    document
+      .getElementById("open-revoke")
+      .addEventListener("click", () => openDialog(document.getElementById("dialog-revoke")));
+  
+    // Wire cancel buttons
+    document.querySelectorAll(".dialog-cancel").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.dialog;
+        closeDialog(document.getElementById(id));
+      });
+    });
+  
+    // Backdrop click closes
+    document.querySelectorAll(".backdrop").forEach((backdrop) => {
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) closeDialog(backdrop);
+      });
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  .demo {
+    text-align: center;
+  }
+  .demo-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.375rem;
+  }
+  .demo-sub {
+    color: #475569;
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+  .triggers {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    font-family: inherit;
+  }
+  .btn--primary {
+    background: #38bdf8;
+    color: #0f172a;
+  }
+  .btn--primary:hover {
+    background: #7dd3fc;
+  }
+  .btn--ghost {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f2f6ff;
+  }
+  .btn--danger {
+    background: #ef4444;
+    color: #fff;
+  }
+  .btn--danger:hover {
+    background: #f87171;
+  }
+  .btn--warning {
+    background: #f59e0b;
+    color: #0f172a;
+  }
+  .btn--warning:hover {
+    background: #fbbf24;
+  }
+  
+  /* ── Backdrop ── */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  /* ── Dialog panel ── */
+  .dialog {
+    background: #0d1320;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem 2rem 1.75rem;
+    text-align: center;
+    transform: translateY(16px) scale(0.96);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    outline: none;
+  }
+  .backdrop.is-open .dialog {
+    transform: translateY(0) scale(1);
+  }
+  
+  /* ── Icon ── */
+  .dialog-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+  .dialog-icon--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+  .dialog-icon--neutral {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+  }
+  .dialog-icon--warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+  
+  /* ── Content ── */
+  .dialog-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #f2f6ff;
+    margin-bottom: 0.625rem;
+  }
+  .dialog-desc {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.65;
+    margin-bottom: 1.75rem;
+  }
+  
+  /* ── Actions ── */
+  .dialog-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .dialog-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alert Dialog</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo">
+      <h1 class="demo-title">Alert Dialog</h1>
+      <p class="demo-sub">Confirmation dialogs — focus trap, Escape to close, backdrop click.</p>
+      <div class="triggers">
+        <button class="btn btn--danger" id="open-delete">Delete Account</button>
+        <button class="btn btn--ghost" id="open-logout">Sign Out</button>
+        <button class="btn btn--warning" id="open-revoke">Revoke Access</button>
+      </div>
+    </div>
+  
+    <!-- Delete account dialog -->
+    <div
+      class="backdrop"
+      id="dialog-delete"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dd-title"
+      aria-describedby="dd-desc"
+    >
+      <div class="dialog" tabindex="-1">
+        <div class="dialog-icon dialog-icon--danger" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+        <h2 class="dialog-title" id="dd-title">Delete Account</h2>
+        <p class="dialog-desc" id="dd-desc">
+          This will permanently delete your account, all your data, and cannot be undone.
+          You will lose access immediately.
+        </p>
+        <div class="dialog-actions">
+          <button class="btn btn--ghost dialog-cancel" data-dialog="dialog-delete">Cancel</button>
+          <button class="btn btn--danger">Delete Account</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Sign out dialog -->
+    <div
+      class="backdrop"
+      id="dialog-logout"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dl-title"
+      aria-describedby="dl-desc"
+    >
+      <div class="dialog" tabindex="-1">
+        <div class="dialog-icon dialog-icon--neutral" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </div>
+        <h2 class="dialog-title" id="dl-title">Sign Out?</h2>
+        <p class="dialog-desc" id="dl-desc">
+          You will be signed out of your account on this device. Any unsaved changes will be lost.
+        </p>
+        <div class="dialog-actions">
+          <button class="btn btn--ghost dialog-cancel" data-dialog="dialog-logout">Stay Signed In</button>
+          <button class="btn btn--primary">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Revoke access dialog -->
+    <div
+      class="backdrop"
+      id="dialog-revoke"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dr-title"
+      aria-describedby="dr-desc"
+    >
+      <div class="dialog" tabindex="-1">
+        <div class="dialog-icon dialog-icon--warning" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h2 class="dialog-title" id="dr-title">Revoke API Access</h2>
+        <p class="dialog-desc" id="dr-desc">
+          Revoking this token will immediately break any integrations using it.
+          You will need to generate a new token to restore access.
+        </p>
+        <div class="dialog-actions">
+          <button class="btn btn--ghost dialog-cancel" data-dialog="dialog-revoke">Cancel</button>
+          <button class="btn btn--warning">Revoke Token</button>
+        </div>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const FOCUSABLE =
+      'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+  
+    let currentDialog = null;
+    let previousFocus = null;
+  
+    function getFocusable(el) {
+      return [...el.querySelectorAll(FOCUSABLE)].filter(
+        (n) => !n.closest("[hidden]") && n.offsetParent !== null
+      );
+    }
+  
+    function openDialog(dialog) {
+      if (currentDialog) closeDialog(currentDialog);
+      previousFocus = document.activeElement;
+      currentDialog = dialog;
+      dialog.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      const panel = dialog.querySelector(".dialog");
+      panel.focus();
+      trapFocus(dialog);
+    }
+  
+    function closeDialog(dialog) {
+      dialog.classList.remove("is-open");
+      document.body.style.overflow = "";
+      if (previousFocus) previousFocus.focus();
+      currentDialog = null;
+      previousFocus = null;
+    }
+  
+    function trapFocus(dialog) {
+      dialog.addEventListener("keydown", onKeyDown);
+    }
+  
+    function onKeyDown(e) {
+      const dialog = e.currentTarget;
+      if (e.key === "Escape") {
+        closeDialog(dialog);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable(dialog);
+      if (!focusable.length) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+  
+    // Wire open triggers
+    document
+      .getElementById("open-delete")
+      .addEventListener("click", () => openDialog(document.getElementById("dialog-delete")));
+    document
+      .getElementById("open-logout")
+      .addEventListener("click", () => openDialog(document.getElementById("dialog-logout")));
+    document
+      .getElementById("open-revoke")
+      .addEventListener("click", () => openDialog(document.getElementById("dialog-revoke")));
+  
+    // Wire cancel buttons
+    document.querySelectorAll(".dialog-cancel").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.dialog;
+        closeDialog(document.getElementById(id));
+      });
+    });
+  
+    // Backdrop click closes
+    document.querySelectorAll(".backdrop").forEach((backdrop) => {
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) closeDialog(backdrop);
+      });
+    });
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

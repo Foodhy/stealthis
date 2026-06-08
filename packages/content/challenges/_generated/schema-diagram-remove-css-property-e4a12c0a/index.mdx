@@ -1,0 +1,793 @@
+---
+slug: "schema-diagram-remove-css-property-e4a12c0a"
+topic: "schema"
+title: "Restore missing CSS property in Schema Diagram"
+type: "fix"
+difficulty: 1
+resourceSlug: "schema-diagram"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    color: #111;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .demo {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .sd-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .sd-title {
+    font-size: 15px;
+    font-weight: 800;
+  }
+  .sd-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+  .sd-btn {
+    padding: 6px 14px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #374151;
+  }
+  .sd-btn:hover {
+    background: #e5e7eb;
+  }
+  .sd-hint {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  .sd-canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #f9fafb;
+    background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  
+  .sd-svg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  
+  /* Table node */
+  .sd-table {
+    position: absolute;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    min-width: 200px;
+    cursor: grab;
+    user-select: none;
+    transition: box-shadow 0.15s;
+  }
+  .sd-table:active {
+    cursor: grabbing;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+  }
+  .sd-table.selected {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+  
+  .sd-table-header {
+    padding: 10px 14px;
+    background: #6366f1;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sd-table-icon {
+    font-size: 14px;
+  }
+  .sd-table-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+  }
+  
+  .sd-col {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 12px;
+  }
+  .sd-col:hover {
+    background: #f9fafb;
+  }
+  
+  .col-key {
+    width: 14px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .col-pk {
+    color: #f59e0b;
+  }
+  .col-fk {
+    color: #6366f1;
+  }
+  
+  .col-name {
+    flex: 1;
+    font-weight: 600;
+    color: #111827;
+  }
+  .col-type {
+    font-size: 11px;
+    color: #9ca3af;
+    font-family: Menlo, monospace;
+  }
+  .col-nullable {
+    font-size: 10px;
+    color: #d1d5db;
+    margin-left: auto;
+  }
+  
+  /* Relationship line labels */
+  .rel-label {
+    font-size: 10px;
+    fill: #6b7280;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schema Diagram</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <div class="sd-toolbar">
+      <span class="sd-title">E-Commerce Schema</span>
+      <div class="sd-actions">
+        <button class="sd-btn" id="fitBtn">Fit view</button>
+        <span class="sd-hint">Drag tables to reposition</span>
+      </div>
+    </div>
+    <div class="sd-canvas" id="sdCanvas">
+      <svg class="sd-svg" id="sdSvg" width="100%" height="100%">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#9ca3af" />
+          </marker>
+        </defs>
+        <!-- Relationship lines rendered by JS -->
+        <g id="lines"></g>
+      </svg>
+      <!-- Table nodes rendered by JS -->
+      <div id="tableContainer"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const SCHEMA = [
+    {
+      id: "users",
+      name: "users",
+      icon: "👤",
+      x: 40,
+      y: 60,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "email", type: "varchar(255)" },
+        { name: "name", type: "varchar(100)" },
+        { name: "created_at", type: "timestamp", nullable: true },
+      ],
+    },
+    {
+      id: "orders",
+      name: "orders",
+      icon: "📦",
+      x: 320,
+      y: 40,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "user_id", type: "uuid", key: "fk" },
+        { name: "status", type: "varchar(20)" },
+        { name: "total", type: "numeric(10,2)" },
+        { name: "created_at", type: "timestamp" },
+      ],
+    },
+    {
+      id: "order_items",
+      name: "order_items",
+      icon: "🗂",
+      x: 580,
+      y: 40,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "order_id", type: "uuid", key: "fk" },
+        { name: "product_id", type: "uuid", key: "fk" },
+        { name: "quantity", type: "integer" },
+        { name: "unit_price", type: "numeric(10,2)" },
+      ],
+    },
+    {
+      id: "products",
+      name: "products",
+      icon: "🏷",
+      x: 580,
+      y: 280,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "name", type: "varchar(200)" },
+        { name: "price", type: "numeric(10,2)" },
+        { name: "stock", type: "integer" },
+        { name: "category_id", type: "uuid", key: "fk" },
+      ],
+    },
+    {
+      id: "categories",
+      name: "categories",
+      icon: "🗃",
+      x: 320,
+      y: 280,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "name", type: "varchar(100)" },
+        { name: "slug", type: "varchar(100)" },
+      ],
+    },
+  ];
+  
+  const RELATIONS = [
+    { from: "orders", fromCol: "user_id", to: "users", toCol: "id", label: "1:N" },
+    { from: "order_items", fromCol: "order_id", to: "orders", toCol: "id", label: "1:N" },
+    { from: "order_items", fromCol: "product_id", to: "products", toCol: "id", label: "1:N" },
+    { from: "products", fromCol: "category_id", to: "categories", toCol: "id", label: "N:1" },
+  ];
+  
+  const canvas = document.getElementById("sdCanvas");
+  const container = document.getElementById("tableContainer");
+  const svgEl = document.getElementById("sdSvg");
+  const linesG = document.getElementById("lines");
+  
+  const tableEls = {};
+  const positions = {};
+  
+  function renderTable(t) {
+    const el = document.createElement("div");
+    el.className = "sd-table";
+    el.id = `tbl-${t.id}`;
+    el.style.left = t.x + "px";
+    el.style.top = t.y + "px";
+    positions[t.id] = { x: t.x, y: t.y };
+  
+    let html = `<div class="sd-table-header"><span class="sd-table-icon">${t.icon}</span><span class="sd-table-name">${t.name}</span></div>`;
+    t.cols.forEach((col) => {
+      const keyHtml =
+        col.key === "pk"
+          ? `<span class="col-key col-pk">🔑</span>`
+          : col.key === "fk"
+            ? `<span class="col-key col-fk">🔗</span>`
+            : `<span class="col-key"></span>`;
+      const nullable = col.nullable ? `<span class="col-nullable">?</span>` : "";
+      html += `<div class="sd-col">${keyHtml}<span class="col-name">${col.name}</span><span class="col-type">${col.type}</span>${nullable}</div>`;
+    });
+    el.innerHTML = html;
+  
+    // Drag
+    let dragging = false,
+      ox = 0,
+      oy = 0;
+    el.addEventListener("mousedown", (e) => {
+      dragging = true;
+      ox = e.clientX - positions[t.id].x;
+      oy = e.clientY - positions[t.id].y;
+      el.classList.add("selected");
+      e.preventDefault();
+    });
+    window.addEventListener("mousemove", (e) => {
+      if (!dragging) return;
+      const x = e.clientX - ox;
+      const y = e.clientY - oy;
+      positions[t.id] = { x, y };
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+      renderLines();
+    });
+    window.addEventListener("mouseup", () => {
+      if (dragging) {
+        dragging = false;
+        el.classList.remove("selected");
+      }
+    });
+  
+    container.appendChild(el);
+    tableEls[t.id] = el;
+  }
+  
+  function getCenter(id) {
+    const el = tableEls[id];
+    const { x, y } = positions[id];
+    return { x: x + el.offsetWidth / 2, y: y + el.offsetHeight / 2 };
+  }
+  
+  function renderLines() {
+    linesG.innerHTML = "";
+    RELATIONS.forEach((rel) => {
+      const fc = getCenter(rel.from);
+      const tc = getCenter(rel.to);
+      const mx = (fc.x + tc.x) / 2;
+      const my = (fc.y + tc.y) / 2;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      const d = `M ${fc.x} ${fc.y} C ${mx} ${fc.y}, ${mx} ${tc.y}, ${tc.x} ${tc.y}`;
+      path.setAttribute("d", d);
+      path.setAttribute("stroke", "#9ca3af");
+      path.setAttribute("stroke-width", "1.5");
+      path.setAttribute("fill", "none");
+      path.setAttribute("marker-end", "url(#arrow)");
+      linesG.appendChild(path);
+  
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", mx);
+      text.setAttribute("y", (fc.y + tc.y) / 2 - 4);
+      text.setAttribute("text-anchor", "middle");
+      text.className.baseVal = "rel-label";
+      text.textContent = rel.label;
+      linesG.appendChild(text);
+    });
+  }
+  
+  SCHEMA.forEach(renderTable);
+  
+  // Resize observer to re-render lines when tables are sized
+  const ro = new ResizeObserver(renderLines);
+  Object.values(tableEls).forEach((el) => ro.observe(el));
+  renderLines();
+  
+  // Fit button
+  document.getElementById("fitBtn").addEventListener("click", () => {
+    SCHEMA.forEach((t, i) => {
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      positions[t.id] = { x: 40 + col * 260, y: 60 + row * 220 };
+      tableEls[t.id].style.left = positions[t.id].x + "px";
+      tableEls[t.id].style.top = positions[t.id].y + "px";
+    });
+    renderLines();
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    color: #111;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .demo {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .sd-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .sd-title {
+    font-size: 15px;
+    font-weight: 800;
+  }
+  .sd-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+  .sd-btn {
+    padding: 6px 14px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #374151;
+  }
+  .sd-btn:hover {
+    background: #e5e7eb;
+  }
+  .sd-hint {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  .sd-canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #f9fafb;
+    background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  
+  .sd-svg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  
+  /* Table node */
+  .sd-table {
+    position: absolute;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    min-width: 200px;
+    cursor: grab;
+    user-select: none;
+    transition: box-shadow 0.15s;
+  }
+  .sd-table:active {
+    cursor: grabbing;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+  }
+  .sd-table.selected {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+  
+  .sd-table-header {
+    padding: 10px 14px;
+    background: #6366f1;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sd-table-icon {
+    font-size: 14px;
+  }
+  .sd-table-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+  }
+  
+  .sd-col {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 12px;
+  }
+  .sd-col:hover {
+    background: #f9fafb;
+  }
+  
+  .col-key {
+    width: 14px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .col-pk {
+    color: #f59e0b;
+  }
+  .col-fk {
+    color: #6366f1;
+  }
+  
+  .col-name {
+    flex: 1;
+    font-weight: 600;
+    color: #111827;
+  }
+  .col-type {
+    font-size: 11px;
+    color: #9ca3af;
+    font-family: Menlo, monospace;
+  }
+  .col-nullable {
+    font-size: 10px;
+    color: #d1d5db;
+    margin-left: auto;
+  }
+  
+  /* Relationship line labels */
+  .rel-label {
+    font-size: 10px;
+    fill: #6b7280;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schema Diagram</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <div class="sd-toolbar">
+      <span class="sd-title">E-Commerce Schema</span>
+      <div class="sd-actions">
+        <button class="sd-btn" id="fitBtn">Fit view</button>
+        <span class="sd-hint">Drag tables to reposition</span>
+      </div>
+    </div>
+    <div class="sd-canvas" id="sdCanvas">
+      <svg class="sd-svg" id="sdSvg" width="100%" height="100%">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#9ca3af" />
+          </marker>
+        </defs>
+        <!-- Relationship lines rendered by JS -->
+        <g id="lines"></g>
+      </svg>
+      <!-- Table nodes rendered by JS -->
+      <div id="tableContainer"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const SCHEMA = [
+    {
+      id: "users",
+      name: "users",
+      icon: "👤",
+      x: 40,
+      y: 60,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "email", type: "varchar(255)" },
+        { name: "name", type: "varchar(100)" },
+        { name: "created_at", type: "timestamp", nullable: true },
+      ],
+    },
+    {
+      id: "orders",
+      name: "orders",
+      icon: "📦",
+      x: 320,
+      y: 40,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "user_id", type: "uuid", key: "fk" },
+        { name: "status", type: "varchar(20)" },
+        { name: "total", type: "numeric(10,2)" },
+        { name: "created_at", type: "timestamp" },
+      ],
+    },
+    {
+      id: "order_items",
+      name: "order_items",
+      icon: "🗂",
+      x: 580,
+      y: 40,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "order_id", type: "uuid", key: "fk" },
+        { name: "product_id", type: "uuid", key: "fk" },
+        { name: "quantity", type: "integer" },
+        { name: "unit_price", type: "numeric(10,2)" },
+      ],
+    },
+    {
+      id: "products",
+      name: "products",
+      icon: "🏷",
+      x: 580,
+      y: 280,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "name", type: "varchar(200)" },
+        { name: "price", type: "numeric(10,2)" },
+        { name: "stock", type: "integer" },
+        { name: "category_id", type: "uuid", key: "fk" },
+      ],
+    },
+    {
+      id: "categories",
+      name: "categories",
+      icon: "🗃",
+      x: 320,
+      y: 280,
+      cols: [
+        { name: "id", type: "uuid", key: "pk" },
+        { name: "name", type: "varchar(100)" },
+        { name: "slug", type: "varchar(100)" },
+      ],
+    },
+  ];
+  
+  const RELATIONS = [
+    { from: "orders", fromCol: "user_id", to: "users", toCol: "id", label: "1:N" },
+    { from: "order_items", fromCol: "order_id", to: "orders", toCol: "id", label: "1:N" },
+    { from: "order_items", fromCol: "product_id", to: "products", toCol: "id", label: "1:N" },
+    { from: "products", fromCol: "category_id", to: "categories", toCol: "id", label: "N:1" },
+  ];
+  
+  const canvas = document.getElementById("sdCanvas");
+  const container = document.getElementById("tableContainer");
+  const svgEl = document.getElementById("sdSvg");
+  const linesG = document.getElementById("lines");
+  
+  const tableEls = {};
+  const positions = {};
+  
+  function renderTable(t) {
+    const el = document.createElement("div");
+    el.className = "sd-table";
+    el.id = `tbl-${t.id}`;
+    el.style.left = t.x + "px";
+    el.style.top = t.y + "px";
+    positions[t.id] = { x: t.x, y: t.y };
+  
+    let html = `<div class="sd-table-header"><span class="sd-table-icon">${t.icon}</span><span class="sd-table-name">${t.name}</span></div>`;
+    t.cols.forEach((col) => {
+      const keyHtml =
+        col.key === "pk"
+          ? `<span class="col-key col-pk">🔑</span>`
+          : col.key === "fk"
+            ? `<span class="col-key col-fk">🔗</span>`
+            : `<span class="col-key"></span>`;
+      const nullable = col.nullable ? `<span class="col-nullable">?</span>` : "";
+      html += `<div class="sd-col">${keyHtml}<span class="col-name">${col.name}</span><span class="col-type">${col.type}</span>${nullable}</div>`;
+    });
+    el.innerHTML = html;
+  
+    // Drag
+    let dragging = false,
+      ox = 0,
+      oy = 0;
+    el.addEventListener("mousedown", (e) => {
+      dragging = true;
+      ox = e.clientX - positions[t.id].x;
+      oy = e.clientY - positions[t.id].y;
+      el.classList.add("selected");
+      e.preventDefault();
+    });
+    window.addEventListener("mousemove", (e) => {
+      if (!dragging) return;
+      const x = e.clientX - ox;
+      const y = e.clientY - oy;
+      positions[t.id] = { x, y };
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+      renderLines();
+    });
+    window.addEventListener("mouseup", () => {
+      if (dragging) {
+        dragging = false;
+        el.classList.remove("selected");
+      }
+    });
+  
+    container.appendChild(el);
+    tableEls[t.id] = el;
+  }
+  
+  function getCenter(id) {
+    const el = tableEls[id];
+    const { x, y } = positions[id];
+    return { x: x + el.offsetWidth / 2, y: y + el.offsetHeight / 2 };
+  }
+  
+  function renderLines() {
+    linesG.innerHTML = "";
+    RELATIONS.forEach((rel) => {
+      const fc = getCenter(rel.from);
+      const tc = getCenter(rel.to);
+      const mx = (fc.x + tc.x) / 2;
+      const my = (fc.y + tc.y) / 2;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      const d = `M ${fc.x} ${fc.y} C ${mx} ${fc.y}, ${mx} ${tc.y}, ${tc.x} ${tc.y}`;
+      path.setAttribute("d", d);
+      path.setAttribute("stroke", "#9ca3af");
+      path.setAttribute("stroke-width", "1.5");
+      path.setAttribute("fill", "none");
+      path.setAttribute("marker-end", "url(#arrow)");
+      linesG.appendChild(path);
+  
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", mx);
+      text.setAttribute("y", (fc.y + tc.y) / 2 - 4);
+      text.setAttribute("text-anchor", "middle");
+      text.className.baseVal = "rel-label";
+      text.textContent = rel.label;
+      linesG.appendChild(text);
+    });
+  }
+  
+  SCHEMA.forEach(renderTable);
+  
+  // Resize observer to re-render lines when tables are sized
+  const ro = new ResizeObserver(renderLines);
+  Object.values(tableEls).forEach((el) => ro.observe(el));
+  renderLines();
+  
+  // Fit button
+  document.getElementById("fitBtn").addEventListener("click", () => {
+    SCHEMA.forEach((t, i) => {
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      positions[t.id] = { x: 40 + col * 260, y: 60 + row * 220 };
+      tableEls[t.id].style.left = positions[t.id].x + "px";
+      tableEls[t.id].style.top = positions[t.id].y + "px";
+    });
+    renderLines();
+  });
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

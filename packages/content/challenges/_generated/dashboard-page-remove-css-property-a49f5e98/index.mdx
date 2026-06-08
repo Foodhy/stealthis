@@ -1,0 +1,3049 @@
+---
+slug: "dashboard-page-remove-css-property-a49f5e98"
+topic: "dashboard"
+title: "Restore missing CSS property in Dashboard Page"
+type: "fix"
+difficulty: 1
+resourceSlug: "dashboard-page"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  /* ===== Reset & Base ===== */
+  *,
+  *::before,
+  *::after {
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 72px;
+    --topbar-height: 64px;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --sidebar-bg: #1e293b;
+    --sidebar-text: #94a3b8;
+    --sidebar-active: #6366f1;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+  
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+      sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  
+  /* ===== Sidebar ===== */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.25s ease, transform 0.25s ease;
+    overflow: hidden;
+  }
+  
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    color: var(--sidebar-active);
+  }
+  
+  .sidebar-logo-text {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s ease;
+  }
+  
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 12px;
+    flex: 1;
+  }
+  
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+  
+  .sidebar-link svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  
+  .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+  }
+  
+  .sidebar-link.active {
+    background: var(--sidebar-active);
+    color: #ffffff;
+  }
+  
+  /* Collapsed sidebar */
+  .sidebar.collapsed {
+    width: var(--sidebar-collapsed);
+  }
+  
+  .sidebar.collapsed .sidebar-logo-text,
+  .sidebar.collapsed .link-label {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 10px;
+  }
+  
+  .sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 20px 12px 16px;
+  }
+  
+  /* ===== Sidebar overlay (mobile) ===== */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+  
+  .sidebar-overlay.visible {
+    display: block;
+  }
+  
+  /* ===== Main wrapper ===== */
+  .main-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    transition: margin-left 0.25s ease;
+  }
+  
+  .sidebar.collapsed ~ .main-wrapper {
+    margin-left: var(--sidebar-collapsed);
+  }
+  
+  /* ===== Top bar ===== */
+  .topbar {
+    position: sticky;
+    top: 0;
+    height: var(--topbar-height);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 24px;
+    z-index: 50;
+  }
+  
+  .hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--text-primary);
+  }
+  
+  .hamburger svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .sidebar-collapse-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  
+  .sidebar-collapse-btn:hover {
+    background: var(--bg);
+  }
+  
+  .sidebar-collapse-btn svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.25s ease;
+  }
+  
+  .sidebar.collapsed ~ .main-wrapper .sidebar-collapse-btn svg {
+    transform: rotate(180deg);
+  }
+  
+  .topbar-search {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 8px 12px 8px 40px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: var(--bg);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  
+  .search-input:focus {
+    border-color: var(--sidebar-active);
+  }
+  
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+  
+  .topbar-icon-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    transition: background 0.15s ease;
+  }
+  
+  .topbar-icon-btn:hover {
+    background: var(--bg);
+  }
+  
+  .topbar-icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .notification-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+  }
+  
+  .avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--sidebar-active);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  /* ===== Content area ===== */
+  .content {
+    padding: 24px;
+    max-width: 1400px;
+  }
+  
+  .content-header {
+    margin-bottom: 24px;
+  }
+  
+  .content-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  .content-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+  
+  /* ===== KPI Cards ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .kpi-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  
+  .kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .kpi-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  
+  .kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  
+  .kpi-trend svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .kpi-trend.up {
+    color: var(--green);
+    background: rgba(34, 197, 94, 0.1);
+  }
+  
+  .kpi-trend.down {
+    color: var(--red);
+    background: rgba(239, 68, 68, 0.1);
+  }
+  
+  .kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  
+  .kpi-footer {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+  
+  /* ===== Chart cards ===== */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .chart-card,
+  .activity-card,
+  .table-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  
+  .chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .chart-card-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .chart-period {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  
+  .chart-card canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .chart-card-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .chart-card-small .chart-card-header {
+    width: 100%;
+  }
+  
+  .chart-card-small canvas {
+    max-width: 220px;
+    max-height: 220px;
+  }
+  
+  /* Donut legend */
+  .donut-legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+    justify-content: center;
+  }
+  
+  .donut-legend li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  
+  .donut-legend .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  /* ===== Activity feed ===== */
+  .activity-feed {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .activity-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  
+  .activity-body p {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  
+  .activity-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  /* ===== Data table ===== */
+  .table-card {
+    margin-bottom: 24px;
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  
+  .data-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  
+  .data-table th:hover {
+    color: var(--text-primary);
+  }
+  
+  .data-table th::after {
+    content: "";
+    display: inline-block;
+    margin-left: 6px;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+  }
+  
+  .data-table th.sort-asc::after {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid var(--sidebar-active);
+  }
+  
+  .data-table th.sort-desc::after {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--sidebar-active);
+  }
+  
+  .data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+  
+  .data-table tbody tr:nth-child(even) {
+    background: rgba(241, 245, 249, 0.5);
+  }
+  
+  .data-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.04);
+  }
+  
+  /* Status badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  
+  .badge-completed {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--green);
+  }
+  
+  .badge-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--yellow);
+  }
+  
+  .badge-cancelled {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red);
+  }
+  
+  /* ===== Canvas tooltip ===== */
+  .chart-tooltip {
+    position: fixed;
+    padding: 6px 12px;
+    background: var(--sidebar-bg);
+    color: #ffffff;
+    font-size: 0.78rem;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 200;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  
+  .chart-tooltip.visible {
+    opacity: 1;
+  }
+  
+  /* ===== Responsive ===== */
+  @media (max-width: 1200px) {
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .sidebar {
+      width: var(--sidebar-collapsed);
+    }
+  
+    .sidebar .sidebar-logo-text,
+    .sidebar .link-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+  
+    .sidebar .sidebar-link {
+      justify-content: center;
+      padding: 10px;
+    }
+  
+    .sidebar .sidebar-header {
+      justify-content: center;
+      padding: 20px 12px 16px;
+    }
+  
+    .main-wrapper {
+      margin-left: var(--sidebar-collapsed);
+    }
+  
+    .sidebar-collapse-btn {
+      display: none;
+    }
+  
+    .charts-row {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .sidebar {
+      width: var(--sidebar-width);
+      transform: translateX(-100%);
+    }
+  
+    .sidebar.open {
+      transform: translateX(0);
+    }
+  
+    .sidebar.open .sidebar-logo-text,
+    .sidebar.open .link-label {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  
+    .sidebar.open .sidebar-link {
+      justify-content: flex-start;
+      padding: 10px 12px;
+    }
+  
+    .sidebar.open .sidebar-header {
+      justify-content: flex-start;
+      padding: 20px 20px 16px;
+    }
+  
+    .main-wrapper {
+      margin-left: 0;
+    }
+  
+    .hamburger {
+      display: flex;
+    }
+  
+    .sidebar-collapse-btn {
+      display: none;
+    }
+  
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .content {
+      padding: 16px;
+    }
+  
+    .topbar {
+      padding: 0 16px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <svg class="sidebar-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span class="sidebar-logo-text">Dashboard</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+          <span class="link-label">Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span class="link-label">Analytics</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="customers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span class="link-label">Customers</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="orders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span class="link-label">Orders</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="products">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <span class="link-label">Products</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span class="link-label">Settings</span>
+        </a>
+      </nav>
+    </aside>
+  
+    <!-- Main wrapper -->
+    <div class="main-wrapper" id="mainWrapper">
+      <!-- Top bar -->
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <button class="sidebar-collapse-btn" id="collapseBtn" aria-label="Collapse sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="11 17 6 12 11 7"></polyline>
+            <polyline points="18 17 13 12 18 7"></polyline>
+          </svg>
+        </button>
+        <div class="topbar-search">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Search..." class="search-input" />
+        </div>
+        <div class="topbar-actions">
+          <button class="topbar-icon-btn" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-dot"></span>
+          </button>
+          <div class="topbar-avatar">
+            <div class="avatar-circle">JD</div>
+          </div>
+        </div>
+      </header>
+  
+      <!-- Content -->
+      <main class="content">
+        <div class="content-header">
+          <h1>Dashboard</h1>
+          <p class="content-subtitle">Welcome back, John. Here is what is happening today.</p>
+        </div>
+  
+        <!-- KPI Cards -->
+        <section class="kpi-grid">
+          <div class="kpi-card" data-target="48250" data-prefix="$" data-suffix="">
+            <div class="kpi-header">
+              <span class="kpi-label">Revenue</span>
+              <span class="kpi-trend up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                +12.5%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">$0</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+          <div class="kpi-card" data-target="2420" data-prefix="" data-suffix="">
+            <div class="kpi-header">
+              <span class="kpi-label">Users</span>
+              <span class="kpi-trend up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                +8.1%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">0</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+          <div class="kpi-card" data-target="1210" data-prefix="" data-suffix="">
+            <div class="kpi-header">
+              <span class="kpi-label">Orders</span>
+              <span class="kpi-trend up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                +5.3%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">0</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+          <div class="kpi-card" data-target="3.2" data-prefix="" data-suffix="%">
+            <div class="kpi-header">
+              <span class="kpi-label">Conversion</span>
+              <span class="kpi-trend down">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                -0.4%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">0%</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+        </section>
+  
+        <!-- Charts -->
+        <section class="charts-row">
+          <div class="chart-card chart-card-large">
+            <div class="chart-card-header">
+              <h3>Revenue Trend</h3>
+              <span class="chart-period">Last 12 months</span>
+            </div>
+            <canvas id="lineChart" width="600" height="280"
+              data-values="12400,15800,14200,18600,17200,21400,19800,24600,22800,28200,26400,32600"
+              data-labels="Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec">
+            </canvas>
+          </div>
+          <div class="chart-card chart-card-large">
+            <div class="chart-card-header">
+              <h3>Monthly Sales</h3>
+              <span class="chart-period">By category</span>
+            </div>
+            <canvas id="barChart" width="600" height="280"
+              data-values="4200,3800,5100,2900,3400,4600"
+              data-labels="Electronics,Clothing,Home,Sports,Books,Beauty"
+              data-colors="#6366f1,#8b5cf6,#a78bfa,#c4b5fd,#7c3aed,#5b21b6">
+            </canvas>
+          </div>
+        </section>
+  
+        <section class="charts-row">
+          <div class="chart-card chart-card-small">
+            <div class="chart-card-header">
+              <h3>Traffic Sources</h3>
+            </div>
+            <canvas id="donutChart" width="260" height="260"
+              data-values="35,30,20,15"
+              data-labels="Direct,Organic,Social,Referral"
+              data-colors="#6366f1,#22c55e,#f59e0b,#ef4444">
+            </canvas>
+            <ul class="donut-legend" id="donutLegend"></ul>
+          </div>
+          <!-- Activity feed -->
+          <div class="activity-card">
+            <div class="chart-card-header">
+              <h3>Recent Activity</h3>
+            </div>
+            <ul class="activity-feed">
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#6366f1;">A</div>
+                <div class="activity-body">
+                  <p><strong>Alice Chen</strong> placed a new order <strong>#1024</strong></p>
+                  <span class="activity-time">2 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#22c55e;">B</div>
+                <div class="activity-body">
+                  <p><strong>Bob Martin</strong> left a 5-star review</p>
+                  <span class="activity-time">18 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#f59e0b;">C</div>
+                <div class="activity-body">
+                  <p><strong>Carol Davis</strong> updated her profile</p>
+                  <span class="activity-time">45 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#ef4444;">D</div>
+                <div class="activity-body">
+                  <p><strong>Dan Wilson</strong> cancelled order <strong>#1018</strong></p>
+                  <span class="activity-time">1 hour ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#8b5cf6;">E</div>
+                <div class="activity-body">
+                  <p><strong>Eve Taylor</strong> signed up as a new customer</p>
+                  <span class="activity-time">3 hours ago</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+  
+        <!-- Data table -->
+        <section class="table-card">
+          <div class="chart-card-header">
+            <h3>Recent Orders</h3>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="ordersTable">
+              <thead>
+                <tr>
+                  <th data-sort="string">Order ID</th>
+                  <th data-sort="string">Customer</th>
+                  <th data-sort="number">Amount</th>
+                  <th data-sort="string">Status</th>
+                  <th data-sort="string">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#1024</td>
+                  <td>Alice Chen</td>
+                  <td>$249.00</td>
+                  <td><span class="badge badge-completed">Completed</span></td>
+                  <td>2026-03-20</td>
+                </tr>
+                <tr>
+                  <td>#1023</td>
+                  <td>Bob Martin</td>
+                  <td>$185.50</td>
+                  <td><span class="badge badge-completed">Completed</span></td>
+                  <td>2026-03-19</td>
+                </tr>
+                <tr>
+                  <td>#1022</td>
+                  <td>Carol Davis</td>
+                  <td>$432.00</td>
+                  <td><span class="badge badge-pending">Pending</span></td>
+                  <td>2026-03-19</td>
+                </tr>
+                <tr>
+                  <td>#1021</td>
+                  <td>Dan Wilson</td>
+                  <td>$67.25</td>
+                  <td><span class="badge badge-cancelled">Cancelled</span></td>
+                  <td>2026-03-18</td>
+                </tr>
+                <tr>
+                  <td>#1020</td>
+                  <td>Eve Taylor</td>
+                  <td>$528.90</td>
+                  <td><span class="badge badge-completed">Completed</span></td>
+                  <td>2026-03-18</td>
+                </tr>
+                <tr>
+                  <td>#1019</td>
+                  <td>Frank Lee</td>
+                  <td>$312.00</td>
+                  <td><span class="badge badge-pending">Pending</span></td>
+                  <td>2026-03-17</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    "use strict";
+  
+    /* ===== DOM refs ===== */
+    const sidebar = document.getElementById("sidebar");
+    const mainWrapper = document.getElementById("mainWrapper");
+    const collapseBtn = document.getElementById("collapseBtn");
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const overlay = document.getElementById("sidebarOverlay");
+  
+    /* ===== Sidebar toggle (desktop collapse) ===== */
+    collapseBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+    });
+  
+    /* ===== Hamburger (mobile) ===== */
+    function openMobileSidebar() {
+      sidebar.classList.add("open");
+      overlay.classList.add("visible");
+    }
+  
+    function closeMobileSidebar() {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("visible");
+    }
+  
+    hamburgerBtn.addEventListener("click", () => {
+      if (sidebar.classList.contains("open")) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+    });
+  
+    overlay.addEventListener("click", closeMobileSidebar);
+  
+    /* ===== Sidebar nav active state ===== */
+    document.querySelectorAll(".sidebar-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.querySelectorAll(".sidebar-link").forEach((l) => l.classList.remove("active"));
+        link.classList.add("active");
+        closeMobileSidebar();
+      });
+    });
+  
+    /* ===== KPI count-up animation ===== */
+    function animateKPI() {
+      const cards = document.querySelectorAll(".kpi-card");
+      const duration = 1200;
+  
+      cards.forEach((card) => {
+        const target = parseFloat(card.dataset.target);
+        const prefix = card.dataset.prefix || "";
+        const suffix = card.dataset.suffix || "";
+        const valueEl = card.querySelector(".kpi-value");
+        const isFloat = target % 1 !== 0;
+        const startTime = performance.now();
+  
+        function step(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = eased * target;
+  
+          if (isFloat) {
+            valueEl.textContent = prefix + current.toFixed(1) + suffix;
+          } else {
+            valueEl.textContent = prefix + Math.floor(current).toLocaleString() + suffix;
+          }
+  
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          }
+        }
+  
+        requestAnimationFrame(step);
+      });
+    }
+  
+    animateKPI();
+  
+    /* ===== Shared tooltip ===== */
+    const tooltip = document.createElement("div");
+    tooltip.className = "chart-tooltip";
+    document.body.appendChild(tooltip);
+  
+    function showTooltip(x, y, text) {
+      tooltip.textContent = text;
+      tooltip.classList.add("visible");
+      tooltip.style.left = x + 12 + "px";
+      tooltip.style.top = y - 28 + "px";
+    }
+  
+    function hideTooltip() {
+      tooltip.classList.remove("visible");
+    }
+  
+    /* ===== Utility: parse canvas data attrs ===== */
+    function getCanvasData(id) {
+      const canvas = document.getElementById(id);
+      const values = canvas.dataset.values.split(",").map(Number);
+      const labels = canvas.dataset.labels.split(",");
+      const colors = canvas.dataset.colors ? canvas.dataset.colors.split(",") : [];
+      return { canvas, values, labels, colors };
+    }
+  
+    /* ===== LINE CHART ===== */
+    function drawLineChart() {
+      const { canvas, values, labels } = getCanvasData("lineChart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+  
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+  
+      const w = rect.width;
+      const h = rect.height;
+      const padTop = 20;
+      const padBottom = 40;
+      const padLeft = 50;
+      const padRight = 20;
+      const chartW = w - padLeft - padRight;
+      const chartH = h - padTop - padBottom;
+  
+      const maxVal = Math.max(...values) * 1.1;
+      const minVal = 0;
+  
+      function xPos(i) {
+        return padLeft + (i / (values.length - 1)) * chartW;
+      }
+      function yPos(v) {
+        return padTop + chartH - ((v - minVal) / (maxVal - minVal)) * chartH;
+      }
+  
+      /* Grid lines */
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 1;
+      const gridLines = 5;
+      for (let i = 0; i <= gridLines; i++) {
+        const y = padTop + (chartH / gridLines) * i;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(w - padRight, y);
+        ctx.stroke();
+  
+        const val = maxVal - (maxVal / gridLines) * i;
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText("$" + (val / 1000).toFixed(0) + "k", padLeft - 8, y + 4);
+      }
+  
+      /* X labels */
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#94a3b8";
+      labels.forEach((label, i) => {
+        ctx.fillText(label, xPos(i), h - 10);
+      });
+  
+      /* Gradient fill */
+      const gradient = ctx.createLinearGradient(0, padTop, 0, padTop + chartH);
+      gradient.addColorStop(0, "rgba(99, 102, 241, 0.25)");
+      gradient.addColorStop(1, "rgba(99, 102, 241, 0.01)");
+  
+      ctx.beginPath();
+      ctx.moveTo(xPos(0), yPos(values[0]));
+      values.forEach((v, i) => {
+        if (i > 0) ctx.lineTo(xPos(i), yPos(v));
+      });
+      ctx.lineTo(xPos(values.length - 1), padTop + chartH);
+      ctx.lineTo(xPos(0), padTop + chartH);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+  
+      /* Line */
+      ctx.beginPath();
+      ctx.moveTo(xPos(0), yPos(values[0]));
+      values.forEach((v, i) => {
+        if (i > 0) ctx.lineTo(xPos(i), yPos(v));
+      });
+      ctx.strokeStyle = "#6366f1";
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+  
+      /* Dots */
+      const dots = [];
+      values.forEach((v, i) => {
+        const x = xPos(i);
+        const y = yPos(v);
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#6366f1";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        dots.push({ x, y, label: labels[i], value: v });
+      });
+  
+      /* Hover */
+      canvas.addEventListener("mousemove", (e) => {
+        const cr = canvas.getBoundingClientRect();
+        const mx = e.clientX - cr.left;
+        const my = e.clientY - cr.top;
+        let found = false;
+  
+        dots.forEach((d) => {
+          const dist = Math.sqrt((mx - d.x) ** 2 + (my - d.y) ** 2);
+          if (dist < 16) {
+            showTooltip(e.clientX, e.clientY, d.label + ": $" + d.value.toLocaleString());
+            found = true;
+          }
+        });
+  
+        if (!found) hideTooltip();
+      });
+  
+      canvas.addEventListener("mouseleave", hideTooltip);
+    }
+  
+    /* ===== BAR CHART ===== */
+    function drawBarChart() {
+      const { canvas, values, labels, colors } = getCanvasData("barChart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+  
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+  
+      const w = rect.width;
+      const h = rect.height;
+      const padTop = 20;
+      const padBottom = 50;
+      const padLeft = 50;
+      const padRight = 20;
+      const chartW = w - padLeft - padRight;
+      const chartH = h - padTop - padBottom;
+  
+      const maxVal = Math.max(...values) * 1.15;
+      const barWidth = (chartW / values.length) * 0.55;
+      const gap = chartW / values.length;
+  
+      /* Grid */
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 1;
+      const gridLines = 5;
+      for (let i = 0; i <= gridLines; i++) {
+        const y = padTop + (chartH / gridLines) * i;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(w - padRight, y);
+        ctx.stroke();
+  
+        const val = maxVal - (maxVal / gridLines) * i;
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText("$" + (val / 1000).toFixed(1) + "k", padLeft - 8, y + 4);
+      }
+  
+      /* Bars */
+      const bars = [];
+      values.forEach((v, i) => {
+        const x = padLeft + gap * i + (gap - barWidth) / 2;
+        const barH = (v / maxVal) * chartH;
+        const y = padTop + chartH - barH;
+  
+        /* Rounded top */
+        const r = Math.min(6, barWidth / 2);
+        ctx.beginPath();
+        ctx.moveTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.arcTo(x + barWidth, y, x + barWidth, y + r, r);
+        ctx.lineTo(x + barWidth, padTop + chartH);
+        ctx.lineTo(x, padTop + chartH);
+        ctx.closePath();
+        ctx.fillStyle = colors[i] || "#6366f1";
+        ctx.fill();
+  
+        bars.push({
+          x,
+          y,
+          w: barWidth,
+          h: barH,
+          label: labels[i],
+          value: v,
+        });
+  
+        /* X label */
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(labels[i], x + barWidth / 2, h - 14);
+      });
+  
+      /* Hover */
+      canvas.addEventListener("mousemove", (e) => {
+        const cr = canvas.getBoundingClientRect();
+        const mx = e.clientX - cr.left;
+        const my = e.clientY - cr.top;
+        let found = false;
+  
+        bars.forEach((b) => {
+          if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= padTop + chartH) {
+            showTooltip(e.clientX, e.clientY, b.label + ": $" + b.value.toLocaleString());
+            found = true;
+          }
+        });
+  
+        if (!found) hideTooltip();
+      });
+  
+      canvas.addEventListener("mouseleave", hideTooltip);
+    }
+  
+    /* ===== DONUT CHART ===== */
+    function drawDonutChart() {
+      const { canvas, values, labels, colors } = getCanvasData("donutChart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+  
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+  
+      const w = rect.width;
+      const h = rect.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const outerR = Math.min(w, h) / 2 - 10;
+      const innerR = outerR * 0.6;
+      const total = values.reduce((a, b) => a + b, 0);
+  
+      const segments = [];
+      let startAngle = -Math.PI / 2;
+  
+      values.forEach((v, i) => {
+        const sliceAngle = (v / total) * Math.PI * 2;
+        const endAngle = startAngle + sliceAngle;
+  
+        ctx.beginPath();
+        ctx.arc(cx, cy, outerR, startAngle, endAngle);
+        ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+  
+        segments.push({
+          start: startAngle,
+          end: endAngle,
+          label: labels[i],
+          value: v,
+          pct: ((v / total) * 100).toFixed(0),
+          color: colors[i],
+        });
+  
+        startAngle = endAngle;
+      });
+  
+      /* Center text */
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 20px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(total.toLocaleString(), cx, cy - 6);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px -apple-system, sans-serif";
+      ctx.fillText("Total", cx, cy + 14);
+  
+      /* Legend */
+      const legend = document.getElementById("donutLegend");
+      legend.innerHTML = "";
+      segments.forEach((s) => {
+        const li = document.createElement("li");
+        li.innerHTML =
+          '<span class="legend-dot" style="background:' +
+          s.color +
+          '"></span>' +
+          s.label +
+          " " +
+          s.pct +
+          "%";
+        legend.appendChild(li);
+      });
+  
+      /* Hover */
+      canvas.addEventListener("mousemove", (e) => {
+        const cr = canvas.getBoundingClientRect();
+        const mx = e.clientX - cr.left;
+        const my = e.clientY - cr.top;
+        const dx = mx - cx;
+        const dy = my - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+  
+        if (dist >= innerR && dist <= outerR) {
+          let angle = Math.atan2(dy, dx);
+          if (angle < -Math.PI / 2) angle += Math.PI * 2;
+  
+          const seg = segments.find((s) => angle >= s.start && angle < s.end);
+          if (seg) {
+            showTooltip(e.clientX, e.clientY, seg.label + ": " + seg.pct + "% (" + seg.value + ")");
+            return;
+          }
+        }
+        hideTooltip();
+      });
+  
+      canvas.addEventListener("mouseleave", hideTooltip);
+    }
+  
+    /* ===== TABLE SORT ===== */
+    function initTableSort() {
+      const table = document.getElementById("ordersTable");
+      const headers = table.querySelectorAll("th[data-sort]");
+      let currentSort = { col: -1, asc: true };
+  
+      headers.forEach((th, colIndex) => {
+        th.addEventListener("click", () => {
+          const type = th.dataset.sort;
+          const asc = currentSort.col === colIndex ? !currentSort.asc : true;
+          currentSort = { col: colIndex, asc };
+  
+          /* Update classes */
+          headers.forEach((h) => h.classList.remove("sort-asc", "sort-desc"));
+          th.classList.add(asc ? "sort-asc" : "sort-desc");
+  
+          /* Sort rows */
+          const tbody = table.querySelector("tbody");
+          const rows = Array.from(tbody.querySelectorAll("tr"));
+  
+          rows.sort((a, b) => {
+            let va = a.cells[colIndex].textContent.trim();
+            let vb = b.cells[colIndex].textContent.trim();
+  
+            if (type === "number") {
+              va = parseFloat(va.replace(/[^0-9.\-]/g, "")) || 0;
+              vb = parseFloat(vb.replace(/[^0-9.\-]/g, "")) || 0;
+            }
+  
+            if (va < vb) return asc ? -1 : 1;
+            if (va > vb) return asc ? 1 : -1;
+            return 0;
+          });
+  
+          rows.forEach((row) => tbody.appendChild(row));
+        });
+      });
+    }
+  
+    initTableSort();
+  
+    /* ===== Draw charts on load & resize ===== */
+    function drawAll() {
+      drawLineChart();
+      drawBarChart();
+      drawDonutChart();
+    }
+  
+    drawAll();
+  
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(drawAll, 150);
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  /* ===== Reset & Base ===== */
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 72px;
+    --topbar-height: 64px;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --sidebar-bg: #1e293b;
+    --sidebar-text: #94a3b8;
+    --sidebar-active: #6366f1;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+  
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+      sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  
+  /* ===== Sidebar ===== */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.25s ease, transform 0.25s ease;
+    overflow: hidden;
+  }
+  
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    color: var(--sidebar-active);
+  }
+  
+  .sidebar-logo-text {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s ease;
+  }
+  
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 12px;
+    flex: 1;
+  }
+  
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+  
+  .sidebar-link svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  
+  .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+  }
+  
+  .sidebar-link.active {
+    background: var(--sidebar-active);
+    color: #ffffff;
+  }
+  
+  /* Collapsed sidebar */
+  .sidebar.collapsed {
+    width: var(--sidebar-collapsed);
+  }
+  
+  .sidebar.collapsed .sidebar-logo-text,
+  .sidebar.collapsed .link-label {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 10px;
+  }
+  
+  .sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 20px 12px 16px;
+  }
+  
+  /* ===== Sidebar overlay (mobile) ===== */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+  
+  .sidebar-overlay.visible {
+    display: block;
+  }
+  
+  /* ===== Main wrapper ===== */
+  .main-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    transition: margin-left 0.25s ease;
+  }
+  
+  .sidebar.collapsed ~ .main-wrapper {
+    margin-left: var(--sidebar-collapsed);
+  }
+  
+  /* ===== Top bar ===== */
+  .topbar {
+    position: sticky;
+    top: 0;
+    height: var(--topbar-height);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 24px;
+    z-index: 50;
+  }
+  
+  .hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--text-primary);
+  }
+  
+  .hamburger svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .sidebar-collapse-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  
+  .sidebar-collapse-btn:hover {
+    background: var(--bg);
+  }
+  
+  .sidebar-collapse-btn svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.25s ease;
+  }
+  
+  .sidebar.collapsed ~ .main-wrapper .sidebar-collapse-btn svg {
+    transform: rotate(180deg);
+  }
+  
+  .topbar-search {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 8px 12px 8px 40px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: var(--bg);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  
+  .search-input:focus {
+    border-color: var(--sidebar-active);
+  }
+  
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+  }
+  
+  .topbar-icon-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    transition: background 0.15s ease;
+  }
+  
+  .topbar-icon-btn:hover {
+    background: var(--bg);
+  }
+  
+  .topbar-icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .notification-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+  }
+  
+  .avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--sidebar-active);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  /* ===== Content area ===== */
+  .content {
+    padding: 24px;
+    max-width: 1400px;
+  }
+  
+  .content-header {
+    margin-bottom: 24px;
+  }
+  
+  .content-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  .content-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+  
+  /* ===== KPI Cards ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .kpi-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  
+  .kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .kpi-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  
+  .kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  
+  .kpi-trend svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .kpi-trend.up {
+    color: var(--green);
+    background: rgba(34, 197, 94, 0.1);
+  }
+  
+  .kpi-trend.down {
+    color: var(--red);
+    background: rgba(239, 68, 68, 0.1);
+  }
+  
+  .kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  
+  .kpi-footer {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+  
+  /* ===== Chart cards ===== */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .chart-card,
+  .activity-card,
+  .table-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  
+  .chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .chart-card-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .chart-period {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  
+  .chart-card canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .chart-card-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .chart-card-small .chart-card-header {
+    width: 100%;
+  }
+  
+  .chart-card-small canvas {
+    max-width: 220px;
+    max-height: 220px;
+  }
+  
+  /* Donut legend */
+  .donut-legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+    justify-content: center;
+  }
+  
+  .donut-legend li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  
+  .donut-legend .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  /* ===== Activity feed ===== */
+  .activity-feed {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .activity-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  
+  .activity-body p {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  
+  .activity-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  /* ===== Data table ===== */
+  .table-card {
+    margin-bottom: 24px;
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  
+  .data-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  
+  .data-table th:hover {
+    color: var(--text-primary);
+  }
+  
+  .data-table th::after {
+    content: "";
+    display: inline-block;
+    margin-left: 6px;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+  }
+  
+  .data-table th.sort-asc::after {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid var(--sidebar-active);
+  }
+  
+  .data-table th.sort-desc::after {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--sidebar-active);
+  }
+  
+  .data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+  
+  .data-table tbody tr:nth-child(even) {
+    background: rgba(241, 245, 249, 0.5);
+  }
+  
+  .data-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.04);
+  }
+  
+  /* Status badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  
+  .badge-completed {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--green);
+  }
+  
+  .badge-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--yellow);
+  }
+  
+  .badge-cancelled {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red);
+  }
+  
+  /* ===== Canvas tooltip ===== */
+  .chart-tooltip {
+    position: fixed;
+    padding: 6px 12px;
+    background: var(--sidebar-bg);
+    color: #ffffff;
+    font-size: 0.78rem;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 200;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  
+  .chart-tooltip.visible {
+    opacity: 1;
+  }
+  
+  /* ===== Responsive ===== */
+  @media (max-width: 1200px) {
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .sidebar {
+      width: var(--sidebar-collapsed);
+    }
+  
+    .sidebar .sidebar-logo-text,
+    .sidebar .link-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+  
+    .sidebar .sidebar-link {
+      justify-content: center;
+      padding: 10px;
+    }
+  
+    .sidebar .sidebar-header {
+      justify-content: center;
+      padding: 20px 12px 16px;
+    }
+  
+    .main-wrapper {
+      margin-left: var(--sidebar-collapsed);
+    }
+  
+    .sidebar-collapse-btn {
+      display: none;
+    }
+  
+    .charts-row {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .sidebar {
+      width: var(--sidebar-width);
+      transform: translateX(-100%);
+    }
+  
+    .sidebar.open {
+      transform: translateX(0);
+    }
+  
+    .sidebar.open .sidebar-logo-text,
+    .sidebar.open .link-label {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  
+    .sidebar.open .sidebar-link {
+      justify-content: flex-start;
+      padding: 10px 12px;
+    }
+  
+    .sidebar.open .sidebar-header {
+      justify-content: flex-start;
+      padding: 20px 20px 16px;
+    }
+  
+    .main-wrapper {
+      margin-left: 0;
+    }
+  
+    .hamburger {
+      display: flex;
+    }
+  
+    .sidebar-collapse-btn {
+      display: none;
+    }
+  
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .content {
+      padding: 16px;
+    }
+  
+    .topbar {
+      padding: 0 16px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <svg class="sidebar-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span class="sidebar-logo-text">Dashboard</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+          <span class="link-label">Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span class="link-label">Analytics</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="customers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span class="link-label">Customers</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="orders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span class="link-label">Orders</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="products">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <span class="link-label">Products</span>
+        </a>
+        <a href="#" class="sidebar-link" data-page="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span class="link-label">Settings</span>
+        </a>
+      </nav>
+    </aside>
+  
+    <!-- Main wrapper -->
+    <div class="main-wrapper" id="mainWrapper">
+      <!-- Top bar -->
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <button class="sidebar-collapse-btn" id="collapseBtn" aria-label="Collapse sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="11 17 6 12 11 7"></polyline>
+            <polyline points="18 17 13 12 18 7"></polyline>
+          </svg>
+        </button>
+        <div class="topbar-search">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Search..." class="search-input" />
+        </div>
+        <div class="topbar-actions">
+          <button class="topbar-icon-btn" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-dot"></span>
+          </button>
+          <div class="topbar-avatar">
+            <div class="avatar-circle">JD</div>
+          </div>
+        </div>
+      </header>
+  
+      <!-- Content -->
+      <main class="content">
+        <div class="content-header">
+          <h1>Dashboard</h1>
+          <p class="content-subtitle">Welcome back, John. Here is what is happening today.</p>
+        </div>
+  
+        <!-- KPI Cards -->
+        <section class="kpi-grid">
+          <div class="kpi-card" data-target="48250" data-prefix="$" data-suffix="">
+            <div class="kpi-header">
+              <span class="kpi-label">Revenue</span>
+              <span class="kpi-trend up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                +12.5%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">$0</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+          <div class="kpi-card" data-target="2420" data-prefix="" data-suffix="">
+            <div class="kpi-header">
+              <span class="kpi-label">Users</span>
+              <span class="kpi-trend up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                +8.1%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">0</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+          <div class="kpi-card" data-target="1210" data-prefix="" data-suffix="">
+            <div class="kpi-header">
+              <span class="kpi-label">Orders</span>
+              <span class="kpi-trend up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                +5.3%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">0</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+          <div class="kpi-card" data-target="3.2" data-prefix="" data-suffix="%">
+            <div class="kpi-header">
+              <span class="kpi-label">Conversion</span>
+              <span class="kpi-trend down">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                -0.4%
+              </span>
+            </div>
+            <div class="kpi-value" data-value="0">0%</div>
+            <div class="kpi-footer">vs last month</div>
+          </div>
+        </section>
+  
+        <!-- Charts -->
+        <section class="charts-row">
+          <div class="chart-card chart-card-large">
+            <div class="chart-card-header">
+              <h3>Revenue Trend</h3>
+              <span class="chart-period">Last 12 months</span>
+            </div>
+            <canvas id="lineChart" width="600" height="280"
+              data-values="12400,15800,14200,18600,17200,21400,19800,24600,22800,28200,26400,32600"
+              data-labels="Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec">
+            </canvas>
+          </div>
+          <div class="chart-card chart-card-large">
+            <div class="chart-card-header">
+              <h3>Monthly Sales</h3>
+              <span class="chart-period">By category</span>
+            </div>
+            <canvas id="barChart" width="600" height="280"
+              data-values="4200,3800,5100,2900,3400,4600"
+              data-labels="Electronics,Clothing,Home,Sports,Books,Beauty"
+              data-colors="#6366f1,#8b5cf6,#a78bfa,#c4b5fd,#7c3aed,#5b21b6">
+            </canvas>
+          </div>
+        </section>
+  
+        <section class="charts-row">
+          <div class="chart-card chart-card-small">
+            <div class="chart-card-header">
+              <h3>Traffic Sources</h3>
+            </div>
+            <canvas id="donutChart" width="260" height="260"
+              data-values="35,30,20,15"
+              data-labels="Direct,Organic,Social,Referral"
+              data-colors="#6366f1,#22c55e,#f59e0b,#ef4444">
+            </canvas>
+            <ul class="donut-legend" id="donutLegend"></ul>
+          </div>
+          <!-- Activity feed -->
+          <div class="activity-card">
+            <div class="chart-card-header">
+              <h3>Recent Activity</h3>
+            </div>
+            <ul class="activity-feed">
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#6366f1;">A</div>
+                <div class="activity-body">
+                  <p><strong>Alice Chen</strong> placed a new order <strong>#1024</strong></p>
+                  <span class="activity-time">2 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#22c55e;">B</div>
+                <div class="activity-body">
+                  <p><strong>Bob Martin</strong> left a 5-star review</p>
+                  <span class="activity-time">18 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#f59e0b;">C</div>
+                <div class="activity-body">
+                  <p><strong>Carol Davis</strong> updated her profile</p>
+                  <span class="activity-time">45 minutes ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#ef4444;">D</div>
+                <div class="activity-body">
+                  <p><strong>Dan Wilson</strong> cancelled order <strong>#1018</strong></p>
+                  <span class="activity-time">1 hour ago</span>
+                </div>
+              </li>
+              <li class="activity-item">
+                <div class="activity-avatar" style="background:#8b5cf6;">E</div>
+                <div class="activity-body">
+                  <p><strong>Eve Taylor</strong> signed up as a new customer</p>
+                  <span class="activity-time">3 hours ago</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+  
+        <!-- Data table -->
+        <section class="table-card">
+          <div class="chart-card-header">
+            <h3>Recent Orders</h3>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="ordersTable">
+              <thead>
+                <tr>
+                  <th data-sort="string">Order ID</th>
+                  <th data-sort="string">Customer</th>
+                  <th data-sort="number">Amount</th>
+                  <th data-sort="string">Status</th>
+                  <th data-sort="string">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#1024</td>
+                  <td>Alice Chen</td>
+                  <td>$249.00</td>
+                  <td><span class="badge badge-completed">Completed</span></td>
+                  <td>2026-03-20</td>
+                </tr>
+                <tr>
+                  <td>#1023</td>
+                  <td>Bob Martin</td>
+                  <td>$185.50</td>
+                  <td><span class="badge badge-completed">Completed</span></td>
+                  <td>2026-03-19</td>
+                </tr>
+                <tr>
+                  <td>#1022</td>
+                  <td>Carol Davis</td>
+                  <td>$432.00</td>
+                  <td><span class="badge badge-pending">Pending</span></td>
+                  <td>2026-03-19</td>
+                </tr>
+                <tr>
+                  <td>#1021</td>
+                  <td>Dan Wilson</td>
+                  <td>$67.25</td>
+                  <td><span class="badge badge-cancelled">Cancelled</span></td>
+                  <td>2026-03-18</td>
+                </tr>
+                <tr>
+                  <td>#1020</td>
+                  <td>Eve Taylor</td>
+                  <td>$528.90</td>
+                  <td><span class="badge badge-completed">Completed</span></td>
+                  <td>2026-03-18</td>
+                </tr>
+                <tr>
+                  <td>#1019</td>
+                  <td>Frank Lee</td>
+                  <td>$312.00</td>
+                  <td><span class="badge badge-pending">Pending</span></td>
+                  <td>2026-03-17</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    "use strict";
+  
+    /* ===== DOM refs ===== */
+    const sidebar = document.getElementById("sidebar");
+    const mainWrapper = document.getElementById("mainWrapper");
+    const collapseBtn = document.getElementById("collapseBtn");
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const overlay = document.getElementById("sidebarOverlay");
+  
+    /* ===== Sidebar toggle (desktop collapse) ===== */
+    collapseBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+    });
+  
+    /* ===== Hamburger (mobile) ===== */
+    function openMobileSidebar() {
+      sidebar.classList.add("open");
+      overlay.classList.add("visible");
+    }
+  
+    function closeMobileSidebar() {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("visible");
+    }
+  
+    hamburgerBtn.addEventListener("click", () => {
+      if (sidebar.classList.contains("open")) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+    });
+  
+    overlay.addEventListener("click", closeMobileSidebar);
+  
+    /* ===== Sidebar nav active state ===== */
+    document.querySelectorAll(".sidebar-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.querySelectorAll(".sidebar-link").forEach((l) => l.classList.remove("active"));
+        link.classList.add("active");
+        closeMobileSidebar();
+      });
+    });
+  
+    /* ===== KPI count-up animation ===== */
+    function animateKPI() {
+      const cards = document.querySelectorAll(".kpi-card");
+      const duration = 1200;
+  
+      cards.forEach((card) => {
+        const target = parseFloat(card.dataset.target);
+        const prefix = card.dataset.prefix || "";
+        const suffix = card.dataset.suffix || "";
+        const valueEl = card.querySelector(".kpi-value");
+        const isFloat = target % 1 !== 0;
+        const startTime = performance.now();
+  
+        function step(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = eased * target;
+  
+          if (isFloat) {
+            valueEl.textContent = prefix + current.toFixed(1) + suffix;
+          } else {
+            valueEl.textContent = prefix + Math.floor(current).toLocaleString() + suffix;
+          }
+  
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          }
+        }
+  
+        requestAnimationFrame(step);
+      });
+    }
+  
+    animateKPI();
+  
+    /* ===== Shared tooltip ===== */
+    const tooltip = document.createElement("div");
+    tooltip.className = "chart-tooltip";
+    document.body.appendChild(tooltip);
+  
+    function showTooltip(x, y, text) {
+      tooltip.textContent = text;
+      tooltip.classList.add("visible");
+      tooltip.style.left = x + 12 + "px";
+      tooltip.style.top = y - 28 + "px";
+    }
+  
+    function hideTooltip() {
+      tooltip.classList.remove("visible");
+    }
+  
+    /* ===== Utility: parse canvas data attrs ===== */
+    function getCanvasData(id) {
+      const canvas = document.getElementById(id);
+      const values = canvas.dataset.values.split(",").map(Number);
+      const labels = canvas.dataset.labels.split(",");
+      const colors = canvas.dataset.colors ? canvas.dataset.colors.split(",") : [];
+      return { canvas, values, labels, colors };
+    }
+  
+    /* ===== LINE CHART ===== */
+    function drawLineChart() {
+      const { canvas, values, labels } = getCanvasData("lineChart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+  
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+  
+      const w = rect.width;
+      const h = rect.height;
+      const padTop = 20;
+      const padBottom = 40;
+      const padLeft = 50;
+      const padRight = 20;
+      const chartW = w - padLeft - padRight;
+      const chartH = h - padTop - padBottom;
+  
+      const maxVal = Math.max(...values) * 1.1;
+      const minVal = 0;
+  
+      function xPos(i) {
+        return padLeft + (i / (values.length - 1)) * chartW;
+      }
+      function yPos(v) {
+        return padTop + chartH - ((v - minVal) / (maxVal - minVal)) * chartH;
+      }
+  
+      /* Grid lines */
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 1;
+      const gridLines = 5;
+      for (let i = 0; i <= gridLines; i++) {
+        const y = padTop + (chartH / gridLines) * i;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(w - padRight, y);
+        ctx.stroke();
+  
+        const val = maxVal - (maxVal / gridLines) * i;
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText("$" + (val / 1000).toFixed(0) + "k", padLeft - 8, y + 4);
+      }
+  
+      /* X labels */
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#94a3b8";
+      labels.forEach((label, i) => {
+        ctx.fillText(label, xPos(i), h - 10);
+      });
+  
+      /* Gradient fill */
+      const gradient = ctx.createLinearGradient(0, padTop, 0, padTop + chartH);
+      gradient.addColorStop(0, "rgba(99, 102, 241, 0.25)");
+      gradient.addColorStop(1, "rgba(99, 102, 241, 0.01)");
+  
+      ctx.beginPath();
+      ctx.moveTo(xPos(0), yPos(values[0]));
+      values.forEach((v, i) => {
+        if (i > 0) ctx.lineTo(xPos(i), yPos(v));
+      });
+      ctx.lineTo(xPos(values.length - 1), padTop + chartH);
+      ctx.lineTo(xPos(0), padTop + chartH);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+  
+      /* Line */
+      ctx.beginPath();
+      ctx.moveTo(xPos(0), yPos(values[0]));
+      values.forEach((v, i) => {
+        if (i > 0) ctx.lineTo(xPos(i), yPos(v));
+      });
+      ctx.strokeStyle = "#6366f1";
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+  
+      /* Dots */
+      const dots = [];
+      values.forEach((v, i) => {
+        const x = xPos(i);
+        const y = yPos(v);
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#6366f1";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        dots.push({ x, y, label: labels[i], value: v });
+      });
+  
+      /* Hover */
+      canvas.addEventListener("mousemove", (e) => {
+        const cr = canvas.getBoundingClientRect();
+        const mx = e.clientX - cr.left;
+        const my = e.clientY - cr.top;
+        let found = false;
+  
+        dots.forEach((d) => {
+          const dist = Math.sqrt((mx - d.x) ** 2 + (my - d.y) ** 2);
+          if (dist < 16) {
+            showTooltip(e.clientX, e.clientY, d.label + ": $" + d.value.toLocaleString());
+            found = true;
+          }
+        });
+  
+        if (!found) hideTooltip();
+      });
+  
+      canvas.addEventListener("mouseleave", hideTooltip);
+    }
+  
+    /* ===== BAR CHART ===== */
+    function drawBarChart() {
+      const { canvas, values, labels, colors } = getCanvasData("barChart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+  
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+  
+      const w = rect.width;
+      const h = rect.height;
+      const padTop = 20;
+      const padBottom = 50;
+      const padLeft = 50;
+      const padRight = 20;
+      const chartW = w - padLeft - padRight;
+      const chartH = h - padTop - padBottom;
+  
+      const maxVal = Math.max(...values) * 1.15;
+      const barWidth = (chartW / values.length) * 0.55;
+      const gap = chartW / values.length;
+  
+      /* Grid */
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 1;
+      const gridLines = 5;
+      for (let i = 0; i <= gridLines; i++) {
+        const y = padTop + (chartH / gridLines) * i;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(w - padRight, y);
+        ctx.stroke();
+  
+        const val = maxVal - (maxVal / gridLines) * i;
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText("$" + (val / 1000).toFixed(1) + "k", padLeft - 8, y + 4);
+      }
+  
+      /* Bars */
+      const bars = [];
+      values.forEach((v, i) => {
+        const x = padLeft + gap * i + (gap - barWidth) / 2;
+        const barH = (v / maxVal) * chartH;
+        const y = padTop + chartH - barH;
+  
+        /* Rounded top */
+        const r = Math.min(6, barWidth / 2);
+        ctx.beginPath();
+        ctx.moveTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.arcTo(x + barWidth, y, x + barWidth, y + r, r);
+        ctx.lineTo(x + barWidth, padTop + chartH);
+        ctx.lineTo(x, padTop + chartH);
+        ctx.closePath();
+        ctx.fillStyle = colors[i] || "#6366f1";
+        ctx.fill();
+  
+        bars.push({
+          x,
+          y,
+          w: barWidth,
+          h: barH,
+          label: labels[i],
+          value: v,
+        });
+  
+        /* X label */
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(labels[i], x + barWidth / 2, h - 14);
+      });
+  
+      /* Hover */
+      canvas.addEventListener("mousemove", (e) => {
+        const cr = canvas.getBoundingClientRect();
+        const mx = e.clientX - cr.left;
+        const my = e.clientY - cr.top;
+        let found = false;
+  
+        bars.forEach((b) => {
+          if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= padTop + chartH) {
+            showTooltip(e.clientX, e.clientY, b.label + ": $" + b.value.toLocaleString());
+            found = true;
+          }
+        });
+  
+        if (!found) hideTooltip();
+      });
+  
+      canvas.addEventListener("mouseleave", hideTooltip);
+    }
+  
+    /* ===== DONUT CHART ===== */
+    function drawDonutChart() {
+      const { canvas, values, labels, colors } = getCanvasData("donutChart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+  
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+  
+      const w = rect.width;
+      const h = rect.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const outerR = Math.min(w, h) / 2 - 10;
+      const innerR = outerR * 0.6;
+      const total = values.reduce((a, b) => a + b, 0);
+  
+      const segments = [];
+      let startAngle = -Math.PI / 2;
+  
+      values.forEach((v, i) => {
+        const sliceAngle = (v / total) * Math.PI * 2;
+        const endAngle = startAngle + sliceAngle;
+  
+        ctx.beginPath();
+        ctx.arc(cx, cy, outerR, startAngle, endAngle);
+        ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+  
+        segments.push({
+          start: startAngle,
+          end: endAngle,
+          label: labels[i],
+          value: v,
+          pct: ((v / total) * 100).toFixed(0),
+          color: colors[i],
+        });
+  
+        startAngle = endAngle;
+      });
+  
+      /* Center text */
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 20px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(total.toLocaleString(), cx, cy - 6);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px -apple-system, sans-serif";
+      ctx.fillText("Total", cx, cy + 14);
+  
+      /* Legend */
+      const legend = document.getElementById("donutLegend");
+      legend.innerHTML = "";
+      segments.forEach((s) => {
+        const li = document.createElement("li");
+        li.innerHTML =
+          '<span class="legend-dot" style="background:' +
+          s.color +
+          '"></span>' +
+          s.label +
+          " " +
+          s.pct +
+          "%";
+        legend.appendChild(li);
+      });
+  
+      /* Hover */
+      canvas.addEventListener("mousemove", (e) => {
+        const cr = canvas.getBoundingClientRect();
+        const mx = e.clientX - cr.left;
+        const my = e.clientY - cr.top;
+        const dx = mx - cx;
+        const dy = my - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+  
+        if (dist >= innerR && dist <= outerR) {
+          let angle = Math.atan2(dy, dx);
+          if (angle < -Math.PI / 2) angle += Math.PI * 2;
+  
+          const seg = segments.find((s) => angle >= s.start && angle < s.end);
+          if (seg) {
+            showTooltip(e.clientX, e.clientY, seg.label + ": " + seg.pct + "% (" + seg.value + ")");
+            return;
+          }
+        }
+        hideTooltip();
+      });
+  
+      canvas.addEventListener("mouseleave", hideTooltip);
+    }
+  
+    /* ===== TABLE SORT ===== */
+    function initTableSort() {
+      const table = document.getElementById("ordersTable");
+      const headers = table.querySelectorAll("th[data-sort]");
+      let currentSort = { col: -1, asc: true };
+  
+      headers.forEach((th, colIndex) => {
+        th.addEventListener("click", () => {
+          const type = th.dataset.sort;
+          const asc = currentSort.col === colIndex ? !currentSort.asc : true;
+          currentSort = { col: colIndex, asc };
+  
+          /* Update classes */
+          headers.forEach((h) => h.classList.remove("sort-asc", "sort-desc"));
+          th.classList.add(asc ? "sort-asc" : "sort-desc");
+  
+          /* Sort rows */
+          const tbody = table.querySelector("tbody");
+          const rows = Array.from(tbody.querySelectorAll("tr"));
+  
+          rows.sort((a, b) => {
+            let va = a.cells[colIndex].textContent.trim();
+            let vb = b.cells[colIndex].textContent.trim();
+  
+            if (type === "number") {
+              va = parseFloat(va.replace(/[^0-9.\-]/g, "")) || 0;
+              vb = parseFloat(vb.replace(/[^0-9.\-]/g, "")) || 0;
+            }
+  
+            if (va < vb) return asc ? -1 : 1;
+            if (va > vb) return asc ? 1 : -1;
+            return 0;
+          });
+  
+          rows.forEach((row) => tbody.appendChild(row));
+        });
+      });
+    }
+  
+    initTableSort();
+  
+    /* ===== Draw charts on load & resize ===== */
+    function drawAll() {
+      drawLineChart();
+      drawBarChart();
+      drawDonutChart();
+    }
+  
+    drawAll();
+  
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(drawAll, 150);
+    });
+  })();
+  
+  </script>
+explanation: "The declaration `margin: 0;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

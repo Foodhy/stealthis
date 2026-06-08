@@ -1,0 +1,643 @@
+---
+slug: "citation-tooltip-remove-css-property-f18289ff"
+topic: "citation"
+title: "Restore missing CSS property in Citation Tooltip"
+type: "fix"
+difficulty: 1
+resourceSlug: "citation-tooltip"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    min-height: 100vh;
+    padding: 48px 24px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+  }
+  
+  .demo-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #111827;
+  }
+  
+  .response-body {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .response-body p {
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.8;
+  }
+  
+  /* Inline citation marker */
+  .citation {
+    display: inline-block;
+    background: #eef2ff;
+    color: #6366f1;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin: 0 1px;
+    user-select: none;
+    vertical-align: super;
+    line-height: 1;
+  }
+  .citation:hover,
+  .citation:focus {
+    background: #c7d2fe;
+    outline: none;
+  }
+  .citation.active {
+    background: #6366f1;
+    color: #fff;
+  }
+  
+  /* Tooltip */
+  .cit-tooltip {
+    position: fixed;
+    width: 300px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    padding: 14px 16px;
+    z-index: 100;
+    animation: cit-in 0.15s ease;
+  }
+  @keyframes cit-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .cit-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .cit-num {
+    display: inline-block;
+    background: #eef2ff;
+    color: #6366f1;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  
+  .cit-domain {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  
+  .cit-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  
+  .cit-excerpt {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .cit-link {
+    font-size: 12px;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .cit-link:hover {
+    text-decoration: underline;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Citation Tooltip</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="demo-title">AI Response with Citations</h2>
+  
+    <div class="response-body">
+      <p>
+        Large language models have achieved remarkable performance on a wide range of natural language tasks.
+        The transformer architecture, introduced in 2017, remains the foundation of virtually all modern LLMs.
+        <span class="citation" data-id="1" tabindex="0">[1]</span>
+        Recent scaling laws suggest that model performance improves predictably with compute, data, and parameters.
+        <span class="citation" data-id="2" tabindex="0">[2]</span>
+      </p>
+      <p>
+        Retrieval-augmented generation (RAG) has emerged as a widely adopted technique for grounding model outputs
+        in factual, up-to-date information without retraining.
+        <span class="citation" data-id="3" tabindex="0">[3]</span>
+        This approach is particularly effective for enterprise use cases where domain-specific knowledge
+        changes frequently.
+        <span class="citation" data-id="4" tabindex="0">[4]</span>
+      </p>
+      <p>
+        Constitutional AI and RLHF remain the dominant paradigms for aligning large models with human preferences.
+        <span class="citation" data-id="5" tabindex="0">[5]</span>
+      </p>
+    </div>
+  
+    <!-- Citation tooltip (shared, repositioned by JS) -->
+    <div class="cit-tooltip" id="citTooltip" hidden role="tooltip">
+      <div class="cit-header">
+        <span class="cit-num" id="citNum"></span>
+        <span class="cit-domain" id="citDomain"></span>
+      </div>
+      <p class="cit-title" id="citTitle"></p>
+      <p class="cit-excerpt" id="citExcerpt"></p>
+      <a class="cit-link" id="citLink" href="#" target="_blank" rel="noopener">View source →</a>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const CITATIONS = {
+    1: {
+      title: "Attention Is All You Need",
+      domain: "arxiv.org",
+      excerpt:
+        "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms.",
+      url: "#",
+    },
+    2: {
+      title: "Scaling Laws for Neural Language Models",
+      domain: "arxiv.org",
+      excerpt:
+        "We study empirical scaling laws for language model performance on the cross-entropy loss. The loss scales as a power-law with model size, dataset size, and the amount of compute used for training.",
+      url: "#",
+    },
+    3: {
+      title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      domain: "arxiv.org",
+      excerpt:
+        "We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG), combining parametric and non-parametric memory for language generation.",
+      url: "#",
+    },
+    4: {
+      title: "RAG vs Fine-Tuning: Enterprise Evaluation",
+      domain: "research.google.com",
+      excerpt:
+        "In enterprise deployments, RAG consistently outperforms fine-tuning for tasks requiring frequently updated domain knowledge, while maintaining lower operational costs.",
+      url: "#",
+    },
+    5: {
+      title: "Constitutional AI: Harmlessness from AI Feedback",
+      domain: "anthropic.com",
+      excerpt:
+        "We propose a method for training a harmless AI assistant without any human labels identifying harmful outputs, using a set of principles to guide revisions during supervised learning and RL.",
+      url: "#",
+    },
+  };
+  
+  const tooltip = document.getElementById("citTooltip");
+  let activeCit = null;
+  
+  function showTooltip(el, id) {
+    const data = CITATIONS[id];
+    if (!data) return;
+  
+    document.getElementById("citNum").textContent = `[${id}]`;
+    document.getElementById("citDomain").textContent = data.domain;
+    document.getElementById("citTitle").textContent = data.title;
+    document.getElementById("citExcerpt").textContent = data.excerpt;
+    document.getElementById("citLink").href = data.url;
+  
+    tooltip.hidden = false;
+  
+    // Position: prefer above, fallback below
+    const rect = el.getBoundingClientRect();
+    const tw = 300;
+    const th = tooltip.offsetHeight || 160;
+    let left = rect.left + rect.width / 2 - tw / 2;
+    let top = rect.top - th - 8;
+  
+    if (top < 8) top = rect.bottom + 8;
+    if (left < 8) left = 8;
+    if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
+  
+    tooltip.style.left = left + "px";
+    tooltip.style.top = top + "px";
+  }
+  
+  function hideTooltip() {
+    tooltip.hidden = true;
+    if (activeCit) {
+      activeCit.classList.remove("active");
+      activeCit = null;
+    }
+  }
+  
+  document.querySelectorAll(".citation").forEach((cit) => {
+    const id = parseInt(cit.dataset.id);
+  
+    cit.addEventListener("mouseenter", () => {
+      if (activeCit) activeCit.classList.remove("active");
+      activeCit = cit;
+      cit.classList.add("active");
+      showTooltip(cit, id);
+    });
+  
+    cit.addEventListener("focus", () => {
+      if (activeCit) activeCit.classList.remove("active");
+      activeCit = cit;
+      cit.classList.add("active");
+      showTooltip(cit, id);
+    });
+  
+    cit.addEventListener("mouseleave", () => {
+      setTimeout(() => {
+        if (!tooltip.matches(":hover")) hideTooltip();
+      }, 100);
+    });
+  
+    cit.addEventListener("blur", () => {
+      setTimeout(() => {
+        if (!tooltip.contains(document.activeElement)) hideTooltip();
+      }, 100);
+    });
+  });
+  
+  tooltip.addEventListener("mouseleave", hideTooltip);
+  
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".citation") && !e.target.closest(".cit-tooltip")) hideTooltip();
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    min-height: 100vh;
+    padding: 48px 24px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+  }
+  
+  .demo-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #111827;
+  }
+  
+  .response-body {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .response-body p {
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.8;
+  }
+  
+  /* Inline citation marker */
+  .citation {
+    display: inline-block;
+    background: #eef2ff;
+    color: #6366f1;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin: 0 1px;
+    user-select: none;
+    vertical-align: super;
+    line-height: 1;
+  }
+  .citation:hover,
+  .citation:focus {
+    background: #c7d2fe;
+    outline: none;
+  }
+  .citation.active {
+    background: #6366f1;
+    color: #fff;
+  }
+  
+  /* Tooltip */
+  .cit-tooltip {
+    position: fixed;
+    width: 300px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    padding: 14px 16px;
+    z-index: 100;
+    animation: cit-in 0.15s ease;
+  }
+  @keyframes cit-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .cit-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .cit-num {
+    display: inline-block;
+    background: #eef2ff;
+    color: #6366f1;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  
+  .cit-domain {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  
+  .cit-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  
+  .cit-excerpt {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .cit-link {
+    font-size: 12px;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .cit-link:hover {
+    text-decoration: underline;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Citation Tooltip</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="demo-title">AI Response with Citations</h2>
+  
+    <div class="response-body">
+      <p>
+        Large language models have achieved remarkable performance on a wide range of natural language tasks.
+        The transformer architecture, introduced in 2017, remains the foundation of virtually all modern LLMs.
+        <span class="citation" data-id="1" tabindex="0">[1]</span>
+        Recent scaling laws suggest that model performance improves predictably with compute, data, and parameters.
+        <span class="citation" data-id="2" tabindex="0">[2]</span>
+      </p>
+      <p>
+        Retrieval-augmented generation (RAG) has emerged as a widely adopted technique for grounding model outputs
+        in factual, up-to-date information without retraining.
+        <span class="citation" data-id="3" tabindex="0">[3]</span>
+        This approach is particularly effective for enterprise use cases where domain-specific knowledge
+        changes frequently.
+        <span class="citation" data-id="4" tabindex="0">[4]</span>
+      </p>
+      <p>
+        Constitutional AI and RLHF remain the dominant paradigms for aligning large models with human preferences.
+        <span class="citation" data-id="5" tabindex="0">[5]</span>
+      </p>
+    </div>
+  
+    <!-- Citation tooltip (shared, repositioned by JS) -->
+    <div class="cit-tooltip" id="citTooltip" hidden role="tooltip">
+      <div class="cit-header">
+        <span class="cit-num" id="citNum"></span>
+        <span class="cit-domain" id="citDomain"></span>
+      </div>
+      <p class="cit-title" id="citTitle"></p>
+      <p class="cit-excerpt" id="citExcerpt"></p>
+      <a class="cit-link" id="citLink" href="#" target="_blank" rel="noopener">View source →</a>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const CITATIONS = {
+    1: {
+      title: "Attention Is All You Need",
+      domain: "arxiv.org",
+      excerpt:
+        "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms.",
+      url: "#",
+    },
+    2: {
+      title: "Scaling Laws for Neural Language Models",
+      domain: "arxiv.org",
+      excerpt:
+        "We study empirical scaling laws for language model performance on the cross-entropy loss. The loss scales as a power-law with model size, dataset size, and the amount of compute used for training.",
+      url: "#",
+    },
+    3: {
+      title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      domain: "arxiv.org",
+      excerpt:
+        "We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG), combining parametric and non-parametric memory for language generation.",
+      url: "#",
+    },
+    4: {
+      title: "RAG vs Fine-Tuning: Enterprise Evaluation",
+      domain: "research.google.com",
+      excerpt:
+        "In enterprise deployments, RAG consistently outperforms fine-tuning for tasks requiring frequently updated domain knowledge, while maintaining lower operational costs.",
+      url: "#",
+    },
+    5: {
+      title: "Constitutional AI: Harmlessness from AI Feedback",
+      domain: "anthropic.com",
+      excerpt:
+        "We propose a method for training a harmless AI assistant without any human labels identifying harmful outputs, using a set of principles to guide revisions during supervised learning and RL.",
+      url: "#",
+    },
+  };
+  
+  const tooltip = document.getElementById("citTooltip");
+  let activeCit = null;
+  
+  function showTooltip(el, id) {
+    const data = CITATIONS[id];
+    if (!data) return;
+  
+    document.getElementById("citNum").textContent = `[${id}]`;
+    document.getElementById("citDomain").textContent = data.domain;
+    document.getElementById("citTitle").textContent = data.title;
+    document.getElementById("citExcerpt").textContent = data.excerpt;
+    document.getElementById("citLink").href = data.url;
+  
+    tooltip.hidden = false;
+  
+    // Position: prefer above, fallback below
+    const rect = el.getBoundingClientRect();
+    const tw = 300;
+    const th = tooltip.offsetHeight || 160;
+    let left = rect.left + rect.width / 2 - tw / 2;
+    let top = rect.top - th - 8;
+  
+    if (top < 8) top = rect.bottom + 8;
+    if (left < 8) left = 8;
+    if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
+  
+    tooltip.style.left = left + "px";
+    tooltip.style.top = top + "px";
+  }
+  
+  function hideTooltip() {
+    tooltip.hidden = true;
+    if (activeCit) {
+      activeCit.classList.remove("active");
+      activeCit = null;
+    }
+  }
+  
+  document.querySelectorAll(".citation").forEach((cit) => {
+    const id = parseInt(cit.dataset.id);
+  
+    cit.addEventListener("mouseenter", () => {
+      if (activeCit) activeCit.classList.remove("active");
+      activeCit = cit;
+      cit.classList.add("active");
+      showTooltip(cit, id);
+    });
+  
+    cit.addEventListener("focus", () => {
+      if (activeCit) activeCit.classList.remove("active");
+      activeCit = cit;
+      cit.classList.add("active");
+      showTooltip(cit, id);
+    });
+  
+    cit.addEventListener("mouseleave", () => {
+      setTimeout(() => {
+        if (!tooltip.matches(":hover")) hideTooltip();
+      }, 100);
+    });
+  
+    cit.addEventListener("blur", () => {
+      setTimeout(() => {
+        if (!tooltip.contains(document.activeElement)) hideTooltip();
+      }, 100);
+    });
+  });
+  
+  tooltip.addEventListener("mouseleave", hideTooltip);
+  
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".citation") && !e.target.closest(".cit-tooltip")) hideTooltip();
+  });
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

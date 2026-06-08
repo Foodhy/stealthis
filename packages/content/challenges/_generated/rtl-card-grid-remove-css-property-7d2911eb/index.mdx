@@ -1,0 +1,1049 @@
+---
+slug: "rtl-card-grid-remove-css-property-7d2911eb"
+topic: "accessibility"
+title: "Restore missing CSS property in RTL Card Grid"
+type: "fix"
+difficulty: 1
+resourceSlug: "rtl-card-grid"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  /* ── Reset & Base ── */
+  *,
+  *::before,
+  *::after {
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --bg-primary: #0a0a0a;
+    --bg-card: #111111;
+    --bg-tertiary: #1a1a1a;
+    --border: #222222;
+    --border-light: #333333;
+    --text-primary: #f0f0f0;
+    --text-secondary: #999999;
+    --text-muted: #666666;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --radius: 12px;
+  }
+  
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  
+  body {
+    min-height: 100vh;
+    padding-block: 40px;
+    padding-inline: 24px;
+  }
+  
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+  
+  /* ── Page ── */
+  .page {
+    max-inline-size: 1200px;
+    margin-inline: auto;
+  }
+  
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .toolbar-start {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  
+  .page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+  
+  .item-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  
+  .dir-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-block: 8px;
+    padding-inline: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-blue);
+    transition: background 0.2s;
+  }
+  
+  .dir-toggle:hover {
+    background: var(--bg-tertiary);
+  }
+  
+  /* ── Card Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  
+  /* ── Card ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  
+  .card:hover {
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+  }
+  
+  /* Card image */
+  .card-image {
+    position: relative;
+  }
+  
+  .image-placeholder {
+    block-size: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .placeholder-icon {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .card-badge {
+    position: absolute;
+    inset-block-start: 12px;
+    inset-inline-start: 12px;
+    padding-block: 4px;
+    padding-inline: 10px;
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .card-badge.hot {
+    background: var(--accent-red);
+  }
+  
+  /* Card body */
+  .card-body {
+    padding-block: 16px;
+    padding-inline: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .card-category {
+    font-size: 0.75rem;
+    color: var(--accent-blue);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .card-rating {
+    font-size: 0.8rem;
+    color: var(--accent-amber);
+  }
+  
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  
+  /* Tags */
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .tag {
+    padding-block: 3px;
+    padding-inline: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+  }
+  
+  /* Card footer */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-start: 4px;
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--border);
+  }
+  
+  .card-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .card-btn {
+    padding-block: 6px;
+    padding-inline: 14px;
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--accent-blue);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .card-btn:hover {
+    background: rgba(59, 130, 246, 0.22);
+  }
+  
+  /* Flip arrow direction in RTL */
+  [dir="rtl"] .card-btn {
+    direction: ltr;
+    unicode-bidi: bidi-override;
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    body {
+      padding-inline: 16px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RTL Card Grid</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="page">
+  
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <h1 class="page-title">Product Catalog</h1>
+          <span class="item-count">8 items</span>
+        </div>
+        <button class="dir-toggle" id="dir-toggle" type="button" aria-label="Toggle text direction">
+          <span id="dir-label">LTR</span>
+          <span class="dir-icon">&#8644;</span>
+        </button>
+      </div>
+  
+      <!-- Card Grid -->
+      <div class="card-grid">
+  
+        <!-- Card 1 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6)">
+              <span class="placeholder-icon">&#9671;</span>
+            </div>
+            <span class="card-badge">New</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Design Tools</span>
+              <span class="card-rating">&#9733; 4.8</span>
+            </div>
+            <h2 class="card-title">Pixel Studio Pro</h2>
+            <p class="card-desc">Professional design tool with real-time collaboration and an advanced vector editing engine.</p>
+            <div class="card-tags">
+              <span class="tag">Design</span>
+              <span class="tag">Vector</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$49/mo</span>
+              <button class="card-btn">Get Started &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 2 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #22c55e, #14b8a6)">
+              <span class="placeholder-icon">&#9670;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Development</span>
+              <span class="card-rating">&#9733; 4.9</span>
+            </div>
+            <h2 class="card-title">CodeForge IDE</h2>
+            <p class="card-desc">Lightning-fast IDE with AI-powered code completion and integrated debugging tools.</p>
+            <div class="card-tags">
+              <span class="tag">IDE</span>
+              <span class="tag">AI</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">Free</span>
+              <button class="card-btn">Download &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 3 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #f59e0b, #ef4444)">
+              <span class="placeholder-icon">&#9672;</span>
+            </div>
+            <span class="card-badge hot">Hot</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Analytics</span>
+              <span class="card-rating">&#9733; 4.7</span>
+            </div>
+            <h2 class="card-title">DataLens Analytics</h2>
+            <p class="card-desc">Powerful analytics dashboard for real-time data visualization and business intelligence.</p>
+            <div class="card-tags">
+              <span class="tag">Analytics</span>
+              <span class="tag">BI</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$29/mo</span>
+              <button class="card-btn">Try Free &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 4 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #8b5cf6, #ec4899)">
+              <span class="placeholder-icon">&#9674;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Security</span>
+              <span class="card-rating">&#9733; 4.6</span>
+            </div>
+            <h2 class="card-title">VaultGuard</h2>
+            <p class="card-desc">Enterprise-grade password manager with zero-knowledge encryption and team sharing.</p>
+            <div class="card-tags">
+              <span class="tag">Security</span>
+              <span class="tag">Encryption</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$12/mo</span>
+              <button class="card-btn">Secure Now &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 5 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #06b6d4, #3b82f6)">
+              <span class="placeholder-icon">&#9675;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Communication</span>
+              <span class="card-rating">&#9733; 4.5</span>
+            </div>
+            <h2 class="card-title">TeamPulse Chat</h2>
+            <p class="card-desc">Real-time messaging with channels, threads, and seamless video conferencing built in.</p>
+            <div class="card-tags">
+              <span class="tag">Chat</span>
+              <span class="tag">Video</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$8/mo</span>
+              <button class="card-btn">Join Free &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 6 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #ef4444, #f97316)">
+              <span class="placeholder-icon">&#9673;</span>
+            </div>
+            <span class="card-badge">Sale</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Productivity</span>
+              <span class="card-rating">&#9733; 4.8</span>
+            </div>
+            <h2 class="card-title">FlowState Tasks</h2>
+            <p class="card-desc">Elegant task manager with Kanban boards, time tracking, and smart workflow automation.</p>
+            <div class="card-tags">
+              <span class="tag">Tasks</span>
+              <span class="tag">Kanban</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$15/mo</span>
+              <button class="card-btn">Start Free &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 7 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #a855f7, #6366f1)">
+              <span class="placeholder-icon">&#9830;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Cloud</span>
+              <span class="card-rating">&#9733; 4.7</span>
+            </div>
+            <h2 class="card-title">NimbusSync</h2>
+            <p class="card-desc">Secure cloud storage with automatic sync, file versioning, and end-to-end encryption.</p>
+            <div class="card-tags">
+              <span class="tag">Cloud</span>
+              <span class="tag">Storage</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$6/mo</span>
+              <button class="card-btn">Upload Now &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 8 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #10b981, #84cc16)">
+              <span class="placeholder-icon">&#9827;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Automation</span>
+              <span class="card-rating">&#9733; 4.9</span>
+            </div>
+            <h2 class="card-title">AutoPilot Workflows</h2>
+            <p class="card-desc">No-code automation platform connecting 500+ apps with drag-and-drop workflow builder.</p>
+            <div class="card-tags">
+              <span class="tag">No-Code</span>
+              <span class="tag">Automation</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$25/mo</span>
+              <button class="card-btn">Automate &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const html = document.documentElement;
+    const dirToggle = document.getElementById("dir-toggle");
+    const dirLabel = document.getElementById("dir-label");
+  
+    dirToggle.addEventListener("click", () => {
+      const isRtl = html.getAttribute("dir") === "rtl";
+      const newDir = isRtl ? "ltr" : "rtl";
+      html.setAttribute("dir", newDir);
+      html.setAttribute("lang", isRtl ? "en" : "ar");
+      dirLabel.textContent = newDir.toUpperCase();
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  /* ── Reset & Base ── */
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --bg-primary: #0a0a0a;
+    --bg-card: #111111;
+    --bg-tertiary: #1a1a1a;
+    --border: #222222;
+    --border-light: #333333;
+    --text-primary: #f0f0f0;
+    --text-secondary: #999999;
+    --text-muted: #666666;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --radius: 12px;
+  }
+  
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  
+  body {
+    min-height: 100vh;
+    padding-block: 40px;
+    padding-inline: 24px;
+  }
+  
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+  
+  /* ── Page ── */
+  .page {
+    max-inline-size: 1200px;
+    margin-inline: auto;
+  }
+  
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .toolbar-start {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  
+  .page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+  
+  .item-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  
+  .dir-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-block: 8px;
+    padding-inline: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-blue);
+    transition: background 0.2s;
+  }
+  
+  .dir-toggle:hover {
+    background: var(--bg-tertiary);
+  }
+  
+  /* ── Card Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  
+  /* ── Card ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  
+  .card:hover {
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+  }
+  
+  /* Card image */
+  .card-image {
+    position: relative;
+  }
+  
+  .image-placeholder {
+    block-size: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .placeholder-icon {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .card-badge {
+    position: absolute;
+    inset-block-start: 12px;
+    inset-inline-start: 12px;
+    padding-block: 4px;
+    padding-inline: 10px;
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .card-badge.hot {
+    background: var(--accent-red);
+  }
+  
+  /* Card body */
+  .card-body {
+    padding-block: 16px;
+    padding-inline: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .card-category {
+    font-size: 0.75rem;
+    color: var(--accent-blue);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .card-rating {
+    font-size: 0.8rem;
+    color: var(--accent-amber);
+  }
+  
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  
+  /* Tags */
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .tag {
+    padding-block: 3px;
+    padding-inline: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+  }
+  
+  /* Card footer */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-start: 4px;
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--border);
+  }
+  
+  .card-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .card-btn {
+    padding-block: 6px;
+    padding-inline: 14px;
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--accent-blue);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .card-btn:hover {
+    background: rgba(59, 130, 246, 0.22);
+  }
+  
+  /* Flip arrow direction in RTL */
+  [dir="rtl"] .card-btn {
+    direction: ltr;
+    unicode-bidi: bidi-override;
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    body {
+      padding-inline: 16px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RTL Card Grid</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="page">
+  
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <h1 class="page-title">Product Catalog</h1>
+          <span class="item-count">8 items</span>
+        </div>
+        <button class="dir-toggle" id="dir-toggle" type="button" aria-label="Toggle text direction">
+          <span id="dir-label">LTR</span>
+          <span class="dir-icon">&#8644;</span>
+        </button>
+      </div>
+  
+      <!-- Card Grid -->
+      <div class="card-grid">
+  
+        <!-- Card 1 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6)">
+              <span class="placeholder-icon">&#9671;</span>
+            </div>
+            <span class="card-badge">New</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Design Tools</span>
+              <span class="card-rating">&#9733; 4.8</span>
+            </div>
+            <h2 class="card-title">Pixel Studio Pro</h2>
+            <p class="card-desc">Professional design tool with real-time collaboration and an advanced vector editing engine.</p>
+            <div class="card-tags">
+              <span class="tag">Design</span>
+              <span class="tag">Vector</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$49/mo</span>
+              <button class="card-btn">Get Started &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 2 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #22c55e, #14b8a6)">
+              <span class="placeholder-icon">&#9670;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Development</span>
+              <span class="card-rating">&#9733; 4.9</span>
+            </div>
+            <h2 class="card-title">CodeForge IDE</h2>
+            <p class="card-desc">Lightning-fast IDE with AI-powered code completion and integrated debugging tools.</p>
+            <div class="card-tags">
+              <span class="tag">IDE</span>
+              <span class="tag">AI</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">Free</span>
+              <button class="card-btn">Download &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 3 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #f59e0b, #ef4444)">
+              <span class="placeholder-icon">&#9672;</span>
+            </div>
+            <span class="card-badge hot">Hot</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Analytics</span>
+              <span class="card-rating">&#9733; 4.7</span>
+            </div>
+            <h2 class="card-title">DataLens Analytics</h2>
+            <p class="card-desc">Powerful analytics dashboard for real-time data visualization and business intelligence.</p>
+            <div class="card-tags">
+              <span class="tag">Analytics</span>
+              <span class="tag">BI</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$29/mo</span>
+              <button class="card-btn">Try Free &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 4 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #8b5cf6, #ec4899)">
+              <span class="placeholder-icon">&#9674;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Security</span>
+              <span class="card-rating">&#9733; 4.6</span>
+            </div>
+            <h2 class="card-title">VaultGuard</h2>
+            <p class="card-desc">Enterprise-grade password manager with zero-knowledge encryption and team sharing.</p>
+            <div class="card-tags">
+              <span class="tag">Security</span>
+              <span class="tag">Encryption</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$12/mo</span>
+              <button class="card-btn">Secure Now &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 5 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #06b6d4, #3b82f6)">
+              <span class="placeholder-icon">&#9675;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Communication</span>
+              <span class="card-rating">&#9733; 4.5</span>
+            </div>
+            <h2 class="card-title">TeamPulse Chat</h2>
+            <p class="card-desc">Real-time messaging with channels, threads, and seamless video conferencing built in.</p>
+            <div class="card-tags">
+              <span class="tag">Chat</span>
+              <span class="tag">Video</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$8/mo</span>
+              <button class="card-btn">Join Free &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 6 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #ef4444, #f97316)">
+              <span class="placeholder-icon">&#9673;</span>
+            </div>
+            <span class="card-badge">Sale</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Productivity</span>
+              <span class="card-rating">&#9733; 4.8</span>
+            </div>
+            <h2 class="card-title">FlowState Tasks</h2>
+            <p class="card-desc">Elegant task manager with Kanban boards, time tracking, and smart workflow automation.</p>
+            <div class="card-tags">
+              <span class="tag">Tasks</span>
+              <span class="tag">Kanban</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$15/mo</span>
+              <button class="card-btn">Start Free &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 7 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #a855f7, #6366f1)">
+              <span class="placeholder-icon">&#9830;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Cloud</span>
+              <span class="card-rating">&#9733; 4.7</span>
+            </div>
+            <h2 class="card-title">NimbusSync</h2>
+            <p class="card-desc">Secure cloud storage with automatic sync, file versioning, and end-to-end encryption.</p>
+            <div class="card-tags">
+              <span class="tag">Cloud</span>
+              <span class="tag">Storage</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$6/mo</span>
+              <button class="card-btn">Upload Now &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+        <!-- Card 8 -->
+        <article class="card">
+          <div class="card-image">
+            <div class="image-placeholder" style="background: linear-gradient(135deg, #10b981, #84cc16)">
+              <span class="placeholder-icon">&#9827;</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-category">Automation</span>
+              <span class="card-rating">&#9733; 4.9</span>
+            </div>
+            <h2 class="card-title">AutoPilot Workflows</h2>
+            <p class="card-desc">No-code automation platform connecting 500+ apps with drag-and-drop workflow builder.</p>
+            <div class="card-tags">
+              <span class="tag">No-Code</span>
+              <span class="tag">Automation</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">$25/mo</span>
+              <button class="card-btn">Automate &#8594;</button>
+            </div>
+          </div>
+        </article>
+  
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const html = document.documentElement;
+    const dirToggle = document.getElementById("dir-toggle");
+    const dirLabel = document.getElementById("dir-label");
+  
+    dirToggle.addEventListener("click", () => {
+      const isRtl = html.getAttribute("dir") === "rtl";
+      const newDir = isRtl ? "ltr" : "rtl";
+      html.setAttribute("dir", newDir);
+      html.setAttribute("lang", isRtl ? "en" : "ar");
+      dirLabel.textContent = newDir.toUpperCase();
+    });
+  })();
+  
+  </script>
+explanation: "The declaration `margin: 0;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

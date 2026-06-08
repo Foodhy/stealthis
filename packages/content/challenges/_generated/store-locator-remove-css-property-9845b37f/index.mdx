@@ -1,0 +1,803 @@
+---
+slug: "store-locator-remove-css-property-9845b37f"
+topic: "store"
+title: "Restore missing CSS property in Store Locator"
+type: "fix"
+difficulty: 1
+resourceSlug: "store-locator"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    height: 100vh;
+    display: flex;
+  }
+  
+  .sl-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .sl-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .sl-search-wrap {
+    padding: 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .sl-search {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+    color: #111;
+    transition: border-color 0.15s;
+  }
+  .sl-search:focus {
+    border-color: #6366f1;
+  }
+  
+  .sl-filters {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .sf-btn {
+    background: #f3f4f6;
+    border: none;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sf-btn.active {
+    background: #6366f1;
+    color: #fff;
+  }
+  
+  .sl-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .sl-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f9fafb;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .sl-item:hover {
+    background: #f9fafb;
+  }
+  .sl-item.active {
+    background: #f0f4ff;
+    border-left: 3px solid #6366f1;
+  }
+  .sl-item.hidden {
+    display: none;
+  }
+  
+  .sl-item-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .sl-item-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .sl-item-dist {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6366f1;
+    flex-shrink: 0;
+  }
+  .sl-item-addr {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 5px;
+  }
+  
+  .sl-item-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .sl-tag {
+    font-size: 10px;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .sl-tag--open {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .sl-tag--flagship {
+    background: #fef9c3;
+    color: #92400e;
+  }
+  
+  /* Map */
+  .sl-map {
+    flex: 1;
+    position: relative;
+    background: #e0e7ff;
+    overflow: hidden;
+  }
+  
+  .map-bg {
+    position: absolute;
+    inset: 0;
+    background-color: #dbeafe;
+    background-image: radial-gradient(ellipse 120px 80px at 25% 35%, #93c5fd 0%, transparent 70%),
+      radial-gradient(ellipse 90px 60px at 70% 65%, #93c5fd 0%, transparent 70%),
+      radial-gradient(ellipse 60px 100px at 85% 20%, #bfdbfe 0%, transparent 60%),
+      radial-gradient(ellipse 200px 150px at 50% 50%, #d1fae5 0%, transparent 60%),
+      radial-gradient(ellipse 140px 100px at 20% 70%, #d1fae5 0%, transparent 60%),
+      radial-gradient(ellipse 160px 110px at 80% 40%, #dcfce7 0%, transparent 60%),
+      linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 80px 80px, 80px
+      80px, 20px 20px, 20px 20px;
+  }
+  
+  .map-pin-el {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .map-pin-el:hover {
+    transform: translate(-50%, -100%) scale(1.2);
+  }
+  .map-pin-el.active svg path {
+    fill: #f59e0b;
+  }
+  
+  .selected-popup {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    text-align: center;
+    animation: pop-in 0.2s ease;
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+  
+  .popup-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 2px;
+  }
+  .popup-addr {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 8px;
+  }
+  .popup-link {
+    font-size: 12px;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store Locator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="sl-layout">
+    <div class="sl-sidebar">
+      <div class="sl-search-wrap">
+        <input class="sl-search" id="slSearch" type="search" placeholder="Search city or store…" />
+      </div>
+      <div class="sl-filters">
+        <button class="sf-btn active" data-filter="all">All</button>
+        <button class="sf-btn" data-filter="open">Open now</button>
+        <button class="sf-btn" data-filter="flagship">Flagship</button>
+      </div>
+      <div class="sl-list" id="slList"></div>
+    </div>
+    <div class="sl-map" id="slMap">
+      <div class="map-bg"></div>
+      <div class="map-pins" id="mapPins"></div>
+      <div class="selected-popup" id="selectedPopup" hidden>
+        <p class="popup-name" id="popupName"></p>
+        <p class="popup-addr" id="popupAddr"></p>
+        <a href="#" class="popup-link">Get directions →</a>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const STORES = [
+    {
+      id: 1,
+      name: "Acme — Manhattan",
+      addr: "350 5th Ave, New York, NY",
+      dist: "0.4 km",
+      open: true,
+      flagship: true,
+      x: 55,
+      y: 42,
+    },
+    {
+      id: 2,
+      name: "Acme — SoHo",
+      addr: "120 Spring St, New York, NY",
+      dist: "1.8 km",
+      open: true,
+      flagship: false,
+      x: 48,
+      y: 60,
+    },
+    {
+      id: 3,
+      name: "Acme — Brooklyn",
+      addr: "1 Court Square, LIC, NY",
+      dist: "3.2 km",
+      open: false,
+      flagship: false,
+      x: 72,
+      y: 65,
+    },
+    {
+      id: 4,
+      name: "Acme — Hoboken",
+      addr: "88 River St, Hoboken, NJ",
+      dist: "5.1 km",
+      open: true,
+      flagship: false,
+      x: 28,
+      y: 50,
+    },
+    {
+      id: 5,
+      name: "Acme — Upper West",
+      addr: "2109 Broadway, New York, NY",
+      dist: "6.3 km",
+      open: true,
+      flagship: false,
+      x: 50,
+      y: 28,
+    },
+  ];
+  
+  const list = document.getElementById("slList");
+  const pinsEl = document.getElementById("mapPins");
+  const popup = document.getElementById("selectedPopup");
+  let activeFilter = "all";
+  let searchQ = "";
+  let activeId = null;
+  
+  function renderList() {
+    list.innerHTML = "";
+    STORES.forEach((s) => {
+      const visible = filterMatch(s);
+      const div = document.createElement("div");
+      div.className = "sl-item" + (activeId === s.id ? " active" : "") + (visible ? "" : " hidden");
+      const tags = [
+        s.open ? '<span class="sl-tag sl-tag--open">Open now</span>' : "",
+        s.flagship ? '<span class="sl-tag sl-tag--flagship">Flagship</span>' : "",
+      ]
+        .filter(Boolean)
+        .join("");
+      div.innerHTML = `
+        <div class="sl-item-header"><span class="sl-item-name">${s.name}</span><span class="sl-item-dist">${s.dist}</span></div>
+        <p class="sl-item-addr">${s.addr}</p>
+        <div class="sl-item-tags">${tags}</div>
+      `;
+      div.addEventListener("click", () => selectStore(s.id));
+      list.appendChild(div);
+    });
+  }
+  
+  function renderPins() {
+    pinsEl.innerHTML = "";
+    STORES.forEach((s) => {
+      const pin = document.createElement("div");
+      pin.className = "map-pin-el" + (activeId === s.id ? " active" : "");
+      pin.style.left = s.x + "%";
+      pin.style.top = s.y + "%";
+      pin.innerHTML = `<svg width="20" height="28" viewBox="0 0 24 32" fill="none"><path d="M12 0C5.373 0 0 5.373 0 12c0 8 12 20 12 20s12-12 12-20c0-6.627-5.373-12-12-12z" fill="#6366f1"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg>`;
+      pin.addEventListener("click", () => selectStore(s.id));
+      pinsEl.appendChild(pin);
+    });
+  }
+  
+  function filterMatch(s) {
+    if (searchQ && !s.name.toLowerCase().includes(searchQ) && !s.addr.toLowerCase().includes(searchQ))
+      return false;
+    if (activeFilter === "open" && !s.open) return false;
+    if (activeFilter === "flagship" && !s.flagship) return false;
+    return true;
+  }
+  
+  function selectStore(id) {
+    activeId = id;
+    const s = STORES.find((x) => x.id === id);
+    document.getElementById("popupName").textContent = s.name;
+    document.getElementById("popupAddr").textContent = s.addr;
+    popup.hidden = false;
+    renderList();
+    renderPins();
+  }
+  
+  document.getElementById("slSearch").addEventListener("input", (e) => {
+    searchQ = e.target.value.toLowerCase();
+    renderList();
+  });
+  
+  document.querySelectorAll(".sf-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sf-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      renderList();
+    });
+  });
+  
+  renderList();
+  renderPins();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    height: 100vh;
+    display: flex;
+  }
+  
+  .sl-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .sl-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .sl-search-wrap {
+    padding: 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .sl-search {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+    color: #111;
+    transition: border-color 0.15s;
+  }
+  .sl-search:focus {
+    border-color: #6366f1;
+  }
+  
+  .sl-filters {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .sf-btn {
+    background: #f3f4f6;
+    border: none;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sf-btn.active {
+    background: #6366f1;
+    color: #fff;
+  }
+  
+  .sl-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .sl-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f9fafb;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .sl-item:hover {
+    background: #f9fafb;
+  }
+  .sl-item.active {
+    background: #f0f4ff;
+    border-left: 3px solid #6366f1;
+  }
+  .sl-item.hidden {
+    display: none;
+  }
+  
+  .sl-item-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .sl-item-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .sl-item-dist {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6366f1;
+    flex-shrink: 0;
+  }
+  .sl-item-addr {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 5px;
+  }
+  
+  .sl-item-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .sl-tag {
+    font-size: 10px;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .sl-tag--open {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .sl-tag--flagship {
+    background: #fef9c3;
+    color: #92400e;
+  }
+  
+  /* Map */
+  .sl-map {
+    flex: 1;
+    position: relative;
+    background: #e0e7ff;
+    overflow: hidden;
+  }
+  
+  .map-bg {
+    position: absolute;
+    inset: 0;
+    background-color: #dbeafe;
+    background-image: radial-gradient(ellipse 120px 80px at 25% 35%, #93c5fd 0%, transparent 70%),
+      radial-gradient(ellipse 90px 60px at 70% 65%, #93c5fd 0%, transparent 70%),
+      radial-gradient(ellipse 60px 100px at 85% 20%, #bfdbfe 0%, transparent 60%),
+      radial-gradient(ellipse 200px 150px at 50% 50%, #d1fae5 0%, transparent 60%),
+      radial-gradient(ellipse 140px 100px at 20% 70%, #d1fae5 0%, transparent 60%),
+      radial-gradient(ellipse 160px 110px at 80% 40%, #dcfce7 0%, transparent 60%),
+      linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 80px 80px, 80px
+      80px, 20px 20px, 20px 20px;
+  }
+  
+  .map-pin-el {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .map-pin-el:hover {
+    transform: translate(-50%, -100%) scale(1.2);
+  }
+  .map-pin-el.active svg path {
+    fill: #f59e0b;
+  }
+  
+  .selected-popup {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    text-align: center;
+    animation: pop-in 0.2s ease;
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+  
+  .popup-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 2px;
+  }
+  .popup-addr {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 8px;
+  }
+  .popup-link {
+    font-size: 12px;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store Locator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="sl-layout">
+    <div class="sl-sidebar">
+      <div class="sl-search-wrap">
+        <input class="sl-search" id="slSearch" type="search" placeholder="Search city or store…" />
+      </div>
+      <div class="sl-filters">
+        <button class="sf-btn active" data-filter="all">All</button>
+        <button class="sf-btn" data-filter="open">Open now</button>
+        <button class="sf-btn" data-filter="flagship">Flagship</button>
+      </div>
+      <div class="sl-list" id="slList"></div>
+    </div>
+    <div class="sl-map" id="slMap">
+      <div class="map-bg"></div>
+      <div class="map-pins" id="mapPins"></div>
+      <div class="selected-popup" id="selectedPopup" hidden>
+        <p class="popup-name" id="popupName"></p>
+        <p class="popup-addr" id="popupAddr"></p>
+        <a href="#" class="popup-link">Get directions →</a>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const STORES = [
+    {
+      id: 1,
+      name: "Acme — Manhattan",
+      addr: "350 5th Ave, New York, NY",
+      dist: "0.4 km",
+      open: true,
+      flagship: true,
+      x: 55,
+      y: 42,
+    },
+    {
+      id: 2,
+      name: "Acme — SoHo",
+      addr: "120 Spring St, New York, NY",
+      dist: "1.8 km",
+      open: true,
+      flagship: false,
+      x: 48,
+      y: 60,
+    },
+    {
+      id: 3,
+      name: "Acme — Brooklyn",
+      addr: "1 Court Square, LIC, NY",
+      dist: "3.2 km",
+      open: false,
+      flagship: false,
+      x: 72,
+      y: 65,
+    },
+    {
+      id: 4,
+      name: "Acme — Hoboken",
+      addr: "88 River St, Hoboken, NJ",
+      dist: "5.1 km",
+      open: true,
+      flagship: false,
+      x: 28,
+      y: 50,
+    },
+    {
+      id: 5,
+      name: "Acme — Upper West",
+      addr: "2109 Broadway, New York, NY",
+      dist: "6.3 km",
+      open: true,
+      flagship: false,
+      x: 50,
+      y: 28,
+    },
+  ];
+  
+  const list = document.getElementById("slList");
+  const pinsEl = document.getElementById("mapPins");
+  const popup = document.getElementById("selectedPopup");
+  let activeFilter = "all";
+  let searchQ = "";
+  let activeId = null;
+  
+  function renderList() {
+    list.innerHTML = "";
+    STORES.forEach((s) => {
+      const visible = filterMatch(s);
+      const div = document.createElement("div");
+      div.className = "sl-item" + (activeId === s.id ? " active" : "") + (visible ? "" : " hidden");
+      const tags = [
+        s.open ? '<span class="sl-tag sl-tag--open">Open now</span>' : "",
+        s.flagship ? '<span class="sl-tag sl-tag--flagship">Flagship</span>' : "",
+      ]
+        .filter(Boolean)
+        .join("");
+      div.innerHTML = `
+        <div class="sl-item-header"><span class="sl-item-name">${s.name}</span><span class="sl-item-dist">${s.dist}</span></div>
+        <p class="sl-item-addr">${s.addr}</p>
+        <div class="sl-item-tags">${tags}</div>
+      `;
+      div.addEventListener("click", () => selectStore(s.id));
+      list.appendChild(div);
+    });
+  }
+  
+  function renderPins() {
+    pinsEl.innerHTML = "";
+    STORES.forEach((s) => {
+      const pin = document.createElement("div");
+      pin.className = "map-pin-el" + (activeId === s.id ? " active" : "");
+      pin.style.left = s.x + "%";
+      pin.style.top = s.y + "%";
+      pin.innerHTML = `<svg width="20" height="28" viewBox="0 0 24 32" fill="none"><path d="M12 0C5.373 0 0 5.373 0 12c0 8 12 20 12 20s12-12 12-20c0-6.627-5.373-12-12-12z" fill="#6366f1"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg>`;
+      pin.addEventListener("click", () => selectStore(s.id));
+      pinsEl.appendChild(pin);
+    });
+  }
+  
+  function filterMatch(s) {
+    if (searchQ && !s.name.toLowerCase().includes(searchQ) && !s.addr.toLowerCase().includes(searchQ))
+      return false;
+    if (activeFilter === "open" && !s.open) return false;
+    if (activeFilter === "flagship" && !s.flagship) return false;
+    return true;
+  }
+  
+  function selectStore(id) {
+    activeId = id;
+    const s = STORES.find((x) => x.id === id);
+    document.getElementById("popupName").textContent = s.name;
+    document.getElementById("popupAddr").textContent = s.addr;
+    popup.hidden = false;
+    renderList();
+    renderPins();
+  }
+  
+  document.getElementById("slSearch").addEventListener("input", (e) => {
+    searchQ = e.target.value.toLowerCase();
+    renderList();
+  });
+  
+  document.querySelectorAll(".sf-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sf-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      renderList();
+    });
+  });
+  
+  renderList();
+  renderPins();
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

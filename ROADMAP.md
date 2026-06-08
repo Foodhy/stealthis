@@ -1232,3 +1232,773 @@ updatedAt: "2026-03-28"
 | `plugin-devin-mcp` | Devin MCP Marketplace | [app.devin.ai/settings/mcp-marketplace](https://app.devin.ai/settings/mcp-marketplace) | [ ] |
 | `plugin-kiro` | Kiro IDE (AWS) — Agentic IDE with "Kiro Powers" | [kiro.dev](https://kiro.dev/) | [ ] |
 | `plugin-composio` | Composio — 1000+ Toolkits for AI Agents | [composio.dev](https://composio.dev/) | [ ] |
+
+---
+
+## Phase 27 — Restaurant Theme (Vanilla HTML, CSS and JS) ✅ DONE (2026-05-22) · 41/41
+
+> A coherent set of restaurant-themed resources covering both **staff/operations** (POS, KDS, floor plan, admin) and **customer-facing** (carta, ordering, reservations, kiosk). All built in vanilla `html/css/js` — no framework. Each resource ships with `snippets/html.html` + `style.css` + `script.js` and is runnable in Lab.
+>
+> Naming convention: `rest-<area>-<slug>`.
+> Shared design language: warm palette (cream, terracotta, forest green), serif headings (Playfair Display) + clean sans body (Inter), high contrast for POS, generous touch targets on kiosk/tableside.
+> Category mapping:
+> - Full-screen apps & marketing pages → `pages` (with `labRoute`).
+> - Standalone widgets/components → `ui-components`.
+>
+> The existing `lgc-44-restaurant-fine-dining` (marketing page) and `booking-reservations` (DB schema) are complementary and not duplicated here.
+
+### 27.A — POS / Staff Operations
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `rest-pos-order-entry` | POS Order Entry (menu grid + ticket panel) | pages | hard | ✅ |
+| 2 | `rest-pos-floor-plan` | Floor Plan / Table Map (status per table) | pages | hard | ✅ |
+| 3 | `rest-pos-kitchen-display` | Kitchen Display System (KDS) — ticket stream | pages | hard | ✅ |
+| 4 | `rest-pos-bar-display` | Bar Display — drink orders queue | pages | med | ✅ |
+| 5 | `rest-pos-payment` | Payment Terminal (cash / card / split) | ui-components | med | ✅ |
+| 6 | `rest-pos-receipt` | Printable Receipt / Ticket preview | ui-components | easy | ✅ |
+| 7 | `rest-pos-quick-pad` | Quick Order Pad (categories + items grid) | ui-components | easy | ✅ |
+| 8 | `rest-pos-tip-split` | Tip Calculator & Split Bill | ui-components | easy | ✅ |
+| 9 | `rest-pos-shift-report` | End-of-Shift Sales Report | pages | med | ✅ |
+| 10 | `rest-pos-modifier-sheet` | Item Modifier Sheet (extras, sizes, notes) | ui-components | med | ✅ |
+
+### 27.B — Customer / Diner Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 11 | `rest-menu-carta` | Carta — full menu browse (categories + sections) | pages | med | ✅ |
+| 12 | `rest-menu-item-detail` | Menu Item Detail (image, allergens, modifiers) | ui-components | easy | ✅ |
+| 13 | `rest-menu-qr` | QR Mobile Menu (sticky cart) | pages | med | ✅ |
+| 14 | `rest-cart-order` | Cart / Order Summary widget | ui-components | easy | ✅ |
+| 15 | `rest-checkout` | Customer Checkout (tip, address, pay) | pages | med | ✅ |
+| 16 | `rest-reservation-form` | Reservation Booking Form (date · guests · time) | ui-components | med | ✅ |
+| 17 | `rest-order-tracking` | Order Status Tracker (sent → cooking → ready) | ui-components | easy | ✅ |
+| 18 | `rest-loyalty-card` | Loyalty / Rewards Card | ui-components | easy | ✅ |
+| 19 | `rest-reviews-feed` | Customer Reviews Feed + rating breakdown | ui-components | easy | ✅ |
+| 20 | `rest-allergy-filter` | Allergy / Diet Filter (vegan, gluten-free, etc.) | ui-components | med | ✅ |
+
+### 27.C — Restaurant Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 21 | `rest-page-landing` | Restaurant Landing (hero + reserve CTA) | pages | med | ✅ |
+| 22 | `rest-page-about` | About / Our Story page (chef, history) | pages | easy | ✅ |
+| 23 | `rest-page-menu` | Menu Page (printable carta layout) | pages | med | ✅ |
+| 24 | `rest-page-location` | Location & Hours (map embed + contact) | pages | easy | ✅ |
+| 25 | `rest-page-gallery` | Gallery / Chef's Specials | pages | easy | ✅ |
+| 26 | `rest-page-events` | Private Events / Catering page | pages | easy | ✅ |
+
+### 27.D — Kiosk · Tableside · Signage
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 27 | `rest-kiosk-self-order` | Self-Ordering Kiosk (large touch targets) | pages | hard | ✅ |
+| 28 | `rest-tableside-tablet` | Tableside Tablet Ordering UI | pages | med | ✅ |
+| 29 | `rest-digital-menu-board` | Digital Menu Board (TV signage) | pages | med | ✅ |
+| 30 | `rest-waiter-call` | Call Waiter / Service Request panel | ui-components | easy | ✅ |
+| 31 | `rest-wine-pairing` | Wine Pairing Recommender | ui-components | med | ✅ |
+
+### 27.E — Manager / Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 32 | `rest-admin-dashboard` | Sales & KPI Dashboard | pages | hard | ✅ |
+| 33 | `rest-admin-inventory` | Inventory Tracker (low-stock alerts) | pages | med | ✅ |
+| 34 | `rest-admin-menu-editor` | Menu CRUD Editor (categories + items) | pages | med | ✅ |
+| 35 | `rest-admin-staff` | Staff & Shift Roster | pages | med | ✅ |
+| 36 | `rest-admin-reservations` | Reservations Manager (calendar + list) | pages | med | ✅ |
+
+### 27.F — Dinner-Type Landings (5 themed restaurant landings)
+
+> Five full-page restaurant landings, each a distinct dinner concept with its own palette, type system, and hero mood. Independent from the generic `rest-page-landing` (21) so the set demonstrates visual range. All vanilla `html/css/js`, single-page, scrollable, with reservation CTA.
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 37 | `rest-landing-steakhouse` | Premium Steakhouse | Dark charcoal + leather + gold · serif display · bold meat photography, smoke textures | hard | ✅ |
+| 38 | `rest-landing-sushi-omakase` | Sushi · Omakase | Off-white + ink black + vermillion accent · Noto Serif JP · zen minimalism, ink-wash dividers | med | ✅ |
+| 39 | `rest-landing-italian-trattoria` | Italian Trattoria | Cream + tomato red + olive green · handwritten script + classic serif · rustic, checkered accents | med | ✅ |
+| 40 | `rest-landing-mexican-cantina` | Mexican Cantina | Terracotta + cobalt + mustard · chunky display + warm body · festive, papel picado, agave motifs | med | ✅ |
+| 41 | `rest-landing-farm-to-table` | Farm-to-Table / Vegan | Sage + bone + clay · modern serif + grotesque · earthy, organic textures, seasonal produce | med | ✅ |
+
+Each landing ships with:
+- Hero (concept-specific imagery placeholder + reservation CTA)
+- Signature dishes section (3–6 items)
+- Story / chef block (one paragraph + photo)
+- Hours + location (map placeholder)
+- Reservation form footer or sticky CTA
+
+### Build order (proposed)
+
+1. **Foundation pass** — items 11 (`rest-menu-carta`), 12 (`rest-menu-item-detail`), 14 (`rest-cart-order`), 7 (`rest-pos-quick-pad`). These establish the shared design tokens and reusable bits.
+2. **POS core** — 1 (order entry), 3 (KDS), 2 (floor plan), 5 (payment), 6 (receipt).
+3. **Customer flow** — 13 (QR menu), 15 (checkout), 16 (reservation), 17 (order tracking).
+4. **Marketing pages** — 21 → 26.
+5. **Dinner-type landings** — 37 → 41 (sections 27.F).
+6. **Kiosk & signage** — 27, 28, 29.
+7. **Admin** — 32 → 36.
+8. **Polish** — 8 (tip split), 10 (modifier sheet), 18 (loyalty), 19 (reviews), 20 (allergy), 30 (waiter call), 31 (wine pairing), 9 (shift report).
+
+### Decisions locked in (from planning round)
+
+- **Prefix:** `rest-*` for every Phase 27 resource.
+- **Interactivity:** mixed — POS interactive (running totals, ticket state), customer + marketing static-ish.
+- **Theme tokens:** ops/customer surfaces share the warm palette block (cream/terracotta/forest/gold + Playfair + Inter); each of the 5 dinner-type landings (27.F) overrides with its own `:root`.
+- **Language:** English on ops/customer; theme-appropriate language per dinner landing (Italian for trattoria, Spanish for cantina, some Japanese for sushi).
+- **Schema:** added `"restaurant"` to `ResourceCollectionSchema` (`packages/schema/src/schema.ts`, `packages/schema/src/types.ts`, `apps/www/src/content/config.ts`).
+
+---
+
+## Vertical Theme Bundles (Phases 28–35) 🧭 PLAN
+
+> Phase 27 (Restaurant) established a template for **vertical theme bundles**: a single industry covered end-to-end across staff/ops, customer-facing, marketing, kiosk/signage, admin, and themed landings — all in vanilla `html/css/js` so they run standalone in Lab.
+>
+> Phases 28–35 apply the same template to other high-fit verticals. Shared conventions across these phases:
+> - Naming: `<prefix>-<area>-<slug>` (prefix per phase, see each section).
+> - Categories: full-screen apps & marketing pages → `pages` (with `labRoute`); standalone widgets/components → `ui-components`.
+> - Scope: interactive by default (running totals, timers, state changes via vanilla JS).
+> - Theme tokens: ops/customer surfaces share a phase-wide palette block; each themed landing in `*.F` overrides with its own `:root`.
+> - Copy: English by default on ops/customer; theme-appropriate language allowed per landing.
+> - Each landing-set sub-section (`*.F`) ships 5 themed variants with distinct palette, type system, hero mood.
+> - Schema: add the new collection slug to `ResourceCollectionSchema` (`packages/schema/src/schema.ts`, `types.ts`, `apps/www/src/content/config.ts`) before authoring resources.
+
+---
+
+## Phase 28 — Hotel / Hospitality Theme 🏨 PLAN
+
+> Full hotel stack — front desk PMS, guest portal, booking flow, concierge, housekeeping, manager admin, plus themed landings (boutique, resort, hostel, business hotel, B&B).
+>
+> Naming convention: `hotel-<area>-<slug>`.
+> Shared design language: deep navy + warm gold + cream · serif headings (Cormorant) + sans body (Inter) · generous whitespace · soft photography overlays.
+> Collection: `hotel`.
+
+### 28.A — Front Desk / PMS (Property Management System)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `hotel-pms-dashboard` | PMS Dashboard (arrivals · in-house · departures) | pages | hard | [ ] |
+| 2 | `hotel-pms-room-rack` | Room Rack / Tape Chart (rooms × dates grid) | pages | hard | [ ] |
+| 3 | `hotel-pms-checkin` | Check-in Flow (guest lookup → keys → folio) | pages | med | [ ] |
+| 4 | `hotel-pms-checkout` | Check-out & Folio Settlement | pages | med | [ ] |
+| 5 | `hotel-pms-reservation-edit` | Reservation Edit (dates · room · rate · guests) | ui-components | med | [ ] |
+| 6 | `hotel-pms-walk-in` | Walk-in Booking Sheet | ui-components | easy | [ ] |
+| 7 | `hotel-pms-night-audit` | Night Audit Report | pages | med | [ ] |
+| 8 | `hotel-pms-folio` | Guest Folio / Itemized Bill | ui-components | easy | [ ] |
+
+### 28.B — Guest / Customer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 9 | `hotel-booking-search` | Booking Search (dates · guests · rooms) | pages | med | [ ] |
+| 10 | `hotel-room-results` | Room Results Grid (cards · filters · price) | pages | med | [ ] |
+| 11 | `hotel-room-detail` | Room Detail (gallery · amenities · rate plans) | pages | med | [ ] |
+| 12 | `hotel-booking-checkout` | Booking Checkout (guest info · pay · confirm) | pages | med | [ ] |
+| 13 | `hotel-booking-confirmation` | Booking Confirmation Page | pages | easy | [ ] |
+| 14 | `hotel-guest-portal` | Guest Portal (my stay · folio · requests) | pages | med | [ ] |
+| 15 | `hotel-digital-key` | Digital Key Card (mobile) | ui-components | easy | [ ] |
+| 16 | `hotel-in-room-tablet` | In-Room Tablet UI (services · TV · order) | pages | med | [ ] |
+| 17 | `hotel-loyalty-card` | Loyalty Tier Card (points · status) | ui-components | easy | [ ] |
+
+### 28.C — Concierge · Housekeeping · Ops
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 18 | `hotel-concierge-board` | Concierge Request Board | pages | med | [ ] |
+| 19 | `hotel-housekeeping-grid` | Housekeeping Status Grid (clean/dirty/inspected) | pages | med | [ ] |
+| 20 | `hotel-maintenance-tickets` | Maintenance Tickets Queue | ui-components | med | [ ] |
+| 21 | `hotel-amenity-booking` | Spa / Gym / Restaurant Amenity Booking | ui-components | easy | [ ] |
+| 22 | `hotel-shuttle-schedule` | Shuttle / Transfer Schedule | ui-components | easy | [ ] |
+
+### 28.D — Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 23 | `hotel-page-landing` | Hotel Landing (hero + book CTA) | pages | med | [ ] |
+| 24 | `hotel-page-rooms` | Rooms / Suites Page | pages | med | [ ] |
+| 25 | `hotel-page-amenities` | Amenities & Services Page | pages | easy | [ ] |
+| 26 | `hotel-page-gallery` | Gallery / Virtual Tour | pages | easy | [ ] |
+| 27 | `hotel-page-offers` | Special Offers & Packages | pages | easy | [ ] |
+| 28 | `hotel-page-contact` | Contact & Location | pages | easy | [ ] |
+
+### 28.E — Admin / Manager
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 29 | `hotel-admin-revenue` | Revenue / RevPAR Dashboard | pages | hard | [ ] |
+| 30 | `hotel-admin-rate-mgmt` | Rate Management (per room · per date) | pages | hard | [ ] |
+| 31 | `hotel-admin-channel-mgr` | Channel Manager (OTAs sync status) | pages | med | [ ] |
+| 32 | `hotel-admin-inventory` | Inventory & Allotment | pages | med | [ ] |
+| 33 | `hotel-admin-reports` | Reports & Forecasting | pages | med | [ ] |
+
+### 28.F — Themed Hotel Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 34 | `hotel-landing-boutique` | Boutique City Hotel | Charcoal + brass + ivory · modern serif · curated, editorial | med | [ ] |
+| 35 | `hotel-landing-resort` | Beach Resort | Teal + sand + coral · airy sans · panoramic, sun-soaked | med | [ ] |
+| 36 | `hotel-landing-hostel` | Backpacker Hostel | Lime + slate + warm white · chunky display · playful, social | easy | [ ] |
+| 37 | `hotel-landing-business` | Business / Conference Hotel | Navy + steel + white · clean grotesque · efficient, corporate | med | [ ] |
+| 38 | `hotel-landing-bnb` | Bed & Breakfast / Inn | Cream + sage + terracotta · handwritten + serif · homey, rustic | med | [ ] |
+
+### Build order (Phase 28)
+
+1. **Foundation** — 9 (search), 10 (results), 11 (room detail), 12 (checkout).
+2. **PMS core** — 1 (dashboard), 2 (room rack), 3 (check-in), 4 (check-out).
+3. **Guest experience** — 13, 14, 15, 16, 17.
+4. **Ops** — 18, 19, 20, 21, 22.
+5. **Marketing** — 23 → 28.
+6. **Landings** — 34 → 38.
+7. **Admin** — 29 → 33.
+
+---
+
+## Phase 29 — Clinic / Healthcare Theme 🏥 PLAN
+
+> End-to-end clinic UI — patient portal, appointment booking, EHR-lite for clinicians, pharmacy, telemedicine, plus themed landings (general practice, dental, pediatric, mental health, specialist).
+>
+> Naming convention: `clinic-<area>-<slug>`.
+> Shared design language: clinical white + calm teal + soft coral accent · sans-serif (Inter) · high readability · accessible contrast WCAG AA · empathetic copy.
+> Collection: `clinic`.
+> Note: All content is illustrative; **not** designed for actual medical use.
+
+### 29.A — Patient / Customer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `clinic-patient-portal` | Patient Portal Dashboard | pages | med | [ ] |
+| 2 | `clinic-appointment-booking` | Appointment Booking (specialty · doctor · slot) | pages | med | [ ] |
+| 3 | `clinic-appointment-list` | My Appointments (upcoming + past) | ui-components | easy | [ ] |
+| 4 | `clinic-symptom-checker` | Symptom Checker Wizard | pages | med | [ ] |
+| 5 | `clinic-prescription-list` | Prescriptions & Refills | ui-components | easy | [ ] |
+| 6 | `clinic-lab-results` | Lab Results Viewer | ui-components | med | [ ] |
+| 7 | `clinic-intake-form` | Patient Intake / Triage Form | pages | med | [ ] |
+| 8 | `clinic-insurance-card` | Insurance Card & Coverage | ui-components | easy | [ ] |
+
+### 29.B — Clinician / Staff Side (EHR-lite)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 9 | `clinic-ehr-dashboard` | Clinician Dashboard (today's panel) | pages | hard | [ ] |
+| 10 | `clinic-patient-chart` | Patient Chart (history · meds · allergies) | pages | hard | [ ] |
+| 11 | `clinic-visit-notes` | Visit Notes Editor (SOAP format) | pages | med | [ ] |
+| 12 | `clinic-prescription-pad` | E-Prescription Pad | ui-components | med | [ ] |
+| 13 | `clinic-lab-order` | Lab Order Sheet | ui-components | med | [ ] |
+| 14 | `clinic-vitals-input` | Vitals Input Panel (BP · HR · temp) | ui-components | easy | [ ] |
+| 15 | `clinic-queue-board` | Waiting Room Queue Board | pages | med | [ ] |
+| 16 | `clinic-referral-form` | Referral / Consult Request | ui-components | easy | [ ] |
+
+### 29.C — Telemedicine & Communication
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 17 | `clinic-video-consult` | Video Consult Room UI | pages | hard | [ ] |
+| 18 | `clinic-chat-doctor` | Secure Chat with Doctor | ui-components | med | [ ] |
+| 19 | `clinic-prescription-delivery` | Pharmacy Delivery Tracker | ui-components | easy | [ ] |
+
+### 29.D — In-clinic Dispense
+
+> Scope: in-clinic dispensing only (a doctor handing meds at the visit). Full retail pharmacy stack lives in **Phase 43**.
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 20 | `clinic-dispense-queue` | In-clinic Dispense Queue | pages | med | [ ] |
+| 21 | `clinic-dispense-counter` | In-clinic Dispense Counter UI | pages | med | [ ] |
+| 22 | `clinic-medication-info` | Medication Info Sheet | ui-components | easy | [ ] |
+
+### 29.E — Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 23 | `clinic-page-landing` | Clinic Landing (services + book CTA) | pages | med | [ ] |
+| 24 | `clinic-page-services` | Services / Specialties | pages | easy | [ ] |
+| 25 | `clinic-page-doctors` | Doctors / Team Page | pages | easy | [ ] |
+| 26 | `clinic-page-insurance` | Insurance & Pricing | pages | easy | [ ] |
+| 27 | `clinic-page-locations` | Locations & Hours | pages | easy | [ ] |
+
+### 29.F — Admin (Manager)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 28 | `clinic-admin-schedule` | Doctor / Room Schedule Admin | pages | hard | [ ] |
+| 29 | `clinic-admin-billing` | Billing & Claims Dashboard | pages | hard | [ ] |
+| 30 | `clinic-admin-inventory` | Supplies Inventory | pages | med | [ ] |
+
+### 29.G — Themed Clinic Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 31 | `clinic-landing-general` | General Practice / Family Clinic | Teal + white + warm coral · friendly sans · approachable, community | med | [ ] |
+| 32 | `clinic-landing-dental` | Dental Clinic | Mint + white + soft blue · rounded sans · clean, smile-forward | med | [ ] |
+| 33 | `clinic-landing-pediatric` | Pediatric Clinic | Pastel yellow + sky + bubblegum · playful sans · child-friendly, illustrated | med | [ ] |
+| 34 | `clinic-landing-mental-health` | Mental Health / Therapy | Sage + cream + lavender · serif + sans · calm, safe, soft | med | [ ] |
+| 35 | `clinic-landing-specialist` | Specialist / Surgery Center | Deep blue + silver + white · modern serif · authoritative, premium | hard | [ ] |
+
+### Build order (Phase 29)
+
+1. **Patient foundation** — 1, 2, 3, 4.
+2. **EHR core** — 9, 10, 11, 12.
+3. **Tele + comms** — 17, 18, 19.
+4. **In-clinic dispense** — 20, 21, 22.
+5. **Marketing** — 23 → 27.
+6. **Admin** — 28 → 30.
+7. **Landings** — 31 → 35.
+
+---
+
+## Phase 30 — Gym / Fitness Studio Theme 💪 PLAN
+
+> Fitness vertical — class booking, member portal, trainer dashboard, workout tracker, plus themed landings (yoga studio, crossfit box, boutique HIIT, big-box chain, martial arts).
+>
+> Naming convention: `gym-<area>-<slug>`.
+> Shared design language: high-energy black + neon accent (electric green / orange) for performance gyms; soft sage + bone for wellness studios (varies per landing) · bold sans display · large action buttons.
+> Collection: `gym`.
+
+### 30.A — Member / Customer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `gym-class-schedule` | Class Schedule (week grid) | pages | med | [ ] |
+| 2 | `gym-class-detail` | Class Detail + Book CTA | ui-components | easy | [ ] |
+| 3 | `gym-member-dashboard` | Member Dashboard (next class · streak · stats) | pages | med | [ ] |
+| 4 | `gym-workout-tracker` | Workout Tracker (sets · reps · timer) | pages | med | [ ] |
+| 5 | `gym-membership-card` | Digital Membership Card (QR) | ui-components | easy | [ ] |
+| 6 | `gym-progress-stats` | Progress Stats (charts · PRs) | ui-components | med | [ ] |
+| 7 | `gym-nutrition-log` | Nutrition / Macro Log | ui-components | med | [ ] |
+| 8 | `gym-booking-flow` | Class Booking Flow (date · spot · pay) | pages | med | [ ] |
+
+### 30.B — Trainer / Staff Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 9 | `gym-trainer-dashboard` | Trainer Dashboard (clients · today) | pages | med | [ ] |
+| 10 | `gym-class-roster` | Class Roster (attendance check-in) | ui-components | easy | [ ] |
+| 11 | `gym-workout-builder` | Workout Plan Builder (drag exercises) | pages | hard | [ ] |
+| 12 | `gym-client-progress` | Client Progress View | ui-components | med | [ ] |
+| 13 | `gym-check-in-kiosk` | Member Check-in Kiosk (QR scan) | pages | med | [ ] |
+
+### 30.C — Equipment & Floor
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 14 | `gym-floor-map` | Gym Floor Map (equipment zones) | pages | med | [ ] |
+| 15 | `gym-equipment-status` | Equipment Status (in use / free / repair) | ui-components | med | [ ] |
+| 16 | `gym-leaderboard` | Class Leaderboard (heart rate · cal) | ui-components | med | [ ] |
+
+### 30.D — Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 17 | `gym-page-landing` | Gym Landing (hero + trial CTA) | pages | med | [ ] |
+| 18 | `gym-page-classes` | Classes Overview Page | pages | easy | [ ] |
+| 19 | `gym-page-trainers` | Trainers / Coaches Page | pages | easy | [ ] |
+| 20 | `gym-page-pricing` | Membership Pricing | pages | easy | [ ] |
+| 21 | `gym-page-schedule` | Public Schedule Page | pages | easy | [ ] |
+
+### 30.E — Admin (Manager)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 22 | `gym-admin-members` | Members Admin (list · churn · MRR) | pages | hard | [ ] |
+| 23 | `gym-admin-classes` | Class Management (CRUD) | pages | med | [ ] |
+| 24 | `gym-admin-revenue` | Revenue & Retention Dashboard | pages | hard | [ ] |
+
+### 30.F — Themed Studio Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 25 | `gym-landing-yoga` | Yoga / Pilates Studio | Sage + bone + dusty rose · modern serif · serene, grounded | med | [ ] |
+| 26 | `gym-landing-crossfit` | CrossFit Box | Black + safety yellow + concrete · industrial sans · raw, intense | hard | [ ] |
+| 27 | `gym-landing-boutique` | Boutique Cycling / HIIT | Deep purple + neon pink + white · bold display · high-energy, club-like | hard | [ ] |
+| 28 | `gym-landing-big-box` | Big-Box Chain Gym | Red + black + steel · chunky sans · accessible, mass-market | med | [ ] |
+| 29 | `gym-landing-martial-arts` | Martial Arts / Boxing | Charcoal + crimson + cream · slab serif · disciplined, traditional | med | [ ] |
+
+### Build order (Phase 30)
+
+1. **Member foundation** — 1, 2, 3, 8.
+2. **Engagement** — 4, 5, 6.
+3. **Trainer side** — 9, 10, 11, 13.
+4. **Floor / equipment** — 14, 15, 16.
+5. **Marketing** — 17 → 21.
+6. **Admin** — 22 → 24.
+7. **Landings** — 25 → 29.
+
+---
+
+## Phase 31 — Salon / Beauty / Barbershop Theme 💈 PLAN
+
+> Booking-heavy + visual-heavy vertical — stylist calendar, service catalog, client portal, POS, plus themed landings (hair salon, barbershop, nail bar, day spa, med-spa).
+>
+> Naming convention: `salon-<area>-<slug>`.
+> Shared design language: rose-gold + cream + matte black · elegant serif (Cormorant) + clean sans · high-touch photography · subtle gold accents.
+> Collection: `salon`.
+
+### 31.A — Client / Customer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `salon-booking` | Service + Stylist + Time Booking | pages | med | [ ] |
+| 2 | `salon-service-catalog` | Service Catalog (categories · price) | pages | easy | [ ] |
+| 3 | `salon-stylist-profile` | Stylist Profile + portfolio | ui-components | easy | [ ] |
+| 4 | `salon-client-portal` | Client Portal (past visits · rebook) | pages | med | [ ] |
+| 5 | `salon-loyalty-rewards` | Loyalty & Referral Card | ui-components | easy | [ ] |
+| 6 | `salon-gift-card` | Gift Card Purchase / Redeem | ui-components | easy | [ ] |
+
+### 31.B — Staff / Stylist Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 7 | `salon-stylist-calendar` | Stylist Day Calendar | pages | med | [ ] |
+| 8 | `salon-appointment-card` | Appointment Detail Card | ui-components | easy | [ ] |
+| 9 | `salon-color-formula` | Color Formula Tracker (per client) | ui-components | med | [ ] |
+| 10 | `salon-client-notes` | Client Notes (preferences · allergies) | ui-components | easy | [ ] |
+| 11 | `salon-pos-checkout` | POS Checkout (services + retail) | pages | med | [ ] |
+| 12 | `salon-tip-split` | Tip & Commission Split | ui-components | easy | [ ] |
+
+### 31.C — Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 13 | `salon-page-landing` | Salon Landing | pages | med | [ ] |
+| 14 | `salon-page-services` | Services & Prices | pages | easy | [ ] |
+| 15 | `salon-page-team` | Team / Stylists | pages | easy | [ ] |
+| 16 | `salon-page-gallery` | Portfolio / Gallery | pages | easy | [ ] |
+
+### 31.D — Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 17 | `salon-admin-dashboard` | Revenue per Stylist + Service Mix | pages | med | [ ] |
+| 18 | `salon-admin-inventory` | Retail Inventory (products) | pages | med | [ ] |
+
+### 31.E — Themed Salon Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 19 | `salon-landing-hair` | Modern Hair Salon | Rose gold + cream + black · elegant serif · luxe, editorial | med | [ ] |
+| 20 | `salon-landing-barber` | Classic Barbershop | Oxblood + walnut + cream · slab serif · vintage, masculine | med | [ ] |
+| 21 | `salon-landing-nail-bar` | Nail Bar / Studio | Blush + lavender + chrome · playful sans · trendy, Instagrammable | easy | [ ] |
+| 22 | `salon-landing-spa` | Day Spa | Sage + sand + bronze · light serif · serene, wellness | med | [ ] |
+| 23 | `salon-landing-medspa` | Med-Spa / Aesthetic | Pearl + champagne + soft pink · clinical serif · premium, medical-elegant | hard | [ ] |
+
+### Build order (Phase 31)
+
+1. **Client foundation** — 1, 2, 3.
+2. **Staff core** — 7, 8, 11.
+3. **Retention** — 4, 5, 6, 9, 10.
+4. **POS / financial** — 11, 12.
+5. **Marketing** — 13 → 16.
+6. **Admin** — 17, 18.
+7. **Landings** — 19 → 23.
+
+---
+
+## Phase 32 — Real Estate Theme 🏡 PLAN
+
+> Listings + agent CRM + buyer/seller flows + themed brokerage landings (luxury, urban condo, suburban, commercial, vacation rental).
+>
+> Naming convention: `realestate-<area>-<slug>`.
+> Shared design language: editorial · ivory + deep green + brass · serif display + sans body · large photography · map integrations.
+> Collection: `realestate`.
+
+### 32.A — Buyer / Public Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `realestate-search` | Search Listings (filters + map) | pages | hard | [ ] |
+| 2 | `realestate-listing-card` | Listing Card (price · beds · sqft) | ui-components | easy | [ ] |
+| 3 | `realestate-listing-detail` | Listing Detail (gallery · map · schools) | pages | hard | [ ] |
+| 4 | `realestate-virtual-tour` | Virtual Tour Viewer | ui-components | med | [ ] |
+| 5 | `realestate-mortgage-calc` | Mortgage Calculator | ui-components | med | [ ] |
+| 6 | `realestate-affordability` | Affordability Estimator | ui-components | med | [ ] |
+| 7 | `realestate-saved-search` | Saved Searches / Alerts | ui-components | easy | [ ] |
+| 8 | `realestate-tour-booking` | Schedule Tour / Open House | ui-components | easy | [ ] |
+
+### 32.B — Agent / CRM Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 9 | `realestate-agent-dashboard` | Agent Dashboard (leads · listings · pipeline) | pages | hard | [ ] |
+| 10 | `realestate-listing-editor` | Listing Editor (photos · description · price) | pages | med | [ ] |
+| 11 | `realestate-lead-card` | Lead Card (contact · status · notes) | ui-components | easy | [ ] |
+| 12 | `realestate-cma-report` | CMA / Comp Report | pages | med | [ ] |
+| 13 | `realestate-offer-tracker` | Offer Tracker (offers · counters) | ui-components | med | [ ] |
+| 14 | `realestate-transaction-pipeline` | Transaction Pipeline (Kanban) | pages | hard | [ ] |
+
+### 32.C — Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 15 | `realestate-page-brokerage` | Brokerage Landing | pages | med | [ ] |
+| 16 | `realestate-page-agent` | Agent Profile / Personal Brand | pages | easy | [ ] |
+| 17 | `realestate-page-neighborhood` | Neighborhood Guide | pages | med | [ ] |
+
+### 32.D — Brokerage Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 18 | `realestate-admin-dashboard` | Brokerage Dashboard (volume · GCI) | pages | hard | [ ] |
+| 19 | `realestate-admin-team` | Team / Agent Roster | pages | med | [ ] |
+| 20 | `realestate-admin-compliance` | Compliance / Document Tracker | ui-components | med | [ ] |
+
+### 32.E — Themed Real Estate Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 21 | `realestate-landing-luxury` | Luxury Estates | Ivory + deep green + brass · Cormorant + Inter · editorial, refined | hard | [ ] |
+| 22 | `realestate-landing-urban` | Urban Condo Tower | Charcoal + glass blue + chrome · clean grotesque · modern, sleek | hard | [ ] |
+| 23 | `realestate-landing-suburban` | Suburban Family Homes | Sage + cream + warm wood · friendly serif + sans · welcoming, family | med | [ ] |
+| 24 | `realestate-landing-commercial` | Commercial / Industrial | Steel + navy + amber · clean sans · authoritative, B2B | med | [ ] |
+| 25 | `realestate-landing-vacation` | Vacation / Short-term Rental | Sand + teal + coral · airy sans · escape, lifestyle | med | [ ] |
+
+### Build order (Phase 32)
+
+1. **Buyer foundation** — 1, 2, 3.
+2. **Buyer tools** — 5, 6, 7, 8.
+3. **Agent core** — 9, 10, 11, 14.
+4. **Deal flow** — 12, 13.
+5. **Marketing** — 15 → 17.
+6. **Admin** — 18 → 20.
+7. **Landings** — 21 → 25.
+
+---
+
+## Phase 33 — Travel / Airline Theme ✈️ PLAN
+
+> Flight search, seat map, boarding pass, check-in, plus themed airline landings (legacy carrier, low-cost, premium boutique, regional, private charter).
+>
+> Naming convention: `air-<area>-<slug>`.
+> Shared design language: aviation blue + cloud white + sunrise orange · clean grotesque · precise iconography · large status indicators.
+> Collection: `airline`.
+
+### 33.A — Passenger / Customer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `air-flight-search` | Flight Search (from · to · dates) | pages | med | [ ] |
+| 2 | `air-flight-results` | Results List (price · duration · stops) | pages | hard | [ ] |
+| 3 | `air-seat-map` | Seat Map Selector | ui-components | hard | [ ] |
+| 4 | `air-booking-flow` | Booking (pax info · extras · pay) | pages | hard | [ ] |
+| 5 | `air-checkin-flow` | Online Check-in Wizard | pages | med | [ ] |
+| 6 | `air-boarding-pass` | Boarding Pass (mobile QR) | ui-components | easy | [ ] |
+| 7 | `air-flight-status` | Flight Status Board | ui-components | med | [ ] |
+| 8 | `air-trip-itinerary` | Trip Itinerary (multi-leg) | ui-components | med | [ ] |
+| 9 | `air-loyalty-card` | Frequent Flyer Status Card | ui-components | easy | [ ] |
+| 10 | `air-baggage-tracker` | Baggage Tracker | ui-components | easy | [ ] |
+
+### 33.B — Airport / Gate / Staff
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 11 | `air-gate-display` | Gate Departure Display | pages | med | [ ] |
+| 12 | `air-fids-board` | Flight Information Display (FIDS) | pages | med | [ ] |
+| 13 | `air-gate-agent` | Gate Agent Boarding UI | pages | hard | [ ] |
+| 14 | `air-checkin-kiosk` | Self-Check-in Kiosk | pages | med | [ ] |
+
+### 33.C — Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 15 | `air-page-landing` | Airline Landing | pages | med | [ ] |
+| 16 | `air-page-destinations` | Destinations Page | pages | med | [ ] |
+| 17 | `air-page-fleet` | Our Fleet | pages | easy | [ ] |
+| 18 | `air-page-loyalty` | Loyalty Program | pages | easy | [ ] |
+
+### 33.D — Ops / Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 19 | `air-ops-control-center` | Ops Control Center (flights · disruptions) | pages | hard | [ ] |
+| 20 | `air-crew-schedule` | Crew Schedule (pilots · cabin) | pages | hard | [ ] |
+| 21 | `air-load-factor-report` | Load Factor & Revenue Report | pages | med | [ ] |
+
+### 33.E — Themed Airline Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 22 | `air-landing-legacy` | Legacy Flag Carrier | Navy + gold + white · classic serif · prestigious, established | hard | [ ] |
+| 23 | `air-landing-lowcost` | Low-Cost Carrier | Yellow + black + magenta · loud sans · cheerful, value | med | [ ] |
+| 24 | `air-landing-premium` | Premium Boutique (Emirates-style) | Deep red + cream + gold · refined serif · luxurious, hospitality | hard | [ ] |
+| 25 | `air-landing-regional` | Regional / Short-Hop | Sky blue + white + green · friendly sans · approachable, local | med | [ ] |
+| 26 | `air-landing-charter` | Private Charter / Jet Card | Black + champagne + slate · elegant serif · exclusive, discreet | hard | [ ] |
+
+### Build order (Phase 33)
+
+1. **Passenger foundation** — 1, 2, 3, 4.
+2. **Day-of travel** — 5, 6, 7, 8.
+3. **Loyalty / bags** — 9, 10.
+4. **Gate / staff** — 11, 12, 13, 14.
+5. **Marketing** — 15 → 18.
+6. **Ops / admin** — 19 → 21.
+7. **Landings** — 22 → 26.
+
+---
+
+## Phase 34 — Coworking / Studio Rental Theme 🏢 PLAN
+
+> Desk/room booking, member portal, access control, billing — plus themed coworking landings (creative loft, corporate flex, maker space, café-style, suburban hub).
+>
+> Naming convention: `cowork-<area>-<slug>`.
+> Shared design language: warm concrete + amber + matte black · modern sans · industrial photography · plant accents.
+> Collection: `cowork`.
+
+### 34.A — Member Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `cowork-desk-booking` | Desk Booking (floor + slot) | pages | hard | [ ] |
+| 2 | `cowork-room-booking` | Meeting Room Booking | pages | med | [ ] |
+| 3 | `cowork-member-dashboard` | Member Dashboard (today's bookings) | pages | med | [ ] |
+| 4 | `cowork-access-card` | Mobile Access Card / QR | ui-components | easy | [ ] |
+| 5 | `cowork-credits-balance` | Credits / Hours Balance | ui-components | easy | [ ] |
+| 6 | `cowork-community-feed` | Community Feed (events · members) | pages | med | [ ] |
+
+### 34.B — Operations / Front Desk
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 7 | `cowork-floor-plan` | Live Floor Plan (occupancy) | pages | hard | [ ] |
+| 8 | `cowork-checkin-kiosk` | Visitor Check-in Kiosk | pages | med | [ ] |
+| 9 | `cowork-printer-status` | Printer / Equipment Status | ui-components | easy | [ ] |
+
+### 34.C — Marketing Pages
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 10 | `cowork-page-landing` | Coworking Landing | pages | med | [ ] |
+| 11 | `cowork-page-spaces` | Spaces / Tour | pages | med | [ ] |
+| 12 | `cowork-page-pricing` | Membership Pricing | pages | easy | [ ] |
+| 13 | `cowork-page-events` | Events Calendar | pages | easy | [ ] |
+
+### 34.D — Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 14 | `cowork-admin-occupancy` | Occupancy & Utilization Dashboard | pages | hard | [ ] |
+| 15 | `cowork-admin-billing` | Billing & Subscriptions | pages | med | [ ] |
+
+### 34.E — Themed Coworking Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 16 | `cowork-landing-creative-loft` | Creative Loft (designers/artists) | Concrete + amber + black · industrial sans · raw, inspiring | med | [ ] |
+| 17 | `cowork-landing-corporate-flex` | Corporate Flex (WeWork-style) | Navy + white + accent green · clean sans · professional, scalable | med | [ ] |
+| 18 | `cowork-landing-maker-space` | Maker / Hardware Lab | Slate + electric yellow + steel · monospace + sans · technical, hands-on | hard | [ ] |
+| 19 | `cowork-landing-cafe-style` | Café-Style Workspace | Espresso + cream + brass · warm serif · cozy, social | med | [ ] |
+| 20 | `cowork-landing-suburban` | Suburban / Neighborhood Hub | Sage + clay + ivory · friendly serif · community, local | med | [ ] |
+
+### Build order (Phase 34)
+
+1. **Member foundation** — 1, 2, 3, 4.
+2. **Engagement** — 5, 6.
+3. **Ops** — 7, 8, 9.
+4. **Marketing** — 10 → 13.
+5. **Admin** — 14, 15.
+6. **Landings** — 16 → 20.
+
+---
+
+## Phase 35 — Auto Repair / Dealership Theme 🚗 PLAN
+
+> Service bay board, parts inventory, customer portal, sales floor + themed dealership landings (luxury, EV, used cars, motorcycle, performance/tuning).
+>
+> Naming convention: `auto-<area>-<slug>`.
+> Shared design language: garage black + safety orange + steel · industrial display · technical iconography · large status panels.
+> Collection: `auto`.
+
+### 35.A — Service / Repair Shop
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `auto-service-board` | Service Bay Board (jobs in progress) | pages | hard | [ ] |
+| 2 | `auto-work-order` | Work Order (vehicle + tasks + parts) | pages | med | [ ] |
+| 3 | `auto-diagnostic-report` | Diagnostic Report (codes + recommendations) | ui-components | med | [ ] |
+| 4 | `auto-estimate` | Repair Estimate (labor + parts) | ui-components | med | [ ] |
+| 5 | `auto-parts-inventory` | Parts Inventory (SKU search) | pages | med | [ ] |
+| 6 | `auto-tech-mobile` | Technician Mobile Job View | pages | med | [ ] |
+
+### 35.B — Customer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 7 | `auto-customer-portal` | Customer Service Portal | pages | med | [ ] |
+| 8 | `auto-service-booking` | Book Service Appointment | pages | med | [ ] |
+| 9 | `auto-repair-tracker` | Repair Status Tracker (text-style updates) | ui-components | easy | [ ] |
+| 10 | `auto-quote-approval` | Quote Approval (digital sign-off) | ui-components | easy | [ ] |
+
+### 35.C — Sales / Showroom
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 11 | `auto-inventory-grid` | Vehicle Inventory Grid (search · filter) | pages | hard | [ ] |
+| 12 | `auto-vehicle-detail` | Vehicle Detail (specs · gallery · finance) | pages | hard | [ ] |
+| 13 | `auto-finance-calc` | Finance / Lease Calculator | ui-components | med | [ ] |
+| 14 | `auto-trade-in` | Trade-In Valuation Form | ui-components | med | [ ] |
+| 15 | `auto-test-drive-booking` | Test Drive Booking | ui-components | easy | [ ] |
+
+### 35.D — Admin / Manager
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 16 | `auto-admin-dashboard` | Shop Dashboard (revenue · bay utilization) | pages | hard | [ ] |
+| 17 | `auto-admin-tech-productivity` | Technician Productivity Report | pages | med | [ ] |
+| 18 | `auto-admin-customer-db` | Customer & Vehicle Database | pages | med | [ ] |
+
+### 35.E — Themed Dealership Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 19 | `auto-landing-luxury` | Luxury Dealership (BMW/Mercedes-style) | Charcoal + champagne + chrome · refined sans · prestige, precision | hard | [ ] |
+| 20 | `auto-landing-ev` | EV / Tesla-style | White + minimal + electric blue · ultra-clean sans · futuristic, minimal | hard | [ ] |
+| 21 | `auto-landing-used` | Used Car Lot | Red + white + steel · chunky display · accessible, value-driven | med | [ ] |
+| 22 | `auto-landing-motorcycle` | Motorcycle / Harley-style | Black + chrome + oxblood · slab serif · rebellious, heritage | med | [ ] |
+| 23 | `auto-landing-performance` | Performance / Tuning Shop | Carbon + neon green + orange · technical sans · adrenaline, motorsport | hard | [ ] |
+
+### Build order (Phase 35)
+
+1. **Service core** — 1, 2, 4.
+2. **Customer flow** — 7, 8, 9, 10.
+3. **Parts & tech** — 3, 5, 6.
+4. **Sales** — 11, 12, 13, 14, 15.
+5. **Admin** — 16 → 18.
+6. **Landings** — 19 → 23.
+
+> Note: Phase 35 has no separate marketing section — marketing surfaces are baked into the themed landings (35.E) since dealerships are landing-first by nature. Consider adding a generic `auto-page-services` if a non-themed marketing page is needed.
+
+---
+
+## Future verticals (backlog) 📋
+
+> Additional themed bundles to consider after Phases 28–35 ship. Not yet scoped into sub-sections — recorded here so they're not lost.
+
+### Mid-fit (rich UI surface, mostly single-sided)
+
+| Phase ID | Theme | Notes |
+|---|---|---|
+| 36 | **Banking / Fintech App** 💳 | Accounts · transactions · cards · transfers · investments · KYC · onboarding · landings (neobank, traditional, crypto-bank, business banking, lending). |
+| 37 | **E-learning / LMS** 🎓 | Course catalog · classroom player · quiz · gradebook · instructor dashboard · landings (university, bootcamp, kids, language, professional cert). |
+| 38 | **Event Ticketing** 🎟️ | Discovery · seat selection · ticket QR · organizer dashboard · landings (concert, conference, sports, festival, theater). |
+| 39 | **Streaming Platform** 🎬 | Browse · player · profile · episode picker · landings (general SVOD, kids, sports, niche, music). |
+| 40 | **Job Board / ATS** 💼 | Listings · application form · recruiter pipeline · candidate portal · landings (general, tech, executive, gig, internal mobility). |
+| 41 | **Delivery / Logistics** 📦 | Driver app · customer tracking · dispatch board · warehouse · landings (food delivery, parcels, freight, grocery, last-mile). |
+
+### Specialized (themed landings only, no full vertical)
+
+| Phase ID | Theme | Notes |
+|---|---|---|
+| 42 | **Agency Landings** 🎨 | 5 variants — design, dev, marketing, video, branding. Same shape as 27.F. |
+| 43 | **Creator / Personal Brand Landings** 🎤 | 5 variants — musician, photographer, author, coach, streamer. |
+| 44 | **D2C Brand Landings** 🛍️ | 5 variants — skincare, coffee, fashion, hardware, supplements. |
+| 45 | **AI Product Landings** 🤖 | 5 variants — chatbot, image gen, code assistant, voice AI, search engine. |
+
+### Other candidates to evaluate
+
+- **Veterinary Clinic** 🐾 (variant of Phase 29 with pet-specific flows)
+- **Auction / Marketplace** 🪙 (eBay-like — bids, watchlist, seller tools)
+- **Insurance** 🛡️ (quotes, claims, policy management)
+- **Religious / Community Center** ⛪ (service times, donations, member directory)
+- **Government / Public Services** 🏛️ (forms, permits, appointments, status)
+- **Legal Services** ⚖️ (case management, document portal, billing)
+
+### Cross-phase shared assets (optional)
+
+If themes start repeating UI primitives (booking widgets, calendars, payment forms, loyalty cards), consider extracting a `vertical-shared/` set of reusable building blocks. Default: keep each phase standalone (matches Phase 27 decision).
+

@@ -1,0 +1,2842 @@
+---
+slug: "music-clausic-chill-delete-closing-tag-e0958bac"
+topic: "music"
+title: "Fix the broken HTML structure in Clausic — Chill Pieces"
+type: "fix"
+difficulty: 2
+resourceSlug: "music-clausic-chill"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #1a1a24;
+    --accent: #7c6af7;
+    --accent-dim: rgba(124, 106, 247, 0.15);
+    --text: #e0dff5;
+    --muted: #6b6a8a;
+    --radius: 10px;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+    min-height: 100vh;
+  }
+  header {
+    margin-bottom: 2rem;
+  }
+  header h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+  }
+  .tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.8rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    background: var(--surface);
+    border: 1px solid transparent;
+    color: var(--muted);
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tab:hover {
+    color: var(--text);
+    border-color: var(--accent-dim);
+  }
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .piece {
+    display: none;
+  }
+  .piece.active {
+    display: block;
+    animation: fadeIn 0.22s ease;
+  }
+  .piece h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .meta {
+    font-family: "SF Mono", "Fira Mono", "Consolas", monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1.4rem;
+    letter-spacing: 0.02em;
+  }
+  .gen-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #e05252;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  midi-visualizer {
+    display: block;
+    width: 100%;
+    height: 280px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    margin-bottom: 0.8rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  midi-visualizer svg {
+    width: 100%;
+    height: 100%;
+  }
+  midi-player {
+    display: block;
+    width: 100%;
+    --player-background: var(--surface);
+    --player-color: var(--accent);
+    --player-playing-color: var(--accent);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    margin-bottom: 1.2rem;
+  }
+  
+  /* Generation code details */
+  .gen-details {
+    margin-top: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .gen-details summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent);
+    padding: 0.4rem 0;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    list-style: none;
+  }
+  .gen-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .gen-details summary::before {
+    content: "\25B6";
+    font-size: 0.6rem;
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  .gen-details[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .gen-details summary:hover {
+    color: var(--text);
+  }
+  .gen-code {
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    margin-top: 0.5rem;
+    overflow-x: auto;
+  }
+  .gen-code pre {
+    font-family: "SF Mono", "Fira Mono", "Consolas", monospace;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .gen-code .comment {
+    color: var(--muted);
+  }
+  .gen-code .key {
+    color: #7dd3fc;
+  }
+  .gen-code .val {
+    color: #a5f3c4;
+  }
+  .gen-code .str {
+    color: #fcd34d;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clausic — Chill Pieces
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/html-midi-player@1.5.0"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Clausic — Chill Pieces</h1>
+      <p class="subtitle">4 original chill MIDI compositions — Chillwave, Lo-fi, Ambient &amp; Acoustic</p>
+    </header>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-track="chill-0">Chillwave</button>
+      <button class="tab" data-track="chill-1">Lo-fi</button>
+      <button class="tab" data-track="chill-2">Ambient</button>
+      <button class="tab" data-track="chill-3">Acoustic</button>
+    </nav>
+    <section class="piece active" id="piece-chill-0">
+      <h2>Chillwave / Synth</h2>
+      <p class="meta">A minor · 76 BPM · 32 bars · Phrygian</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 0 — Chillwave / Synth</span>
+  <span class="comment">// Dreamy, hazy saw-wave leads over warm pads with sparse beats.</span>
+  <span class="comment">// The Phrygian b2 (Bb) gives that signature dark-float feeling.</span>
+  {
+    <span class="key">root</span>: <span class="str">"A"</span> <span class="val">(-12)</span>,
+    <span class="key">scale</span>: <span class="str">"phrygian"</span> <span class="val">[0, 1, 3, 5, 7, 8, 10]</span>,
+    <span class="key">bpm</span>: <span class="val">76</span>,
+    <span class="key">bars</span>: <span class="val">32</span>,
+    <span class="comment">// Chord cycle: Am -> Bbmaj -> Dm -> Cm (classic Phrygian i-bII-iv-iii)</span>
+    <span class="key">chords</span>: [[0,2,4], [1,3,5], [5,7,9], [3,5,7], [0,2,4], [1,3,5], [3,5,7], [5,7,9]],
+    <span class="comment">// 64-note melody: languid, breathy, lots of rests — dreamy Phrygian contour</span>
+    <span class="key">melody</span>: [0,null,null,2, null,4,null,null, 3,null,1,null, 0,null,null,null, ...],
+    <span class="key">bass</span>: [0,null,0,null, null,0,null,null, 1,null,null,1, ...],
+    <span class="key">drums</span>: {
+      <span class="comment">// Sparse lo-fi beat with off-kilter kick on the &amp; of 3</span>
+      <span class="key">kick</span>:    [1,0,0,0, 0,0,1,0, 0,0,1,0, 0,0,0,0],
+      <span class="key">snare</span>:   [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
+      <span class="key">hat</span>:     [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      <span class="key">openHat</span>: [0,0,0,0, 0,0,0,1, 0,0,0,0, 0,0,0,1]
+    },
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">81</span> <span class="comment">/* SynthLeadSaw */</span>, <span class="key">bass</span>: <span class="val">38</span> <span class="comment">/* SynthBass */</span>, <span class="key">pad</span>: <span class="val">89</span> <span class="comment">/* PadWarm */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-0"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-0"></midi-player>
+    </section>
+    <section class="piece" id="piece-chill-1">
+      <h2>Lo-fi Hip Hop</h2>
+      <p class="meta">C minor · 85 BPM · 40 bars · Dorian</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 1 — Lo-fi Hip Hop</span>
+  <span class="comment">// Warm, jazzy electric piano over dusty drums.</span>
+  <span class="comment">// Dorian's natural 6 (A natural) adds the jazzy brightness.</span>
+  {
+    <span class="key">root</span>: <span class="str">"C"</span>,
+    <span class="key">scale</span>: <span class="str">"dorian"</span> <span class="val">[0, 2, 3, 5, 7, 9, 10]</span>,
+    <span class="key">bpm</span>: <span class="val">85</span>,
+    <span class="key">bars</span>: <span class="val">40</span>,
+    <span class="comment">// Jazzy minor progression: Cm9 -> Fm9 -> Abmaj7 -> G7(b13)</span>
+    <span class="key">chords</span>: [[0,2,4,6], [3,5,7,9], [5,7,9,11], [4,6,8,10], ...],
+    <span class="comment">// 64-note melody: lazy, behind-the-beat jazz phrasing with chromatic approach</span>
+    <span class="key">melody</span>: [4,null,2,3, null,4,null,null, 5,null,null,4, 2,null,0,null, ...],
+    <span class="key">bass</span>: [0,null,null,0, null,null,0,null, 3,null,null,3, ...],
+    <span class="key">drums</span>: {
+      <span class="comment">// Classic boom-bap with swing: ghost snares, lazy kick</span>
+      <span class="key">kick</span>:  [1,0,0,0, 0,0,1,0, 0,0,0,1, 0,0,0,0],
+      <span class="key">snare</span>: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
+      <span class="key">hat</span>:   [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      <span class="key">ride</span>:  [1,0,0,1, 0,0,0,1, 0,0,0,0, 0,1,0,0]
+    },
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">4</span> <span class="comment">/* ElectricPiano */</span>, <span class="key">bass</span>: <span class="val">33</span> <span class="comment">/* ElectricBass */</span>, <span class="key">pad</span>: <span class="val">89</span> <span class="comment">/* PadWarm */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-1"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-1"></midi-player>
+    </section>
+    <section class="piece" id="piece-chill-2">
+      <h2>Ambient / Atmospheric</h2>
+      <p class="meta">E minor · 50 BPM · 24 bars · Whole tone</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 2 — Ambient / Atmospheric</span>
+  <span class="comment">// Ethereal, floating — no drums. Vibraphone arpeggios drift</span>
+  <span class="comment">// over slow-moving whole-tone pads. The scale has no tonal</span>
+  <span class="comment">// center, creating a weightless, dreamlike suspension.</span>
+  {
+    <span class="key">root</span>: <span class="str">"E"</span> <span class="val">(-12)</span>,
+    <span class="key">scale</span>: <span class="str">"wholeTone"</span> <span class="val">[0, 2, 4, 6, 8, 10]</span>,
+    <span class="key">bpm</span>: <span class="val">50</span>,
+    <span class="key">bars</span>: <span class="val">24</span>,
+    <span class="comment">// Whole-tone triads shifting by step — each one sounds equally distant</span>
+    <span class="key">chords</span>: [[0,2,4], [1,3,5], [2,4,0], [3,5,1], [4,0,2], [5,1,3]],
+    <span class="comment">// 48-note arpeggio: slow, wide leaps, lots of breathing room</span>
+    <span class="key">arp</span>: [0,null,null,4, null,null,2,null, null,null,5,null, ...],
+    <span class="key">bass</span>: [0,null,null,null, null,null,null,null, 1,null,null,null, ...],
+    <span class="comment">// No drums — completely beatless</span>
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">11</span> <span class="comment">/* Vibraphone */</span>, <span class="key">bass</span>: <span class="val">38</span> <span class="comment">/* SynthBass */</span>, <span class="key">pad</span>: <span class="val">88</span> <span class="comment">/* PadNewAge */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-2"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-2"></midi-player>
+    </section>
+    <section class="piece" id="piece-chill-3">
+      <h2>Acoustic Chill</h2>
+      <p class="meta">G major · 72 BPM · 32 bars · Natural minor</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 3 — Acoustic Chill</span>
+  <span class="comment">// Natural, warm fingerpicked guitar melody over gentle strings</span>
+  <span class="comment">// and soft brushed drums. Feels like a sunny afternoon.</span>
+  {
+    <span class="key">root</span>: <span class="str">"G"</span>,
+    <span class="key">scale</span>: <span class="str">"major"</span> <span class="val">[0, 2, 4, 5, 7, 9, 11]</span>,
+    <span class="key">bpm</span>: <span class="val">72</span>,
+    <span class="key">bars</span>: <span class="val">32</span>,
+    <span class="comment">// Folk-pop progression: G -> Em -> C -> D -> G -> C -> Am -> D</span>
+    <span class="key">chords</span>: [[0,2,4], [6,8,10], [3,5,7], [4,6,8], [0,2,4], [3,5,7], [1,3,5], [4,6,8]],
+    <span class="comment">// 64-note melody: singable, folk-like with small intervals and natural phrasing</span>
+    <span class="key">melody</span>: [4,null,5,4, null,2,0,null, null,2,null,4, null,null,5,null, ...],
+    <span class="key">bass</span>: [0,null,0,null, null,0,null,null, 6,null,null,6, ...],
+    <span class="key">drums</span>: {
+      <span class="comment">// Brushed kit: steady hats, soft kick-snare, ride adds shimmer</span>
+      <span class="key">kick</span>:  [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+      <span class="key">snare</span>: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      <span class="key">hat</span>:   [1,0,1,1, 0,0,1,0, 1,0,1,1, 0,0,1,0],
+      <span class="key">ride</span>:  [0,0,0,0, 0,1,0,0, 0,0,0,0, 0,1,0,0]
+    },
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">25</span> <span class="comment">/* AcousticGuitar */</span>, <span class="key">bass</span>: <span class="val">33</span> <span class="comment">/* ElectricBass */</span>, <span class="key">pad</span>: <span class="val">48</span> <span class="comment">/* Strings */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-3"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-3"></midi-player>
+    </section>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  /* ============================================================
+     Clausic — Chill Pieces  ·  Procedural MIDI Generator
+     4 tracks: Chillwave · Lo-fi Hip Hop · Ambient · Acoustic
+     ============================================================ */
+  
+  /* ---------- Scale & Utility ---------- */
+  
+  const SCALES = {
+    phrygian: [0, 1, 3, 5, 7, 8, 10],
+    dorian: [0, 2, 3, 5, 7, 9, 10],
+    wholeTone: [0, 2, 4, 6, 8, 10],
+    minor: [0, 2, 3, 5, 7, 8, 10],
+    major: [0, 2, 4, 5, 7, 9, 11],
+  };
+  
+  const ROOTS = { C: 60, D: 62, E: 64, F: 65, G: 67, A: 69, B: 71 };
+  
+  function scaleNote(root, scale, degree) {
+    const oct = Math.floor(degree / scale.length);
+    const idx = ((degree % scale.length) + scale.length) % scale.length;
+    return root + scale[idx] + oct * 12;
+  }
+  
+  /* ---------- Generator ---------- */
+  
+  function generate(cfg) {
+    const bt = 60 / cfg.bpm; // seconds per quarter note
+    const total = cfg.bars * 4; // total quarter-note beats
+    const notes = [];
+  
+    /* --- Chords: whole-bar sustained pads --- */
+    if (cfg.chords && cfg.programs.pad != null) {
+      for (let bar = 0; bar < cfg.bars; bar++) {
+        const chord = cfg.chords[bar % cfg.chords.length];
+        const t = bar * 4 * bt;
+        for (const deg of chord) {
+          notes.push({
+            pitch: scaleNote(cfg.root, cfg.scale, deg),
+            startTime: t,
+            endTime: t + 4 * bt * 0.95,
+            velocity: 50 + Math.floor(Math.random() * 15),
+            program: cfg.programs.pad,
+          });
+        }
+      }
+    }
+  
+    /* --- Arpeggios (ambient tracks with no melody) --- */
+    if (cfg.arp && cfg.programs.melody != null && !cfg.melody) {
+      let ai = 0;
+      for (let beat = 0; beat < total; beat++) {
+        const deg = cfg.arp[ai % cfg.arp.length];
+        ai++;
+        if (deg != null) {
+          const t = beat * bt;
+          notes.push({
+            pitch: scaleNote(cfg.root, cfg.scale, deg),
+            startTime: t,
+            endTime: t + bt * 2.5,
+            velocity: 45 + Math.floor(Math.random() * 20),
+            program: cfg.programs.melody,
+          });
+        }
+      }
+    }
+  
+    /* --- Melody: eighth-note grid --- */
+    if (cfg.melody && cfg.programs.melody != null) {
+      let mi = 0;
+      for (let eighth = 0; eighth < total * 2; eighth++) {
+        const n = cfg.melody[mi % cfg.melody.length];
+        mi++;
+        if (n != null) {
+          const t = (eighth * bt) / 2;
+          const nextNull = cfg.melody[mi % cfg.melody.length] == null;
+          const dur = nextNull ? bt : bt / 2;
+          notes.push({
+            pitch: scaleNote(cfg.root + 12, cfg.scale, n),
+            startTime: t,
+            endTime: t + dur * 0.85,
+            velocity: 65 + Math.floor(Math.random() * 25),
+            program: cfg.programs.melody,
+          });
+        }
+      }
+    }
+  
+    /* --- Bass: quarter-note grid --- */
+    if (cfg.bass && cfg.programs.bass != null) {
+      let bi = 0;
+      for (let beat = 0; beat < total; beat++) {
+        const n = cfg.bass[bi % cfg.bass.length];
+        bi++;
+        if (n != null) {
+          const t = beat * bt;
+          notes.push({
+            pitch: scaleNote(cfg.root - 12, cfg.scale, n),
+            startTime: t,
+            endTime: t + bt * 0.8,
+            velocity: 75 + Math.floor(Math.random() * 15),
+            program: cfg.programs.bass,
+          });
+        }
+      }
+    }
+  
+    /* --- Drums: 8 eighth-note slots per bar --- */
+    if (cfg.drums) {
+      for (let beat = 0; beat < total; beat++) {
+        for (let sub = 0; sub < 2; sub++) {
+          const ei = (beat * 2 + sub) % (cfg.drums.kick ? cfg.drums.kick.length : 8);
+          const t = (beat + sub * 0.5) * bt;
+          if (cfg.drums.kick && cfg.drums.kick[ei])
+            notes.push({
+              pitch: 36,
+              startTime: t,
+              endTime: t + 0.15,
+              velocity: 95 + Math.floor(Math.random() * 10),
+              isDrum: true,
+            });
+          if (cfg.drums.snare && cfg.drums.snare[ei])
+            notes.push({
+              pitch: 38,
+              startTime: t,
+              endTime: t + 0.1,
+              velocity: 80 + Math.floor(Math.random() * 15),
+              isDrum: true,
+            });
+          if (cfg.drums.hat && cfg.drums.hat[ei])
+            notes.push({
+              pitch: 42,
+              startTime: t,
+              endTime: t + 0.08,
+              velocity: 50 + Math.floor(Math.random() * 15),
+              isDrum: true,
+            });
+          if (cfg.drums.openHat && cfg.drums.openHat[ei])
+            notes.push({
+              pitch: 46,
+              startTime: t,
+              endTime: t + 0.2,
+              velocity: 55 + Math.floor(Math.random() * 12),
+              isDrum: true,
+            });
+          if (cfg.drums.ride && cfg.drums.ride[ei])
+            notes.push({
+              pitch: 51,
+              startTime: t,
+              endTime: t + 0.12,
+              velocity: 45 + Math.floor(Math.random() * 15),
+              isDrum: true,
+            });
+        }
+      }
+    }
+  
+    return { notes, tempos: [{ time: 0, qpm: cfg.bpm }], totalTime: total * bt };
+  }
+  
+  /* ============================================================
+     TRACK DEFINITIONS
+     ============================================================ */
+  
+  const TRACKS = [
+    /* ----------------------------------------------------------
+       Track 0 — Chillwave / Synth
+       A Phrygian · 76 BPM · 32 bars
+       Dreamy, hazy saw-wave leads over warm pads with sparse beats.
+       The Phrygian b2 (Bb) gives that signature dark-float feeling.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.A - 12,
+      scale: SCALES.phrygian,
+      bpm: 76,
+      bars: 32,
+      // Chord cycle: Am → Bbmaj → Dm → Cm (classic Phrygian i-bII-iv-iii)
+      chords: [
+        [0, 2, 4], // Am
+        [1, 3, 5], // Bb
+        [5, 7, 9], // Dm
+        [3, 5, 7], // Cm
+        [0, 2, 4], // Am
+        [1, 3, 5], // Bb
+        [3, 5, 7], // Cm
+        [5, 7, 9], // Dm
+      ],
+      // 64-note melody: languid, breathy, lots of rests — dreamy Phrygian contour
+      melody: [
+        0,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        null,
+        3,
+        null,
+        1,
+        null,
+        0,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        3,
+        2,
+        null,
+        1,
+        null,
+        0,
+        null,
+        -1,
+        null,
+        null,
+        null,
+        // bar 5-8: higher register, arching phrase
+        4,
+        null,
+        5,
+        null,
+        7,
+        null,
+        null,
+        5,
+        4,
+        null,
+        3,
+        null,
+        2,
+        null,
+        1,
+        null,
+        0,
+        null,
+        null,
+        2,
+        4,
+        null,
+        5,
+        null,
+        3,
+        null,
+        1,
+        null,
+        0,
+        null,
+        null,
+        null,
+        // bar 9-12: syncopated descending line
+        7,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        3,
+        null,
+        2,
+        null,
+        1,
+        null,
+        null,
+        null,
+        5,
+        null,
+        4,
+        3,
+        null,
+        2,
+        null,
+        1,
+        0,
+        null,
+        null,
+        null,
+        -1,
+        null,
+        0,
+        null,
+        // bar 13-16: spacious ending with the flat-2 color
+        2,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        1,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        3,
+        null,
+        5,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        1,
+        null,
+        null,
+        1,
+        null,
+        null,
+        1,
+        null,
+        5,
+        null,
+        null,
+        5,
+        null,
+        5,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+      ],
+      drums: {
+        // Sparse lo-fi beat with off-kilter kick on the & of 3
+        kick: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        hat: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+        openHat: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      },
+      programs: { melody: 81, bass: 38, pad: 89 }, // SynthLeadSaw, SynthBass, PadWarm
+    },
+  
+    /* ----------------------------------------------------------
+       Track 1 — Lo-fi Hip Hop
+       C Dorian · 85 BPM · 40 bars
+       Warm, jazzy electric piano over dusty drums.
+       Dorian's natural 6 (A natural) adds the jazzy brightness.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.C,
+      scale: SCALES.dorian,
+      bpm: 85,
+      bars: 40,
+      // Jazzy minor progression: Cm9 → Fm9 → Abmaj7 → G7(b13)
+      chords: [
+        [0, 2, 4, 6], // Cm9
+        [3, 5, 7, 9], // Fm9
+        [5, 7, 9, 11], // Abmaj7
+        [4, 6, 8, 10], // G7
+        [0, 2, 4, 6], // Cm9
+        [1, 3, 5, 7], // Dm7b5
+        [5, 7, 9, 11], // Abmaj7
+        [3, 5, 7, 9], // Fm9
+      ],
+      // 64-note melody: lazy, behind-the-beat jazz phrasing with chromatic approach
+      melody: [
+        4,
+        null,
+        2,
+        3,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        7,
+        null,
+        5,
+        4,
+        null,
+        null,
+        2,
+        null,
+        3,
+        null,
+        4,
+        null,
+        null,
+        null,
+        // bar 5-8: call-and-response feel
+        null,
+        null,
+        0,
+        2,
+        4,
+        null,
+        5,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        2,
+        null,
+        null,
+        0,
+        null,
+        -1,
+        null,
+        0,
+        2,
+        null,
+        4,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // bar 9-12: upper register blues lick
+        9,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        4,
+        2,
+        null,
+        null,
+        null,
+        0,
+        null,
+        2,
+        null,
+        4,
+        5,
+        null,
+        7,
+        null,
+        5,
+        4,
+        null,
+        2,
+        null,
+        null,
+        null,
+        // bar 13-16: lazy descent with rests
+        7,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        5,
+        null,
+        4,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        3,
+        null,
+        null,
+        5,
+        null,
+        null,
+        5,
+        null,
+        null,
+        5,
+        null,
+        4,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+      ],
+      drums: {
+        // Classic boom-bap with swing: ghost snares, lazy kick
+        kick: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        hat: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+        openHat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        ride: [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+      },
+      programs: { melody: 4, bass: 33, pad: 89 }, // ElectricPiano, ElectricBass, PadWarm
+    },
+  
+    /* ----------------------------------------------------------
+       Track 2 — Ambient / Atmospheric
+       E Whole Tone · 50 BPM · 24 bars
+       Ethereal, floating — no drums. Vibraphone arpeggios drift
+       over slow-moving whole-tone pads. The scale has no tonal
+       center, creating a weightless, dreamlike suspension.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.E - 12,
+      scale: SCALES.wholeTone,
+      bpm: 50,
+      bars: 24,
+      // Whole-tone triads shifting by step — each one sounds equally distant
+      chords: [
+        [0, 2, 4], // E aug-ish
+        [1, 3, 5], // up a whole step
+        [2, 4, 0], // inversion
+        [3, 5, 1], // floating
+        [4, 0, 2], // cycling
+        [5, 1, 3], // return
+      ],
+      // 48-note arpeggio: slow, wide leaps, lots of breathing room
+      arp: [
+        0,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        3,
+        null,
+        null,
+        1,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        // second phrase: reaching higher
+        5,
+        null,
+        null,
+        null,
+        3,
+        null,
+        null,
+        1,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        3,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // third phrase: descending, sinking
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        3,
+        null,
+        1,
+        null,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        1,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        3,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      programs: { melody: 11, bass: 38, pad: 88 }, // Vibraphone, SynthBass, PadNewAge
+      // No drums property — completely beatless
+    },
+  
+    /* ----------------------------------------------------------
+       Track 3 — Acoustic Chill
+       G Major · 72 BPM · 32 bars
+       Natural, warm fingerpicked guitar melody over gentle strings
+       and soft brushed drums. Feels like a sunny afternoon.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.G,
+      scale: SCALES.major,
+      bpm: 72,
+      bars: 32,
+      // Folk-pop progression: G → Em → C → D → G → C → Am → D
+      chords: [
+        [0, 2, 4], // G
+        [6, 8, 10], // Em (degree 6 in G major = E)
+        [3, 5, 7], // C
+        [4, 6, 8], // D
+        [0, 2, 4], // G
+        [3, 5, 7], // C
+        [1, 3, 5], // Am
+        [4, 6, 8], // D
+      ],
+      // 64-note melody: singable, folk-like with small intervals and natural phrasing
+      melody: [
+        4,
+        null,
+        5,
+        4,
+        null,
+        2,
+        0,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        7,
+        null,
+        null,
+        5,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // bar 5-8: answer phrase — rising with hope
+        2,
+        null,
+        4,
+        null,
+        5,
+        null,
+        7,
+        null,
+        null,
+        9,
+        null,
+        7,
+        5,
+        null,
+        null,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        2,
+        4,
+        null,
+        5,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // bar 9-12: development — wider leaps, more momentum
+        7,
+        null,
+        9,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        5,
+        7,
+        null,
+        9,
+        null,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        -1,
+        0,
+        null,
+        null,
+        null,
+        // bar 13-16: gentle coda — slowing, coming home
+        2,
+        null,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        6,
+        null,
+        null,
+        6,
+        null,
+        null,
+        6,
+        null,
+        3,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+        0,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        1,
+        null,
+        1,
+        null,
+        null,
+        1,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+      ],
+      drums: {
+        // Brushed kit: steady hats, soft kick-snare, ride adds shimmer
+        kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+        snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        hat: [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0],
+        ride: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+      },
+      programs: { melody: 25, bass: 33, pad: 48 }, // AcousticGuitar, ElectricBass, Strings
+    },
+  ];
+  
+  /* ============================================================
+     Visualizer Helpers
+     ============================================================ */
+  
+  function stopAllPlayers() {
+    document.querySelectorAll("midi-player").forEach((p) => {
+      try {
+        p.stop();
+      } catch (_) {
+        /* ignore */
+      }
+    });
+  }
+  
+  function zoomVisualizer(viz) {
+    const svg = viz.querySelector("svg");
+    if (!svg) return;
+    const rects = svg.querySelectorAll("rect[data-note]");
+    if (!rects.length) return;
+    let minY = Infinity,
+      maxY = -Infinity;
+    rects.forEach((r) => {
+      const y = parseFloat(r.getAttribute("y") || 0);
+      const h = parseFloat(r.getAttribute("height") || 0);
+      if (y < minY) minY = y;
+      if (y + h > maxY) maxY = y + h;
+    });
+    if (!isFinite(minY)) return;
+    const vb = svg.getAttribute("viewBox");
+    if (!vb) return;
+    const [vx, , vw, vh] = vb.split(" ").map(Number);
+    const m = vh * 0.05;
+    svg.setAttribute(
+      "viewBox",
+      `${vx} ${Math.max(0, minY - m)} ${vw} ${Math.min(vh, maxY - minY + m * 2)}`
+    );
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  }
+  
+  function observeViz(viz) {
+    const obs = new MutationObserver(() => {
+      const svg = viz.querySelector("svg");
+      if (svg && svg.querySelectorAll("rect[data-note]").length > 0) {
+        zoomVisualizer(viz);
+        obs.disconnect();
+      }
+    });
+    obs.observe(viz, { childList: true, subtree: true, attributes: true });
+    zoomVisualizer(viz);
+  }
+  
+  /* ============================================================
+     Init — generate NoteSequences & wire up tabs
+     ============================================================ */
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    /* Generate and assign NoteSequences to each player/visualizer */
+    TRACKS.forEach((cfg, i) => {
+      const ns = generate(cfg);
+      const player = document.querySelector(`#piece-chill-${i} midi-player`);
+      const viz = document.getElementById(`viz-${i}`);
+      if (player) player.noteSequence = ns;
+      if (viz) viz.noteSequence = ns;
+      if (viz) observeViz(viz);
+    });
+  
+    /* Tab switching */
+    document.querySelectorAll(".tabs").forEach((nav) => {
+      const tabs = nav.querySelectorAll(".tab");
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          stopAllPlayers();
+          tabs.forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          document.querySelectorAll(".piece").forEach((p) => p.classList.remove("active"));
+          const target = document.getElementById(`piece-${tab.dataset.track}`);
+          if (target) {
+            target.classList.add("active");
+            target.querySelectorAll("midi-visualizer").forEach(observeViz);
+          }
+        });
+      });
+    });
+  });
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #1a1a24;
+    --accent: #7c6af7;
+    --accent-dim: rgba(124, 106, 247, 0.15);
+    --text: #e0dff5;
+    --muted: #6b6a8a;
+    --radius: 10px;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+    min-height: 100vh;
+  }
+  header {
+    margin-bottom: 2rem;
+  }
+  header h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+  }
+  .tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.8rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    background: var(--surface);
+    border: 1px solid transparent;
+    color: var(--muted);
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tab:hover {
+    color: var(--text);
+    border-color: var(--accent-dim);
+  }
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .piece {
+    display: none;
+  }
+  .piece.active {
+    display: block;
+    animation: fadeIn 0.22s ease;
+  }
+  .piece h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .meta {
+    font-family: "SF Mono", "Fira Mono", "Consolas", monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1.4rem;
+    letter-spacing: 0.02em;
+  }
+  .gen-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #e05252;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  midi-visualizer {
+    display: block;
+    width: 100%;
+    height: 280px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    margin-bottom: 0.8rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  midi-visualizer svg {
+    width: 100%;
+    height: 100%;
+  }
+  midi-player {
+    display: block;
+    width: 100%;
+    --player-background: var(--surface);
+    --player-color: var(--accent);
+    --player-playing-color: var(--accent);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    margin-bottom: 1.2rem;
+  }
+  
+  /* Generation code details */
+  .gen-details {
+    margin-top: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .gen-details summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent);
+    padding: 0.4rem 0;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    list-style: none;
+  }
+  .gen-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .gen-details summary::before {
+    content: "\25B6";
+    font-size: 0.6rem;
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  .gen-details[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .gen-details summary:hover {
+    color: var(--text);
+  }
+  .gen-code {
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    margin-top: 0.5rem;
+    overflow-x: auto;
+  }
+  .gen-code pre {
+    font-family: "SF Mono", "Fira Mono", "Consolas", monospace;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .gen-code .comment {
+    color: var(--muted);
+  }
+  .gen-code .key {
+    color: #7dd3fc;
+  }
+  .gen-code .val {
+    color: #a5f3c4;
+  }
+  .gen-code .str {
+    color: #fcd34d;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clausic — Chill Pieces</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/html-midi-player@1.5.0"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Clausic — Chill Pieces</h1>
+      <p class="subtitle">4 original chill MIDI compositions — Chillwave, Lo-fi, Ambient &amp; Acoustic</p>
+    </header>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-track="chill-0">Chillwave</button>
+      <button class="tab" data-track="chill-1">Lo-fi</button>
+      <button class="tab" data-track="chill-2">Ambient</button>
+      <button class="tab" data-track="chill-3">Acoustic</button>
+    </nav>
+    <section class="piece active" id="piece-chill-0">
+      <h2>Chillwave / Synth</h2>
+      <p class="meta">A minor · 76 BPM · 32 bars · Phrygian</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 0 — Chillwave / Synth</span>
+  <span class="comment">// Dreamy, hazy saw-wave leads over warm pads with sparse beats.</span>
+  <span class="comment">// The Phrygian b2 (Bb) gives that signature dark-float feeling.</span>
+  {
+    <span class="key">root</span>: <span class="str">"A"</span> <span class="val">(-12)</span>,
+    <span class="key">scale</span>: <span class="str">"phrygian"</span> <span class="val">[0, 1, 3, 5, 7, 8, 10]</span>,
+    <span class="key">bpm</span>: <span class="val">76</span>,
+    <span class="key">bars</span>: <span class="val">32</span>,
+    <span class="comment">// Chord cycle: Am -> Bbmaj -> Dm -> Cm (classic Phrygian i-bII-iv-iii)</span>
+    <span class="key">chords</span>: [[0,2,4], [1,3,5], [5,7,9], [3,5,7], [0,2,4], [1,3,5], [3,5,7], [5,7,9]],
+    <span class="comment">// 64-note melody: languid, breathy, lots of rests — dreamy Phrygian contour</span>
+    <span class="key">melody</span>: [0,null,null,2, null,4,null,null, 3,null,1,null, 0,null,null,null, ...],
+    <span class="key">bass</span>: [0,null,0,null, null,0,null,null, 1,null,null,1, ...],
+    <span class="key">drums</span>: {
+      <span class="comment">// Sparse lo-fi beat with off-kilter kick on the &amp; of 3</span>
+      <span class="key">kick</span>:    [1,0,0,0, 0,0,1,0, 0,0,1,0, 0,0,0,0],
+      <span class="key">snare</span>:   [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
+      <span class="key">hat</span>:     [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      <span class="key">openHat</span>: [0,0,0,0, 0,0,0,1, 0,0,0,0, 0,0,0,1]
+    },
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">81</span> <span class="comment">/* SynthLeadSaw */</span>, <span class="key">bass</span>: <span class="val">38</span> <span class="comment">/* SynthBass */</span>, <span class="key">pad</span>: <span class="val">89</span> <span class="comment">/* PadWarm */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-0"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-0"></midi-player>
+    </section>
+    <section class="piece" id="piece-chill-1">
+      <h2>Lo-fi Hip Hop</h2>
+      <p class="meta">C minor · 85 BPM · 40 bars · Dorian</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 1 — Lo-fi Hip Hop</span>
+  <span class="comment">// Warm, jazzy electric piano over dusty drums.</span>
+  <span class="comment">// Dorian's natural 6 (A natural) adds the jazzy brightness.</span>
+  {
+    <span class="key">root</span>: <span class="str">"C"</span>,
+    <span class="key">scale</span>: <span class="str">"dorian"</span> <span class="val">[0, 2, 3, 5, 7, 9, 10]</span>,
+    <span class="key">bpm</span>: <span class="val">85</span>,
+    <span class="key">bars</span>: <span class="val">40</span>,
+    <span class="comment">// Jazzy minor progression: Cm9 -> Fm9 -> Abmaj7 -> G7(b13)</span>
+    <span class="key">chords</span>: [[0,2,4,6], [3,5,7,9], [5,7,9,11], [4,6,8,10], ...],
+    <span class="comment">// 64-note melody: lazy, behind-the-beat jazz phrasing with chromatic approach</span>
+    <span class="key">melody</span>: [4,null,2,3, null,4,null,null, 5,null,null,4, 2,null,0,null, ...],
+    <span class="key">bass</span>: [0,null,null,0, null,null,0,null, 3,null,null,3, ...],
+    <span class="key">drums</span>: {
+      <span class="comment">// Classic boom-bap with swing: ghost snares, lazy kick</span>
+      <span class="key">kick</span>:  [1,0,0,0, 0,0,1,0, 0,0,0,1, 0,0,0,0],
+      <span class="key">snare</span>: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
+      <span class="key">hat</span>:   [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      <span class="key">ride</span>:  [1,0,0,1, 0,0,0,1, 0,0,0,0, 0,1,0,0]
+    },
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">4</span> <span class="comment">/* ElectricPiano */</span>, <span class="key">bass</span>: <span class="val">33</span> <span class="comment">/* ElectricBass */</span>, <span class="key">pad</span>: <span class="val">89</span> <span class="comment">/* PadWarm */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-1"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-1"></midi-player>
+    </section>
+    <section class="piece" id="piece-chill-2">
+      <h2>Ambient / Atmospheric</h2>
+      <p class="meta">E minor · 50 BPM · 24 bars · Whole tone</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 2 — Ambient / Atmospheric</span>
+  <span class="comment">// Ethereal, floating — no drums. Vibraphone arpeggios drift</span>
+  <span class="comment">// over slow-moving whole-tone pads. The scale has no tonal</span>
+  <span class="comment">// center, creating a weightless, dreamlike suspension.</span>
+  {
+    <span class="key">root</span>: <span class="str">"E"</span> <span class="val">(-12)</span>,
+    <span class="key">scale</span>: <span class="str">"wholeTone"</span> <span class="val">[0, 2, 4, 6, 8, 10]</span>,
+    <span class="key">bpm</span>: <span class="val">50</span>,
+    <span class="key">bars</span>: <span class="val">24</span>,
+    <span class="comment">// Whole-tone triads shifting by step — each one sounds equally distant</span>
+    <span class="key">chords</span>: [[0,2,4], [1,3,5], [2,4,0], [3,5,1], [4,0,2], [5,1,3]],
+    <span class="comment">// 48-note arpeggio: slow, wide leaps, lots of breathing room</span>
+    <span class="key">arp</span>: [0,null,null,4, null,null,2,null, null,null,5,null, ...],
+    <span class="key">bass</span>: [0,null,null,null, null,null,null,null, 1,null,null,null, ...],
+    <span class="comment">// No drums — completely beatless</span>
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">11</span> <span class="comment">/* Vibraphone */</span>, <span class="key">bass</span>: <span class="val">38</span> <span class="comment">/* SynthBass */</span>, <span class="key">pad</span>: <span class="val">88</span> <span class="comment">/* PadNewAge */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-2"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-2"></midi-player>
+    </section>
+    <section class="piece" id="piece-chill-3">
+      <h2>Acoustic Chill</h2>
+      <p class="meta">G major · 72 BPM · 32 bars · Natural minor</p>
+      <details class="gen-details">
+        <summary>View generation code</summary>
+        <div class="gen-code"><pre><span class="comment">// Track 3 — Acoustic Chill</span>
+  <span class="comment">// Natural, warm fingerpicked guitar melody over gentle strings</span>
+  <span class="comment">// and soft brushed drums. Feels like a sunny afternoon.</span>
+  {
+    <span class="key">root</span>: <span class="str">"G"</span>,
+    <span class="key">scale</span>: <span class="str">"major"</span> <span class="val">[0, 2, 4, 5, 7, 9, 11]</span>,
+    <span class="key">bpm</span>: <span class="val">72</span>,
+    <span class="key">bars</span>: <span class="val">32</span>,
+    <span class="comment">// Folk-pop progression: G -> Em -> C -> D -> G -> C -> Am -> D</span>
+    <span class="key">chords</span>: [[0,2,4], [6,8,10], [3,5,7], [4,6,8], [0,2,4], [3,5,7], [1,3,5], [4,6,8]],
+    <span class="comment">// 64-note melody: singable, folk-like with small intervals and natural phrasing</span>
+    <span class="key">melody</span>: [4,null,5,4, null,2,0,null, null,2,null,4, null,null,5,null, ...],
+    <span class="key">bass</span>: [0,null,0,null, null,0,null,null, 6,null,null,6, ...],
+    <span class="key">drums</span>: {
+      <span class="comment">// Brushed kit: steady hats, soft kick-snare, ride adds shimmer</span>
+      <span class="key">kick</span>:  [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+      <span class="key">snare</span>: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      <span class="key">hat</span>:   [1,0,1,1, 0,0,1,0, 1,0,1,1, 0,0,1,0],
+      <span class="key">ride</span>:  [0,0,0,0, 0,1,0,0, 0,0,0,0, 0,1,0,0]
+    },
+    <span class="key">programs</span>: { <span class="key">melody</span>: <span class="val">25</span> <span class="comment">/* AcousticGuitar */</span>, <span class="key">bass</span>: <span class="val">33</span> <span class="comment">/* ElectricBass */</span>, <span class="key">pad</span>: <span class="val">48</span> <span class="comment">/* Strings */</span> }
+  }</pre></div>
+      </details>
+      <midi-visualizer type="piano-roll" id="viz-3"></midi-visualizer>
+      <midi-player sound-font visualizer="#viz-3"></midi-player>
+    </section>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  /* ============================================================
+     Clausic — Chill Pieces  ·  Procedural MIDI Generator
+     4 tracks: Chillwave · Lo-fi Hip Hop · Ambient · Acoustic
+     ============================================================ */
+  
+  /* ---------- Scale & Utility ---------- */
+  
+  const SCALES = {
+    phrygian: [0, 1, 3, 5, 7, 8, 10],
+    dorian: [0, 2, 3, 5, 7, 9, 10],
+    wholeTone: [0, 2, 4, 6, 8, 10],
+    minor: [0, 2, 3, 5, 7, 8, 10],
+    major: [0, 2, 4, 5, 7, 9, 11],
+  };
+  
+  const ROOTS = { C: 60, D: 62, E: 64, F: 65, G: 67, A: 69, B: 71 };
+  
+  function scaleNote(root, scale, degree) {
+    const oct = Math.floor(degree / scale.length);
+    const idx = ((degree % scale.length) + scale.length) % scale.length;
+    return root + scale[idx] + oct * 12;
+  }
+  
+  /* ---------- Generator ---------- */
+  
+  function generate(cfg) {
+    const bt = 60 / cfg.bpm; // seconds per quarter note
+    const total = cfg.bars * 4; // total quarter-note beats
+    const notes = [];
+  
+    /* --- Chords: whole-bar sustained pads --- */
+    if (cfg.chords && cfg.programs.pad != null) {
+      for (let bar = 0; bar < cfg.bars; bar++) {
+        const chord = cfg.chords[bar % cfg.chords.length];
+        const t = bar * 4 * bt;
+        for (const deg of chord) {
+          notes.push({
+            pitch: scaleNote(cfg.root, cfg.scale, deg),
+            startTime: t,
+            endTime: t + 4 * bt * 0.95,
+            velocity: 50 + Math.floor(Math.random() * 15),
+            program: cfg.programs.pad,
+          });
+        }
+      }
+    }
+  
+    /* --- Arpeggios (ambient tracks with no melody) --- */
+    if (cfg.arp && cfg.programs.melody != null && !cfg.melody) {
+      let ai = 0;
+      for (let beat = 0; beat < total; beat++) {
+        const deg = cfg.arp[ai % cfg.arp.length];
+        ai++;
+        if (deg != null) {
+          const t = beat * bt;
+          notes.push({
+            pitch: scaleNote(cfg.root, cfg.scale, deg),
+            startTime: t,
+            endTime: t + bt * 2.5,
+            velocity: 45 + Math.floor(Math.random() * 20),
+            program: cfg.programs.melody,
+          });
+        }
+      }
+    }
+  
+    /* --- Melody: eighth-note grid --- */
+    if (cfg.melody && cfg.programs.melody != null) {
+      let mi = 0;
+      for (let eighth = 0; eighth < total * 2; eighth++) {
+        const n = cfg.melody[mi % cfg.melody.length];
+        mi++;
+        if (n != null) {
+          const t = (eighth * bt) / 2;
+          const nextNull = cfg.melody[mi % cfg.melody.length] == null;
+          const dur = nextNull ? bt : bt / 2;
+          notes.push({
+            pitch: scaleNote(cfg.root + 12, cfg.scale, n),
+            startTime: t,
+            endTime: t + dur * 0.85,
+            velocity: 65 + Math.floor(Math.random() * 25),
+            program: cfg.programs.melody,
+          });
+        }
+      }
+    }
+  
+    /* --- Bass: quarter-note grid --- */
+    if (cfg.bass && cfg.programs.bass != null) {
+      let bi = 0;
+      for (let beat = 0; beat < total; beat++) {
+        const n = cfg.bass[bi % cfg.bass.length];
+        bi++;
+        if (n != null) {
+          const t = beat * bt;
+          notes.push({
+            pitch: scaleNote(cfg.root - 12, cfg.scale, n),
+            startTime: t,
+            endTime: t + bt * 0.8,
+            velocity: 75 + Math.floor(Math.random() * 15),
+            program: cfg.programs.bass,
+          });
+        }
+      }
+    }
+  
+    /* --- Drums: 8 eighth-note slots per bar --- */
+    if (cfg.drums) {
+      for (let beat = 0; beat < total; beat++) {
+        for (let sub = 0; sub < 2; sub++) {
+          const ei = (beat * 2 + sub) % (cfg.drums.kick ? cfg.drums.kick.length : 8);
+          const t = (beat + sub * 0.5) * bt;
+          if (cfg.drums.kick && cfg.drums.kick[ei])
+            notes.push({
+              pitch: 36,
+              startTime: t,
+              endTime: t + 0.15,
+              velocity: 95 + Math.floor(Math.random() * 10),
+              isDrum: true,
+            });
+          if (cfg.drums.snare && cfg.drums.snare[ei])
+            notes.push({
+              pitch: 38,
+              startTime: t,
+              endTime: t + 0.1,
+              velocity: 80 + Math.floor(Math.random() * 15),
+              isDrum: true,
+            });
+          if (cfg.drums.hat && cfg.drums.hat[ei])
+            notes.push({
+              pitch: 42,
+              startTime: t,
+              endTime: t + 0.08,
+              velocity: 50 + Math.floor(Math.random() * 15),
+              isDrum: true,
+            });
+          if (cfg.drums.openHat && cfg.drums.openHat[ei])
+            notes.push({
+              pitch: 46,
+              startTime: t,
+              endTime: t + 0.2,
+              velocity: 55 + Math.floor(Math.random() * 12),
+              isDrum: true,
+            });
+          if (cfg.drums.ride && cfg.drums.ride[ei])
+            notes.push({
+              pitch: 51,
+              startTime: t,
+              endTime: t + 0.12,
+              velocity: 45 + Math.floor(Math.random() * 15),
+              isDrum: true,
+            });
+        }
+      }
+    }
+  
+    return { notes, tempos: [{ time: 0, qpm: cfg.bpm }], totalTime: total * bt };
+  }
+  
+  /* ============================================================
+     TRACK DEFINITIONS
+     ============================================================ */
+  
+  const TRACKS = [
+    /* ----------------------------------------------------------
+       Track 0 — Chillwave / Synth
+       A Phrygian · 76 BPM · 32 bars
+       Dreamy, hazy saw-wave leads over warm pads with sparse beats.
+       The Phrygian b2 (Bb) gives that signature dark-float feeling.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.A - 12,
+      scale: SCALES.phrygian,
+      bpm: 76,
+      bars: 32,
+      // Chord cycle: Am → Bbmaj → Dm → Cm (classic Phrygian i-bII-iv-iii)
+      chords: [
+        [0, 2, 4], // Am
+        [1, 3, 5], // Bb
+        [5, 7, 9], // Dm
+        [3, 5, 7], // Cm
+        [0, 2, 4], // Am
+        [1, 3, 5], // Bb
+        [3, 5, 7], // Cm
+        [5, 7, 9], // Dm
+      ],
+      // 64-note melody: languid, breathy, lots of rests — dreamy Phrygian contour
+      melody: [
+        0,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        null,
+        3,
+        null,
+        1,
+        null,
+        0,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        3,
+        2,
+        null,
+        1,
+        null,
+        0,
+        null,
+        -1,
+        null,
+        null,
+        null,
+        // bar 5-8: higher register, arching phrase
+        4,
+        null,
+        5,
+        null,
+        7,
+        null,
+        null,
+        5,
+        4,
+        null,
+        3,
+        null,
+        2,
+        null,
+        1,
+        null,
+        0,
+        null,
+        null,
+        2,
+        4,
+        null,
+        5,
+        null,
+        3,
+        null,
+        1,
+        null,
+        0,
+        null,
+        null,
+        null,
+        // bar 9-12: syncopated descending line
+        7,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        3,
+        null,
+        2,
+        null,
+        1,
+        null,
+        null,
+        null,
+        5,
+        null,
+        4,
+        3,
+        null,
+        2,
+        null,
+        1,
+        0,
+        null,
+        null,
+        null,
+        -1,
+        null,
+        0,
+        null,
+        // bar 13-16: spacious ending with the flat-2 color
+        2,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        1,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        3,
+        null,
+        5,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        1,
+        null,
+        null,
+        1,
+        null,
+        null,
+        1,
+        null,
+        5,
+        null,
+        null,
+        5,
+        null,
+        5,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+      ],
+      drums: {
+        // Sparse lo-fi beat with off-kilter kick on the & of 3
+        kick: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        hat: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+        openHat: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      },
+      programs: { melody: 81, bass: 38, pad: 89 }, // SynthLeadSaw, SynthBass, PadWarm
+    },
+  
+    /* ----------------------------------------------------------
+       Track 1 — Lo-fi Hip Hop
+       C Dorian · 85 BPM · 40 bars
+       Warm, jazzy electric piano over dusty drums.
+       Dorian's natural 6 (A natural) adds the jazzy brightness.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.C,
+      scale: SCALES.dorian,
+      bpm: 85,
+      bars: 40,
+      // Jazzy minor progression: Cm9 → Fm9 → Abmaj7 → G7(b13)
+      chords: [
+        [0, 2, 4, 6], // Cm9
+        [3, 5, 7, 9], // Fm9
+        [5, 7, 9, 11], // Abmaj7
+        [4, 6, 8, 10], // G7
+        [0, 2, 4, 6], // Cm9
+        [1, 3, 5, 7], // Dm7b5
+        [5, 7, 9, 11], // Abmaj7
+        [3, 5, 7, 9], // Fm9
+      ],
+      // 64-note melody: lazy, behind-the-beat jazz phrasing with chromatic approach
+      melody: [
+        4,
+        null,
+        2,
+        3,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        7,
+        null,
+        5,
+        4,
+        null,
+        null,
+        2,
+        null,
+        3,
+        null,
+        4,
+        null,
+        null,
+        null,
+        // bar 5-8: call-and-response feel
+        null,
+        null,
+        0,
+        2,
+        4,
+        null,
+        5,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        2,
+        null,
+        null,
+        0,
+        null,
+        -1,
+        null,
+        0,
+        2,
+        null,
+        4,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // bar 9-12: upper register blues lick
+        9,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        4,
+        2,
+        null,
+        null,
+        null,
+        0,
+        null,
+        2,
+        null,
+        4,
+        5,
+        null,
+        7,
+        null,
+        5,
+        4,
+        null,
+        2,
+        null,
+        null,
+        null,
+        // bar 13-16: lazy descent with rests
+        7,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        5,
+        null,
+        4,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        3,
+        null,
+        null,
+        5,
+        null,
+        null,
+        5,
+        null,
+        null,
+        5,
+        null,
+        4,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+      ],
+      drums: {
+        // Classic boom-bap with swing: ghost snares, lazy kick
+        kick: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        hat: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+        openHat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        ride: [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+      },
+      programs: { melody: 4, bass: 33, pad: 89 }, // ElectricPiano, ElectricBass, PadWarm
+    },
+  
+    /* ----------------------------------------------------------
+       Track 2 — Ambient / Atmospheric
+       E Whole Tone · 50 BPM · 24 bars
+       Ethereal, floating — no drums. Vibraphone arpeggios drift
+       over slow-moving whole-tone pads. The scale has no tonal
+       center, creating a weightless, dreamlike suspension.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.E - 12,
+      scale: SCALES.wholeTone,
+      bpm: 50,
+      bars: 24,
+      // Whole-tone triads shifting by step — each one sounds equally distant
+      chords: [
+        [0, 2, 4], // E aug-ish
+        [1, 3, 5], // up a whole step
+        [2, 4, 0], // inversion
+        [3, 5, 1], // floating
+        [4, 0, 2], // cycling
+        [5, 1, 3], // return
+      ],
+      // 48-note arpeggio: slow, wide leaps, lots of breathing room
+      arp: [
+        0,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        3,
+        null,
+        null,
+        1,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        // second phrase: reaching higher
+        5,
+        null,
+        null,
+        null,
+        3,
+        null,
+        null,
+        1,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        3,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // third phrase: descending, sinking
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        3,
+        null,
+        1,
+        null,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        1,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        2,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        3,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        4,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      programs: { melody: 11, bass: 38, pad: 88 }, // Vibraphone, SynthBass, PadNewAge
+      // No drums property — completely beatless
+    },
+  
+    /* ----------------------------------------------------------
+       Track 3 — Acoustic Chill
+       G Major · 72 BPM · 32 bars
+       Natural, warm fingerpicked guitar melody over gentle strings
+       and soft brushed drums. Feels like a sunny afternoon.
+       ---------------------------------------------------------- */
+    {
+      root: ROOTS.G,
+      scale: SCALES.major,
+      bpm: 72,
+      bars: 32,
+      // Folk-pop progression: G → Em → C → D → G → C → Am → D
+      chords: [
+        [0, 2, 4], // G
+        [6, 8, 10], // Em (degree 6 in G major = E)
+        [3, 5, 7], // C
+        [4, 6, 8], // D
+        [0, 2, 4], // G
+        [3, 5, 7], // C
+        [1, 3, 5], // Am
+        [4, 6, 8], // D
+      ],
+      // 64-note melody: singable, folk-like with small intervals and natural phrasing
+      melody: [
+        4,
+        null,
+        5,
+        4,
+        null,
+        2,
+        0,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        7,
+        null,
+        null,
+        5,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // bar 5-8: answer phrase — rising with hope
+        2,
+        null,
+        4,
+        null,
+        5,
+        null,
+        7,
+        null,
+        null,
+        9,
+        null,
+        7,
+        5,
+        null,
+        null,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        2,
+        4,
+        null,
+        5,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        // bar 9-12: development — wider leaps, more momentum
+        7,
+        null,
+        9,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        5,
+        7,
+        null,
+        9,
+        null,
+        null,
+        7,
+        null,
+        5,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        -1,
+        0,
+        null,
+        null,
+        null,
+        // bar 13-16: gentle coda — slowing, coming home
+        2,
+        null,
+        null,
+        4,
+        null,
+        null,
+        5,
+        null,
+        null,
+        4,
+        null,
+        2,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        2,
+        null,
+        4,
+        null,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+      bass: [
+        0,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        6,
+        null,
+        null,
+        6,
+        null,
+        null,
+        6,
+        null,
+        3,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+        0,
+        null,
+        0,
+        null,
+        null,
+        0,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        null,
+        3,
+        null,
+        1,
+        null,
+        1,
+        null,
+        null,
+        1,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+        null,
+        4,
+        null,
+      ],
+      drums: {
+        // Brushed kit: steady hats, soft kick-snare, ride adds shimmer
+        kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+        snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        hat: [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0],
+        ride: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+      },
+      programs: { melody: 25, bass: 33, pad: 48 }, // AcousticGuitar, ElectricBass, Strings
+    },
+  ];
+  
+  /* ============================================================
+     Visualizer Helpers
+     ============================================================ */
+  
+  function stopAllPlayers() {
+    document.querySelectorAll("midi-player").forEach((p) => {
+      try {
+        p.stop();
+      } catch (_) {
+        /* ignore */
+      }
+    });
+  }
+  
+  function zoomVisualizer(viz) {
+    const svg = viz.querySelector("svg");
+    if (!svg) return;
+    const rects = svg.querySelectorAll("rect[data-note]");
+    if (!rects.length) return;
+    let minY = Infinity,
+      maxY = -Infinity;
+    rects.forEach((r) => {
+      const y = parseFloat(r.getAttribute("y") || 0);
+      const h = parseFloat(r.getAttribute("height") || 0);
+      if (y < minY) minY = y;
+      if (y + h > maxY) maxY = y + h;
+    });
+    if (!isFinite(minY)) return;
+    const vb = svg.getAttribute("viewBox");
+    if (!vb) return;
+    const [vx, , vw, vh] = vb.split(" ").map(Number);
+    const m = vh * 0.05;
+    svg.setAttribute(
+      "viewBox",
+      `${vx} ${Math.max(0, minY - m)} ${vw} ${Math.min(vh, maxY - minY + m * 2)}`
+    );
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  }
+  
+  function observeViz(viz) {
+    const obs = new MutationObserver(() => {
+      const svg = viz.querySelector("svg");
+      if (svg && svg.querySelectorAll("rect[data-note]").length > 0) {
+        zoomVisualizer(viz);
+        obs.disconnect();
+      }
+    });
+    obs.observe(viz, { childList: true, subtree: true, attributes: true });
+    zoomVisualizer(viz);
+  }
+  
+  /* ============================================================
+     Init — generate NoteSequences & wire up tabs
+     ============================================================ */
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    /* Generate and assign NoteSequences to each player/visualizer */
+    TRACKS.forEach((cfg, i) => {
+      const ns = generate(cfg);
+      const player = document.querySelector(`#piece-chill-${i} midi-player`);
+      const viz = document.getElementById(`viz-${i}`);
+      if (player) player.noteSequence = ns;
+      if (viz) viz.noteSequence = ns;
+      if (viz) observeViz(viz);
+    });
+  
+    /* Tab switching */
+    document.querySelectorAll(".tabs").forEach((nav) => {
+      const tabs = nav.querySelectorAll(".tab");
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          stopAllPlayers();
+          tabs.forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          document.querySelectorAll(".piece").forEach((p) => p.classList.remove("active"));
+          const target = document.getElementById(`piece-${tab.dataset.track}`);
+          if (target) {
+            target.classList.add("active");
+            target.querySelectorAll("midi-visualizer").forEach(observeViz);
+          }
+        });
+      });
+    });
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

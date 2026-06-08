@@ -1,0 +1,1186 @@
+---
+slug: "login-page-delete-closing-tag-0a4e8b5d"
+topic: "login"
+title: "Fix the broken HTML structure in Login Page"
+type: "fix"
+difficulty: 2
+resourceSlug: "login-page"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #0f1117;
+    --surface: #16181f;
+    --surface2: #1e2130;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --accent: #818cf8;
+    --accent-hover: #a5b4fc;
+    --red: #f87171;
+    --green: #34d399;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  
+  /* ── Layout ── */
+  .auth-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+  
+  /* Left */
+  .auth-left {
+    background: linear-gradient(160deg, #161828 0%, #0f1117 60%, #1a1040 100%);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .auth-left-content {
+    position: relative;
+    z-index: 1;
+    max-width: 380px;
+  }
+  
+  .auth-logo-big {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 48px;
+  }
+  
+  .auth-quote {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 16px;
+    quotes: "\201C" "\201D";
+  }
+  
+  .auth-quote::before {
+    content: open-quote;
+  }
+  
+  .auth-quote::after {
+    content: close-quote;
+  }
+  
+  .auth-cite {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .auth-left-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        circle at 20% 20%,
+        rgba(129, 140, 248, 0.08) 0%,
+        transparent 50%
+      ), radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+  }
+  
+  /* Right */
+  .auth-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    background: var(--bg);
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .auth-header {
+    margin-bottom: 28px;
+  }
+  
+  .auth-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  
+  /* OAuth */
+  .oauth-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .oauth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, border-color .15s;
+  }
+  
+  .oauth-btn:hover {
+    background: var(--surface2);
+    border-color: #3a3d4a;
+  }
+  
+  /* Divider */
+  .auth-divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  .auth-divider::before,
+  .auth-divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 18px);
+    height: 1px;
+    background: var(--border);
+  }
+  
+  .auth-divider::before {
+    left: 0;
+  }
+  
+  .auth-divider::after {
+    right: 0;
+  }
+  
+  .auth-divider span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 0 8px;
+  }
+  
+  /* Form */
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .field-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  
+  .forgot-link {
+    font-size: 0.78rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  
+  .forgot-link:hover {
+    color: var(--accent-hover);
+  }
+  
+  .field-input-wrap {
+    position: relative;
+  }
+  
+  .field-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-size: 0.875rem;
+    padding: 10px 14px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color .15s;
+  }
+  
+  .field-input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+  }
+  
+  .field-input.invalid {
+    border-color: var(--red);
+  }
+  
+  .field-input-wrap .field-input {
+    padding-right: 42px;
+  }
+  
+  .pwd-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    padding: 4px;
+    transition: color .15s;
+  }
+  
+  .pwd-toggle:hover {
+    color: var(--text);
+  }
+  
+  .field-error {
+    font-size: 0.78rem;
+    color: var(--red);
+    margin-top: 2px;
+  }
+  
+  /* Remember */
+  .remember-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .remember-row input {
+    accent-color: var(--accent);
+    width: 14px;
+    height: 14px;
+  }
+  
+  .remember-text {
+    user-select: none;
+  }
+  
+  /* Submit */
+  .auth-submit {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 9px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background .15s, opacity .15s;
+    margin-top: 4px;
+  }
+  
+  .auth-submit:hover {
+    background: var(--accent-hover);
+  }
+  
+  .auth-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .btn-spinner svg {
+    animation: spin .8s linear infinite;
+  }
+  
+  /* Switch */
+  .auth-switch {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .auth-switch-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .auth-switch-link:hover {
+    color: var(--accent-hover);
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .auth-layout {
+      grid-template-columns: 1fr;
+    }
+  
+    .auth-left {
+      display: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Login
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+  
+      <div class="auth-layout">
+  
+          <!-- Left panel (decorative) -->
+          <div class="auth-left">
+              <div class="auth-left-content">
+                  <a href="#" class="auth-logo-big">✦ StealThis</a>
+                  <blockquote class="auth-quote">
+                      "The best UI components are the ones you didn't have to build from scratch."
+                  </blockquote>
+                  <cite class="auth-cite">— A developer, probably</cite>
+                  <div class="auth-left-pattern" aria-hidden="true">
+                      <div class="dot-grid"></div>
+                  </div>
+              </div>
+          </div>
+  
+          <!-- Right panel (form) -->
+          <div class="auth-right">
+              <div class="auth-card">
+  
+                  <div class="auth-header">
+                      <h1 class="auth-title">Welcome back</h1>
+                      <p class="auth-subtitle">Sign in to your account to continue.</p>
+                  </div>
+  
+                  <!-- OAuth buttons -->
+                  <div class="oauth-group">
+                      <button type="button" class="oauth-btn" id="oauthGoogle">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                              <path
+                                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                  fill="#4285F4" />
+                              <path
+                                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                  fill="#34A853" />
+                              <path
+                                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                                  fill="#FBBC05" />
+                              <path
+                                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                  fill="#EA4335" />
+                          </svg>
+                          Continue with Google
+                      </button>
+                      <button type="button" class="oauth-btn" id="oauthGitHub">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                              <path
+                                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
+                          </svg>
+                          Continue with GitHub
+                      </button>
+                  </div>
+  
+                  <div class="auth-divider"><span>or</span></div>
+  
+                  <!-- Login form -->
+                  <form id="loginForm" class="auth-form" novalidate>
+  
+                      <div class="field">
+                          <label for="email" class="field-label">Email address</label>
+                          <input type="email" id="email" name="email" class="field-input" placeholder="you@example.com"
+                              autocomplete="email" />
+                          <p class="field-error" id="email-error" role="alert" hidden></p>
+                      </div>
+  
+                      <div class="field">
+                          <div class="field-label-row">
+                              <label for="password" class="field-label">Password</label>
+                              <a href="#" class="forgot-link">Forgot password?</a>
+                          </div>
+                          <div class="field-input-wrap">
+                              <input type="password" id="password" name="password" class="field-input"
+                                  placeholder="••••••••" autocomplete="current-password" />
+                              <button type="button" class="pwd-toggle" aria-label="Toggle password visibility"
+                                  id="pwdToggle">
+                                  <svg class="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                      stroke="currentColor" stroke-width="2">
+                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                      <circle cx="12" cy="12" r="3" />
+                                  </svg>
+                              </button>
+                          </div>
+                          <p class="field-error" id="password-error" role="alert" hidden></p>
+                      </div>
+  
+                      <label class="remember-row">
+                          <input type="checkbox" id="remember" name="remember" />
+                          <span class="remember-text">Remember me for 30 days</span>
+                      </label>
+  
+                      <button type="submit" class="auth-submit" id="loginSubmit">
+                          <span class="btn-text">Sign in</span>
+                          <span class="btn-spinner" hidden>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                  stroke-width="2.5">
+                                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                              </svg>
+                          </span>
+                      </button>
+  
+                  </form>
+  
+                  <p class="auth-switch">
+                      Don't have an account? <a href="#" class="auth-switch-link">Create account</a>
+                  </p>
+  
+              </div>
+          </div>
+  
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const form = document.getElementById("loginForm");
+  const emailEl = document.getElementById("email");
+  const pwdEl = document.getElementById("password");
+  const submitBtn = document.getElementById("loginSubmit");
+  const pwdToggle = document.getElementById("pwdToggle");
+  
+  // Password visibility toggle
+  pwdToggle?.addEventListener("click", () => {
+    const isPwd = pwdEl.type === "password";
+    pwdEl.type = isPwd ? "text" : "password";
+    pwdToggle.setAttribute("aria-label", isPwd ? "Hide password" : "Show password");
+  });
+  
+  // Validation
+  function validateEmail(val) {
+    if (!val.trim()) return "Email is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return "Enter a valid email address.";
+    return null;
+  }
+  function validatePassword(val) {
+    if (!val) return "Password is required.";
+    if (val.length < 8) return "Password must be at least 8 characters.";
+    return null;
+  }
+  
+  function showError(input, errorEl, msg) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+    input.classList.add("invalid");
+  }
+  function clearError(input, errorEl) {
+    errorEl.hidden = true;
+    input.classList.remove("invalid");
+  }
+  
+  // Live validation on blur
+  emailEl?.addEventListener("blur", () => {
+    const err = validateEmail(emailEl.value);
+    const errEl = document.getElementById("email-error");
+    err ? showError(emailEl, errEl, err) : clearError(emailEl, errEl);
+  });
+  pwdEl?.addEventListener("blur", () => {
+    const err = validatePassword(pwdEl.value);
+    const errEl = document.getElementById("password-error");
+    err ? showError(pwdEl, errEl, err) : clearError(pwdEl, errEl);
+  });
+  
+  // Submit
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const emailErr = validateEmail(emailEl.value);
+    const pwdErr = validatePassword(pwdEl.value);
+  
+    if (emailErr) showError(emailEl, document.getElementById("email-error"), emailErr);
+    else clearError(emailEl, document.getElementById("email-error"));
+  
+    if (pwdErr) showError(pwdEl, document.getElementById("password-error"), pwdErr);
+    else clearError(pwdEl, document.getElementById("password-error"));
+  
+    if (emailErr || pwdErr) return;
+  
+    // Loading state
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setLoading(false);
+    // Would normally redirect here
+    alert("Sign-in successful! (demo)");
+  });
+  
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    submitBtn.querySelector(".btn-text").hidden = on;
+    submitBtn.querySelector(".btn-spinner").hidden = !on;
+  }
+  
+  // OAuth buttons
+  document
+    .getElementById("oauthGoogle")
+    ?.addEventListener("click", () => alert("Google OAuth (demo)"));
+  document
+    .getElementById("oauthGitHub")
+    ?.addEventListener("click", () => alert("GitHub OAuth (demo)"));
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #0f1117;
+    --surface: #16181f;
+    --surface2: #1e2130;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --accent: #818cf8;
+    --accent-hover: #a5b4fc;
+    --red: #f87171;
+    --green: #34d399;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  
+  /* ── Layout ── */
+  .auth-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+  
+  /* Left */
+  .auth-left {
+    background: linear-gradient(160deg, #161828 0%, #0f1117 60%, #1a1040 100%);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .auth-left-content {
+    position: relative;
+    z-index: 1;
+    max-width: 380px;
+  }
+  
+  .auth-logo-big {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 48px;
+  }
+  
+  .auth-quote {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 16px;
+    quotes: "\201C" "\201D";
+  }
+  
+  .auth-quote::before {
+    content: open-quote;
+  }
+  
+  .auth-quote::after {
+    content: close-quote;
+  }
+  
+  .auth-cite {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .auth-left-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        circle at 20% 20%,
+        rgba(129, 140, 248, 0.08) 0%,
+        transparent 50%
+      ), radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+  }
+  
+  /* Right */
+  .auth-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    background: var(--bg);
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .auth-header {
+    margin-bottom: 28px;
+  }
+  
+  .auth-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  
+  /* OAuth */
+  .oauth-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .oauth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, border-color .15s;
+  }
+  
+  .oauth-btn:hover {
+    background: var(--surface2);
+    border-color: #3a3d4a;
+  }
+  
+  /* Divider */
+  .auth-divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  .auth-divider::before,
+  .auth-divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 18px);
+    height: 1px;
+    background: var(--border);
+  }
+  
+  .auth-divider::before {
+    left: 0;
+  }
+  
+  .auth-divider::after {
+    right: 0;
+  }
+  
+  .auth-divider span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 0 8px;
+  }
+  
+  /* Form */
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .field-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  
+  .forgot-link {
+    font-size: 0.78rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  
+  .forgot-link:hover {
+    color: var(--accent-hover);
+  }
+  
+  .field-input-wrap {
+    position: relative;
+  }
+  
+  .field-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-size: 0.875rem;
+    padding: 10px 14px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color .15s;
+  }
+  
+  .field-input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+  }
+  
+  .field-input.invalid {
+    border-color: var(--red);
+  }
+  
+  .field-input-wrap .field-input {
+    padding-right: 42px;
+  }
+  
+  .pwd-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    padding: 4px;
+    transition: color .15s;
+  }
+  
+  .pwd-toggle:hover {
+    color: var(--text);
+  }
+  
+  .field-error {
+    font-size: 0.78rem;
+    color: var(--red);
+    margin-top: 2px;
+  }
+  
+  /* Remember */
+  .remember-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .remember-row input {
+    accent-color: var(--accent);
+    width: 14px;
+    height: 14px;
+  }
+  
+  .remember-text {
+    user-select: none;
+  }
+  
+  /* Submit */
+  .auth-submit {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 9px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background .15s, opacity .15s;
+    margin-top: 4px;
+  }
+  
+  .auth-submit:hover {
+    background: var(--accent-hover);
+  }
+  
+  .auth-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .btn-spinner svg {
+    animation: spin .8s linear infinite;
+  }
+  
+  /* Switch */
+  .auth-switch {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .auth-switch-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .auth-switch-link:hover {
+    color: var(--accent-hover);
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .auth-layout {
+      grid-template-columns: 1fr;
+    }
+  
+    .auth-left {
+      display: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Login</title>
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+  
+      <div class="auth-layout">
+  
+          <!-- Left panel (decorative) -->
+          <div class="auth-left">
+              <div class="auth-left-content">
+                  <a href="#" class="auth-logo-big">✦ StealThis</a>
+                  <blockquote class="auth-quote">
+                      "The best UI components are the ones you didn't have to build from scratch."
+                  </blockquote>
+                  <cite class="auth-cite">— A developer, probably</cite>
+                  <div class="auth-left-pattern" aria-hidden="true">
+                      <div class="dot-grid"></div>
+                  </div>
+              </div>
+          </div>
+  
+          <!-- Right panel (form) -->
+          <div class="auth-right">
+              <div class="auth-card">
+  
+                  <div class="auth-header">
+                      <h1 class="auth-title">Welcome back</h1>
+                      <p class="auth-subtitle">Sign in to your account to continue.</p>
+                  </div>
+  
+                  <!-- OAuth buttons -->
+                  <div class="oauth-group">
+                      <button type="button" class="oauth-btn" id="oauthGoogle">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                              <path
+                                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                  fill="#4285F4" />
+                              <path
+                                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                  fill="#34A853" />
+                              <path
+                                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                                  fill="#FBBC05" />
+                              <path
+                                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                  fill="#EA4335" />
+                          </svg>
+                          Continue with Google
+                      </button>
+                      <button type="button" class="oauth-btn" id="oauthGitHub">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                              <path
+                                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
+                          </svg>
+                          Continue with GitHub
+                      </button>
+                  </div>
+  
+                  <div class="auth-divider"><span>or</span></div>
+  
+                  <!-- Login form -->
+                  <form id="loginForm" class="auth-form" novalidate>
+  
+                      <div class="field">
+                          <label for="email" class="field-label">Email address</label>
+                          <input type="email" id="email" name="email" class="field-input" placeholder="you@example.com"
+                              autocomplete="email" />
+                          <p class="field-error" id="email-error" role="alert" hidden></p>
+                      </div>
+  
+                      <div class="field">
+                          <div class="field-label-row">
+                              <label for="password" class="field-label">Password</label>
+                              <a href="#" class="forgot-link">Forgot password?</a>
+                          </div>
+                          <div class="field-input-wrap">
+                              <input type="password" id="password" name="password" class="field-input"
+                                  placeholder="••••••••" autocomplete="current-password" />
+                              <button type="button" class="pwd-toggle" aria-label="Toggle password visibility"
+                                  id="pwdToggle">
+                                  <svg class="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                      stroke="currentColor" stroke-width="2">
+                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                      <circle cx="12" cy="12" r="3" />
+                                  </svg>
+                              </button>
+                          </div>
+                          <p class="field-error" id="password-error" role="alert" hidden></p>
+                      </div>
+  
+                      <label class="remember-row">
+                          <input type="checkbox" id="remember" name="remember" />
+                          <span class="remember-text">Remember me for 30 days</span>
+                      </label>
+  
+                      <button type="submit" class="auth-submit" id="loginSubmit">
+                          <span class="btn-text">Sign in</span>
+                          <span class="btn-spinner" hidden>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                  stroke-width="2.5">
+                                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                              </svg>
+                          </span>
+                      </button>
+  
+                  </form>
+  
+                  <p class="auth-switch">
+                      Don't have an account? <a href="#" class="auth-switch-link">Create account</a>
+                  </p>
+  
+              </div>
+          </div>
+  
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const form = document.getElementById("loginForm");
+  const emailEl = document.getElementById("email");
+  const pwdEl = document.getElementById("password");
+  const submitBtn = document.getElementById("loginSubmit");
+  const pwdToggle = document.getElementById("pwdToggle");
+  
+  // Password visibility toggle
+  pwdToggle?.addEventListener("click", () => {
+    const isPwd = pwdEl.type === "password";
+    pwdEl.type = isPwd ? "text" : "password";
+    pwdToggle.setAttribute("aria-label", isPwd ? "Hide password" : "Show password");
+  });
+  
+  // Validation
+  function validateEmail(val) {
+    if (!val.trim()) return "Email is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return "Enter a valid email address.";
+    return null;
+  }
+  function validatePassword(val) {
+    if (!val) return "Password is required.";
+    if (val.length < 8) return "Password must be at least 8 characters.";
+    return null;
+  }
+  
+  function showError(input, errorEl, msg) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+    input.classList.add("invalid");
+  }
+  function clearError(input, errorEl) {
+    errorEl.hidden = true;
+    input.classList.remove("invalid");
+  }
+  
+  // Live validation on blur
+  emailEl?.addEventListener("blur", () => {
+    const err = validateEmail(emailEl.value);
+    const errEl = document.getElementById("email-error");
+    err ? showError(emailEl, errEl, err) : clearError(emailEl, errEl);
+  });
+  pwdEl?.addEventListener("blur", () => {
+    const err = validatePassword(pwdEl.value);
+    const errEl = document.getElementById("password-error");
+    err ? showError(pwdEl, errEl, err) : clearError(pwdEl, errEl);
+  });
+  
+  // Submit
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const emailErr = validateEmail(emailEl.value);
+    const pwdErr = validatePassword(pwdEl.value);
+  
+    if (emailErr) showError(emailEl, document.getElementById("email-error"), emailErr);
+    else clearError(emailEl, document.getElementById("email-error"));
+  
+    if (pwdErr) showError(pwdEl, document.getElementById("password-error"), pwdErr);
+    else clearError(pwdEl, document.getElementById("password-error"));
+  
+    if (emailErr || pwdErr) return;
+  
+    // Loading state
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setLoading(false);
+    // Would normally redirect here
+    alert("Sign-in successful! (demo)");
+  });
+  
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    submitBtn.querySelector(".btn-text").hidden = on;
+    submitBtn.querySelector(".btn-spinner").hidden = !on;
+  }
+  
+  // OAuth buttons
+  document
+    .getElementById("oauthGoogle")
+    ?.addEventListener("click", () => alert("Google OAuth (demo)"));
+  document
+    .getElementById("oauthGitHub")
+    ?.addEventListener("click", () => alert("GitHub OAuth (demo)"));
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

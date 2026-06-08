@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Floor Plan</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="kicker">Front of house</p>
+        <h1>Floor Plan · Dinner</h1>
+      </div>
+      <div class="kpis">
+        <span class="kpi"><b id="kpiOccupied">0</b>/<span id="kpiTotal">0</span> seated</span>
+        <span class="kpi"><b id="kpiCovers">0</b> covers</span>
+        <span class="kpi"><b id="kpiReserved">0</b> reserved</span>
+      </div>
+      <div class="legend">
+        <span class="lg" data-state="free">Free</span>
+        <span class="lg" data-state="reserved">Reserved</span>
+        <span class="lg" data-state="seated">Seated</span>
+        <span class="lg" data-state="check">Check</span>
+        <span class="lg" data-state="dirty">Dirty</span>
+      </div>
+      <div class="top-actions">
+        <button class="tool-btn" id="editToggle" type="button" aria-pressed="false">
+          Edit layout
+        </button>
+        <button class="tool-btn tool-btn-primary" id="addTable" type="button" disabled>
+          Add table
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="plan-wrap">
+        <svg
+          class="plan"
+          viewBox="0 0 640 420"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label="Restaurant floor plan"
+        >
+          <defs>
+            <pattern id="editGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" class="grid-line" />
+            </pattern>
+          </defs>
+
+          <!-- Floor backdrop -->
+          <rect x="0" y="0" width="640" height="420" rx="16" class="floor" />
+          <rect x="0" y="0" width="640" height="420" rx="16" class="edit-grid" />
+
+          <!-- Zones -->
+          <rect x="16" y="16" width="260" height="172" rx="12" class="zone zone-window" />
+          <text x="28" y="38" class="zone-label">Window · Sofía</text>
+
+          <rect x="286" y="16" width="338" height="172" rx="12" class="zone zone-center" />
+          <text x="298" y="38" class="zone-label">Centre · Marco</text>
+
+          <rect x="16" y="198" width="404" height="206" rx="12" class="zone zone-patio" />
+          <text x="28" y="220" class="zone-label">Patio · Aitana</text>
+
+          <rect x="430" y="198" width="194" height="206" rx="12" class="zone zone-bar" />
+          <text x="442" y="220" class="zone-label">Bar · Theo</text>
+
+          <!-- Static features -->
+          <path
+            d="M 420 198 L 420 404"
+            class="feature feature-rail"
+            vector-effect="non-scaling-stroke"
+          />
+          <rect x="448" y="238" width="158" height="24" rx="7" class="feature feature-bar" />
+          <text x="527" y="254" class="feature-label" text-anchor="middle">— Bar —</text>
+
+          <rect x="570" y="20" width="44" height="22" rx="7" class="feature feature-host" />
+          <text x="592" y="35" class="feature-label" text-anchor="middle">Host</text>
+
+          <rect x="28" y="404" width="86" height="12" rx="6" class="feature feature-entry" />
+          <text x="71" y="414" class="feature-label" text-anchor="middle">Entry</text>
+
+          <!-- Tables rendered by script -->
+          <g id="tables"></g>
+        </svg>
+      </section>
+
+      <aside class="side" id="side">
+        <header class="side-head">
+          <p class="side-kicker" id="sideKicker">Select a table</p>
+          <h2 id="sideTitle">No table selected</h2>
+        </header>
+        <dl class="side-meta" id="sideMeta" hidden>
+          <div><dt>Status</dt><dd id="sideStatus">—</dd></div>
+          <div><dt>Party</dt><dd id="sideParty">—</dd></div>
+          <div><dt>Server</dt><dd id="sideServer">—</dd></div>
+          <div><dt>Seated</dt><dd id="sideSeated">—</dd></div>
+          <div><dt>Course</dt><dd id="sideCourse">—</dd></div>
+          <div><dt>Check</dt><dd id="sideCheck">—</dd></div>
+        </dl>
+        <p class="side-hint" id="sideHint">
+          Tap any table on the plan to see its status, party and current course.
+        </p>
+        <section class="edit-panel" id="editPanel" hidden>
+          <div class="edit-row">
+            <label class="edit-field" for="shapeSelect">
+              <span>Shape</span>
+              <select id="shapeSelect" disabled>
+                <option value="round">Round</option>
+                <option value="square">Square</option>
+                <option value="long">Long</option>
+              </select>
+            </label>
+          </div>
+          <div class="edit-row">
+            <span class="edit-label">Size</span>
+            <div class="size-tools">
+              <button class="ghost edit-icon" id="sizeDown" type="button" disabled>-</button>
+              <output id="sizeValue">100%</output>
+              <button class="ghost edit-icon" id="sizeUp" type="button" disabled>+</button>
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button class="ghost" id="duplicateTable" type="button" disabled>Duplicate</button>
+            <button class="danger" id="deleteTable" type="button" disabled>Remove</button>
+          </div>
+        </section>
+        <footer class="side-foot" id="sideFoot" hidden>
+          <button class="ghost" id="sideAssign">Assign party</button>
+          <button class="primary" id="sideCycle">Cycle status →</button>
+        </footer>
+      </aside>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

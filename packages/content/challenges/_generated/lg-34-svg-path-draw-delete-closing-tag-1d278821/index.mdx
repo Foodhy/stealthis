@@ -1,0 +1,338 @@
+---
+slug: "lg-34-svg-path-draw-delete-closing-tag-1d278821"
+topic: "svg"
+title: "Fix the broken HTML structure in SVG Path Drawing"
+type: "fix"
+difficulty: 2
+resourceSlug: "lg-34-svg-path-draw"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+  }
+  
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    place-content: center;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .hero-label {
+    color: #334155;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .hero-arrow {
+    font-size: 1.5rem;
+    color: #334155;
+    animation: bounce 1.5s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(8px);
+    }
+  }
+  
+  .draw-section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 4rem 2rem;
+  }
+  
+  .draw-svg {
+    width: min(800px, 100%);
+    height: auto;
+    overflow: visible;
+  }
+  
+  .draw-path {
+    fill: none;
+  }
+  
+  .draw-caption {
+    font-size: 0.8rem;
+    color: #334155;
+    text-align: center;
+  }
+  
+  .draw-caption code {
+    font-family: "Fira Code", monospace;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+    padding: 0.1em 0.4em;
+    border-radius: 0.25em;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Path Drawing
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="hero">
+      <p class="hero-label">Scroll to draw</p>
+      <div class="hero-arrow">↓</div>
+    </div>
+  
+    <section class="draw-section">
+      <svg class="draw-svg" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Flowing S-curve -->
+        <path class="draw-path draw-path--1"
+          d="M 50 200 C 150 50, 300 350, 400 200 S 650 50, 750 200"
+          stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+  
+        <!-- Geometric diamond -->
+        <path class="draw-path draw-path--2"
+          d="M 400 80 L 580 200 L 400 320 L 220 200 Z"
+          stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+        <!-- Inner cross lines -->
+        <path class="draw-path draw-path--3"
+          d="M 220 200 L 580 200 M 400 80 L 400 320"
+          stroke="rgba(129,140,248,0.4)" stroke-width="1" stroke-linecap="round"/>
+  
+        <!-- Spiral-like arc -->
+        <path class="draw-path draw-path--4"
+          d="M 100 320 Q 200 100 400 200 Q 600 300 700 80"
+          stroke="#f472b6" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+  
+      <p class="draw-caption">SVG paths draw on scroll via <code>stroke-dashoffset</code></p>
+    </section>
+  
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+  
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  
+    document.querySelectorAll(".draw-path").forEach((path, i) => {
+      const len = path.getTotalLength();
+  
+      gsap.set(path, {
+        strokeDasharray: len,
+        strokeDashoffset: len,
+      });
+  
+      if (reduced) {
+        gsap.set(path, { strokeDashoffset: 0 });
+        return;
+      }
+  
+      gsap.to(path, {
+        strokeDashoffset: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".draw-svg",
+          start: "top 80%",
+          end: "bottom 20%",
+          scrub: 1.5,
+        },
+      });
+    });
+  }
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #050910;
+    color: #f2f6ff;
+  }
+  
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    place-content: center;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .hero-label {
+    color: #334155;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .hero-arrow {
+    font-size: 1.5rem;
+    color: #334155;
+    animation: bounce 1.5s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(8px);
+    }
+  }
+  
+  .draw-section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 4rem 2rem;
+  }
+  
+  .draw-svg {
+    width: min(800px, 100%);
+    height: auto;
+    overflow: visible;
+  }
+  
+  .draw-path {
+    fill: none;
+  }
+  
+  .draw-caption {
+    font-size: 0.8rem;
+    color: #334155;
+    text-align: center;
+  }
+  
+  .draw-caption code {
+    font-family: "Fira Code", monospace;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+    padding: 0.1em 0.4em;
+    border-radius: 0.25em;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Path Drawing</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="hero">
+      <p class="hero-label">Scroll to draw</p>
+      <div class="hero-arrow">↓</div>
+    </div>
+  
+    <section class="draw-section">
+      <svg class="draw-svg" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Flowing S-curve -->
+        <path class="draw-path draw-path--1"
+          d="M 50 200 C 150 50, 300 350, 400 200 S 650 50, 750 200"
+          stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+  
+        <!-- Geometric diamond -->
+        <path class="draw-path draw-path--2"
+          d="M 400 80 L 580 200 L 400 320 L 220 200 Z"
+          stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+        <!-- Inner cross lines -->
+        <path class="draw-path draw-path--3"
+          d="M 220 200 L 580 200 M 400 80 L 400 320"
+          stroke="rgba(129,140,248,0.4)" stroke-width="1" stroke-linecap="round"/>
+  
+        <!-- Spiral-like arc -->
+        <path class="draw-path draw-path--4"
+          d="M 100 320 Q 200 100 400 200 Q 600 300 700 80"
+          stroke="#f472b6" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+  
+      <p class="draw-caption">SVG paths draw on scroll via <code>stroke-dashoffset</code></p>
+    </section>
+  
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+  
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  
+    document.querySelectorAll(".draw-path").forEach((path, i) => {
+      const len = path.getTotalLength();
+  
+      gsap.set(path, {
+        strokeDasharray: len,
+        strokeDashoffset: len,
+      });
+  
+      if (reduced) {
+        gsap.set(path, { strokeDashoffset: 0 });
+        return;
+      }
+  
+      gsap.to(path, {
+        strokeDashoffset: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".draw-svg",
+          start: "top 80%",
+          end: "bottom 20%",
+          scrub: 1.5,
+        },
+      });
+    });
+  }
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

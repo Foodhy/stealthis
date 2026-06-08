@@ -1,0 +1,957 @@
+---
+slug: "lgc-17-spotlight-reveal-remove-css-property-852be0a5"
+topic: "imported-libs-genclaude"
+title: "Restore missing CSS property in Spotlight Reveal"
+type: "fix"
+difficulty: 1
+resourceSlug: "lgc-17-spotlight-reveal"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --accent: #86e8ff;
+    --neon-purple: #ae52ff;
+    --neon-pink: #ff40d6;
+  }
+  
+  body {
+    background: #030510;
+    color: #f0f4fb;
+    font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    cursor: none;
+  }
+  
+  @media (hover: none) {
+    body {
+      cursor: auto;
+    }
+  }
+  
+  /* ── Stage ── */
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* ── Hidden layer (colorful content underneath) ── */
+  .hidden-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, #0a0520 0%, #150a30 50%, #0d1a2a 100%);
+  }
+  
+  .hidden-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .color-block {
+    position: absolute;
+    border-radius: 16px;
+  }
+  
+  .block-1 {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #86e8ff, #3d9eff);
+    top: 10%;
+    left: 8%;
+    transform: rotate(-12deg);
+  }
+  
+  .block-2 {
+    width: 150px;
+    height: 260px;
+    background: linear-gradient(135deg, #ae52ff, #7c2aff);
+    top: 15%;
+    right: 12%;
+    transform: rotate(8deg);
+  }
+  
+  .block-3 {
+    width: 280px;
+    height: 140px;
+    background: linear-gradient(135deg, #ff40d6, #ff6b9d);
+    bottom: 20%;
+    left: 15%;
+    transform: rotate(5deg);
+  }
+  
+  .block-4 {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #ffcc66, #ff9f43);
+    top: 55%;
+    left: 50%;
+    border-radius: 50%;
+  }
+  
+  .block-5 {
+    width: 180px;
+    height: 100px;
+    background: linear-gradient(135deg, #50c878, #27ae60);
+    bottom: 10%;
+    right: 20%;
+    transform: rotate(-6deg);
+  }
+  
+  .block-6 {
+    width: 100px;
+    height: 200px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    top: 5%;
+    left: 45%;
+    transform: rotate(15deg);
+  }
+  
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+  
+  .orb-1 {
+    width: 300px;
+    height: 300px;
+    background: rgba(134, 232, 255, 0.2);
+    top: 30%;
+    left: 30%;
+  }
+  
+  .orb-2 {
+    width: 250px;
+    height: 250px;
+    background: rgba(174, 82, 255, 0.15);
+    bottom: 15%;
+    right: 25%;
+  }
+  
+  .orb-3 {
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 64, 214, 0.12);
+    top: 60%;
+    left: 10%;
+  }
+  
+  .hidden-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5;
+  }
+  
+  .hidden-text h2 {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #86e8ff, #ae52ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .hidden-text p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* ── Cover layer (dark overlay with spotlight mask) ── */
+  .cover-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: #030510;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    /* The mask is set via JS on mousemove */
+    -webkit-mask-image: radial-gradient(circle 0px at 50% 50%, transparent 0%, black 100%);
+    mask-image: radial-gradient(circle 0px at 50% 50%, transparent 0%, black 100%);
+    -webkit-mask-composite: source-over;
+    pointer-events: none;
+  }
+  
+  .cover-content {
+    padding: 2rem;
+    pointer-events: auto;
+  }
+  
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  
+  h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  
+  .subtitle {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    color: #8a95a8;
+    max-width: 460px;
+    margin: 0.75rem auto 0;
+    line-height: 1.6;
+  }
+  
+  .hint {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: rgba(134, 232, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  
+  /* ── Trail ── */
+  .trail {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+  
+  .trail-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(134, 232, 255, 0.4);
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+  }
+  
+  /* ── Back button ── */
+  .btn-back {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: inline-block;
+    padding: 0.7rem 2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(134, 232, 255, 0.3);
+    color: var(--accent);
+    text-decoration: none;
+    font: 600 0.85rem / 1 "Inter", system-ui, sans-serif;
+    transition: all 0.25s ease;
+    background: rgba(3, 5, 16, 0.8);
+    backdrop-filter: blur(8px);
+  }
+  
+  .btn-back:hover {
+    background: rgba(134, 232, 255, 0.08);
+    border-color: var(--accent);
+  }
+  
+  /* ── Reduced motion ── */
+  .reduced-motion .cover-layer {
+    -webkit-mask-image: none;
+    mask-image: none;
+    background: rgba(3, 5, 16, 0.5);
+  }
+  .reduced-motion body {
+    cursor: auto;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotlight Reveal — stealthisdesign</title>
+    <link rel="stylesheet" href="style.css">
+    </head>
+  <body>
+    <main class="stage">
+      <!-- Hidden layer (colorful content revealed by spotlight) -->
+      <div class="hidden-layer" id="hidden-layer">
+        <div class="hidden-content">
+          <div class="color-block block-1"></div>
+          <div class="color-block block-2"></div>
+          <div class="color-block block-3"></div>
+          <div class="color-block block-4"></div>
+          <div class="hidden-text">
+            <h2>You found it.</h2>
+            <p>The spotlight reveals what's hidden beneath the surface.</p>
+          </div>
+          <div class="color-block block-5"></div>
+          <div class="color-block block-6"></div>
+          <div class="orb orb-1"></div>
+          <div class="orb orb-2"></div>
+          <div class="orb orb-3"></div>
+        </div>
+      </div>
+  
+      <!-- Cover layer (dark, with spotlight mask) -->
+      <div class="cover-layer" id="cover-layer">
+        <div class="cover-content">
+          <span class="eyebrow">Demo 17</span>
+          <h1>Spotlight Reveal</h1>
+          <p class="subtitle">Move your mouse to shine a spotlight through the dark layer, revealing colorful content hidden underneath.</p>
+          <p class="hint">Try moving around to discover hidden elements.</p>
+        </div>
+      </div>
+  
+      <!-- Trail dots (follow mouse with delay) -->
+      <div class="trail" id="trail" aria-hidden="true"></div>
+    </main>
+  
+    <a href="/" class="btn-back">Back to Showcase</a>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  function prefersReducedMotion() {
+    return window.MotionPreference.prefersReducedMotion();
+  }
+  
+  function initDemoShell() {
+    // No-op shim in imported standalone snippets.
+  }
+  
+  // ── Demo shell ──
+  initDemoShell({
+    title: "Spotlight Reveal",
+    category: "css-canvas",
+    tech: ["css-mask", "mouse-tracking"],
+  });
+  
+  let reduced = prefersReducedMotion();
+  if (reduced) document.documentElement.classList.add("reduced-motion");
+  
+  window.addEventListener("motion-preference", (e) => {
+    reduced = e.detail.reduced;
+    document.documentElement.classList.toggle("reduced-motion", reduced);
+  });
+  
+  // ── Refs ──
+  const coverLayer = document.getElementById("cover-layer");
+  const trailContainer = document.getElementById("trail");
+  
+  // ── Mouse state ──
+  const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  const smooth = { x: mouse.x, y: mouse.y };
+  let spotlightRadius = 140;
+  let targetRadius = 140;
+  
+  // ── Trail system ──
+  const TRAIL_COUNT = 8;
+  const trailDots = [];
+  
+  for (let i = 0; i < TRAIL_COUNT; i++) {
+    const dot = document.createElement("div");
+    dot.className = "trail-dot";
+    dot.style.opacity = String(1 - (i / TRAIL_COUNT) * 0.8);
+    dot.style.width = `${8 - i * 0.6}px`;
+    dot.style.height = `${8 - i * 0.6}px`;
+    trailContainer.appendChild(dot);
+    trailDots.push({ el: dot, x: mouse.x, y: mouse.y });
+  }
+  
+  // ── Events ──
+  document.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    targetRadius = 140;
+  });
+  
+  document.addEventListener("mousedown", () => {
+    targetRadius = 220; // expand spotlight on click
+  });
+  
+  document.addEventListener("mouseup", () => {
+    targetRadius = 140;
+  });
+  
+  // ── Animation loop ──
+  function tick() {
+    if (reduced) {
+      requestAnimationFrame(tick);
+      return;
+    }
+  
+    // Smooth mouse
+    smooth.x += (mouse.x - smooth.x) * 0.12;
+    smooth.y += (mouse.y - smooth.y) * 0.12;
+  
+    // Smooth radius
+    spotlightRadius += (targetRadius - spotlightRadius) * 0.08;
+  
+    // Update cover layer mask
+    const maskValue = `radial-gradient(circle ${spotlightRadius}px at ${smooth.x}px ${smooth.y}px, transparent 0%, transparent 60%, black 100%)`;
+    coverLayer.style.webkitMaskImage = maskValue;
+    coverLayer.style.maskImage = maskValue;
+  
+    // Update trail dots (each follows the previous with delay)
+    for (let i = 0; i < trailDots.length; i++) {
+      const target = i === 0 ? smooth : trailDots[i - 1];
+      const dot = trailDots[i];
+      const lerp = 0.2 - i * 0.015;
+  
+      dot.x += (target.x - dot.x) * Math.max(lerp, 0.04);
+      dot.y += (target.y - dot.y) * Math.max(lerp, 0.04);
+  
+      dot.el.style.transform = `translate(${dot.x}px, ${dot.y}px)`;
+    }
+  
+    requestAnimationFrame(tick);
+  }
+  
+  requestAnimationFrame(tick);
+  
+  // ── Hide trail when mouse leaves ──
+  document.addEventListener("mouseleave", () => {
+    trailContainer.style.opacity = "0";
+  });
+  
+  document.addEventListener("mouseenter", () => {
+    trailContainer.style.opacity = "1";
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --accent: #86e8ff;
+    --neon-purple: #ae52ff;
+    --neon-pink: #ff40d6;
+  }
+  
+  body {
+    background: #030510;
+    color: #f0f4fb;
+    font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    cursor: none;
+  }
+  
+  @media (hover: none) {
+    body {
+      cursor: auto;
+    }
+  }
+  
+  /* ── Stage ── */
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* ── Hidden layer (colorful content underneath) ── */
+  .hidden-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(135deg, #0a0520 0%, #150a30 50%, #0d1a2a 100%);
+  }
+  
+  .hidden-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .color-block {
+    position: absolute;
+    border-radius: 16px;
+  }
+  
+  .block-1 {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #86e8ff, #3d9eff);
+    top: 10%;
+    left: 8%;
+    transform: rotate(-12deg);
+  }
+  
+  .block-2 {
+    width: 150px;
+    height: 260px;
+    background: linear-gradient(135deg, #ae52ff, #7c2aff);
+    top: 15%;
+    right: 12%;
+    transform: rotate(8deg);
+  }
+  
+  .block-3 {
+    width: 280px;
+    height: 140px;
+    background: linear-gradient(135deg, #ff40d6, #ff6b9d);
+    bottom: 20%;
+    left: 15%;
+    transform: rotate(5deg);
+  }
+  
+  .block-4 {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #ffcc66, #ff9f43);
+    top: 55%;
+    left: 50%;
+    border-radius: 50%;
+  }
+  
+  .block-5 {
+    width: 180px;
+    height: 100px;
+    background: linear-gradient(135deg, #50c878, #27ae60);
+    bottom: 10%;
+    right: 20%;
+    transform: rotate(-6deg);
+  }
+  
+  .block-6 {
+    width: 100px;
+    height: 200px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    top: 5%;
+    left: 45%;
+    transform: rotate(15deg);
+  }
+  
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+  
+  .orb-1 {
+    width: 300px;
+    height: 300px;
+    background: rgba(134, 232, 255, 0.2);
+    top: 30%;
+    left: 30%;
+  }
+  
+  .orb-2 {
+    width: 250px;
+    height: 250px;
+    background: rgba(174, 82, 255, 0.15);
+    bottom: 15%;
+    right: 25%;
+  }
+  
+  .orb-3 {
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 64, 214, 0.12);
+    top: 60%;
+    left: 10%;
+  }
+  
+  .hidden-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5;
+  }
+  
+  .hidden-text h2 {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #86e8ff, #ae52ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .hidden-text p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* ── Cover layer (dark overlay with spotlight mask) ── */
+  .cover-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: #030510;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    /* The mask is set via JS on mousemove */
+    -webkit-mask-image: radial-gradient(circle 0px at 50% 50%, transparent 0%, black 100%);
+    mask-image: radial-gradient(circle 0px at 50% 50%, transparent 0%, black 100%);
+    -webkit-mask-composite: source-over;
+    pointer-events: none;
+  }
+  
+  .cover-content {
+    padding: 2rem;
+    pointer-events: auto;
+  }
+  
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  
+  h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  
+  .subtitle {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    color: #8a95a8;
+    max-width: 460px;
+    margin: 0.75rem auto 0;
+    line-height: 1.6;
+  }
+  
+  .hint {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: rgba(134, 232, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  
+  /* ── Trail ── */
+  .trail {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+  
+  .trail-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(134, 232, 255, 0.4);
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+  }
+  
+  /* ── Back button ── */
+  .btn-back {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: inline-block;
+    padding: 0.7rem 2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(134, 232, 255, 0.3);
+    color: var(--accent);
+    text-decoration: none;
+    font: 600 0.85rem / 1 "Inter", system-ui, sans-serif;
+    transition: all 0.25s ease;
+    background: rgba(3, 5, 16, 0.8);
+    backdrop-filter: blur(8px);
+  }
+  
+  .btn-back:hover {
+    background: rgba(134, 232, 255, 0.08);
+    border-color: var(--accent);
+  }
+  
+  /* ── Reduced motion ── */
+  .reduced-motion .cover-layer {
+    -webkit-mask-image: none;
+    mask-image: none;
+    background: rgba(3, 5, 16, 0.5);
+  }
+  .reduced-motion body {
+    cursor: auto;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotlight Reveal — stealthisdesign</title>
+    <link rel="stylesheet" href="style.css">
+    </head>
+  <body>
+    <main class="stage">
+      <!-- Hidden layer (colorful content revealed by spotlight) -->
+      <div class="hidden-layer" id="hidden-layer">
+        <div class="hidden-content">
+          <div class="color-block block-1"></div>
+          <div class="color-block block-2"></div>
+          <div class="color-block block-3"></div>
+          <div class="color-block block-4"></div>
+          <div class="hidden-text">
+            <h2>You found it.</h2>
+            <p>The spotlight reveals what's hidden beneath the surface.</p>
+          </div>
+          <div class="color-block block-5"></div>
+          <div class="color-block block-6"></div>
+          <div class="orb orb-1"></div>
+          <div class="orb orb-2"></div>
+          <div class="orb orb-3"></div>
+        </div>
+      </div>
+  
+      <!-- Cover layer (dark, with spotlight mask) -->
+      <div class="cover-layer" id="cover-layer">
+        <div class="cover-content">
+          <span class="eyebrow">Demo 17</span>
+          <h1>Spotlight Reveal</h1>
+          <p class="subtitle">Move your mouse to shine a spotlight through the dark layer, revealing colorful content hidden underneath.</p>
+          <p class="hint">Try moving around to discover hidden elements.</p>
+        </div>
+      </div>
+  
+      <!-- Trail dots (follow mouse with delay) -->
+      <div class="trail" id="trail" aria-hidden="true"></div>
+    </main>
+  
+    <a href="/" class="btn-back">Back to Showcase</a>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  function prefersReducedMotion() {
+    return window.MotionPreference.prefersReducedMotion();
+  }
+  
+  function initDemoShell() {
+    // No-op shim in imported standalone snippets.
+  }
+  
+  // ── Demo shell ──
+  initDemoShell({
+    title: "Spotlight Reveal",
+    category: "css-canvas",
+    tech: ["css-mask", "mouse-tracking"],
+  });
+  
+  let reduced = prefersReducedMotion();
+  if (reduced) document.documentElement.classList.add("reduced-motion");
+  
+  window.addEventListener("motion-preference", (e) => {
+    reduced = e.detail.reduced;
+    document.documentElement.classList.toggle("reduced-motion", reduced);
+  });
+  
+  // ── Refs ──
+  const coverLayer = document.getElementById("cover-layer");
+  const trailContainer = document.getElementById("trail");
+  
+  // ── Mouse state ──
+  const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  const smooth = { x: mouse.x, y: mouse.y };
+  let spotlightRadius = 140;
+  let targetRadius = 140;
+  
+  // ── Trail system ──
+  const TRAIL_COUNT = 8;
+  const trailDots = [];
+  
+  for (let i = 0; i < TRAIL_COUNT; i++) {
+    const dot = document.createElement("div");
+    dot.className = "trail-dot";
+    dot.style.opacity = String(1 - (i / TRAIL_COUNT) * 0.8);
+    dot.style.width = `${8 - i * 0.6}px`;
+    dot.style.height = `${8 - i * 0.6}px`;
+    trailContainer.appendChild(dot);
+    trailDots.push({ el: dot, x: mouse.x, y: mouse.y });
+  }
+  
+  // ── Events ──
+  document.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    targetRadius = 140;
+  });
+  
+  document.addEventListener("mousedown", () => {
+    targetRadius = 220; // expand spotlight on click
+  });
+  
+  document.addEventListener("mouseup", () => {
+    targetRadius = 140;
+  });
+  
+  // ── Animation loop ──
+  function tick() {
+    if (reduced) {
+      requestAnimationFrame(tick);
+      return;
+    }
+  
+    // Smooth mouse
+    smooth.x += (mouse.x - smooth.x) * 0.12;
+    smooth.y += (mouse.y - smooth.y) * 0.12;
+  
+    // Smooth radius
+    spotlightRadius += (targetRadius - spotlightRadius) * 0.08;
+  
+    // Update cover layer mask
+    const maskValue = `radial-gradient(circle ${spotlightRadius}px at ${smooth.x}px ${smooth.y}px, transparent 0%, transparent 60%, black 100%)`;
+    coverLayer.style.webkitMaskImage = maskValue;
+    coverLayer.style.maskImage = maskValue;
+  
+    // Update trail dots (each follows the previous with delay)
+    for (let i = 0; i < trailDots.length; i++) {
+      const target = i === 0 ? smooth : trailDots[i - 1];
+      const dot = trailDots[i];
+      const lerp = 0.2 - i * 0.015;
+  
+      dot.x += (target.x - dot.x) * Math.max(lerp, 0.04);
+      dot.y += (target.y - dot.y) * Math.max(lerp, 0.04);
+  
+      dot.el.style.transform = `translate(${dot.x}px, ${dot.y}px)`;
+    }
+  
+    requestAnimationFrame(tick);
+  }
+  
+  requestAnimationFrame(tick);
+  
+  // ── Hide trail when mouse leaves ──
+  document.addEventListener("mouseleave", () => {
+    trailContainer.style.opacity = "0";
+  });
+  
+  document.addEventListener("mouseenter", () => {
+    trailContainer.style.opacity = "1";
+  });
+  
+  </script>
+explanation: "The declaration `margin: 0;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

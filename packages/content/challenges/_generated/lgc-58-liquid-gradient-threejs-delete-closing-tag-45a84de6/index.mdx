@@ -1,0 +1,2146 @@
+---
+slug: "lgc-58-liquid-gradient-threejs-delete-closing-tag-45a84de6"
+topic: "portfolio"
+title: "Fix the broken HTML structure in Liquid Gradient + Three.js"
+type: "fix"
+difficulty: 2
+resourceSlug: "lgc-58-liquid-gradient-threejs"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    color-scheme: dark;
+    --bg: #05060a;
+    --glass: rgba(7, 10, 20, 0.58);
+    --stroke: rgba(255, 255, 255, 0.12);
+    --text: #f5f5f0;
+    --muted: rgba(245, 245, 240, 0.6);
+    --accent: #f26b3a;
+    --accent-soft: rgba(242, 107, 58, 0.2);
+    --lime: #b6ff57;
+    --cyan: #3de0c3;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: "Space Grotesk", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  #webGLApp {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  .site-header {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    width: min(1100px, 92vw);
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+  
+  .nav-pill {
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2rem;
+    padding: 0.9rem 1.6rem;
+    border-radius: 999px;
+    background: rgba(8, 12, 22, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 20px 40px rgba(5, 6, 10, 0.45);
+    pointer-events: auto;
+  }
+  
+  .brand {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-family: "Syne", sans-serif;
+  }
+  
+  .mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  
+  .brand-title {
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+  }
+  
+  .brand-subtitle {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    font-size: 0.9rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .nav-links a {
+    color: var(--muted);
+    transition: color 0.3s ease;
+  }
+  
+  .nav-links a:hover {
+    color: var(--text);
+  }
+  
+  .nav-links .cta {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+  }
+  
+  .page {
+    position: relative;
+    z-index: 2;
+    padding: 6.5rem 5vw 6rem;
+  }
+  
+  .hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+    padding: 5rem 0 3rem;
+  }
+  
+  .hero-copy h1 {
+    font-family: "Syne", sans-serif;
+    font-size: clamp(2.6rem, 4vw, 4.5rem);
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+  }
+  
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 0.7rem;
+    color: var(--lime);
+    margin-bottom: 1rem;
+  }
+  
+  .lead {
+    color: var(--muted);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 540px;
+  }
+  
+  .muted {
+    color: var(--muted);
+  }
+  
+  .hero-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .primary,
+  .ghost {
+    border: none;
+    padding: 0.9rem 1.6rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .primary {
+    background: var(--accent);
+    color: #120d0b;
+    box-shadow: 0 20px 40px rgba(242, 107, 58, 0.3);
+  }
+  
+  .ghost {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text);
+  }
+  
+  .primary:hover,
+  .ghost:hover {
+    transform: translateY(-2px);
+  }
+  
+  .status {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  
+  .status .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 12px rgba(182, 255, 87, 0.8);
+  }
+  
+  .hero-panel {
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    padding: 2rem;
+    backdrop-filter: blur(16px);
+  }
+  
+  .panel-title {
+    font-family: "Syne", sans-serif;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  
+  .panel-grid {
+    display: grid;
+    gap: 1rem;
+  }
+  
+  .panel-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+  
+  .section {
+    margin-top: 5rem;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .section-header h2 {
+    font-family: "Syne", sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+  }
+  
+  .scheme-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .scheme-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .scheme-btn {
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  
+  .scheme-btn.active {
+    background: var(--accent-soft);
+    border-color: rgba(242, 107, 58, 0.5);
+    color: var(--accent);
+  }
+  
+  .projects {
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .project-card {
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    padding: 1.5rem;
+    display: grid;
+    gap: 1rem;
+    min-height: 220px;
+    backdrop-filter: blur(16px);
+  }
+  
+  .project-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  
+  .project-card h3 {
+    font-family: "Syne", sans-serif;
+    font-size: 1.3rem;
+  }
+  
+  .tag-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .tag {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  
+  .services {
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .services article {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 1.5rem;
+    min-height: 180px;
+  }
+  
+  .split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+  }
+  
+  .facts {
+    list-style: none;
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 0.6rem;
+    color: var(--muted);
+  }
+  
+  .timeline {
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    padding: 2rem;
+    display: grid;
+    gap: 1.2rem;
+    backdrop-filter: blur(16px);
+  }
+  
+  .timeline-item {
+    display: grid;
+    gap: 0.3rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .timeline-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .contact-card {
+    background: rgba(15, 18, 32, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    padding: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  
+  .contact-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .site-footer {
+    position: relative;
+    z-index: 2;
+    padding: 2rem 5vw 3rem;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.45),
+      rgba(255, 255, 255, 0.05) 55%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.2), inset 0 0 12px rgba(255, 255, 255, 0.2);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+      background 0.2s ease;
+  }
+  
+  .custom-cursor.is-active {
+    width: 64px;
+    height: 64px;
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4), inset 0 0 16px rgba(255, 255, 255, 0.35);
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.6),
+      rgba(242, 107, 58, 0.12) 55%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  }
+  
+  .custom-cursor.is-cta {
+    width: 72px;
+    height: 72px;
+    border-color: rgba(182, 255, 87, 0.8);
+    box-shadow: 0 0 36px rgba(182, 255, 87, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.35);
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(182, 255, 87, 0.7),
+      rgba(61, 224, 195, 0.2) 60%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  }
+  
+  @media (max-width: 900px) {
+    .nav-pill {
+      flex-direction: column;
+      align-items: flex-start;
+      border-radius: 28px;
+      gap: 1rem;
+    }
+  
+    .nav-links {
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      position: static;
+      transform: none;
+    }
+  
+    .contact-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .site-header {
+      top: 1rem;
+    }
+  
+    .hero {
+      padding-top: 3rem;
+    }
+  
+    .scheme-controls {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liquid Gradient Portfolio
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+    <header class="site-header">
+      <nav class="nav-pill">
+        <div class="brand">
+          <span class="mark">LG</span>
+          <div>
+            <p class="brand-title">Liquid Gradient</p>
+            <p class="brand-subtitle">Immersive product designer</p>
+          </div>
+        </div>
+        <div class="nav-links">
+          <a href="#projects">Projects</a>
+          <a href="#services">Services</a>
+          <a href="#about">About</a>
+          <a href="#contact" class="cta">Let’s talk</a>
+        </div>
+      </nav>
+    </header>
+  
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Portfolio 2026</p>
+          <h1>Liquid gradients, tactile products, and brave brands.</h1>
+          <p class="lead">
+            I build immersive digital experiences that feel alive. From motion-first product systems to
+            spatial brand worlds, my work blends strategy, 3D, and storytelling.
+          </p>
+          <div class="hero-actions">
+            <button class="primary" id="downloadBtn">Download deck</button>
+            <button class="ghost" id="playReelBtn">Play 60s reel</button>
+          </div>
+          <div class="status">
+            <span class="dot"></span>
+            <span>Available for select collaborations — Spring 2026</span>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="panel-title">Highlights</div>
+          <div class="panel-grid" id="highlightGrid"></div>
+        </div>
+      </section>
+  
+      <section class="section" id="projects">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Selected Work</p>
+            <h2>Liquid systems with measurable outcomes.</h2>
+          </div>
+          <div class="scheme-controls">
+            <span>Color Mood</span>
+            <div class="scheme-buttons">
+              <button class="scheme-btn active" data-scheme="0">Solar</button>
+              <button class="scheme-btn" data-scheme="1">Deep Sea</button>
+              <button class="scheme-btn" data-scheme="2">Citrus</button>
+              <button class="scheme-btn" data-scheme="3">Sunset</button>
+              <button class="scheme-btn" data-scheme="4">Nebula</button>
+            </div>
+          </div>
+        </div>
+        <div class="projects" id="projectGrid"></div>
+      </section>
+  
+      <section class="section" id="services">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Capabilities</p>
+            <h2>Full-stack creative for ambitious teams.</h2>
+          </div>
+        </div>
+        <div class="services">
+          <article>
+            <h3>Experience Design</h3>
+            <p>Product vision, interaction systems, and polished prototypes that secure buy-in.</p>
+          </article>
+          <article>
+            <h3>3D Brand Worlds</h3>
+            <p>WebGL visual systems, campaign visuals, and motion assets that stand out.</p>
+          </article>
+          <article>
+            <h3>Creative Direction</h3>
+            <p>Alignment workshops, tone of voice, and end-to-end launch narratives.</p>
+          </article>
+        </div>
+      </section>
+  
+      <section class="section split" id="about">
+        <div>
+          <p class="eyebrow">About</p>
+          <h2>Building for the senses.</h2>
+          <p>
+            I lead design sprints at the intersection of motion and product. My studio ships tactile interfaces
+            for fintech, wellness, and spatial tech startups.
+          </p>
+          <ul class="facts">
+            <li>12+ years across agencies and in-house teams</li>
+            <li>Featured in Awwwards, Mindsparkle, and Layers</li>
+            <li>Based in Los Angeles, working globally</li>
+          </ul>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+  
+      <section class="section" id="contact">
+        <div class="contact-card">
+          <div>
+            <p class="eyebrow">Let’s Collaborate</p>
+            <h2>Say hello and we’ll make something bold.</h2>
+          </div>
+          <div class="contact-actions">
+            <button class="primary">hello@liquidgradient.studio</button>
+            <button class="ghost">Schedule a 30-min call</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  
+    <footer class="site-footer">
+      <span>© 2026 Liquid Gradient Studio</span>
+      <span>Built with Three.js + custom shaders</span>
+    </footer>
+    <div class="custom-cursor" id="customCursor"></div>
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const highlights = [
+    {
+      title: "Aurora Wallet",
+      detail: "Redesigned onboarding lifted activation by 38%",
+      year: "2025",
+    },
+    {
+      title: "Nexa XR Studio",
+      detail: "WebGL showroom for wearable launch",
+      year: "2024",
+    },
+    {
+      title: "Pulse Health",
+      detail: "Motion system for a 12-country rollout",
+      year: "2023",
+    },
+  ];
+  
+  const projects = [
+    {
+      name: "Vessel Banking",
+      role: "Product system + 3D brand refresh",
+      year: "2026",
+      impact: "Reduced time-to-value from 10 to 4 days",
+      tags: ["Design System", "WebGL", "Fintech"],
+    },
+    {
+      name: "Lumen Mobility",
+      role: "Spatial UI for autonomous fleet ops",
+      year: "2025",
+      impact: "Live ops dashboard for 2,000+ vehicles",
+      tags: ["Interaction", "Data Viz", "Motion"],
+    },
+    {
+      name: "Glasshouse",
+      role: "Immersive e-commerce flagship",
+      year: "2024",
+      impact: "+62% engagement on hero modules",
+      tags: ["E-commerce", "3D", "Brand"],
+    },
+    {
+      name: "Aether Wellness",
+      role: "Ritual library + responsive motion",
+      year: "2024",
+      impact: "Expanded retention to 9.2 months",
+      tags: ["Mobile", "Wellness", "Animation"],
+    },
+  ];
+  
+  const timeline = [
+    {
+      title: "Studio Lead — Liquid Gradient",
+      time: "2022 → Present",
+      detail: "Built a distributed team shipping premium web experiences.",
+    },
+    {
+      title: "Principal Designer — Halo Labs",
+      time: "2018 → 2022",
+      detail: "Led motion-first design systems for global brands.",
+    },
+    {
+      title: "Senior UX Designer — Northwind",
+      time: "2013 → 2018",
+      detail: "Shipped cross-platform products for SaaS teams.",
+    },
+  ];
+  
+  const highlightGrid = document.getElementById("highlightGrid");
+  const projectGrid = document.getElementById("projectGrid");
+  const timelineGrid = document.getElementById("timeline");
+  
+  highlights.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "panel-card";
+    card.innerHTML = `
+      <p class="eyebrow">${item.year}</p>
+      <h4>${item.title}</h4>
+      <p class="muted">${item.detail}</p>
+    `;
+    highlightGrid.appendChild(card);
+  });
+  
+  projects.forEach((project) => {
+    const card = document.createElement("article");
+    card.className = "project-card";
+    card.innerHTML = `
+      <div class="project-meta">
+        <span>${project.role}</span>
+        <span>${project.year}</span>
+      </div>
+      <h3>${project.name}</h3>
+      <p class="muted">${project.impact}</p>
+      <div class="tag-list">
+        ${project.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
+      </div>
+    `;
+    projectGrid.appendChild(card);
+  });
+  
+  timeline.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "timeline-item";
+    card.innerHTML = `
+      <p class="eyebrow">${item.time}</p>
+      <h4>${item.title}</h4>
+      <p class="muted">${item.detail}</p>
+    `;
+    timelineGrid.appendChild(card);
+  });
+  
+  const downloadBtn = document.getElementById("downloadBtn");
+  const playReelBtn = document.getElementById("playReelBtn");
+  
+  downloadBtn.addEventListener("click", () => {
+    downloadBtn.textContent = "Deck sent to your inbox";
+    setTimeout(() => {
+      downloadBtn.textContent = "Download deck";
+    }, 2200);
+  });
+  
+  playReelBtn.addEventListener("click", () => {
+    playReelBtn.textContent = "Reel playing...";
+    setTimeout(() => {
+      playReelBtn.textContent = "Play 60s reel";
+    }, 2200);
+  });
+  
+  class TouchTexture {
+    constructor() {
+      this.size = 64;
+      this.width = this.size;
+      this.height = this.size;
+      this.maxAge = 64;
+      this.radius = 0.2 * this.size;
+      this.trail = [];
+      this.last = null;
+      this.initTexture();
+    }
+  
+    initTexture() {
+      this.canvas = document.createElement("canvas");
+      this.canvas.width = this.width;
+      this.canvas.height = this.height;
+      this.ctx = this.canvas.getContext("2d");
+      this.ctx.fillStyle = "black";
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.texture = new THREE.Texture(this.canvas);
+    }
+  
+    addTouch(point) {
+      let force = 0;
+      let vx = 0;
+      let vy = 0;
+      if (this.last) {
+        const dx = point.x - this.last.x;
+        const dy = point.y - this.last.y;
+        const dd = dx * dx + dy * dy;
+        const d = Math.sqrt(dd);
+        vx = dx / d || 0;
+        vy = dy / d || 0;
+        force = Math.min(dd * 20000, 1.5);
+      }
+      this.last = { x: point.x, y: point.y };
+      this.trail.push({ x: point.x, y: point.y, age: 0, force, vx, vy });
+    }
+  
+    update() {
+      this.clear();
+      for (let i = this.trail.length - 1; i >= 0; i--) {
+        const point = this.trail[i];
+        point.age++;
+        if (point.age > this.maxAge) {
+          this.trail.splice(i, 1);
+        } else {
+          this.drawPoint(point);
+        }
+      }
+      this.texture.needsUpdate = true;
+    }
+  
+    clear() {
+      this.ctx.fillStyle = "black";
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+  
+    drawPoint(point) {
+      const pos = {
+        x: point.x * this.width,
+        y: (1 - point.y) * this.height,
+      };
+  
+      const intensity = 1 - point.age / this.maxAge;
+      const radius = this.radius;
+      const color = `rgba(${(point.vx + 1) * 120}, ${(point.vy + 1) * 120}, ${intensity * 255}, ${intensity})`;
+  
+      this.ctx.beginPath();
+      this.ctx.fillStyle = color;
+      this.ctx.shadowBlur = radius * 1.2;
+      this.ctx.shadowColor = color;
+      this.ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+  }
+  
+  class GradientScene {
+    constructor() {
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.domElement.id = "webGLApp";
+      document.body.appendChild(this.renderer.domElement);
+  
+      this.scene = new THREE.Scene();
+      this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+      this.camera.position.z = 6;
+  
+      this.clock = new THREE.Clock();
+      this.touchTexture = new TouchTexture();
+      this.uniforms = {
+        uTime: { value: 0 },
+        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+        uTouch: { value: this.touchTexture.texture },
+        uColorA: { value: new THREE.Color("#f26b3a") },
+        uColorB: { value: new THREE.Color("#3de0c3") },
+        uColorC: { value: new THREE.Color("#0a1222") },
+      };
+  
+      this.colorSchemes = [
+        {
+          a: "#f26b3a",
+          b: "#3de0c3",
+          c: "#0a1222",
+        },
+        {
+          a: "#1d3b4f",
+          b: "#58ffd0",
+          c: "#05060a",
+        },
+        {
+          a: "#ffb347",
+          b: "#ffe66d",
+          c: "#0b1b16",
+        },
+        {
+          a: "#ffdf3a",
+          b: "#ff2d55",
+          c: "#1a0b12",
+        },
+        {
+          a: "#8b5bff",
+          b: "#57ff6b",
+          c: "#0a0e16",
+        },
+      ];
+  
+      this.initMesh();
+      this.bindEvents();
+      this.render();
+    }
+  
+    initMesh() {
+      const geometry = new THREE.PlaneGeometry(10, 6, 1, 1);
+      const material = new THREE.ShaderMaterial({
+        uniforms: this.uniforms,
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          precision highp float;
+          uniform float uTime;
+          uniform vec2 uResolution;
+          uniform vec2 uMouse;
+          uniform sampler2D uTouch;
+          uniform vec3 uColorA;
+          uniform vec3 uColorB;
+          uniform vec3 uColorC;
+          varying vec2 vUv;
+  
+          float noise(vec2 p) {
+            return sin(p.x) * sin(p.y);
+          }
+  
+          void main() {
+            vec2 uv = vUv;
+            vec2 st = uv * 2.0 - 1.0;
+            st.x *= uResolution.x / uResolution.y;
+  
+            vec4 touch = texture2D(uTouch, uv);
+            float ripple = (touch.r + touch.g) * 0.35;
+            uv += (touch.rg - 0.5) * 0.12;
+  
+            float t = uTime * 0.4;
+            float wave = sin(st.x * 1.8 + t) * 0.15 + cos(st.y * 2.2 - t) * 0.1;
+            float swirl = sin(length(st) * 2.4 - t * 1.3) * 0.2;
+  
+            float mask = smoothstep(0.9, 0.1, length(st));
+            vec3 color = mix(uColorC, uColorA, wave + 0.5);
+            color = mix(color, uColorB, swirl + 0.5);
+            color = mix(uColorC, color, mask + ripple);
+  
+            float grain = noise(uv * uResolution * 0.01 + uTime);
+            color += grain * 0.05;
+  
+            float luma = dot(color, vec3(0.299, 0.587, 0.114));
+            color = mix(vec3(luma), color, 1.2);
+  
+            gl_FragColor = vec4(color, 1.0);
+          }
+        `,
+      });
+  
+      const mesh = new THREE.Mesh(geometry, material);
+      this.scene.add(mesh);
+    }
+  
+    setScheme(index) {
+      const scheme = this.colorSchemes[index];
+      if (!scheme) return;
+      this.uniforms.uColorA.value.set(scheme.a);
+      this.uniforms.uColorB.value.set(scheme.b);
+      this.uniforms.uColorC.value.set(scheme.c);
+    }
+  
+    bindEvents() {
+      window.addEventListener("resize", () => this.onResize());
+      window.addEventListener("mousemove", (event) => this.onPointerMove(event));
+      window.addEventListener("touchmove", (event) => this.onTouchMove(event));
+    }
+  
+    onPointerMove(event) {
+      const x = event.clientX / window.innerWidth;
+      const y = 1 - event.clientY / window.innerHeight;
+      this.uniforms.uMouse.value.set(x, y);
+      this.touchTexture.addTouch({ x, y });
+    }
+  
+    onTouchMove(event) {
+      const touch = event.touches[0];
+      if (!touch) return;
+      this.onPointerMove({ clientX: touch.clientX, clientY: touch.clientY });
+    }
+  
+    onResize() {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+    }
+  
+    render() {
+      const delta = this.clock.getDelta();
+      this.uniforms.uTime.value += delta;
+      this.touchTexture.update();
+      this.renderer.render(this.scene, this.camera);
+      requestAnimationFrame(() => this.render());
+    }
+  }
+  
+  const gradientScene = new GradientScene();
+  
+  const schemeButtons = document.querySelectorAll(".scheme-btn");
+  schemeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      schemeButtons.forEach((button) => button.classList.remove("active"));
+      btn.classList.add("active");
+      gradientScene.setScheme(parseInt(btn.dataset.scheme, 10));
+    });
+  });
+  
+  const cursor = document.getElementById("customCursor");
+  let cursorX = window.innerWidth / 2;
+  let cursorY = window.innerHeight / 2;
+  let targetX = cursorX;
+  let targetY = cursorY;
+  
+  function animateCursor() {
+    cursorX += (targetX - cursorX) * 0.2;
+    cursorY += (targetY - cursorY) * 0.2;
+    cursor.style.left = `${cursorX}px`;
+    cursor.style.top = `${cursorY}px`;
+    requestAnimationFrame(animateCursor);
+  }
+  
+  window.addEventListener("mousemove", (event) => {
+    targetX = event.clientX;
+    targetY = event.clientY;
+  });
+  
+  window.addEventListener("touchmove", (event) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    targetX = touch.clientX;
+    targetY = touch.clientY;
+  });
+  
+  document.querySelectorAll("button, a").forEach((el) => {
+    el.addEventListener("mouseenter", () => cursor.classList.add("is-active"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("is-active"));
+  });
+  
+  document.querySelectorAll(".primary, .cta").forEach((el) => {
+    el.addEventListener("mouseenter", () => cursor.classList.add("is-cta"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("is-cta"));
+  });
+  
+  animateCursor();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    color-scheme: dark;
+    --bg: #05060a;
+    --glass: rgba(7, 10, 20, 0.58);
+    --stroke: rgba(255, 255, 255, 0.12);
+    --text: #f5f5f0;
+    --muted: rgba(245, 245, 240, 0.6);
+    --accent: #f26b3a;
+    --accent-soft: rgba(242, 107, 58, 0.2);
+    --lime: #b6ff57;
+    --cyan: #3de0c3;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: "Space Grotesk", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  #webGLApp {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  .site-header {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    width: min(1100px, 92vw);
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+  
+  .nav-pill {
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2rem;
+    padding: 0.9rem 1.6rem;
+    border-radius: 999px;
+    background: rgba(8, 12, 22, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 20px 40px rgba(5, 6, 10, 0.45);
+    pointer-events: auto;
+  }
+  
+  .brand {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-family: "Syne", sans-serif;
+  }
+  
+  .mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  
+  .brand-title {
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+  }
+  
+  .brand-subtitle {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    font-size: 0.9rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .nav-links a {
+    color: var(--muted);
+    transition: color 0.3s ease;
+  }
+  
+  .nav-links a:hover {
+    color: var(--text);
+  }
+  
+  .nav-links .cta {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+  }
+  
+  .page {
+    position: relative;
+    z-index: 2;
+    padding: 6.5rem 5vw 6rem;
+  }
+  
+  .hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+    padding: 5rem 0 3rem;
+  }
+  
+  .hero-copy h1 {
+    font-family: "Syne", sans-serif;
+    font-size: clamp(2.6rem, 4vw, 4.5rem);
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+  }
+  
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 0.7rem;
+    color: var(--lime);
+    margin-bottom: 1rem;
+  }
+  
+  .lead {
+    color: var(--muted);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 540px;
+  }
+  
+  .muted {
+    color: var(--muted);
+  }
+  
+  .hero-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .primary,
+  .ghost {
+    border: none;
+    padding: 0.9rem 1.6rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .primary {
+    background: var(--accent);
+    color: #120d0b;
+    box-shadow: 0 20px 40px rgba(242, 107, 58, 0.3);
+  }
+  
+  .ghost {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text);
+  }
+  
+  .primary:hover,
+  .ghost:hover {
+    transform: translateY(-2px);
+  }
+  
+  .status {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  
+  .status .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 12px rgba(182, 255, 87, 0.8);
+  }
+  
+  .hero-panel {
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    padding: 2rem;
+    backdrop-filter: blur(16px);
+  }
+  
+  .panel-title {
+    font-family: "Syne", sans-serif;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  
+  .panel-grid {
+    display: grid;
+    gap: 1rem;
+  }
+  
+  .panel-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+  
+  .section {
+    margin-top: 5rem;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .section-header h2 {
+    font-family: "Syne", sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+  }
+  
+  .scheme-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .scheme-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .scheme-btn {
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  
+  .scheme-btn.active {
+    background: var(--accent-soft);
+    border-color: rgba(242, 107, 58, 0.5);
+    color: var(--accent);
+  }
+  
+  .projects {
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .project-card {
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    padding: 1.5rem;
+    display: grid;
+    gap: 1rem;
+    min-height: 220px;
+    backdrop-filter: blur(16px);
+  }
+  
+  .project-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  
+  .project-card h3 {
+    font-family: "Syne", sans-serif;
+    font-size: 1.3rem;
+  }
+  
+  .tag-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .tag {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  
+  .services {
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .services article {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 1.5rem;
+    min-height: 180px;
+  }
+  
+  .split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+  }
+  
+  .facts {
+    list-style: none;
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 0.6rem;
+    color: var(--muted);
+  }
+  
+  .timeline {
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    padding: 2rem;
+    display: grid;
+    gap: 1.2rem;
+    backdrop-filter: blur(16px);
+  }
+  
+  .timeline-item {
+    display: grid;
+    gap: 0.3rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .timeline-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .contact-card {
+    background: rgba(15, 18, 32, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    padding: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  
+  .contact-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .site-footer {
+    position: relative;
+    z-index: 2;
+    padding: 2rem 5vw 3rem;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  
+  .custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.45),
+      rgba(255, 255, 255, 0.05) 55%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.2), inset 0 0 12px rgba(255, 255, 255, 0.2);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+      background 0.2s ease;
+  }
+  
+  .custom-cursor.is-active {
+    width: 64px;
+    height: 64px;
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4), inset 0 0 16px rgba(255, 255, 255, 0.35);
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.6),
+      rgba(242, 107, 58, 0.12) 55%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  }
+  
+  .custom-cursor.is-cta {
+    width: 72px;
+    height: 72px;
+    border-color: rgba(182, 255, 87, 0.8);
+    box-shadow: 0 0 36px rgba(182, 255, 87, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.35);
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(182, 255, 87, 0.7),
+      rgba(61, 224, 195, 0.2) 60%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  }
+  
+  @media (max-width: 900px) {
+    .nav-pill {
+      flex-direction: column;
+      align-items: flex-start;
+      border-radius: 28px;
+      gap: 1rem;
+    }
+  
+    .nav-links {
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      position: static;
+      transform: none;
+    }
+  
+    .contact-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .site-header {
+      top: 1rem;
+    }
+  
+    .hero {
+      padding-top: 3rem;
+    }
+  
+    .scheme-controls {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liquid Gradient Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+    <header class="site-header">
+      <nav class="nav-pill">
+        <div class="brand">
+          <span class="mark">LG</span>
+          <div>
+            <p class="brand-title">Liquid Gradient</p>
+            <p class="brand-subtitle">Immersive product designer</p>
+          </div>
+        </div>
+        <div class="nav-links">
+          <a href="#projects">Projects</a>
+          <a href="#services">Services</a>
+          <a href="#about">About</a>
+          <a href="#contact" class="cta">Let’s talk</a>
+        </div>
+      </nav>
+    </header>
+  
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Portfolio 2026</p>
+          <h1>Liquid gradients, tactile products, and brave brands.</h1>
+          <p class="lead">
+            I build immersive digital experiences that feel alive. From motion-first product systems to
+            spatial brand worlds, my work blends strategy, 3D, and storytelling.
+          </p>
+          <div class="hero-actions">
+            <button class="primary" id="downloadBtn">Download deck</button>
+            <button class="ghost" id="playReelBtn">Play 60s reel</button>
+          </div>
+          <div class="status">
+            <span class="dot"></span>
+            <span>Available for select collaborations — Spring 2026</span>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="panel-title">Highlights</div>
+          <div class="panel-grid" id="highlightGrid"></div>
+        </div>
+      </section>
+  
+      <section class="section" id="projects">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Selected Work</p>
+            <h2>Liquid systems with measurable outcomes.</h2>
+          </div>
+          <div class="scheme-controls">
+            <span>Color Mood</span>
+            <div class="scheme-buttons">
+              <button class="scheme-btn active" data-scheme="0">Solar</button>
+              <button class="scheme-btn" data-scheme="1">Deep Sea</button>
+              <button class="scheme-btn" data-scheme="2">Citrus</button>
+              <button class="scheme-btn" data-scheme="3">Sunset</button>
+              <button class="scheme-btn" data-scheme="4">Nebula</button>
+            </div>
+          </div>
+        </div>
+        <div class="projects" id="projectGrid"></div>
+      </section>
+  
+      <section class="section" id="services">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Capabilities</p>
+            <h2>Full-stack creative for ambitious teams.</h2>
+          </div>
+        </div>
+        <div class="services">
+          <article>
+            <h3>Experience Design</h3>
+            <p>Product vision, interaction systems, and polished prototypes that secure buy-in.</p>
+          </article>
+          <article>
+            <h3>3D Brand Worlds</h3>
+            <p>WebGL visual systems, campaign visuals, and motion assets that stand out.</p>
+          </article>
+          <article>
+            <h3>Creative Direction</h3>
+            <p>Alignment workshops, tone of voice, and end-to-end launch narratives.</p>
+          </article>
+        </div>
+      </section>
+  
+      <section class="section split" id="about">
+        <div>
+          <p class="eyebrow">About</p>
+          <h2>Building for the senses.</h2>
+          <p>
+            I lead design sprints at the intersection of motion and product. My studio ships tactile interfaces
+            for fintech, wellness, and spatial tech startups.
+          </p>
+          <ul class="facts">
+            <li>12+ years across agencies and in-house teams</li>
+            <li>Featured in Awwwards, Mindsparkle, and Layers</li>
+            <li>Based in Los Angeles, working globally</li>
+          </ul>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+  
+      <section class="section" id="contact">
+        <div class="contact-card">
+          <div>
+            <p class="eyebrow">Let’s Collaborate</p>
+            <h2>Say hello and we’ll make something bold.</h2>
+          </div>
+          <div class="contact-actions">
+            <button class="primary">hello@liquidgradient.studio</button>
+            <button class="ghost">Schedule a 30-min call</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  
+    <footer class="site-footer">
+      <span>© 2026 Liquid Gradient Studio</span>
+      <span>Built with Three.js + custom shaders</span>
+    </footer>
+    <div class="custom-cursor" id="customCursor"></div>
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const highlights = [
+    {
+      title: "Aurora Wallet",
+      detail: "Redesigned onboarding lifted activation by 38%",
+      year: "2025",
+    },
+    {
+      title: "Nexa XR Studio",
+      detail: "WebGL showroom for wearable launch",
+      year: "2024",
+    },
+    {
+      title: "Pulse Health",
+      detail: "Motion system for a 12-country rollout",
+      year: "2023",
+    },
+  ];
+  
+  const projects = [
+    {
+      name: "Vessel Banking",
+      role: "Product system + 3D brand refresh",
+      year: "2026",
+      impact: "Reduced time-to-value from 10 to 4 days",
+      tags: ["Design System", "WebGL", "Fintech"],
+    },
+    {
+      name: "Lumen Mobility",
+      role: "Spatial UI for autonomous fleet ops",
+      year: "2025",
+      impact: "Live ops dashboard for 2,000+ vehicles",
+      tags: ["Interaction", "Data Viz", "Motion"],
+    },
+    {
+      name: "Glasshouse",
+      role: "Immersive e-commerce flagship",
+      year: "2024",
+      impact: "+62% engagement on hero modules",
+      tags: ["E-commerce", "3D", "Brand"],
+    },
+    {
+      name: "Aether Wellness",
+      role: "Ritual library + responsive motion",
+      year: "2024",
+      impact: "Expanded retention to 9.2 months",
+      tags: ["Mobile", "Wellness", "Animation"],
+    },
+  ];
+  
+  const timeline = [
+    {
+      title: "Studio Lead — Liquid Gradient",
+      time: "2022 → Present",
+      detail: "Built a distributed team shipping premium web experiences.",
+    },
+    {
+      title: "Principal Designer — Halo Labs",
+      time: "2018 → 2022",
+      detail: "Led motion-first design systems for global brands.",
+    },
+    {
+      title: "Senior UX Designer — Northwind",
+      time: "2013 → 2018",
+      detail: "Shipped cross-platform products for SaaS teams.",
+    },
+  ];
+  
+  const highlightGrid = document.getElementById("highlightGrid");
+  const projectGrid = document.getElementById("projectGrid");
+  const timelineGrid = document.getElementById("timeline");
+  
+  highlights.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "panel-card";
+    card.innerHTML = `
+      <p class="eyebrow">${item.year}</p>
+      <h4>${item.title}</h4>
+      <p class="muted">${item.detail}</p>
+    `;
+    highlightGrid.appendChild(card);
+  });
+  
+  projects.forEach((project) => {
+    const card = document.createElement("article");
+    card.className = "project-card";
+    card.innerHTML = `
+      <div class="project-meta">
+        <span>${project.role}</span>
+        <span>${project.year}</span>
+      </div>
+      <h3>${project.name}</h3>
+      <p class="muted">${project.impact}</p>
+      <div class="tag-list">
+        ${project.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
+      </div>
+    `;
+    projectGrid.appendChild(card);
+  });
+  
+  timeline.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "timeline-item";
+    card.innerHTML = `
+      <p class="eyebrow">${item.time}</p>
+      <h4>${item.title}</h4>
+      <p class="muted">${item.detail}</p>
+    `;
+    timelineGrid.appendChild(card);
+  });
+  
+  const downloadBtn = document.getElementById("downloadBtn");
+  const playReelBtn = document.getElementById("playReelBtn");
+  
+  downloadBtn.addEventListener("click", () => {
+    downloadBtn.textContent = "Deck sent to your inbox";
+    setTimeout(() => {
+      downloadBtn.textContent = "Download deck";
+    }, 2200);
+  });
+  
+  playReelBtn.addEventListener("click", () => {
+    playReelBtn.textContent = "Reel playing...";
+    setTimeout(() => {
+      playReelBtn.textContent = "Play 60s reel";
+    }, 2200);
+  });
+  
+  class TouchTexture {
+    constructor() {
+      this.size = 64;
+      this.width = this.size;
+      this.height = this.size;
+      this.maxAge = 64;
+      this.radius = 0.2 * this.size;
+      this.trail = [];
+      this.last = null;
+      this.initTexture();
+    }
+  
+    initTexture() {
+      this.canvas = document.createElement("canvas");
+      this.canvas.width = this.width;
+      this.canvas.height = this.height;
+      this.ctx = this.canvas.getContext("2d");
+      this.ctx.fillStyle = "black";
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.texture = new THREE.Texture(this.canvas);
+    }
+  
+    addTouch(point) {
+      let force = 0;
+      let vx = 0;
+      let vy = 0;
+      if (this.last) {
+        const dx = point.x - this.last.x;
+        const dy = point.y - this.last.y;
+        const dd = dx * dx + dy * dy;
+        const d = Math.sqrt(dd);
+        vx = dx / d || 0;
+        vy = dy / d || 0;
+        force = Math.min(dd * 20000, 1.5);
+      }
+      this.last = { x: point.x, y: point.y };
+      this.trail.push({ x: point.x, y: point.y, age: 0, force, vx, vy });
+    }
+  
+    update() {
+      this.clear();
+      for (let i = this.trail.length - 1; i >= 0; i--) {
+        const point = this.trail[i];
+        point.age++;
+        if (point.age > this.maxAge) {
+          this.trail.splice(i, 1);
+        } else {
+          this.drawPoint(point);
+        }
+      }
+      this.texture.needsUpdate = true;
+    }
+  
+    clear() {
+      this.ctx.fillStyle = "black";
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+  
+    drawPoint(point) {
+      const pos = {
+        x: point.x * this.width,
+        y: (1 - point.y) * this.height,
+      };
+  
+      const intensity = 1 - point.age / this.maxAge;
+      const radius = this.radius;
+      const color = `rgba(${(point.vx + 1) * 120}, ${(point.vy + 1) * 120}, ${intensity * 255}, ${intensity})`;
+  
+      this.ctx.beginPath();
+      this.ctx.fillStyle = color;
+      this.ctx.shadowBlur = radius * 1.2;
+      this.ctx.shadowColor = color;
+      this.ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+  }
+  
+  class GradientScene {
+    constructor() {
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.domElement.id = "webGLApp";
+      document.body.appendChild(this.renderer.domElement);
+  
+      this.scene = new THREE.Scene();
+      this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+      this.camera.position.z = 6;
+  
+      this.clock = new THREE.Clock();
+      this.touchTexture = new TouchTexture();
+      this.uniforms = {
+        uTime: { value: 0 },
+        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+        uTouch: { value: this.touchTexture.texture },
+        uColorA: { value: new THREE.Color("#f26b3a") },
+        uColorB: { value: new THREE.Color("#3de0c3") },
+        uColorC: { value: new THREE.Color("#0a1222") },
+      };
+  
+      this.colorSchemes = [
+        {
+          a: "#f26b3a",
+          b: "#3de0c3",
+          c: "#0a1222",
+        },
+        {
+          a: "#1d3b4f",
+          b: "#58ffd0",
+          c: "#05060a",
+        },
+        {
+          a: "#ffb347",
+          b: "#ffe66d",
+          c: "#0b1b16",
+        },
+        {
+          a: "#ffdf3a",
+          b: "#ff2d55",
+          c: "#1a0b12",
+        },
+        {
+          a: "#8b5bff",
+          b: "#57ff6b",
+          c: "#0a0e16",
+        },
+      ];
+  
+      this.initMesh();
+      this.bindEvents();
+      this.render();
+    }
+  
+    initMesh() {
+      const geometry = new THREE.PlaneGeometry(10, 6, 1, 1);
+      const material = new THREE.ShaderMaterial({
+        uniforms: this.uniforms,
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          precision highp float;
+          uniform float uTime;
+          uniform vec2 uResolution;
+          uniform vec2 uMouse;
+          uniform sampler2D uTouch;
+          uniform vec3 uColorA;
+          uniform vec3 uColorB;
+          uniform vec3 uColorC;
+          varying vec2 vUv;
+  
+          float noise(vec2 p) {
+            return sin(p.x) * sin(p.y);
+          }
+  
+          void main() {
+            vec2 uv = vUv;
+            vec2 st = uv * 2.0 - 1.0;
+            st.x *= uResolution.x / uResolution.y;
+  
+            vec4 touch = texture2D(uTouch, uv);
+            float ripple = (touch.r + touch.g) * 0.35;
+            uv += (touch.rg - 0.5) * 0.12;
+  
+            float t = uTime * 0.4;
+            float wave = sin(st.x * 1.8 + t) * 0.15 + cos(st.y * 2.2 - t) * 0.1;
+            float swirl = sin(length(st) * 2.4 - t * 1.3) * 0.2;
+  
+            float mask = smoothstep(0.9, 0.1, length(st));
+            vec3 color = mix(uColorC, uColorA, wave + 0.5);
+            color = mix(color, uColorB, swirl + 0.5);
+            color = mix(uColorC, color, mask + ripple);
+  
+            float grain = noise(uv * uResolution * 0.01 + uTime);
+            color += grain * 0.05;
+  
+            float luma = dot(color, vec3(0.299, 0.587, 0.114));
+            color = mix(vec3(luma), color, 1.2);
+  
+            gl_FragColor = vec4(color, 1.0);
+          }
+        `,
+      });
+  
+      const mesh = new THREE.Mesh(geometry, material);
+      this.scene.add(mesh);
+    }
+  
+    setScheme(index) {
+      const scheme = this.colorSchemes[index];
+      if (!scheme) return;
+      this.uniforms.uColorA.value.set(scheme.a);
+      this.uniforms.uColorB.value.set(scheme.b);
+      this.uniforms.uColorC.value.set(scheme.c);
+    }
+  
+    bindEvents() {
+      window.addEventListener("resize", () => this.onResize());
+      window.addEventListener("mousemove", (event) => this.onPointerMove(event));
+      window.addEventListener("touchmove", (event) => this.onTouchMove(event));
+    }
+  
+    onPointerMove(event) {
+      const x = event.clientX / window.innerWidth;
+      const y = 1 - event.clientY / window.innerHeight;
+      this.uniforms.uMouse.value.set(x, y);
+      this.touchTexture.addTouch({ x, y });
+    }
+  
+    onTouchMove(event) {
+      const touch = event.touches[0];
+      if (!touch) return;
+      this.onPointerMove({ clientX: touch.clientX, clientY: touch.clientY });
+    }
+  
+    onResize() {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+    }
+  
+    render() {
+      const delta = this.clock.getDelta();
+      this.uniforms.uTime.value += delta;
+      this.touchTexture.update();
+      this.renderer.render(this.scene, this.camera);
+      requestAnimationFrame(() => this.render());
+    }
+  }
+  
+  const gradientScene = new GradientScene();
+  
+  const schemeButtons = document.querySelectorAll(".scheme-btn");
+  schemeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      schemeButtons.forEach((button) => button.classList.remove("active"));
+      btn.classList.add("active");
+      gradientScene.setScheme(parseInt(btn.dataset.scheme, 10));
+    });
+  });
+  
+  const cursor = document.getElementById("customCursor");
+  let cursorX = window.innerWidth / 2;
+  let cursorY = window.innerHeight / 2;
+  let targetX = cursorX;
+  let targetY = cursorY;
+  
+  function animateCursor() {
+    cursorX += (targetX - cursorX) * 0.2;
+    cursorY += (targetY - cursorY) * 0.2;
+    cursor.style.left = `${cursorX}px`;
+    cursor.style.top = `${cursorY}px`;
+    requestAnimationFrame(animateCursor);
+  }
+  
+  window.addEventListener("mousemove", (event) => {
+    targetX = event.clientX;
+    targetY = event.clientY;
+  });
+  
+  window.addEventListener("touchmove", (event) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    targetX = touch.clientX;
+    targetY = touch.clientY;
+  });
+  
+  document.querySelectorAll("button, a").forEach((el) => {
+    el.addEventListener("mouseenter", () => cursor.classList.add("is-active"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("is-active"));
+  });
+  
+  document.querySelectorAll(".primary, .cta").forEach((el) => {
+    el.addEventListener("mouseenter", () => cursor.classList.add("is-cta"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("is-cta"));
+  });
+  
+  animateCursor();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

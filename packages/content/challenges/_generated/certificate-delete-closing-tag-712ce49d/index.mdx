@@ -1,0 +1,768 @@
+---
+slug: "certificate-delete-closing-tag-712ce49d"
+topic: "certificate"
+title: "Fix the broken HTML structure in Certificate of Completion"
+type: "fix"
+difficulty: 2
+resourceSlug: "certificate"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 0 48px;
+  }
+  
+  .screen-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-top: 20px;
+    max-width: 794px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .screen-bar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+  }
+  .print-btn {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  
+  .cert-wrap {
+    padding: 0 16px;
+  }
+  
+  .cert {
+    width: 100%;
+    max-width: 794px;
+    background: #fffdf5;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  }
+  
+  .cert-border-outer {
+    padding: 20px;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 6px,
+        rgba(180, 140, 60, 0.08) 6px,
+        rgba(180, 140, 60, 0.08) 7px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 6px,
+        rgba(180, 140, 60, 0.08) 6px,
+        rgba(180, 140, 60, 0.08) 7px
+      );
+    border: 4px solid #c9a84c;
+  }
+  
+  .cert-border-inner {
+    border: 1.5px solid rgba(201, 168, 76, 0.4);
+    padding: 36px 52px 32px;
+    text-align: center;
+  }
+  
+  .cert-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  
+  .cert-logo {
+    font-size: 15px;
+    font-weight: 700;
+    color: #c9a84c;
+    letter-spacing: 0.06em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  
+  .cert-stars {
+    font-size: 14px;
+    color: #c9a84c;
+    letter-spacing: 4px;
+  }
+  
+  .cert-presents {
+    font-size: 14px;
+    color: #7c6835;
+    font-style: italic;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+  
+  .cert-name {
+    font-size: 38px;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+    font-style: italic;
+  }
+  
+  .cert-body-text {
+    font-size: 13px;
+    color: #7c6835;
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-style: normal;
+  }
+  
+  .cert-course {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 12px;
+    letter-spacing: 0.01em;
+  }
+  
+  .cert-sub {
+    font-size: 12px;
+    color: #9c8650;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    font-style: italic;
+  }
+  
+  .cert-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #c9a84c, transparent);
+    margin: 0 auto 28px;
+    max-width: 400px;
+  }
+  
+  .cert-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .cert-sig {
+    text-align: center;
+    flex: 1;
+  }
+  .cert-sig-line {
+    width: 100%;
+    max-width: 160px;
+    height: 1px;
+    background: #c9a84c;
+    margin: 0 auto 8px;
+  }
+  .cert-sig-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2d2020;
+    margin-bottom: 2px;
+  }
+  .cert-sig-role {
+    font-size: 11px;
+    color: #9c8650;
+    font-style: italic;
+  }
+  
+  /* Seal */
+  .cert-seal {
+    flex-shrink: 0;
+  }
+  .cert-seal-ring {
+    width: 72px;
+    height: 72px;
+    border: 3px solid #c9a84c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .cert-seal-ring::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(201, 168, 76, 0.4);
+    border-radius: 50%;
+  }
+  .cert-seal-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .cert-seal-star {
+    font-size: 18px;
+    color: #c9a84c;
+  }
+  .cert-seal-text {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #c9a84c;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-style: normal;
+  }
+  
+  .cert-id {
+    font-size: 10px;
+    color: #c9c4b0;
+    letter-spacing: 0.06em;
+    font-family: Menlo, monospace;
+  }
+  
+  @media print {
+    .screen-bar {
+      display: none !important;
+    }
+    body {
+      background: #fff;
+      padding: 0;
+    }
+    .cert {
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .cert-wrap {
+      padding: 0;
+    }
+    @page {
+      margin: 0;
+      size: A4 landscape;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate of Completion
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="cert-wrap">
+    <div class="cert">
+      <div class="cert-border-outer">
+        <div class="cert-border-inner">
+  
+          <div class="cert-top">
+            <div class="cert-logo">✦ Acme Academy</div>
+            <div class="cert-stars">★ ★ ★</div>
+          </div>
+  
+          <div class="cert-presents">This certifies that</div>
+          <h1 class="cert-name">Alexandra Rivera</h1>
+          <div class="cert-body-text">has successfully completed the course</div>
+          <h2 class="cert-course">Advanced React & TypeScript</h2>
+          <div class="cert-sub">A comprehensive 40-hour program covering advanced patterns,<br>performance optimization, and production-grade architecture.</div>
+  
+          <div class="cert-divider"></div>
+  
+          <div class="cert-footer">
+            <div class="cert-sig">
+              <div class="cert-sig-line"></div>
+              <div class="cert-sig-name">Dr. Sarah Chen</div>
+              <div class="cert-sig-role">Program Director</div>
+            </div>
+            <div class="cert-seal">
+              <div class="cert-seal-ring">
+                <div class="cert-seal-inner">
+                  <span class="cert-seal-star">★</span>
+                  <span class="cert-seal-text">VERIFIED</span>
+                </div>
+              </div>
+            </div>
+            <div class="cert-sig">
+              <div class="cert-sig-line"></div>
+              <div class="cert-sig-name">March 7, 2026</div>
+              <div class="cert-sig-role">Date of Completion</div>
+            </div>
+          </div>
+  
+          <div class="cert-id">Certificate ID: ACME-2026-0042-ARV</div>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="screen-bar">
+    <span class="screen-bar-title">Certificate Preview</span>
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+  </div>
+  <script src="./script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    const printBtn = document.querySelector(".print-btn");
+    if (!printBtn) return;
+  
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "\u2B07 Download HTML";
+    dlBtn.className = "print-btn";
+    dlBtn.style.cssText = "background:#fff;color:#4f46e5;border:1.5px solid #c7d2fe;margin-left:8px;";
+    printBtn.after(dlBtn);
+  
+    dlBtn.addEventListener("click", function () {
+      const styles = Array.from(document.querySelectorAll("style"))
+        .map(function (s) {
+          return s.textContent;
+        })
+        .join("\n");
+  
+      const bodyClone = document.body.cloneNode(true);
+      bodyClone.querySelector(".screen-bar")?.remove();
+  
+      const html = [
+        "<!DOCTYPE html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="UTF-8">',
+        "<title>Certificate of Completion - Alexandra Rivera</title>",
+        "<style>",
+        styles,
+        ".screen-bar{display:none!important;}",
+        "</style>",
+        "</head>",
+        "<body>",
+        bodyClone.innerHTML.trim(),
+        "</body>",
+        "</html>",
+      ].join("\n");
+  
+      const blob = new Blob([html], { type: "text/html" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "certificate-alexandra-rivera.html";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  
+    document.addEventListener("keydown", function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "p") {
+        // browser default print
+      }
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 0 48px;
+  }
+  
+  .screen-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-top: 20px;
+    max-width: 794px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .screen-bar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+  }
+  .print-btn {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  
+  .cert-wrap {
+    padding: 0 16px;
+  }
+  
+  .cert {
+    width: 100%;
+    max-width: 794px;
+    background: #fffdf5;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  }
+  
+  .cert-border-outer {
+    padding: 20px;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 6px,
+        rgba(180, 140, 60, 0.08) 6px,
+        rgba(180, 140, 60, 0.08) 7px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 6px,
+        rgba(180, 140, 60, 0.08) 6px,
+        rgba(180, 140, 60, 0.08) 7px
+      );
+    border: 4px solid #c9a84c;
+  }
+  
+  .cert-border-inner {
+    border: 1.5px solid rgba(201, 168, 76, 0.4);
+    padding: 36px 52px 32px;
+    text-align: center;
+  }
+  
+  .cert-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  
+  .cert-logo {
+    font-size: 15px;
+    font-weight: 700;
+    color: #c9a84c;
+    letter-spacing: 0.06em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  
+  .cert-stars {
+    font-size: 14px;
+    color: #c9a84c;
+    letter-spacing: 4px;
+  }
+  
+  .cert-presents {
+    font-size: 14px;
+    color: #7c6835;
+    font-style: italic;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+  
+  .cert-name {
+    font-size: 38px;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+    font-style: italic;
+  }
+  
+  .cert-body-text {
+    font-size: 13px;
+    color: #7c6835;
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-style: normal;
+  }
+  
+  .cert-course {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 12px;
+    letter-spacing: 0.01em;
+  }
+  
+  .cert-sub {
+    font-size: 12px;
+    color: #9c8650;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    font-style: italic;
+  }
+  
+  .cert-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #c9a84c, transparent);
+    margin: 0 auto 28px;
+    max-width: 400px;
+  }
+  
+  .cert-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .cert-sig {
+    text-align: center;
+    flex: 1;
+  }
+  .cert-sig-line {
+    width: 100%;
+    max-width: 160px;
+    height: 1px;
+    background: #c9a84c;
+    margin: 0 auto 8px;
+  }
+  .cert-sig-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2d2020;
+    margin-bottom: 2px;
+  }
+  .cert-sig-role {
+    font-size: 11px;
+    color: #9c8650;
+    font-style: italic;
+  }
+  
+  /* Seal */
+  .cert-seal {
+    flex-shrink: 0;
+  }
+  .cert-seal-ring {
+    width: 72px;
+    height: 72px;
+    border: 3px solid #c9a84c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .cert-seal-ring::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(201, 168, 76, 0.4);
+    border-radius: 50%;
+  }
+  .cert-seal-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .cert-seal-star {
+    font-size: 18px;
+    color: #c9a84c;
+  }
+  .cert-seal-text {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #c9a84c;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-style: normal;
+  }
+  
+  .cert-id {
+    font-size: 10px;
+    color: #c9c4b0;
+    letter-spacing: 0.06em;
+    font-family: Menlo, monospace;
+  }
+  
+  @media print {
+    .screen-bar {
+      display: none !important;
+    }
+    body {
+      background: #fff;
+      padding: 0;
+    }
+    .cert {
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .cert-wrap {
+      padding: 0;
+    }
+    @page {
+      margin: 0;
+      size: A4 landscape;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate of Completion</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="cert-wrap">
+    <div class="cert">
+      <div class="cert-border-outer">
+        <div class="cert-border-inner">
+  
+          <div class="cert-top">
+            <div class="cert-logo">✦ Acme Academy</div>
+            <div class="cert-stars">★ ★ ★</div>
+          </div>
+  
+          <div class="cert-presents">This certifies that</div>
+          <h1 class="cert-name">Alexandra Rivera</h1>
+          <div class="cert-body-text">has successfully completed the course</div>
+          <h2 class="cert-course">Advanced React & TypeScript</h2>
+          <div class="cert-sub">A comprehensive 40-hour program covering advanced patterns,<br>performance optimization, and production-grade architecture.</div>
+  
+          <div class="cert-divider"></div>
+  
+          <div class="cert-footer">
+            <div class="cert-sig">
+              <div class="cert-sig-line"></div>
+              <div class="cert-sig-name">Dr. Sarah Chen</div>
+              <div class="cert-sig-role">Program Director</div>
+            </div>
+            <div class="cert-seal">
+              <div class="cert-seal-ring">
+                <div class="cert-seal-inner">
+                  <span class="cert-seal-star">★</span>
+                  <span class="cert-seal-text">VERIFIED</span>
+                </div>
+              </div>
+            </div>
+            <div class="cert-sig">
+              <div class="cert-sig-line"></div>
+              <div class="cert-sig-name">March 7, 2026</div>
+              <div class="cert-sig-role">Date of Completion</div>
+            </div>
+          </div>
+  
+          <div class="cert-id">Certificate ID: ACME-2026-0042-ARV</div>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="screen-bar">
+    <span class="screen-bar-title">Certificate Preview</span>
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+  </div>
+  <script src="./script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    const printBtn = document.querySelector(".print-btn");
+    if (!printBtn) return;
+  
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "\u2B07 Download HTML";
+    dlBtn.className = "print-btn";
+    dlBtn.style.cssText = "background:#fff;color:#4f46e5;border:1.5px solid #c7d2fe;margin-left:8px;";
+    printBtn.after(dlBtn);
+  
+    dlBtn.addEventListener("click", function () {
+      const styles = Array.from(document.querySelectorAll("style"))
+        .map(function (s) {
+          return s.textContent;
+        })
+        .join("\n");
+  
+      const bodyClone = document.body.cloneNode(true);
+      bodyClone.querySelector(".screen-bar")?.remove();
+  
+      const html = [
+        "<!DOCTYPE html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="UTF-8">',
+        "<title>Certificate of Completion - Alexandra Rivera</title>",
+        "<style>",
+        styles,
+        ".screen-bar{display:none!important;}",
+        "</style>",
+        "</head>",
+        "<body>",
+        bodyClone.innerHTML.trim(),
+        "</body>",
+        "</html>",
+      ].join("\n");
+  
+      const blob = new Blob([html], { type: "text/html" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "certificate-alexandra-rivera.html";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  
+    document.addEventListener("keydown", function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "p") {
+        // browser default print
+      }
+    });
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

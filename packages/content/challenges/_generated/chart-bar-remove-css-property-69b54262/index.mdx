@@ -1,0 +1,741 @@
+---
+slug: "chart-bar-remove-css-property-69b54262"
+topic: "chart"
+title: "Restore missing CSS property in Bar Chart"
+type: "fix"
+difficulty: 1
+resourceSlug: "chart-bar"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #0f1117;
+    --surface: #16181f;
+    --surface2: #1e2130;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+  
+  .chart-page {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  
+  .chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .chart-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  .chart-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  
+  .chart-controls {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .ctrl-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  
+  .ctrl-btn.active,
+  .ctrl-btn:hover {
+    border-color: #818cf8;
+    color: #818cf8;
+  }
+  
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px 12px;
+    position: relative;
+  }
+  
+  .chart-svg {
+    width: 100%;
+    display: block;
+  }
+  
+  .bar-rect {
+    transition: opacity .15s;
+    cursor: pointer;
+  }
+  
+  .bar-rect:hover {
+    opacity: 0.85;
+  }
+  
+  .grid-line {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  
+  .grid-label {
+    fill: var(--text-muted);
+    font-size: 10px;
+    font-family: inherit;
+  }
+  
+  .x-label {
+    fill: var(--text-muted);
+    font-size: 10px;
+    font-family: inherit;
+    text-anchor: middle;
+  }
+  
+  .bar-label {
+    fill: var(--text);
+    font-size: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    text-anchor: middle;
+  }
+  
+  .chart-tooltip {
+    position: absolute;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  
+  .tooltip-label {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Bar Chart</title>
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="chart-page">
+          <div class="chart-header">
+              <div>
+                  <h1 class="chart-title">Sales by Category</h1>
+                  <p class="chart-sub">Q1–Q4 2024</p>
+              </div>
+              <div class="chart-controls">
+                  <button class="ctrl-btn active" data-orient="vertical">Vertical</button>
+                  <button class="ctrl-btn" data-orient="horizontal">Horizontal</button>
+              </div>
+          </div>
+          <div class="chart-wrap" id="chartWrap">
+              <svg id="chartSvg" class="chart-svg" aria-label="Bar chart: Sales by Category"></svg>
+              <div class="chart-tooltip" id="chartTooltip" hidden></div>
+          </div>
+      </div>
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const DATA = [
+    { label: "Electronics", value: 340, color: "#818cf8" },
+    { label: "Clothing", value: 220, color: "#34d399" },
+    { label: "Books", value: 185, color: "#f59e0b" },
+    { label: "Sports", value: 260, color: "#f87171" },
+    { label: "Home", value: 310, color: "#a78bfa" },
+    { label: "Beauty", value: 145, color: "#38bdf8" },
+  ];
+  
+  const PAD = { top: 24, right: 20, bottom: 40, left: 52 };
+  let orient = "vertical";
+  const svg = document.getElementById("chartSvg");
+  const tooltip = document.getElementById("chartTooltip");
+  const wrap = document.getElementById("chartWrap");
+  
+  document.querySelectorAll(".ctrl-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".ctrl-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      orient = btn.dataset.orient;
+      draw();
+    });
+  });
+  
+  function draw() {
+    const W = wrap.clientWidth - 32;
+    const H =
+      orient === "vertical"
+        ? Math.round(W * 0.5)
+        : Math.round(DATA.length * 52 + PAD.top + PAD.bottom);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.innerHTML = "";
+  
+    const maxVal = Math.ceil(Math.max(...DATA.map((d) => d.value)) * 1.15);
+    const cW = W - PAD.left - PAD.right;
+    const cH = H - PAD.top - PAD.bottom;
+  
+    if (orient === "vertical") drawVertical(W, H, cW, cH, maxVal);
+    else drawHorizontal(W, H, cW, cH, maxVal);
+  }
+  
+  function el(tag, attrs = {}) {
+    const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    return e;
+  }
+  
+  function drawVertical(W, H, cW, cH, maxVal) {
+    const n = DATA.length;
+    const gap = 8;
+    const barW = (cW - gap * (n - 1)) / n;
+  
+    // Grid
+    for (let t = 0; t <= 5; t++) {
+      const v = Math.round((maxVal / 5) * t);
+      const y = PAD.top + cH - (v / maxVal) * cH;
+      svg.appendChild(
+        el("line", { class: "grid-line", x1: PAD.left, x2: PAD.left + cW, y1: y, y2: y })
+      );
+      const lbl = el("text", {
+        class: "grid-label",
+        x: PAD.left - 6,
+        y: y + 3.5,
+        "text-anchor": "end",
+      });
+      lbl.textContent = v;
+      svg.appendChild(lbl);
+    }
+  
+    // Bars
+    DATA.forEach((d, i) => {
+      const x = PAD.left + i * (barW + gap);
+      const barH = (d.value / maxVal) * cH;
+      const y = PAD.top + cH - barH;
+      const rect = el("rect", {
+        class: "bar-rect",
+        x,
+        y,
+        width: barW,
+        height: barH,
+        fill: d.color,
+        rx: 4,
+      });
+      addBarEvents(rect, d, x + barW / 2, y);
+      svg.appendChild(rect);
+      // Animate
+      rect.style.transformOrigin = `0 ${PAD.top + cH}px`;
+      rect.style.transform = "scaleY(0)";
+      rect.style.transition = `transform .5s cubic-bezier(.4,0,.2,1) ${i * 0.06}s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => (rect.style.transform = "scaleY(1)")));
+  
+      // X label
+      const lbl = el("text", { class: "x-label", x: x + barW / 2, y: H - 6 });
+      lbl.textContent = d.label;
+      svg.appendChild(lbl);
+  
+      // Value label
+      const vlbl = el("text", { class: "bar-label", x: x + barW / 2, y: y - 4 });
+      vlbl.textContent = d.value;
+      svg.appendChild(vlbl);
+    });
+  }
+  
+  function drawHorizontal(W, H, cW, cH, maxVal) {
+    const n = DATA.length;
+    const barH = 30;
+    const gap = 12;
+    const totalH = n * (barH + gap);
+  
+    for (let t = 0; t <= 5; t++) {
+      const v = Math.round((maxVal / 5) * t);
+      const x = PAD.left + (v / maxVal) * cW;
+      svg.appendChild(
+        el("line", { class: "grid-line", x1: x, x2: x, y1: PAD.top, y2: PAD.top + totalH })
+      );
+      const lbl = el("text", {
+        class: "grid-label",
+        x,
+        y: PAD.top + totalH + 14,
+        "text-anchor": "middle",
+      });
+      lbl.textContent = v;
+      svg.appendChild(lbl);
+    }
+  
+    DATA.forEach((d, i) => {
+      const y = PAD.top + i * (barH + gap);
+      const bW = (d.value / maxVal) * cW;
+      const rect = el("rect", {
+        class: "bar-rect",
+        x: PAD.left,
+        y,
+        width: bW,
+        height: barH,
+        fill: d.color,
+        rx: 4,
+      });
+      addBarEvents(rect, d, PAD.left + bW, y + barH / 2);
+      svg.appendChild(rect);
+      rect.style.transformOrigin = `${PAD.left}px 0`;
+      rect.style.transform = "scaleX(0)";
+      rect.style.transition = `transform .5s cubic-bezier(.4,0,.2,1) ${i * 0.06}s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => (rect.style.transform = "scaleX(1)")));
+  
+      const lbl = el("text", {
+        class: "grid-label",
+        x: PAD.left - 6,
+        y: y + barH / 2 + 4,
+        "text-anchor": "end",
+      });
+      lbl.textContent = d.label;
+      svg.appendChild(lbl);
+  
+      const vlbl = el("text", {
+        class: "bar-label",
+        x: PAD.left + bW + 4,
+        y: y + barH / 2 + 4,
+        "text-anchor": "start",
+      });
+      vlbl.textContent = d.value;
+      svg.appendChild(vlbl);
+    });
+  }
+  
+  function addBarEvents(rect, d, tx, ty) {
+    rect.addEventListener("mouseenter", (e) => {
+      tooltip.innerHTML = `<div class="tooltip-label">${d.label}</div><div style="color:${d.color};font-weight:700">${d.value} units</div>`;
+      tooltip.hidden = false;
+      posTooltip(e);
+    });
+    rect.addEventListener("mousemove", posTooltip);
+    rect.addEventListener("mouseleave", () => {
+      tooltip.hidden = true;
+    });
+  }
+  
+  function posTooltip(e) {
+    const r = wrap.getBoundingClientRect();
+    tooltip.style.left = e.clientX - r.left + 10 + "px";
+    tooltip.style.top = e.clientY - r.top - 40 + "px";
+  }
+  
+  const ro = new ResizeObserver(draw);
+  ro.observe(wrap);
+  draw();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #0f1117;
+    --surface: #16181f;
+    --surface2: #1e2130;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+  
+  .chart-page {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  
+  .chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .chart-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  .chart-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  
+  .chart-controls {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .ctrl-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  
+  .ctrl-btn.active,
+  .ctrl-btn:hover {
+    border-color: #818cf8;
+    color: #818cf8;
+  }
+  
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px 12px;
+    position: relative;
+  }
+  
+  .chart-svg {
+    width: 100%;
+    display: block;
+  }
+  
+  .bar-rect {
+    transition: opacity .15s;
+    cursor: pointer;
+  }
+  
+  .bar-rect:hover {
+    opacity: 0.85;
+  }
+  
+  .grid-line {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  
+  .grid-label {
+    fill: var(--text-muted);
+    font-size: 10px;
+    font-family: inherit;
+  }
+  
+  .x-label {
+    fill: var(--text-muted);
+    font-size: 10px;
+    font-family: inherit;
+    text-anchor: middle;
+  }
+  
+  .bar-label {
+    fill: var(--text);
+    font-size: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    text-anchor: middle;
+  }
+  
+  .chart-tooltip {
+    position: absolute;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  
+  .tooltip-label {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Bar Chart</title>
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="chart-page">
+          <div class="chart-header">
+              <div>
+                  <h1 class="chart-title">Sales by Category</h1>
+                  <p class="chart-sub">Q1–Q4 2024</p>
+              </div>
+              <div class="chart-controls">
+                  <button class="ctrl-btn active" data-orient="vertical">Vertical</button>
+                  <button class="ctrl-btn" data-orient="horizontal">Horizontal</button>
+              </div>
+          </div>
+          <div class="chart-wrap" id="chartWrap">
+              <svg id="chartSvg" class="chart-svg" aria-label="Bar chart: Sales by Category"></svg>
+              <div class="chart-tooltip" id="chartTooltip" hidden></div>
+          </div>
+      </div>
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const DATA = [
+    { label: "Electronics", value: 340, color: "#818cf8" },
+    { label: "Clothing", value: 220, color: "#34d399" },
+    { label: "Books", value: 185, color: "#f59e0b" },
+    { label: "Sports", value: 260, color: "#f87171" },
+    { label: "Home", value: 310, color: "#a78bfa" },
+    { label: "Beauty", value: 145, color: "#38bdf8" },
+  ];
+  
+  const PAD = { top: 24, right: 20, bottom: 40, left: 52 };
+  let orient = "vertical";
+  const svg = document.getElementById("chartSvg");
+  const tooltip = document.getElementById("chartTooltip");
+  const wrap = document.getElementById("chartWrap");
+  
+  document.querySelectorAll(".ctrl-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".ctrl-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      orient = btn.dataset.orient;
+      draw();
+    });
+  });
+  
+  function draw() {
+    const W = wrap.clientWidth - 32;
+    const H =
+      orient === "vertical"
+        ? Math.round(W * 0.5)
+        : Math.round(DATA.length * 52 + PAD.top + PAD.bottom);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.innerHTML = "";
+  
+    const maxVal = Math.ceil(Math.max(...DATA.map((d) => d.value)) * 1.15);
+    const cW = W - PAD.left - PAD.right;
+    const cH = H - PAD.top - PAD.bottom;
+  
+    if (orient === "vertical") drawVertical(W, H, cW, cH, maxVal);
+    else drawHorizontal(W, H, cW, cH, maxVal);
+  }
+  
+  function el(tag, attrs = {}) {
+    const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    return e;
+  }
+  
+  function drawVertical(W, H, cW, cH, maxVal) {
+    const n = DATA.length;
+    const gap = 8;
+    const barW = (cW - gap * (n - 1)) / n;
+  
+    // Grid
+    for (let t = 0; t <= 5; t++) {
+      const v = Math.round((maxVal / 5) * t);
+      const y = PAD.top + cH - (v / maxVal) * cH;
+      svg.appendChild(
+        el("line", { class: "grid-line", x1: PAD.left, x2: PAD.left + cW, y1: y, y2: y })
+      );
+      const lbl = el("text", {
+        class: "grid-label",
+        x: PAD.left - 6,
+        y: y + 3.5,
+        "text-anchor": "end",
+      });
+      lbl.textContent = v;
+      svg.appendChild(lbl);
+    }
+  
+    // Bars
+    DATA.forEach((d, i) => {
+      const x = PAD.left + i * (barW + gap);
+      const barH = (d.value / maxVal) * cH;
+      const y = PAD.top + cH - barH;
+      const rect = el("rect", {
+        class: "bar-rect",
+        x,
+        y,
+        width: barW,
+        height: barH,
+        fill: d.color,
+        rx: 4,
+      });
+      addBarEvents(rect, d, x + barW / 2, y);
+      svg.appendChild(rect);
+      // Animate
+      rect.style.transformOrigin = `0 ${PAD.top + cH}px`;
+      rect.style.transform = "scaleY(0)";
+      rect.style.transition = `transform .5s cubic-bezier(.4,0,.2,1) ${i * 0.06}s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => (rect.style.transform = "scaleY(1)")));
+  
+      // X label
+      const lbl = el("text", { class: "x-label", x: x + barW / 2, y: H - 6 });
+      lbl.textContent = d.label;
+      svg.appendChild(lbl);
+  
+      // Value label
+      const vlbl = el("text", { class: "bar-label", x: x + barW / 2, y: y - 4 });
+      vlbl.textContent = d.value;
+      svg.appendChild(vlbl);
+    });
+  }
+  
+  function drawHorizontal(W, H, cW, cH, maxVal) {
+    const n = DATA.length;
+    const barH = 30;
+    const gap = 12;
+    const totalH = n * (barH + gap);
+  
+    for (let t = 0; t <= 5; t++) {
+      const v = Math.round((maxVal / 5) * t);
+      const x = PAD.left + (v / maxVal) * cW;
+      svg.appendChild(
+        el("line", { class: "grid-line", x1: x, x2: x, y1: PAD.top, y2: PAD.top + totalH })
+      );
+      const lbl = el("text", {
+        class: "grid-label",
+        x,
+        y: PAD.top + totalH + 14,
+        "text-anchor": "middle",
+      });
+      lbl.textContent = v;
+      svg.appendChild(lbl);
+    }
+  
+    DATA.forEach((d, i) => {
+      const y = PAD.top + i * (barH + gap);
+      const bW = (d.value / maxVal) * cW;
+      const rect = el("rect", {
+        class: "bar-rect",
+        x: PAD.left,
+        y,
+        width: bW,
+        height: barH,
+        fill: d.color,
+        rx: 4,
+      });
+      addBarEvents(rect, d, PAD.left + bW, y + barH / 2);
+      svg.appendChild(rect);
+      rect.style.transformOrigin = `${PAD.left}px 0`;
+      rect.style.transform = "scaleX(0)";
+      rect.style.transition = `transform .5s cubic-bezier(.4,0,.2,1) ${i * 0.06}s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => (rect.style.transform = "scaleX(1)")));
+  
+      const lbl = el("text", {
+        class: "grid-label",
+        x: PAD.left - 6,
+        y: y + barH / 2 + 4,
+        "text-anchor": "end",
+      });
+      lbl.textContent = d.label;
+      svg.appendChild(lbl);
+  
+      const vlbl = el("text", {
+        class: "bar-label",
+        x: PAD.left + bW + 4,
+        y: y + barH / 2 + 4,
+        "text-anchor": "start",
+      });
+      vlbl.textContent = d.value;
+      svg.appendChild(vlbl);
+    });
+  }
+  
+  function addBarEvents(rect, d, tx, ty) {
+    rect.addEventListener("mouseenter", (e) => {
+      tooltip.innerHTML = `<div class="tooltip-label">${d.label}</div><div style="color:${d.color};font-weight:700">${d.value} units</div>`;
+      tooltip.hidden = false;
+      posTooltip(e);
+    });
+    rect.addEventListener("mousemove", posTooltip);
+    rect.addEventListener("mouseleave", () => {
+      tooltip.hidden = true;
+    });
+  }
+  
+  function posTooltip(e) {
+    const r = wrap.getBoundingClientRect();
+    tooltip.style.left = e.clientX - r.left + 10 + "px";
+    tooltip.style.top = e.clientY - r.top - 40 + "px";
+  }
+  
+  const ro = new ResizeObserver(draw);
+  ro.observe(wrap);
+  draw();
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

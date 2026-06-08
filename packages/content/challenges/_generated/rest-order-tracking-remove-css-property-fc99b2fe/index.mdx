@@ -1,0 +1,1267 @@
+---
+slug: "rest-order-tracking-remove-css-property-fc99b2fe"
+topic: "restaurant"
+title: "Restore missing CSS property in Order Status Tracker"
+type: "fix"
+difficulty: 1
+resourceSlug: "rest-order-tracking"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --cream-2: #ece4d4;
+    --bone: #faf7f1;
+    --terracotta: #c1714a;
+    --terracotta-d: #a05a38;
+    --forest: #2d4a3e;
+    --forest-d: #1e3329;
+    --gold: #c9a84c;
+    --gold-light: #e6c97a;
+    --ink: #2c1a0e;
+    --ink-2: #4a3828;
+    --warm-gray: #7a6a58;
+    --success: #4f7a3a;
+    --danger: #b3432a;
+    --warning: #d99020;
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --shadow-1: 0 1px 2px rgba(44, 26, 14, 0.08), 0 2px 6px rgba(44, 26, 14, 0.06);
+    --shadow-2: 0 8px 24px rgba(44, 26, 14, 0.12);
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(180deg, var(--cream-2) 0%, var(--cream) 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 720px;
+    background: var(--bone);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-2);
+    padding: 28px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  
+  /* ── Head ── */
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .kicker {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--terracotta);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .card-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  .eta {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.1);
+    border-radius: var(--r-md);
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .eta-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--terracotta);
+    font-weight: 700;
+  }
+  .eta-time {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .eta-mins {
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+  }
+  
+  /* ── Steps ── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    list-style: none;
+    position: relative;
+    padding: 12px 0 0;
+  }
+  .steps::before {
+    content: "";
+    position: absolute;
+    top: 28px;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    background: var(--cream-2);
+    border-radius: 999px;
+    z-index: 0;
+  }
+  .steps::after {
+    content: "";
+    position: absolute;
+    top: 28px;
+    left: 10%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--success), var(--terracotta));
+    border-radius: 999px;
+    width: var(--progress, 0%);
+    transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 0;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    z-index: 1;
+  }
+  .step-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--cream-2);
+    border: 2px solid var(--cream-2);
+    display: grid;
+    place-items: center;
+    font-size: 0.96rem;
+    color: var(--warm-gray);
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  .step.is-done .step-dot {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--bone);
+  }
+  .step.is-active .step-dot {
+    background: var(--terracotta);
+    border-color: var(--terracotta-d);
+    color: var(--bone);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(193, 113, 74, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(193, 113, 74, 0);
+    }
+  }
+  .step-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink-2);
+    margin-top: 4px;
+  }
+  .step.is-active .step-label {
+    color: var(--terracotta-d);
+  }
+  .step.is-done .step-label {
+    color: var(--success);
+  }
+  .step-time {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--warm-gray);
+  }
+  
+  /* ── Grid: courier + summary ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .steps::before,
+    .steps::after {
+      left: 6%;
+      right: 6%;
+    }
+    .step-label {
+      font-size: 0.68rem;
+    }
+  }
+  
+  .courier,
+  .summary {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-md);
+    padding: 16px 18px;
+  }
+  .courier-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: var(--forest);
+    color: var(--bone);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .courier-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .courier-meta {
+    font-size: 0.76rem;
+    color: var(--warm-gray);
+  }
+  .courier-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .summary header h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .summary-meta {
+    font-size: 0.74rem;
+    color: var(--warm-gray);
+    margin: 2px 0 10px;
+  }
+  .summary ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .summary li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.84rem;
+    color: var(--ink-2);
+  }
+  .summary li span:last-child {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .summary li.sub {
+    display: block;
+    font-size: 0.72rem;
+    font-style: italic;
+    color: var(--warm-gray);
+    padding-left: 16px;
+  }
+  .summary-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(44, 26, 14, 0.2);
+    font-weight: 700;
+  }
+  .summary-foot .total {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+  }
+  
+  /* ── Foot ── */
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(44, 26, 14, 0.08);
+  }
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    padding: 4px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+    font-weight: 600;
+  }
+  .toggle > span {
+    padding: 0 6px;
+  }
+  .toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-2);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .toggle-btn.is-active {
+    background: var(--forest);
+    color: var(--bone);
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+  .ghost,
+  .primary {
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .ghost {
+    background: transparent;
+    border: 1px solid rgba(44, 26, 14, 0.18);
+    color: var(--ink-2);
+  }
+  .ghost:hover {
+    background: var(--cream-2);
+    color: var(--ink);
+  }
+  .primary {
+    background: var(--forest);
+    color: var(--bone);
+    border: none;
+  }
+  .primary:hover {
+    background: var(--forest-d);
+  }
+  
+  .courier-actions .ghost,
+  .courier-actions .primary {
+    padding: 7px 14px;
+    font-size: 0.78rem;
+  }
+  
+  /* Hide courier on pickup mode */
+  .card.is-pickup #courier {
+    display: none;
+  }
+  .card.is-pickup .grid {
+    grid-template-columns: 1fr;
+  }
+  .card.is-pickup .step[data-step="3"] {
+    display: none;
+  }
+  .card.is-pickup .steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      />
+      <link rel="stylesheet" href="style.css" />
+      <title>Tracking · Order #0184</title>
+    </head>
+    <body>
+      <section class="card">
+        <header class="card-head">
+          <div>
+            <p class="kicker">Order #0184 · Casa Olivar</p>
+            <h1>On its way.</h1>
+          </div>
+          <div class="eta">
+            <span class="eta-label">ETA</span>
+            <span class="eta-time" id="etaTime">19:48</span>
+            <span class="eta-mins" id="etaMins">in 24 min</span>
+          </div>
+        </header>
+  
+        <ol class="steps" id="steps" aria-label="Order progress">
+          <li class="step is-done" data-step="0">
+            <span class="step-dot"><span class="step-icon">✓</span></span>
+            <p class="step-label">Sent</p>
+            <p class="step-time" data-time="0">19:24</p>
+          </li>
+          <li class="step is-active" data-step="1">
+            <span class="step-dot"><span class="step-icon">🔥</span></span>
+            <p class="step-label">Cooking</p>
+            <p class="step-time" data-time="1">19:28</p>
+          </li>
+          <li class="step" data-step="2">
+            <span class="step-dot"><span class="step-icon">🍽</span></span>
+            <p class="step-label">Ready</p>
+            <p class="step-time" data-time="2">— · —</p>
+          </li>
+          <li class="step" data-step="3">
+            <span class="step-dot"><span class="step-icon">🛵</span></span>
+            <p class="step-label">Out for delivery</p>
+            <p class="step-time" data-time="3">— · —</p>
+          </li>
+          <li class="step" data-step="4">
+            <span class="step-dot"><span class="step-icon">🎉</span></span>
+            <p class="step-label">Delivered</p>
+            <p class="step-time" data-time="4">— · —</p>
+          </li>
+        </ol>
+  
+        <div class="grid">
+          <article class="courier" id="courier">
+            <div class="courier-head">
+              <div class="avatar" aria-hidden="true">M</div>
+              <div>
+                <p class="courier-name">Mateo R.</p>
+                <p class="courier-meta">Bike · ★ 4.92 · ID 04812</p>
+              </div>
+            </div>
+            <div class="courier-actions">
+              <button class="ghost" type="button">Message</button>
+              <button class="primary" type="button">Call</button>
+            </div>
+          </article>
+  
+          <article class="summary">
+            <header>
+              <h3>Your order</h3>
+              <p class="summary-meta">3 items · Pickup at 42 Calle del Olivar</p>
+            </header>
+            <ul>
+              <li><span>1× Burrata huerta</span><span>$16.00</span></li>
+              <li><span>1× Ribeye 14oz</span><span>$48.00</span></li>
+              <li class="sub">medium rare · truffle fries · bone marrow</li>
+              <li><span>2× Tinto natural</span><span>$24.00</span></li>
+            </ul>
+            <div class="summary-foot">
+              <span>Total paid</span>
+              <span class="total">$110.20</span>
+            </div>
+          </article>
+        </div>
+  
+        <footer class="card-foot">
+          <div class="toggle">
+            <span>Mode</span>
+            <button type="button" class="toggle-btn is-active" data-mode="delivery">Delivery</button>
+            <button type="button" class="toggle-btn" data-mode="pickup">Pickup</button>
+          </div>
+          <div class="actions">
+            <button class="ghost" type="button" id="restart">Restart simulation</button>
+            <button class="primary" type="button" id="advance">Advance →</button>
+          </div>
+        </footer>
+      </section>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  // Steps: 0 Sent, 1 Cooking, 2 Ready, 3 Out, 4 Delivered (Out skipped for pickup)
+  const TOTAL_STEPS = 5;
+  const MINUTES_REMAINING_BY_STEP = [28, 22, 14, 8, 0];
+  
+  let mode = "delivery"; // "delivery" | "pickup"
+  let current = 1;
+  let timer = null;
+  
+  const card = document.querySelector(".card");
+  const stepsEl = document.getElementById("steps");
+  const etaTime = document.getElementById("etaTime");
+  const etaMins = document.getElementById("etaMins");
+  const advanceBtn = document.getElementById("advance");
+  const restartBtn = document.getElementById("restart");
+  
+  function fmtClock(d) {
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+  
+  function applyMode() {
+    card.classList.toggle("is-pickup", mode === "pickup");
+  }
+  
+  function visibleSteps() {
+    if (mode === "pickup") return [0, 1, 2, 4];
+    return [0, 1, 2, 3, 4];
+  }
+  
+  function progressPercent() {
+    const steps = visibleSteps();
+    const i = steps.indexOf(current);
+    if (i < 0) return 0;
+    if (steps.length <= 1) return 0;
+    return (i / (steps.length - 1)) * 100;
+  }
+  
+  function effectiveMinutesRemaining() {
+    // Pickup skips Out for delivery; remap the minutes accordingly.
+    if (mode === "delivery") return MINUTES_REMAINING_BY_STEP[current];
+    const map = { 0: 22, 1: 14, 2: 6, 4: 0 };
+    return map[current] ?? 0;
+  }
+  
+  function render() {
+    // Step classes
+    document.querySelectorAll("[data-step]").forEach((li) => {
+      const n = Number(li.dataset.step);
+      li.classList.toggle("is-done", n < current);
+      li.classList.toggle("is-active", n === current);
+    });
+    // Progress bar
+    stepsEl.style.setProperty("--progress", `${progressPercent() * 0.8}%`);
+    // ETA
+    const mins = effectiveMinutesRemaining();
+    const eta = new Date();
+    eta.setMinutes(eta.getMinutes() + mins);
+    etaTime.textContent = current === 4 ? fmtClock(new Date()) : fmtClock(eta);
+    etaMins.textContent = current === 4 ? "delivered" : mins === 0 ? "any minute" : `in ${mins} min`;
+    // Step times: stamp the time when stepping forward.
+    applyMode();
+    advanceBtn.disabled = current >= 4;
+    advanceBtn.textContent = current >= 4 ? "Done ✓" : "Advance →";
+  }
+  
+  function stampTime(step) {
+    const el = document.querySelector(`[data-time="${step}"]`);
+    if (!el) return;
+    el.textContent = fmtClock(new Date());
+  }
+  
+  function advance() {
+    const steps = visibleSteps();
+    const i = steps.indexOf(current);
+    if (i < 0 || i >= steps.length - 1) return;
+    current = steps[i + 1];
+    stampTime(current);
+    render();
+  }
+  
+  function autoTick() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (current >= 4) {
+        clearInterval(timer);
+        return;
+      }
+      advance();
+    }, 6500);
+  }
+  
+  advanceBtn.addEventListener("click", () => {
+    advance();
+    autoTick();
+  });
+  
+  restartBtn.addEventListener("click", () => {
+    current = 1;
+    document.querySelectorAll("[data-time]").forEach((el, idx) => {
+      if (idx < 2) {
+        const t = new Date();
+        t.setMinutes(t.getMinutes() - (2 - idx) * 4);
+        el.textContent = fmtClock(t);
+      } else {
+        el.textContent = "— · —";
+      }
+    });
+    render();
+    autoTick();
+  });
+  
+  document.querySelectorAll("[data-mode]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-mode]").forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      mode = btn.dataset.mode;
+      render();
+    })
+  );
+  
+  render();
+  autoTick();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --cream: #f5f0e8;
+    --cream-2: #ece4d4;
+    --bone: #faf7f1;
+    --terracotta: #c1714a;
+    --terracotta-d: #a05a38;
+    --forest: #2d4a3e;
+    --forest-d: #1e3329;
+    --gold: #c9a84c;
+    --gold-light: #e6c97a;
+    --ink: #2c1a0e;
+    --ink-2: #4a3828;
+    --warm-gray: #7a6a58;
+    --success: #4f7a3a;
+    --danger: #b3432a;
+    --warning: #d99020;
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --shadow-1: 0 1px 2px rgba(44, 26, 14, 0.08), 0 2px 6px rgba(44, 26, 14, 0.06);
+    --shadow-2: 0 8px 24px rgba(44, 26, 14, 0.12);
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(180deg, var(--cream-2) 0%, var(--cream) 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 720px;
+    background: var(--bone);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-2);
+    padding: 28px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  
+  /* ── Head ── */
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .kicker {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--terracotta);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .card-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  .eta {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.1);
+    border-radius: var(--r-md);
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .eta-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--terracotta);
+    font-weight: 700;
+  }
+  .eta-time {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .eta-mins {
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+  }
+  
+  /* ── Steps ── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    list-style: none;
+    position: relative;
+    padding: 12px 0 0;
+  }
+  .steps::before {
+    content: "";
+    position: absolute;
+    top: 28px;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    background: var(--cream-2);
+    border-radius: 999px;
+    z-index: 0;
+  }
+  .steps::after {
+    content: "";
+    position: absolute;
+    top: 28px;
+    left: 10%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--success), var(--terracotta));
+    border-radius: 999px;
+    width: var(--progress, 0%);
+    transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 0;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    z-index: 1;
+  }
+  .step-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--cream-2);
+    border: 2px solid var(--cream-2);
+    display: grid;
+    place-items: center;
+    font-size: 0.96rem;
+    color: var(--warm-gray);
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  .step.is-done .step-dot {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--bone);
+  }
+  .step.is-active .step-dot {
+    background: var(--terracotta);
+    border-color: var(--terracotta-d);
+    color: var(--bone);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(193, 113, 74, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(193, 113, 74, 0);
+    }
+  }
+  .step-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink-2);
+    margin-top: 4px;
+  }
+  .step.is-active .step-label {
+    color: var(--terracotta-d);
+  }
+  .step.is-done .step-label {
+    color: var(--success);
+  }
+  .step-time {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--warm-gray);
+  }
+  
+  /* ── Grid: courier + summary ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .steps::before,
+    .steps::after {
+      left: 6%;
+      right: 6%;
+    }
+    .step-label {
+      font-size: 0.68rem;
+    }
+  }
+  
+  .courier,
+  .summary {
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    border-radius: var(--r-md);
+    padding: 16px 18px;
+  }
+  .courier-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: var(--forest);
+    color: var(--bone);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .courier-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .courier-meta {
+    font-size: 0.76rem;
+    color: var(--warm-gray);
+  }
+  .courier-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .summary header h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .summary-meta {
+    font-size: 0.74rem;
+    color: var(--warm-gray);
+    margin: 2px 0 10px;
+  }
+  .summary ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .summary li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.84rem;
+    color: var(--ink-2);
+  }
+  .summary li span:last-child {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .summary li.sub {
+    display: block;
+    font-size: 0.72rem;
+    font-style: italic;
+    color: var(--warm-gray);
+    padding-left: 16px;
+  }
+  .summary-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(44, 26, 14, 0.2);
+    font-weight: 700;
+  }
+  .summary-foot .total {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+  }
+  
+  /* ── Foot ── */
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(44, 26, 14, 0.08);
+  }
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--cream);
+    border: 1px solid rgba(44, 26, 14, 0.08);
+    padding: 4px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+    font-weight: 600;
+  }
+  .toggle > span {
+    padding: 0 6px;
+  }
+  .toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-2);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .toggle-btn.is-active {
+    background: var(--forest);
+    color: var(--bone);
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+  .ghost,
+  .primary {
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .ghost {
+    background: transparent;
+    border: 1px solid rgba(44, 26, 14, 0.18);
+    color: var(--ink-2);
+  }
+  .ghost:hover {
+    background: var(--cream-2);
+    color: var(--ink);
+  }
+  .primary {
+    background: var(--forest);
+    color: var(--bone);
+    border: none;
+  }
+  .primary:hover {
+    background: var(--forest-d);
+  }
+  
+  .courier-actions .ghost,
+  .courier-actions .primary {
+    padding: 7px 14px;
+    font-size: 0.78rem;
+  }
+  
+  /* Hide courier on pickup mode */
+  .card.is-pickup #courier {
+    display: none;
+  }
+  .card.is-pickup .grid {
+    grid-template-columns: 1fr;
+  }
+  .card.is-pickup .step[data-step="3"] {
+    display: none;
+  }
+  .card.is-pickup .steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      />
+      <link rel="stylesheet" href="style.css" />
+      <title>Tracking · Order #0184</title>
+    </head>
+    <body>
+      <section class="card">
+        <header class="card-head">
+          <div>
+            <p class="kicker">Order #0184 · Casa Olivar</p>
+            <h1>On its way.</h1>
+          </div>
+          <div class="eta">
+            <span class="eta-label">ETA</span>
+            <span class="eta-time" id="etaTime">19:48</span>
+            <span class="eta-mins" id="etaMins">in 24 min</span>
+          </div>
+        </header>
+  
+        <ol class="steps" id="steps" aria-label="Order progress">
+          <li class="step is-done" data-step="0">
+            <span class="step-dot"><span class="step-icon">✓</span></span>
+            <p class="step-label">Sent</p>
+            <p class="step-time" data-time="0">19:24</p>
+          </li>
+          <li class="step is-active" data-step="1">
+            <span class="step-dot"><span class="step-icon">🔥</span></span>
+            <p class="step-label">Cooking</p>
+            <p class="step-time" data-time="1">19:28</p>
+          </li>
+          <li class="step" data-step="2">
+            <span class="step-dot"><span class="step-icon">🍽</span></span>
+            <p class="step-label">Ready</p>
+            <p class="step-time" data-time="2">— · —</p>
+          </li>
+          <li class="step" data-step="3">
+            <span class="step-dot"><span class="step-icon">🛵</span></span>
+            <p class="step-label">Out for delivery</p>
+            <p class="step-time" data-time="3">— · —</p>
+          </li>
+          <li class="step" data-step="4">
+            <span class="step-dot"><span class="step-icon">🎉</span></span>
+            <p class="step-label">Delivered</p>
+            <p class="step-time" data-time="4">— · —</p>
+          </li>
+        </ol>
+  
+        <div class="grid">
+          <article class="courier" id="courier">
+            <div class="courier-head">
+              <div class="avatar" aria-hidden="true">M</div>
+              <div>
+                <p class="courier-name">Mateo R.</p>
+                <p class="courier-meta">Bike · ★ 4.92 · ID 04812</p>
+              </div>
+            </div>
+            <div class="courier-actions">
+              <button class="ghost" type="button">Message</button>
+              <button class="primary" type="button">Call</button>
+            </div>
+          </article>
+  
+          <article class="summary">
+            <header>
+              <h3>Your order</h3>
+              <p class="summary-meta">3 items · Pickup at 42 Calle del Olivar</p>
+            </header>
+            <ul>
+              <li><span>1× Burrata huerta</span><span>$16.00</span></li>
+              <li><span>1× Ribeye 14oz</span><span>$48.00</span></li>
+              <li class="sub">medium rare · truffle fries · bone marrow</li>
+              <li><span>2× Tinto natural</span><span>$24.00</span></li>
+            </ul>
+            <div class="summary-foot">
+              <span>Total paid</span>
+              <span class="total">$110.20</span>
+            </div>
+          </article>
+        </div>
+  
+        <footer class="card-foot">
+          <div class="toggle">
+            <span>Mode</span>
+            <button type="button" class="toggle-btn is-active" data-mode="delivery">Delivery</button>
+            <button type="button" class="toggle-btn" data-mode="pickup">Pickup</button>
+          </div>
+          <div class="actions">
+            <button class="ghost" type="button" id="restart">Restart simulation</button>
+            <button class="primary" type="button" id="advance">Advance →</button>
+          </div>
+        </footer>
+      </section>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  // Steps: 0 Sent, 1 Cooking, 2 Ready, 3 Out, 4 Delivered (Out skipped for pickup)
+  const TOTAL_STEPS = 5;
+  const MINUTES_REMAINING_BY_STEP = [28, 22, 14, 8, 0];
+  
+  let mode = "delivery"; // "delivery" | "pickup"
+  let current = 1;
+  let timer = null;
+  
+  const card = document.querySelector(".card");
+  const stepsEl = document.getElementById("steps");
+  const etaTime = document.getElementById("etaTime");
+  const etaMins = document.getElementById("etaMins");
+  const advanceBtn = document.getElementById("advance");
+  const restartBtn = document.getElementById("restart");
+  
+  function fmtClock(d) {
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+  
+  function applyMode() {
+    card.classList.toggle("is-pickup", mode === "pickup");
+  }
+  
+  function visibleSteps() {
+    if (mode === "pickup") return [0, 1, 2, 4];
+    return [0, 1, 2, 3, 4];
+  }
+  
+  function progressPercent() {
+    const steps = visibleSteps();
+    const i = steps.indexOf(current);
+    if (i < 0) return 0;
+    if (steps.length <= 1) return 0;
+    return (i / (steps.length - 1)) * 100;
+  }
+  
+  function effectiveMinutesRemaining() {
+    // Pickup skips Out for delivery; remap the minutes accordingly.
+    if (mode === "delivery") return MINUTES_REMAINING_BY_STEP[current];
+    const map = { 0: 22, 1: 14, 2: 6, 4: 0 };
+    return map[current] ?? 0;
+  }
+  
+  function render() {
+    // Step classes
+    document.querySelectorAll("[data-step]").forEach((li) => {
+      const n = Number(li.dataset.step);
+      li.classList.toggle("is-done", n < current);
+      li.classList.toggle("is-active", n === current);
+    });
+    // Progress bar
+    stepsEl.style.setProperty("--progress", `${progressPercent() * 0.8}%`);
+    // ETA
+    const mins = effectiveMinutesRemaining();
+    const eta = new Date();
+    eta.setMinutes(eta.getMinutes() + mins);
+    etaTime.textContent = current === 4 ? fmtClock(new Date()) : fmtClock(eta);
+    etaMins.textContent = current === 4 ? "delivered" : mins === 0 ? "any minute" : `in ${mins} min`;
+    // Step times: stamp the time when stepping forward.
+    applyMode();
+    advanceBtn.disabled = current >= 4;
+    advanceBtn.textContent = current >= 4 ? "Done ✓" : "Advance →";
+  }
+  
+  function stampTime(step) {
+    const el = document.querySelector(`[data-time="${step}"]`);
+    if (!el) return;
+    el.textContent = fmtClock(new Date());
+  }
+  
+  function advance() {
+    const steps = visibleSteps();
+    const i = steps.indexOf(current);
+    if (i < 0 || i >= steps.length - 1) return;
+    current = steps[i + 1];
+    stampTime(current);
+    render();
+  }
+  
+  function autoTick() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (current >= 4) {
+        clearInterval(timer);
+        return;
+      }
+      advance();
+    }, 6500);
+  }
+  
+  advanceBtn.addEventListener("click", () => {
+    advance();
+    autoTick();
+  });
+  
+  restartBtn.addEventListener("click", () => {
+    current = 1;
+    document.querySelectorAll("[data-time]").forEach((el, idx) => {
+      if (idx < 2) {
+        const t = new Date();
+        t.setMinutes(t.getMinutes() - (2 - idx) * 4);
+        el.textContent = fmtClock(t);
+      } else {
+        el.textContent = "— · —";
+      }
+    });
+    render();
+    autoTick();
+  });
+  
+  document.querySelectorAll("[data-mode]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-mode]").forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      mode = btn.dataset.mode;
+      render();
+    })
+  );
+  
+  render();
+  autoTick();
+  
+  </script>
+explanation: "The declaration `--cream: #f5f0e8;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

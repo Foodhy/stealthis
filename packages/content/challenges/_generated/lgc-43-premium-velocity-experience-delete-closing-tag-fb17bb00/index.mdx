@@ -1,0 +1,1930 @@
+---
+slug: "lgc-43-premium-velocity-experience-delete-closing-tag-fb17bb00"
+topic: "imported-libs-genclaude"
+title: "Fix the broken HTML structure in Premium Velocity Experience"
+type: "fix"
+difficulty: 2
+resourceSlug: "lgc-43-premium-velocity-experience"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --bg: #070a12;
+    --text: #f0f4fb;
+    --panel: #121a2b;
+    --border: #263249;
+    --accent: #86e8ff;
+    --muted: #8a95a8;
+    --purple: #ae52ff;
+    --pink: #ff40d6;
+    --hue-shift: 0deg;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  
+  /* Fixed layers */
+  #velocity-canvas,
+  #hero-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  #velocity-canvas {
+    z-index: 2;
+  }
+  #hero-canvas {
+    z-index: 1;
+  }
+  
+  section {
+    position: relative;
+    z-index: 3;
+  }
+  
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    background: radial-gradient(ellipse at 50% 40%, rgba(134, 232, 255, 0.04) 0%, transparent 65%);
+  }
+  
+  .hero-content {
+    max-width: 680px;
+    text-align: center;
+  }
+  
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(134, 232, 255, 0.3);
+    border-radius: 20px;
+    padding: 0.3rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero h1 {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+  }
+  
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+  }
+  
+  /* Speed indicator */
+  .speed-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 0.8rem 1.2rem;
+    background: rgba(18, 26, 43, 0.8);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    backdrop-filter: blur(8px);
+  }
+  
+  .speed-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  
+  .speed-bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .speed-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--accent), var(--purple));
+    border-radius: 2px;
+    transition: width 0.1s linear;
+  }
+  
+  .speed-value {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 28px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* ── Gradient Text ── */
+  .gradient-text {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--hue-shift), 80%, 55%),
+      hsl(calc(var(--hue-shift) + 70deg), 80%, 55%),
+      hsl(calc(var(--hue-shift) + 140deg), 80%, 55%)
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradShift 6s linear infinite;
+  }
+  
+  @keyframes gradShift {
+    0% {
+      background-position: 0% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+  
+  @supports not (-webkit-background-clip: text) {
+    .gradient-text {
+      color: var(--accent);
+      background: none;
+    }
+  }
+  
+  /* ── Depth Section ── */
+  .depth-section {
+    padding: 8rem 2rem;
+    border-top: 1px solid var(--border);
+    background: rgba(7, 10, 18, 0.85);
+    backdrop-filter: blur(4px);
+  }
+  
+  .depth-cards {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    perspective: 1200px;
+  }
+  
+  .depth-card {
+    padding: 2rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .depth-card:hover {
+    border-color: hsl(var(--card-hue), 80%, 55%);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+  
+  .dc-icon {
+    font-size: 2rem;
+    color: hsl(var(--card-hue), 80%, 55%);
+    margin-bottom: 1rem;
+  }
+  
+  .depth-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.8rem;
+  }
+  
+  .depth-card p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  
+  /* ── Stats ── */
+  .stats-section {
+    padding: 7rem 2rem;
+    border-top: 1px solid var(--border);
+    background: rgba(7, 10, 18, 0.9);
+  }
+  
+  .section-header {
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto 4rem;
+  }
+  
+  .section-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  
+  .section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  
+  .stats-grid {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .stat-card {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .stat-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  
+  /* ── Features ── */
+  .features-section {
+    padding: 7rem 2rem;
+    border-top: 1px solid var(--border);
+    background: rgba(7, 10, 18, 0.85);
+  }
+  
+  .features-list {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .feature-item {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .feature-item:last-child {
+    border-bottom: none;
+  }
+  
+  .feature-num {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--accent);
+    opacity: 0.5;
+    padding-top: 0.3rem;
+    flex-shrink: 0;
+    width: 28px;
+  }
+  
+  .feature-text h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+  }
+  
+  .feature-text p {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  
+  code {
+    background: rgba(134, 232, 255, 0.1);
+    color: var(--accent);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-family: "Monaco", monospace;
+    font-size: 0.88em;
+  }
+  
+  /* ── CTA ── */
+  .cta-section {
+    padding: 8rem 2rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: radial-gradient(ellipse at 50% 50%, rgba(134, 232, 255, 0.06) 0%, transparent 70%);
+  }
+  
+  .cta-section h2 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    letter-spacing: -1.5px;
+  }
+  
+  .cta-section p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  
+  .btn-primary {
+    display: inline-block;
+    padding: 0.9rem 2rem;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 6px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background: rgba(134, 232, 255, 0.85);
+    transform: translateY(-2px);
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 2.8rem;
+    }
+    .depth-cards {
+      grid-template-columns: 1fr;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .section-header h2 {
+      font-size: 2rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .hero h1 {
+      font-size: 2.2rem;
+    }
+    .cta-section h2 {
+      font-size: 2.5rem;
+    }
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  html.reduced-motion #velocity-canvas {
+    display: none;
+  }
+  html.reduced-motion .gradient-text {
+    animation: none !important;
+  }
+  html.reduced-motion * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Velocity Experience — stealthisdesign
+    <link rel="stylesheet" href="style.css">
+      <script type="importmap">{"imports":{"gsap":"https://esm.sh/gsap@3.13.0","gsap/ScrollTrigger":"https://esm.sh/gsap@3.13.0/ScrollTrigger","gsap/SplitText":"https://esm.sh/gsap@3.13.0/SplitText","gsap/Flip":"https://esm.sh/gsap@3.13.0/Flip","gsap/ScrambleTextPlugin":"https://esm.sh/gsap@3.13.0/ScrambleTextPlugin","gsap/TextPlugin":"https://esm.sh/gsap@3.13.0/TextPlugin","gsap/all":"https://esm.sh/gsap@3.13.0/all","gsap/":"https://esm.sh/gsap@3.13.0/","lenis":"https://esm.sh/lenis@1.1.13/dist/lenis.mjs","three":"https://esm.sh/three@0.171.0","three/addons/":"https://esm.sh/three@0.171.0/examples/jsm/"}}</script>
+    <style>html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  
+  .lenis:not(.lenis-autoToggle).lenis-stopped {
+    overflow: clip;
+  }
+  
+  .lenis [data-lenis-prevent],
+  .lenis [data-lenis-prevent-wheel],
+  .lenis [data-lenis-prevent-touch] {
+    overscroll-behavior: contain;
+  }
+  
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
+  }
+  
+  .lenis.lenis-autoToggle {
+    transition-property: overflow;
+    transition-duration: 1ms;
+    transition-behavior: allow-discrete;
+  }</style>
+  </head>
+  <body>
+  
+    <!-- Velocity Canvas (fixed overlay) -->
+    <canvas id="velocity-canvas" aria-hidden="true"></canvas>
+  
+    <!-- Three.js WebGL hero -->
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-tag">High Performance</div>
+        <h1 class="gradient-text">Built for speed.<br>Designed to inspire.</h1>
+        <p class="hero-desc">Scroll fast or scroll slow — this experience reacts to your velocity. Built with Three.js, Lenis, GSAP, and Canvas 2D in perfect sync.</p>
+        <div class="speed-indicator" aria-live="polite">
+          <span class="speed-label">Scroll Velocity</span>
+          <div class="speed-bar-track">
+            <div class="speed-bar-fill" id="speed-fill"></div>
+          </div>
+          <span class="speed-value" id="speed-value">0.0</span>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Depth Section -->
+    <section class="depth-section">
+      <div class="depth-cards">
+        <div class="depth-card" style="--depth: 0.9; --card-hue: 195">
+          <div class="dc-icon">◆</div>
+          <h3>Velocity Tracking</h3>
+          <p>Lenis exposes scroll velocity on every frame. The faster you scroll, the more dramatic the visual response.</p>
+        </div>
+        <div class="depth-card" style="--depth: 0.5; --card-hue: 270">
+          <div class="dc-icon">▲</div>
+          <h3>Canvas Speed Lines</h3>
+          <p>Radial speed lines drawn on Canvas 2D scale with velocity magnitude — count, length, and opacity all react.</p>
+        </div>
+        <div class="depth-card" style="--depth: 0.7; --card-hue: 330">
+          <div class="dc-icon">●</div>
+          <h3>Three.js Hero</h3>
+          <p>A WebGL scene runs in the hero background, rotating and reacting to scroll progress through GSAP.</p>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Velocity Stats -->
+    <section class="stats-section">
+      <div class="section-header">
+        <span class="section-tag">Performance</span>
+        <h2 class="gradient-text">Numbers in motion</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" data-target="60" data-suffix=" fps">
+          <div class="stat-value">0 fps</div>
+          <div class="stat-label">Target Frame Rate</div>
+        </div>
+        <div class="stat-card" data-target="16.6" data-suffix=" ms">
+          <div class="stat-value">0 ms</div>
+          <div class="stat-label">Frame Budget</div>
+        </div>
+        <div class="stat-card" data-target="3" data-suffix="">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Rendering Layers</div>
+        </div>
+        <div class="stat-card" data-target="0" data-suffix=" ms">
+          <div class="stat-value">0 ms</div>
+          <div class="stat-label">Input Lag</div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Features -->
+    <section class="features-section">
+      <div class="section-header">
+        <span class="section-tag">Techniques</span>
+        <h2>What makes it tick</h2>
+      </div>
+      <div class="features-list">
+        <div class="feature-item">
+          <div class="feature-num">01</div>
+          <div class="feature-text">
+            <h3>Lenis Velocity API</h3>
+            <p>Access real-time scroll velocity through Lenis's <code>scroll</code> event. Map the absolute value to visual intensity for reactive effects.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-num">02</div>
+          <div class="feature-text">
+            <h3>Canvas 2D Compositing</h3>
+            <p>A fixed Canvas layer sits above the page with <code>pointer-events: none</code>. Speed lines are cleared and redrawn each rAF tick.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-num">03</div>
+          <div class="feature-text">
+            <h3>Three.js + ScrollTrigger</h3>
+            <p>The WebGL hero canvas uses GSAP's ticker. Camera and mesh rotation are driven by scroll progress for seamless integration.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-num">04</div>
+          <div class="feature-text">
+            <h3>CSS Hue Shift</h3>
+            <p>Gradient text hue is updated each frame from a ScrollTrigger <code>onUpdate</code> callback — no repaints, just CSS variable changes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- CTA -->
+    <section class="cta-section">
+      <h2 class="gradient-text">Scroll to believe it.</h2>
+      <p>Three rendering layers. Zero jank. One experience.</p>
+      <a href="/" class="btn-primary">Back to Gallery</a>
+    </section>
+  
+    <script type="module" src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  function prefersReducedMotion() {
+    return window.MotionPreference.prefersReducedMotion();
+  }
+  
+  function initDemoShell() {
+    // No-op shim in imported standalone snippets.
+  }
+  
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import Lenis from "lenis";
+  
+  import * as THREE from "three";
+  
+  gsap.registerPlugin(ScrollTrigger);
+  
+  initDemoShell({
+    title: "Premium Velocity Experience",
+    category: "pages",
+    tech: ["three.js", "lenis", "gsap", "canvas-2d", "velocity"],
+  });
+  
+  const reduced = prefersReducedMotion();
+  if (reduced) document.documentElement.classList.add("reduced-motion");
+  
+  // ─── Lenis Setup ──────────────────────────────────────────────────────────────
+  const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+  lenis.on("scroll", ScrollTrigger.update);
+  gsap.ticker.lagSmoothing(0);
+  
+  // ─── Three.js Hero ───────────────────────────────────────────────────────────
+  const heroCanvas = document.getElementById("hero-canvas");
+  const renderer = new THREE.WebGLRenderer({ canvas: heroCanvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 5;
+  
+  // Icosahedron wireframe
+  const geo = new THREE.IcosahedronGeometry(1.8, 2);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x86e8ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.18,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+  
+  // Inner sphere
+  const innerGeo = new THREE.SphereGeometry(0.9, 16, 16);
+  const innerMat = new THREE.MeshBasicMaterial({
+    color: 0xae52ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.1,
+  });
+  const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+  scene.add(innerMesh);
+  
+  // Ambient particles
+  const particleCount = 600;
+  const positions = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+  }
+  const partGeo = new THREE.BufferGeometry();
+  partGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  const partMat = new THREE.PointsMaterial({
+    color: 0x86e8ff,
+    size: 0.03,
+    transparent: true,
+    opacity: 0.4,
+  });
+  const particles = new THREE.Points(partGeo, partMat);
+  scene.add(particles);
+  
+  // Scroll-driven rotation
+  let scrollProgress = 0;
+  ScrollTrigger.create({
+    trigger: document.body,
+    start: "top top",
+    end: "bottom bottom",
+    onUpdate: (self) => {
+      scrollProgress = self.progress;
+    },
+  });
+  
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+  
+  // ─── Velocity Canvas (Demo 39 technique) ─────────────────────────────────────
+  const velCanvas = document.getElementById("velocity-canvas");
+  const ctx = velCanvas.getContext("2d");
+  let velocity = 0;
+  let smoothVelocity = 0;
+  
+  function resizeVelCanvas() {
+    velCanvas.width = window.innerWidth;
+    velCanvas.height = window.innerHeight;
+  }
+  resizeVelCanvas();
+  window.addEventListener("resize", resizeVelCanvas);
+  
+  function drawSpeedLines(vel) {
+    const cx = velCanvas.width / 2;
+    const cy = velCanvas.height / 2;
+    const absVel = Math.abs(vel);
+    const count = Math.floor(Math.min(80, absVel * 5));
+    const opacity = Math.min(0.65, absVel * 0.045);
+    const maxLen = Math.min(velCanvas.width, velCanvas.height) * 0.45 * Math.min(1, absVel * 0.025);
+  
+    ctx.clearRect(0, 0, velCanvas.width, velCanvas.height);
+    if (count < 1 || opacity < 0.02) return;
+  
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const minR = 60;
+      const sx = cx + Math.cos(angle) * minR;
+      const sy = cy + Math.sin(angle) * minR;
+      const ex = cx + Math.cos(angle) * (minR + maxLen);
+      const ey = cy + Math.sin(angle) * (minR + maxLen);
+  
+      const grad = ctx.createLinearGradient(sx, sy, ex, ey);
+      grad.addColorStop(0, `rgba(134, 232, 255, ${opacity})`);
+      grad.addColorStop(0.5, `rgba(174, 82, 255, ${opacity * 0.5})`);
+      grad.addColorStop(1, "rgba(134, 232, 255, 0)");
+  
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(ex, ey);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = Math.max(0.5, absVel * 0.12);
+      ctx.stroke();
+    }
+  }
+  
+  // Speed indicator UI
+  const speedFill = document.getElementById("speed-fill");
+  const speedValue = document.getElementById("speed-value");
+  
+  // ─── Lenis scroll event ───────────────────────────────────────────────────────
+  lenis.on("scroll", (e) => {
+    velocity = e.velocity;
+  
+    // Update speed UI
+    const absVel = Math.abs(velocity);
+    const pct = Math.min(100, absVel * 6);
+    if (speedFill) speedFill.style.width = pct + "%";
+    if (speedValue) speedValue.textContent = absVel.toFixed(1);
+  });
+  
+  // ─── Main Animation Loop ──────────────────────────────────────────────────────
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  
+    // Smooth velocity decay
+    smoothVelocity += (velocity - smoothVelocity) * 0.1;
+    velocity *= 0.92;
+  
+    if (!reduced) {
+      // Draw speed lines
+      drawSpeedLines(smoothVelocity);
+  
+      // Rotate Three.js meshes
+      const t = time * 0.3;
+      mesh.rotation.x = t * 0.4 + scrollProgress * Math.PI * 2;
+      mesh.rotation.y = t * 0.6;
+      innerMesh.rotation.x = -t * 0.5;
+      innerMesh.rotation.y = t * 0.8 + scrollProgress * Math.PI;
+      particles.rotation.y = t * 0.08;
+  
+      // Velocity effect on mesh scale
+      const absVel = Math.abs(smoothVelocity);
+      const scalePulse = 1 + absVel * 0.008;
+      mesh.scale.setScalar(scalePulse);
+    }
+  
+    renderer.render(scene, camera);
+  });
+  
+  // ─── Gradient hue shift on scroll ────────────────────────────────────────────
+  if (!reduced) {
+    ScrollTrigger.create({
+      trigger: document.body,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        document.documentElement.style.setProperty("--hue-shift", `${self.progress * 300}deg`);
+      },
+    });
+  }
+  
+  // ─── Hero entrance ────────────────────────────────────────────────────────────
+  if (!reduced) {
+    gsap.set([".hero-tag", ".hero h1", ".hero-desc", ".speed-indicator"], { opacity: 0, y: 30 });
+    gsap
+      .timeline({ defaults: { ease: "expo.out" } })
+      .to(".hero-tag", { opacity: 1, y: 0, duration: 0.7, delay: 0.5 })
+      .to(".hero h1", { opacity: 1, y: 0, duration: 1 }, "-=0.4")
+      .to(".hero-desc", { opacity: 1, y: 0, duration: 0.7 }, "-=0.5")
+      .to(".speed-indicator", { opacity: 1, y: 0, duration: 0.6 }, "-=0.4");
+  }
+  
+  // ─── Depth cards entrance (Demo 38 technique) ─────────────────────────────────
+  document.querySelectorAll(".depth-card").forEach((card, i) => {
+    const depth = parseFloat(card.style.getPropertyValue("--depth")) || 0.5;
+  
+    if (!reduced) {
+      gsap.set(card, { opacity: 0, y: 60, rotationX: 15, scale: 0.85 });
+      gsap.to(card, {
+        opacity: 1,
+        y: 0,
+        rotationX: 0,
+        scale: 1,
+        duration: 1,
+        ease: "expo.out",
+        delay: depth * 0.3,
+        scrollTrigger: {
+          trigger: ".depth-section",
+          start: "top 70%",
+          toggleActions: "play none none reverse",
+        },
+      });
+  
+      card.addEventListener("mouseenter", () =>
+        gsap.to(card, { y: -12, duration: 0.4, overwrite: "auto" })
+      );
+      card.addEventListener("mouseleave", () =>
+        gsap.to(card, { y: 0, duration: 0.4, overwrite: "auto" })
+      );
+    }
+  });
+  
+  // ─── Stats counters ───────────────────────────────────────────────────────────
+  document.querySelectorAll(".stat-card").forEach((card, i) => {
+    const valEl = card.querySelector(".stat-value");
+    const target = parseFloat(card.dataset.target);
+    const suffix = card.dataset.suffix || "";
+  
+    if (!reduced) {
+      gsap.set(card, { opacity: 0, y: 30 });
+      gsap.to(card, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        ease: "expo.out",
+        delay: i * 0.08,
+        scrollTrigger: {
+          trigger: ".stats-grid",
+          start: "top 75%",
+          toggleActions: "play none none reverse",
+        },
+      });
+  
+      ScrollTrigger.create({
+        trigger: card,
+        start: "top 80%",
+        end: "top 25%",
+        onUpdate: (self) => {
+          const val = target * self.progress;
+          const display = target % 1 !== 0 ? val.toFixed(1) : Math.round(val);
+          valEl.textContent = display + suffix;
+        },
+      });
+    } else {
+      valEl.textContent = target + suffix;
+    }
+  });
+  
+  // ─── Features list ────────────────────────────────────────────────────────────
+  document.querySelectorAll(".feature-item").forEach((item, i) => {
+    if (!reduced) {
+      gsap.set(item, { opacity: 0, x: -30 });
+      gsap.to(item, {
+        opacity: 1,
+        x: 0,
+        duration: 0.8,
+        ease: "expo.out",
+        delay: i * 0.1,
+        scrollTrigger: { trigger: item, start: "top 75%", toggleActions: "play none none reverse" },
+      });
+    }
+  });
+  
+  // Section headers
+  document.querySelectorAll(".section-header").forEach((h) => {
+    if (!reduced) {
+      gsap.set(h.children, { opacity: 0, y: 25 });
+      gsap.to(h.children, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.1,
+        ease: "expo.out",
+        scrollTrigger: { trigger: h, start: "top 75%", toggleActions: "play none none reverse" },
+      });
+    }
+  });
+  
+  // CTA
+  if (!reduced) {
+    gsap.set(".cta-section h2, .cta-section p, .cta-section a", { opacity: 0, y: 25 });
+    gsap.to(".cta-section h2, .cta-section p, .cta-section a", {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      stagger: 0.12,
+      ease: "expo.out",
+      scrollTrigger: {
+        trigger: ".cta-section",
+        start: "top 75%",
+        toggleActions: "play none none reverse",
+      },
+    });
+  }
+  
+  // ─── Motion preference ────────────────────────────────────────────────────────
+  window.addEventListener("motion-preference", (e) => {
+    if (e.detail.reduced) {
+      gsap.globalTimeline.paused(true);
+      ctx.clearRect(0, 0, velCanvas.width, velCanvas.height);
+    } else {
+      gsap.globalTimeline.paused(false);
+    }
+  });
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --bg: #070a12;
+    --text: #f0f4fb;
+    --panel: #121a2b;
+    --border: #263249;
+    --accent: #86e8ff;
+    --muted: #8a95a8;
+    --purple: #ae52ff;
+    --pink: #ff40d6;
+    --hue-shift: 0deg;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  
+  /* Fixed layers */
+  #velocity-canvas,
+  #hero-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  #velocity-canvas {
+    z-index: 2;
+  }
+  #hero-canvas {
+    z-index: 1;
+  }
+  
+  section {
+    position: relative;
+    z-index: 3;
+  }
+  
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    background: radial-gradient(ellipse at 50% 40%, rgba(134, 232, 255, 0.04) 0%, transparent 65%);
+  }
+  
+  .hero-content {
+    max-width: 680px;
+    text-align: center;
+  }
+  
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(134, 232, 255, 0.3);
+    border-radius: 20px;
+    padding: 0.3rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero h1 {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+  }
+  
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+  }
+  
+  /* Speed indicator */
+  .speed-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 0.8rem 1.2rem;
+    background: rgba(18, 26, 43, 0.8);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    backdrop-filter: blur(8px);
+  }
+  
+  .speed-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  
+  .speed-bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .speed-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--accent), var(--purple));
+    border-radius: 2px;
+    transition: width 0.1s linear;
+  }
+  
+  .speed-value {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 28px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* ── Gradient Text ── */
+  .gradient-text {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--hue-shift), 80%, 55%),
+      hsl(calc(var(--hue-shift) + 70deg), 80%, 55%),
+      hsl(calc(var(--hue-shift) + 140deg), 80%, 55%)
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradShift 6s linear infinite;
+  }
+  
+  @keyframes gradShift {
+    0% {
+      background-position: 0% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+  
+  @supports not (-webkit-background-clip: text) {
+    .gradient-text {
+      color: var(--accent);
+      background: none;
+    }
+  }
+  
+  /* ── Depth Section ── */
+  .depth-section {
+    padding: 8rem 2rem;
+    border-top: 1px solid var(--border);
+    background: rgba(7, 10, 18, 0.85);
+    backdrop-filter: blur(4px);
+  }
+  
+  .depth-cards {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    perspective: 1200px;
+  }
+  
+  .depth-card {
+    padding: 2rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .depth-card:hover {
+    border-color: hsl(var(--card-hue), 80%, 55%);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+  
+  .dc-icon {
+    font-size: 2rem;
+    color: hsl(var(--card-hue), 80%, 55%);
+    margin-bottom: 1rem;
+  }
+  
+  .depth-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.8rem;
+  }
+  
+  .depth-card p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  
+  /* ── Stats ── */
+  .stats-section {
+    padding: 7rem 2rem;
+    border-top: 1px solid var(--border);
+    background: rgba(7, 10, 18, 0.9);
+  }
+  
+  .section-header {
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto 4rem;
+  }
+  
+  .section-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  
+  .section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  
+  .stats-grid {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .stat-card {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .stat-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  
+  /* ── Features ── */
+  .features-section {
+    padding: 7rem 2rem;
+    border-top: 1px solid var(--border);
+    background: rgba(7, 10, 18, 0.85);
+  }
+  
+  .features-list {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .feature-item {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .feature-item:last-child {
+    border-bottom: none;
+  }
+  
+  .feature-num {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--accent);
+    opacity: 0.5;
+    padding-top: 0.3rem;
+    flex-shrink: 0;
+    width: 28px;
+  }
+  
+  .feature-text h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+  }
+  
+  .feature-text p {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  
+  code {
+    background: rgba(134, 232, 255, 0.1);
+    color: var(--accent);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-family: "Monaco", monospace;
+    font-size: 0.88em;
+  }
+  
+  /* ── CTA ── */
+  .cta-section {
+    padding: 8rem 2rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: radial-gradient(ellipse at 50% 50%, rgba(134, 232, 255, 0.06) 0%, transparent 70%);
+  }
+  
+  .cta-section h2 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    letter-spacing: -1.5px;
+  }
+  
+  .cta-section p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  
+  .btn-primary {
+    display: inline-block;
+    padding: 0.9rem 2rem;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 6px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background: rgba(134, 232, 255, 0.85);
+    transform: translateY(-2px);
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 2.8rem;
+    }
+    .depth-cards {
+      grid-template-columns: 1fr;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .section-header h2 {
+      font-size: 2rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .hero h1 {
+      font-size: 2.2rem;
+    }
+    .cta-section h2 {
+      font-size: 2.5rem;
+    }
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  html.reduced-motion #velocity-canvas {
+    display: none;
+  }
+  html.reduced-motion .gradient-text {
+    animation: none !important;
+  }
+  html.reduced-motion * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Velocity Experience — stealthisdesign</title>
+    <link rel="stylesheet" href="style.css">
+      <script type="importmap">{"imports":{"gsap":"https://esm.sh/gsap@3.13.0","gsap/ScrollTrigger":"https://esm.sh/gsap@3.13.0/ScrollTrigger","gsap/SplitText":"https://esm.sh/gsap@3.13.0/SplitText","gsap/Flip":"https://esm.sh/gsap@3.13.0/Flip","gsap/ScrambleTextPlugin":"https://esm.sh/gsap@3.13.0/ScrambleTextPlugin","gsap/TextPlugin":"https://esm.sh/gsap@3.13.0/TextPlugin","gsap/all":"https://esm.sh/gsap@3.13.0/all","gsap/":"https://esm.sh/gsap@3.13.0/","lenis":"https://esm.sh/lenis@1.1.13/dist/lenis.mjs","three":"https://esm.sh/three@0.171.0","three/addons/":"https://esm.sh/three@0.171.0/examples/jsm/"}}</script>
+    <style>html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  
+  .lenis:not(.lenis-autoToggle).lenis-stopped {
+    overflow: clip;
+  }
+  
+  .lenis [data-lenis-prevent],
+  .lenis [data-lenis-prevent-wheel],
+  .lenis [data-lenis-prevent-touch] {
+    overscroll-behavior: contain;
+  }
+  
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
+  }
+  
+  .lenis.lenis-autoToggle {
+    transition-property: overflow;
+    transition-duration: 1ms;
+    transition-behavior: allow-discrete;
+  }</style>
+  </head>
+  <body>
+  
+    <!-- Velocity Canvas (fixed overlay) -->
+    <canvas id="velocity-canvas" aria-hidden="true"></canvas>
+  
+    <!-- Three.js WebGL hero -->
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-tag">High Performance</div>
+        <h1 class="gradient-text">Built for speed.<br>Designed to inspire.</h1>
+        <p class="hero-desc">Scroll fast or scroll slow — this experience reacts to your velocity. Built with Three.js, Lenis, GSAP, and Canvas 2D in perfect sync.</p>
+        <div class="speed-indicator" aria-live="polite">
+          <span class="speed-label">Scroll Velocity</span>
+          <div class="speed-bar-track">
+            <div class="speed-bar-fill" id="speed-fill"></div>
+          </div>
+          <span class="speed-value" id="speed-value">0.0</span>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Depth Section -->
+    <section class="depth-section">
+      <div class="depth-cards">
+        <div class="depth-card" style="--depth: 0.9; --card-hue: 195">
+          <div class="dc-icon">◆</div>
+          <h3>Velocity Tracking</h3>
+          <p>Lenis exposes scroll velocity on every frame. The faster you scroll, the more dramatic the visual response.</p>
+        </div>
+        <div class="depth-card" style="--depth: 0.5; --card-hue: 270">
+          <div class="dc-icon">▲</div>
+          <h3>Canvas Speed Lines</h3>
+          <p>Radial speed lines drawn on Canvas 2D scale with velocity magnitude — count, length, and opacity all react.</p>
+        </div>
+        <div class="depth-card" style="--depth: 0.7; --card-hue: 330">
+          <div class="dc-icon">●</div>
+          <h3>Three.js Hero</h3>
+          <p>A WebGL scene runs in the hero background, rotating and reacting to scroll progress through GSAP.</p>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Velocity Stats -->
+    <section class="stats-section">
+      <div class="section-header">
+        <span class="section-tag">Performance</span>
+        <h2 class="gradient-text">Numbers in motion</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" data-target="60" data-suffix=" fps">
+          <div class="stat-value">0 fps</div>
+          <div class="stat-label">Target Frame Rate</div>
+        </div>
+        <div class="stat-card" data-target="16.6" data-suffix=" ms">
+          <div class="stat-value">0 ms</div>
+          <div class="stat-label">Frame Budget</div>
+        </div>
+        <div class="stat-card" data-target="3" data-suffix="">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Rendering Layers</div>
+        </div>
+        <div class="stat-card" data-target="0" data-suffix=" ms">
+          <div class="stat-value">0 ms</div>
+          <div class="stat-label">Input Lag</div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Features -->
+    <section class="features-section">
+      <div class="section-header">
+        <span class="section-tag">Techniques</span>
+        <h2>What makes it tick</h2>
+      </div>
+      <div class="features-list">
+        <div class="feature-item">
+          <div class="feature-num">01</div>
+          <div class="feature-text">
+            <h3>Lenis Velocity API</h3>
+            <p>Access real-time scroll velocity through Lenis's <code>scroll</code> event. Map the absolute value to visual intensity for reactive effects.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-num">02</div>
+          <div class="feature-text">
+            <h3>Canvas 2D Compositing</h3>
+            <p>A fixed Canvas layer sits above the page with <code>pointer-events: none</code>. Speed lines are cleared and redrawn each rAF tick.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-num">03</div>
+          <div class="feature-text">
+            <h3>Three.js + ScrollTrigger</h3>
+            <p>The WebGL hero canvas uses GSAP's ticker. Camera and mesh rotation are driven by scroll progress for seamless integration.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-num">04</div>
+          <div class="feature-text">
+            <h3>CSS Hue Shift</h3>
+            <p>Gradient text hue is updated each frame from a ScrollTrigger <code>onUpdate</code> callback — no repaints, just CSS variable changes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- CTA -->
+    <section class="cta-section">
+      <h2 class="gradient-text">Scroll to believe it.</h2>
+      <p>Three rendering layers. Zero jank. One experience.</p>
+      <a href="/" class="btn-primary">Back to Gallery</a>
+    </section>
+  
+    <script type="module" src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  function prefersReducedMotion() {
+    return window.MotionPreference.prefersReducedMotion();
+  }
+  
+  function initDemoShell() {
+    // No-op shim in imported standalone snippets.
+  }
+  
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import Lenis from "lenis";
+  
+  import * as THREE from "three";
+  
+  gsap.registerPlugin(ScrollTrigger);
+  
+  initDemoShell({
+    title: "Premium Velocity Experience",
+    category: "pages",
+    tech: ["three.js", "lenis", "gsap", "canvas-2d", "velocity"],
+  });
+  
+  const reduced = prefersReducedMotion();
+  if (reduced) document.documentElement.classList.add("reduced-motion");
+  
+  // ─── Lenis Setup ──────────────────────────────────────────────────────────────
+  const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+  lenis.on("scroll", ScrollTrigger.update);
+  gsap.ticker.lagSmoothing(0);
+  
+  // ─── Three.js Hero ───────────────────────────────────────────────────────────
+  const heroCanvas = document.getElementById("hero-canvas");
+  const renderer = new THREE.WebGLRenderer({ canvas: heroCanvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 5;
+  
+  // Icosahedron wireframe
+  const geo = new THREE.IcosahedronGeometry(1.8, 2);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x86e8ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.18,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+  
+  // Inner sphere
+  const innerGeo = new THREE.SphereGeometry(0.9, 16, 16);
+  const innerMat = new THREE.MeshBasicMaterial({
+    color: 0xae52ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.1,
+  });
+  const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+  scene.add(innerMesh);
+  
+  // Ambient particles
+  const particleCount = 600;
+  const positions = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+  }
+  const partGeo = new THREE.BufferGeometry();
+  partGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  const partMat = new THREE.PointsMaterial({
+    color: 0x86e8ff,
+    size: 0.03,
+    transparent: true,
+    opacity: 0.4,
+  });
+  const particles = new THREE.Points(partGeo, partMat);
+  scene.add(particles);
+  
+  // Scroll-driven rotation
+  let scrollProgress = 0;
+  ScrollTrigger.create({
+    trigger: document.body,
+    start: "top top",
+    end: "bottom bottom",
+    onUpdate: (self) => {
+      scrollProgress = self.progress;
+    },
+  });
+  
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+  
+  // ─── Velocity Canvas (Demo 39 technique) ─────────────────────────────────────
+  const velCanvas = document.getElementById("velocity-canvas");
+  const ctx = velCanvas.getContext("2d");
+  let velocity = 0;
+  let smoothVelocity = 0;
+  
+  function resizeVelCanvas() {
+    velCanvas.width = window.innerWidth;
+    velCanvas.height = window.innerHeight;
+  }
+  resizeVelCanvas();
+  window.addEventListener("resize", resizeVelCanvas);
+  
+  function drawSpeedLines(vel) {
+    const cx = velCanvas.width / 2;
+    const cy = velCanvas.height / 2;
+    const absVel = Math.abs(vel);
+    const count = Math.floor(Math.min(80, absVel * 5));
+    const opacity = Math.min(0.65, absVel * 0.045);
+    const maxLen = Math.min(velCanvas.width, velCanvas.height) * 0.45 * Math.min(1, absVel * 0.025);
+  
+    ctx.clearRect(0, 0, velCanvas.width, velCanvas.height);
+    if (count < 1 || opacity < 0.02) return;
+  
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const minR = 60;
+      const sx = cx + Math.cos(angle) * minR;
+      const sy = cy + Math.sin(angle) * minR;
+      const ex = cx + Math.cos(angle) * (minR + maxLen);
+      const ey = cy + Math.sin(angle) * (minR + maxLen);
+  
+      const grad = ctx.createLinearGradient(sx, sy, ex, ey);
+      grad.addColorStop(0, `rgba(134, 232, 255, ${opacity})`);
+      grad.addColorStop(0.5, `rgba(174, 82, 255, ${opacity * 0.5})`);
+      grad.addColorStop(1, "rgba(134, 232, 255, 0)");
+  
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(ex, ey);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = Math.max(0.5, absVel * 0.12);
+      ctx.stroke();
+    }
+  }
+  
+  // Speed indicator UI
+  const speedFill = document.getElementById("speed-fill");
+  const speedValue = document.getElementById("speed-value");
+  
+  // ─── Lenis scroll event ───────────────────────────────────────────────────────
+  lenis.on("scroll", (e) => {
+    velocity = e.velocity;
+  
+    // Update speed UI
+    const absVel = Math.abs(velocity);
+    const pct = Math.min(100, absVel * 6);
+    if (speedFill) speedFill.style.width = pct + "%";
+    if (speedValue) speedValue.textContent = absVel.toFixed(1);
+  });
+  
+  // ─── Main Animation Loop ──────────────────────────────────────────────────────
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  
+    // Smooth velocity decay
+    smoothVelocity += (velocity - smoothVelocity) * 0.1;
+    velocity *= 0.92;
+  
+    if (!reduced) {
+      // Draw speed lines
+      drawSpeedLines(smoothVelocity);
+  
+      // Rotate Three.js meshes
+      const t = time * 0.3;
+      mesh.rotation.x = t * 0.4 + scrollProgress * Math.PI * 2;
+      mesh.rotation.y = t * 0.6;
+      innerMesh.rotation.x = -t * 0.5;
+      innerMesh.rotation.y = t * 0.8 + scrollProgress * Math.PI;
+      particles.rotation.y = t * 0.08;
+  
+      // Velocity effect on mesh scale
+      const absVel = Math.abs(smoothVelocity);
+      const scalePulse = 1 + absVel * 0.008;
+      mesh.scale.setScalar(scalePulse);
+    }
+  
+    renderer.render(scene, camera);
+  });
+  
+  // ─── Gradient hue shift on scroll ────────────────────────────────────────────
+  if (!reduced) {
+    ScrollTrigger.create({
+      trigger: document.body,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        document.documentElement.style.setProperty("--hue-shift", `${self.progress * 300}deg`);
+      },
+    });
+  }
+  
+  // ─── Hero entrance ────────────────────────────────────────────────────────────
+  if (!reduced) {
+    gsap.set([".hero-tag", ".hero h1", ".hero-desc", ".speed-indicator"], { opacity: 0, y: 30 });
+    gsap
+      .timeline({ defaults: { ease: "expo.out" } })
+      .to(".hero-tag", { opacity: 1, y: 0, duration: 0.7, delay: 0.5 })
+      .to(".hero h1", { opacity: 1, y: 0, duration: 1 }, "-=0.4")
+      .to(".hero-desc", { opacity: 1, y: 0, duration: 0.7 }, "-=0.5")
+      .to(".speed-indicator", { opacity: 1, y: 0, duration: 0.6 }, "-=0.4");
+  }
+  
+  // ─── Depth cards entrance (Demo 38 technique) ─────────────────────────────────
+  document.querySelectorAll(".depth-card").forEach((card, i) => {
+    const depth = parseFloat(card.style.getPropertyValue("--depth")) || 0.5;
+  
+    if (!reduced) {
+      gsap.set(card, { opacity: 0, y: 60, rotationX: 15, scale: 0.85 });
+      gsap.to(card, {
+        opacity: 1,
+        y: 0,
+        rotationX: 0,
+        scale: 1,
+        duration: 1,
+        ease: "expo.out",
+        delay: depth * 0.3,
+        scrollTrigger: {
+          trigger: ".depth-section",
+          start: "top 70%",
+          toggleActions: "play none none reverse",
+        },
+      });
+  
+      card.addEventListener("mouseenter", () =>
+        gsap.to(card, { y: -12, duration: 0.4, overwrite: "auto" })
+      );
+      card.addEventListener("mouseleave", () =>
+        gsap.to(card, { y: 0, duration: 0.4, overwrite: "auto" })
+      );
+    }
+  });
+  
+  // ─── Stats counters ───────────────────────────────────────────────────────────
+  document.querySelectorAll(".stat-card").forEach((card, i) => {
+    const valEl = card.querySelector(".stat-value");
+    const target = parseFloat(card.dataset.target);
+    const suffix = card.dataset.suffix || "";
+  
+    if (!reduced) {
+      gsap.set(card, { opacity: 0, y: 30 });
+      gsap.to(card, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        ease: "expo.out",
+        delay: i * 0.08,
+        scrollTrigger: {
+          trigger: ".stats-grid",
+          start: "top 75%",
+          toggleActions: "play none none reverse",
+        },
+      });
+  
+      ScrollTrigger.create({
+        trigger: card,
+        start: "top 80%",
+        end: "top 25%",
+        onUpdate: (self) => {
+          const val = target * self.progress;
+          const display = target % 1 !== 0 ? val.toFixed(1) : Math.round(val);
+          valEl.textContent = display + suffix;
+        },
+      });
+    } else {
+      valEl.textContent = target + suffix;
+    }
+  });
+  
+  // ─── Features list ────────────────────────────────────────────────────────────
+  document.querySelectorAll(".feature-item").forEach((item, i) => {
+    if (!reduced) {
+      gsap.set(item, { opacity: 0, x: -30 });
+      gsap.to(item, {
+        opacity: 1,
+        x: 0,
+        duration: 0.8,
+        ease: "expo.out",
+        delay: i * 0.1,
+        scrollTrigger: { trigger: item, start: "top 75%", toggleActions: "play none none reverse" },
+      });
+    }
+  });
+  
+  // Section headers
+  document.querySelectorAll(".section-header").forEach((h) => {
+    if (!reduced) {
+      gsap.set(h.children, { opacity: 0, y: 25 });
+      gsap.to(h.children, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.1,
+        ease: "expo.out",
+        scrollTrigger: { trigger: h, start: "top 75%", toggleActions: "play none none reverse" },
+      });
+    }
+  });
+  
+  // CTA
+  if (!reduced) {
+    gsap.set(".cta-section h2, .cta-section p, .cta-section a", { opacity: 0, y: 25 });
+    gsap.to(".cta-section h2, .cta-section p, .cta-section a", {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      stagger: 0.12,
+      ease: "expo.out",
+      scrollTrigger: {
+        trigger: ".cta-section",
+        start: "top 75%",
+        toggleActions: "play none none reverse",
+      },
+    });
+  }
+  
+  // ─── Motion preference ────────────────────────────────────────────────────────
+  window.addEventListener("motion-preference", (e) => {
+    if (e.detail.reduced) {
+      gsap.globalTimeline.paused(true);
+      ctx.clearRect(0, 0, velCanvas.width, velCanvas.height);
+    } else {
+      gsap.globalTimeline.paused(false);
+    }
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

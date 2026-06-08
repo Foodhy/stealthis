@@ -1,0 +1,539 @@
+---
+slug: "chart-radar-remove-css-property-98804771"
+topic: "chart"
+title: "Restore missing CSS property in Radar Chart"
+type: "fix"
+difficulty: 1
+resourceSlug: "chart-radar"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #0f1117;
+    --surface: #16181f;
+    --surface2: #1e2130;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+  
+  .chart-page {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .chart-header {
+    margin-bottom: 12px;
+  }
+  
+  .chart-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  .chart-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .chart-svg {
+    display: block;
+  }
+  
+  .radar-ring {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  
+  .radar-axis {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  
+  .radar-polygon {
+    fill-opacity: 0.18;
+    stroke-width: 2;
+  }
+  
+  .radar-dot {
+    r: 4;
+  }
+  
+  .radar-label {
+    fill: var(--text-muted);
+    font-size: 11px;
+    font-family: inherit;
+  }
+  
+  .chart-tooltip {
+    position: absolute;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Radar Chart</title>
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="chart-page">
+          <div class="chart-header">
+              <div>
+                  <h1 class="chart-title">Skills Assessment</h1>
+                  <p class="chart-sub">Team comparison</p>
+              </div>
+          </div>
+          <div class="legend" id="legend"></div>
+          <div class="chart-wrap" id="chartWrap">
+              <svg id="radarSvg" class="chart-svg" aria-label="Radar chart"></svg>
+              <div class="chart-tooltip" id="chartTooltip" hidden></div>
+          </div>
+      </div>
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const AXES = ["Design", "Frontend", "Backend", "DevOps", "Testing", "Communication"];
+  const SERIES = [
+    { label: "Alice", color: "#818cf8", data: [85, 90, 65, 70, 80, 92] },
+    { label: "Bob", color: "#34d399", data: [70, 75, 88, 82, 60, 75] },
+  ];
+  const SIZE = 360,
+    CX = SIZE / 2,
+    CY = SIZE / 2 + 10,
+    R = 130,
+    RINGS = 5;
+  const svg = document.getElementById("radarSvg");
+  const legend = document.getElementById("legend");
+  const tooltip = document.getElementById("chartTooltip");
+  const wrap = document.getElementById("chartWrap");
+  
+  SERIES.forEach((s) => {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+    item.innerHTML = `<span class="legend-swatch" style="background:${s.color}"></span><span>${s.label}</span>`;
+    legend.appendChild(item);
+  });
+  
+  function polarXY(cx, cy, r, angleDeg) {
+    const a = (angleDeg - 90) * (Math.PI / 180);
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
+  
+  function draw() {
+    svg.setAttribute("viewBox", `0 0 ${SIZE} ${SIZE}`);
+    svg.setAttribute("width", Math.min(wrap.clientWidth - 32, SIZE));
+    svg.setAttribute("height", Math.min(wrap.clientWidth - 32, SIZE));
+    svg.innerHTML = "";
+  
+    const n = AXES.length;
+    const step = 360 / n;
+  
+    // Rings
+    for (let r = 1; r <= RINGS; r++) {
+      const pts = AXES.map((_, i) => polarXY(CX, CY, (R / RINGS) * r, i * step).join(",")).join(" ");
+      svg.appendChild(elSvg("polygon", { points: pts, class: "radar-ring" }));
+      // tick label
+      const [lx, ly] = polarXY(CX, CY, (R / RINGS) * r, 0);
+      const lbl = elSvg("text", { x: lx + 3, y: ly, class: "radar-label", "font-size": "9" });
+      lbl.textContent = Math.round((100 / RINGS) * r);
+      svg.appendChild(lbl);
+    }
+  
+    // Axes + labels
+    AXES.forEach((axis, i) => {
+      const [ex, ey] = polarXY(CX, CY, R, i * step);
+      svg.appendChild(elSvg("line", { class: "radar-axis", x1: CX, y1: CY, x2: ex, y2: ey }));
+      const [lx, ly] = polarXY(CX, CY, R + 22, i * step);
+      const anchor = lx < CX - 5 ? "end" : lx > CX + 5 ? "start" : "middle";
+      const lbl = elSvg("text", { x: lx, y: ly + 4, class: "radar-label", "text-anchor": anchor });
+      lbl.textContent = axis;
+      svg.appendChild(lbl);
+    });
+  
+    // Series
+    SERIES.forEach((s, si) => {
+      const pts = s.data.map((v, i) => polarXY(CX, CY, (v / 100) * R, i * step).join(",")).join(" ");
+      const poly = elSvg("polygon", {
+        points: pts,
+        class: "radar-polygon",
+        fill: s.color,
+        stroke: s.color,
+        style: `animation:fadeIn .5s ${si * 0.15}s ease both`,
+      });
+      svg.appendChild(poly);
+      s.data.forEach((v, i) => {
+        const [dx, dy] = polarXY(CX, CY, (v / 100) * R, i * step);
+        const dot = elSvg("circle", {
+          class: "radar-dot",
+          cx: dx,
+          cy: dy,
+          fill: s.color,
+          stroke: "var(--surface)",
+          "stroke-width": 2,
+          "data-si": si,
+          "data-i": i,
+        });
+        dot.addEventListener("mouseenter", (e) => {
+          tooltip.innerHTML = `<strong>${AXES[i]}</strong><br/>${s.label}: <strong>${v}</strong>`;
+          tooltip.hidden = false;
+          tooltip.style.left = e.clientX + 12 + "px";
+          tooltip.style.top = e.clientY - 40 + "px";
+        });
+        dot.addEventListener("mouseleave", () => {
+          tooltip.hidden = true;
+        });
+        svg.appendChild(dot);
+      });
+    });
+  }
+  
+  function elSvg(tag, attrs = {}) {
+    const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    return e;
+  }
+  
+  const style = document.createElement("style");
+  style.textContent = `@keyframes fadeIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}`;
+  document.head.appendChild(style);
+  
+  const ro = new ResizeObserver(draw);
+  ro.observe(wrap);
+  draw();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --bg: #0f1117;
+    --surface: #16181f;
+    --surface2: #1e2130;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+  
+  .chart-page {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .chart-header {
+    margin-bottom: 12px;
+  }
+  
+  .chart-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  .chart-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .chart-svg {
+    display: block;
+  }
+  
+  .radar-ring {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  
+  .radar-axis {
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  
+  .radar-polygon {
+    fill-opacity: 0.18;
+    stroke-width: 2;
+  }
+  
+  .radar-dot {
+    r: 4;
+  }
+  
+  .radar-label {
+    fill: var(--text-muted);
+    font-size: 11px;
+    font-family: inherit;
+  }
+  
+  .chart-tooltip {
+    position: absolute;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Radar Chart</title>
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="chart-page">
+          <div class="chart-header">
+              <div>
+                  <h1 class="chart-title">Skills Assessment</h1>
+                  <p class="chart-sub">Team comparison</p>
+              </div>
+          </div>
+          <div class="legend" id="legend"></div>
+          <div class="chart-wrap" id="chartWrap">
+              <svg id="radarSvg" class="chart-svg" aria-label="Radar chart"></svg>
+              <div class="chart-tooltip" id="chartTooltip" hidden></div>
+          </div>
+      </div>
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  const AXES = ["Design", "Frontend", "Backend", "DevOps", "Testing", "Communication"];
+  const SERIES = [
+    { label: "Alice", color: "#818cf8", data: [85, 90, 65, 70, 80, 92] },
+    { label: "Bob", color: "#34d399", data: [70, 75, 88, 82, 60, 75] },
+  ];
+  const SIZE = 360,
+    CX = SIZE / 2,
+    CY = SIZE / 2 + 10,
+    R = 130,
+    RINGS = 5;
+  const svg = document.getElementById("radarSvg");
+  const legend = document.getElementById("legend");
+  const tooltip = document.getElementById("chartTooltip");
+  const wrap = document.getElementById("chartWrap");
+  
+  SERIES.forEach((s) => {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+    item.innerHTML = `<span class="legend-swatch" style="background:${s.color}"></span><span>${s.label}</span>`;
+    legend.appendChild(item);
+  });
+  
+  function polarXY(cx, cy, r, angleDeg) {
+    const a = (angleDeg - 90) * (Math.PI / 180);
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
+  
+  function draw() {
+    svg.setAttribute("viewBox", `0 0 ${SIZE} ${SIZE}`);
+    svg.setAttribute("width", Math.min(wrap.clientWidth - 32, SIZE));
+    svg.setAttribute("height", Math.min(wrap.clientWidth - 32, SIZE));
+    svg.innerHTML = "";
+  
+    const n = AXES.length;
+    const step = 360 / n;
+  
+    // Rings
+    for (let r = 1; r <= RINGS; r++) {
+      const pts = AXES.map((_, i) => polarXY(CX, CY, (R / RINGS) * r, i * step).join(",")).join(" ");
+      svg.appendChild(elSvg("polygon", { points: pts, class: "radar-ring" }));
+      // tick label
+      const [lx, ly] = polarXY(CX, CY, (R / RINGS) * r, 0);
+      const lbl = elSvg("text", { x: lx + 3, y: ly, class: "radar-label", "font-size": "9" });
+      lbl.textContent = Math.round((100 / RINGS) * r);
+      svg.appendChild(lbl);
+    }
+  
+    // Axes + labels
+    AXES.forEach((axis, i) => {
+      const [ex, ey] = polarXY(CX, CY, R, i * step);
+      svg.appendChild(elSvg("line", { class: "radar-axis", x1: CX, y1: CY, x2: ex, y2: ey }));
+      const [lx, ly] = polarXY(CX, CY, R + 22, i * step);
+      const anchor = lx < CX - 5 ? "end" : lx > CX + 5 ? "start" : "middle";
+      const lbl = elSvg("text", { x: lx, y: ly + 4, class: "radar-label", "text-anchor": anchor });
+      lbl.textContent = axis;
+      svg.appendChild(lbl);
+    });
+  
+    // Series
+    SERIES.forEach((s, si) => {
+      const pts = s.data.map((v, i) => polarXY(CX, CY, (v / 100) * R, i * step).join(",")).join(" ");
+      const poly = elSvg("polygon", {
+        points: pts,
+        class: "radar-polygon",
+        fill: s.color,
+        stroke: s.color,
+        style: `animation:fadeIn .5s ${si * 0.15}s ease both`,
+      });
+      svg.appendChild(poly);
+      s.data.forEach((v, i) => {
+        const [dx, dy] = polarXY(CX, CY, (v / 100) * R, i * step);
+        const dot = elSvg("circle", {
+          class: "radar-dot",
+          cx: dx,
+          cy: dy,
+          fill: s.color,
+          stroke: "var(--surface)",
+          "stroke-width": 2,
+          "data-si": si,
+          "data-i": i,
+        });
+        dot.addEventListener("mouseenter", (e) => {
+          tooltip.innerHTML = `<strong>${AXES[i]}</strong><br/>${s.label}: <strong>${v}</strong>`;
+          tooltip.hidden = false;
+          tooltip.style.left = e.clientX + 12 + "px";
+          tooltip.style.top = e.clientY - 40 + "px";
+        });
+        dot.addEventListener("mouseleave", () => {
+          tooltip.hidden = true;
+        });
+        svg.appendChild(dot);
+      });
+    });
+  }
+  
+  function elSvg(tag, attrs = {}) {
+    const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    return e;
+  }
+  
+  const style = document.createElement("style");
+  style.textContent = `@keyframes fadeIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}`;
+  document.head.appendChild(style);
+  
+  const ro = new ResizeObserver(draw);
+  ro.observe(wrap);
+  draw();
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

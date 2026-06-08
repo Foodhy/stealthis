@@ -78,6 +78,7 @@ export const GET: APIRoute = async ({ site }) => {
       libraryZhCn: `${origin}/zh-cn/library/`,
       libraryIt: `${origin}/it/library/`,
       libraryPl: `${origin}/pl/library/`,
+      libraryRu: `${origin}/ru/library/`,
       llms: `${origin}/llms.txt`,
       llmsFull: `${origin}/llms-full.txt`,
       libraryIndex: `${origin}/library-index.json`,

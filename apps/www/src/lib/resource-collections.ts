@@ -7,6 +7,7 @@ import {
 interface ResourceCollectionCandidate {
   category?: string;
   title?: string;
+  description?: string;
   tags?: string[];
   collections?: string[];
 }
@@ -41,6 +42,7 @@ export function resolveResourceCollections(
   const resolved = new Set<ResourceCollection>();
   const normalizedTags = new Set((resource.tags ?? []).map((tag) => normalize(tag)));
   const normalizedTitle = normalize(resource.title ?? "");
+  const normalizedDescription = normalize(resource.description ?? "");
   const normalizedCategory = normalize(resource.category ?? "");
 
   for (const id of resource.collections ?? []) {
@@ -96,6 +98,14 @@ export function resolveResourceCollections(
     normalizedTitle.includes("graph")
   ) {
     resolved.add("charts");
+  }
+
+  if (
+    normalizedTags.has("restaurant") ||
+    normalizedTitle.includes("restaurant") ||
+    normalizedDescription.includes("restaurant")
+  ) {
+    resolved.add("restaurant");
   }
 
   return RESOURCE_COLLECTION_IDS.filter((id) => resolved.has(id));

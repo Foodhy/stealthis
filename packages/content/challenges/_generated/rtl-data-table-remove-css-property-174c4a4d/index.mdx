@@ -1,0 +1,1527 @@
+---
+slug: "rtl-data-table-remove-css-property-174c4a4d"
+topic: "accessibility"
+title: "Restore missing CSS property in RTL Data Table"
+type: "fix"
+difficulty: 1
+resourceSlug: "rtl-data-table"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  /* ── Reset & Base ── */
+  *,
+  *::before,
+  *::after {
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --bg-primary: #0a0a0a;
+    --bg-card: #111111;
+    --bg-row-alt: #0e0e0e;
+    --bg-hover: #181818;
+    --bg-input: #181818;
+    --border: #222222;
+    --border-light: #333333;
+    --text-primary: #f0f0f0;
+    --text-secondary: #999999;
+    --text-muted: #666666;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --radius: 10px;
+  }
+  
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  
+  body {
+    min-height: 100vh;
+    padding-block: 40px;
+    padding-inline: 24px;
+  }
+  
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+  
+  /* ── Page ── */
+  .page {
+    max-inline-size: 1100px;
+    margin-inline: auto;
+  }
+  
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .toolbar-start {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  .record-count {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .dir-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-block: 6px;
+    padding-inline: 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-blue);
+    transition: background 0.2s;
+  }
+  
+  .dir-toggle:hover {
+    background: var(--bg-card);
+  }
+  
+  /* ── Table shell ── */
+  .table-shell {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  
+  /* Table toolbar */
+  .table-toolbar {
+    padding-block: 16px;
+    padding-inline: 20px;
+    border-block-end: 1px solid var(--border);
+  }
+  
+  .search-wrap {
+    position: relative;
+    max-inline-size: 320px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    inset-inline-start: 12px;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  
+  .search-input {
+    inline-size: 100%;
+    padding-block: 8px;
+    padding-inline-start: 36px;
+    padding-inline-end: 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .search-input:focus {
+    border-color: var(--accent-blue);
+  }
+  
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  /* ── Table ── */
+  .table-scroll {
+    overflow-x: auto;
+  }
+  
+  .data-table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+  
+  .data-table thead {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 5;
+  }
+  
+  .data-table th {
+    padding-block: 12px;
+    padding-inline: 20px;
+    background: var(--bg-primary);
+    border-block-end: 1px solid var(--border);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: start;
+    user-select: none;
+  }
+  
+  .th-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .sortable {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .sortable:hover {
+    color: var(--text-secondary);
+  }
+  
+  .sortable.asc .sort-icon::after,
+  .sortable.desc .sort-icon::after {
+    font-size: 0.7rem;
+    margin-inline-start: 2px;
+  }
+  
+  .sortable.asc .sort-icon::after {
+    content: "\25B2";
+  }
+  .sortable.desc .sort-icon::after {
+    content: "\25BC";
+  }
+  
+  .sortable.asc,
+  .sortable.desc {
+    color: var(--accent-blue);
+  }
+  
+  .data-table td {
+    padding-block: 14px;
+    padding-inline: 20px;
+    border-block-end: 1px solid var(--border);
+    font-size: 0.88rem;
+    text-align: start;
+  }
+  
+  /* Zebra striping */
+  .data-table tbody tr:nth-child(even) {
+    background: var(--bg-row-alt);
+  }
+  
+  .data-table tbody tr:hover {
+    background: var(--bg-hover);
+  }
+  
+  /* Name cell */
+  .name-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .name-avatar {
+    inline-size: 32px;
+    block-size: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  
+  .name-text {
+    font-weight: 500;
+  }
+  
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-block: 3px;
+    padding-inline: 10px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 500;
+  }
+  
+  .status-badge .dot {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+  }
+  
+  .status-badge.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--accent-green);
+  }
+  .status-badge.active .dot {
+    background: var(--accent-green);
+  }
+  .status-badge.away {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--accent-amber);
+  }
+  .status-badge.away .dot {
+    background: var(--accent-amber);
+  }
+  .status-badge.offline {
+    background: rgba(102, 102, 102, 0.15);
+    color: var(--text-muted);
+  }
+  .status-badge.offline .dot {
+    background: var(--text-muted);
+  }
+  
+  /* ── Pagination ── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 14px;
+    padding-inline: 20px;
+    border-block-start: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .page-info {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .page-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .page-btn {
+    padding-block: 6px;
+    padding-inline: 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  
+  .page-btn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+  }
+  
+  .page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  
+  .page-btn.active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: #fff;
+  }
+  
+  /* Flip pagination chevrons in RTL */
+  [dir="rtl"] .page-btn.prev,
+  [dir="rtl"] .page-btn.next {
+    transform: scaleX(-1);
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    body {
+      padding-inline: 16px;
+    }
+  
+    .data-table th,
+    .data-table td {
+      padding-inline: 14px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RTL Data Table</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="page">
+  
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <h1 class="page-title">Employee Directory</h1>
+          <span class="record-count" id="record-count">12 records</span>
+        </div>
+        <button class="dir-toggle" id="dir-toggle" type="button" aria-label="Toggle text direction">
+          <span id="dir-label">LTR</span>
+          <span>&#8644;</span>
+        </button>
+      </div>
+  
+      <!-- Table shell -->
+      <div class="table-shell">
+  
+        <!-- Search -->
+        <div class="table-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">&#128269;</span>
+            <input type="search" class="search-input" id="search-input" placeholder="Search employees..." aria-label="Search employees" />
+          </div>
+        </div>
+  
+        <!-- Table -->
+        <div class="table-scroll">
+          <table class="data-table" id="data-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-col="name">
+                  <span class="th-content">
+                    <span class="th-text">Name</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="department">
+                  <span class="th-content">
+                    <span class="th-text">Department</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="role">
+                  <span class="th-content">
+                    <span class="th-text">Role</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="location">
+                  <span class="th-content">
+                    <span class="th-text">Location</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="status">
+                  <span class="th-content">
+                    <span class="th-text">Status</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="joined">
+                  <span class="th-content">
+                    <span class="th-text">Joined</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+  
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+          <div class="page-info" id="page-info"></div>
+          <div class="page-controls" id="page-controls"></div>
+        </div>
+  
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const html = document.documentElement;
+    const dirToggle = document.getElementById("dir-toggle");
+    const dirLabel = document.getElementById("dir-label");
+    const searchInput = document.getElementById("search-input");
+    const tableBody = document.getElementById("table-body");
+    const pageInfo = document.getElementById("page-info");
+    const pageControls = document.getElementById("page-controls");
+    const recordCount = document.getElementById("record-count");
+  
+    const ROWS_PER_PAGE = 5;
+    let currentPage = 1;
+    let sortCol = null;
+    let sortDir = null;
+  
+    const COLORS = [
+      "#3b82f6",
+      "#8b5cf6",
+      "#ef4444",
+      "#22c55e",
+      "#f59e0b",
+      "#06b6d4",
+      "#ec4899",
+      "#6366f1",
+      "#14b8a6",
+      "#f97316",
+      "#a855f7",
+      "#10b981",
+    ];
+  
+    const DATA = [
+      {
+        name: "Ahmed Hassan",
+        department: "Engineering",
+        role: "Senior Developer",
+        location: "Cairo",
+        status: "active",
+        joined: "2023-01-15",
+      },
+      {
+        name: "Sara Al-Rashid",
+        department: "Design",
+        role: "UI/UX Lead",
+        location: "Dubai",
+        status: "active",
+        joined: "2022-06-22",
+      },
+      {
+        name: "Mohamed Youssef",
+        department: "Engineering",
+        role: "Backend Developer",
+        location: "Riyadh",
+        status: "away",
+        joined: "2023-03-10",
+      },
+      {
+        name: "Layla Mahmoud",
+        department: "Marketing",
+        role: "Content Manager",
+        location: "Amman",
+        status: "active",
+        joined: "2022-11-05",
+      },
+      {
+        name: "Omar Khalil",
+        department: "Product",
+        role: "Product Manager",
+        location: "Cairo",
+        status: "active",
+        joined: "2021-09-18",
+      },
+      {
+        name: "Fatima Nasser",
+        department: "Engineering",
+        role: "Frontend Developer",
+        location: "Dubai",
+        status: "offline",
+        joined: "2023-07-01",
+      },
+      {
+        name: "Khalid Ibrahim",
+        department: "Sales",
+        role: "Sales Director",
+        location: "Jeddah",
+        status: "active",
+        joined: "2020-04-12",
+      },
+      {
+        name: "Nour Amin",
+        department: "Design",
+        role: "Brand Designer",
+        location: "Beirut",
+        status: "away",
+        joined: "2023-02-28",
+      },
+      {
+        name: "Youssef Tamer",
+        department: "Engineering",
+        role: "DevOps Engineer",
+        location: "Cairo",
+        status: "active",
+        joined: "2022-08-15",
+      },
+      {
+        name: "Hana Al-Saud",
+        department: "HR",
+        role: "HR Manager",
+        location: "Riyadh",
+        status: "active",
+        joined: "2021-12-01",
+      },
+      {
+        name: "Ali Farouk",
+        department: "Engineering",
+        role: "QA Engineer",
+        location: "Amman",
+        status: "offline",
+        joined: "2023-05-20",
+      },
+      {
+        name: "Reem Abdullah",
+        department: "Finance",
+        role: "Financial Analyst",
+        location: "Dubai",
+        status: "active",
+        joined: "2022-10-08",
+      },
+    ];
+  
+    let filteredData = [...DATA];
+  
+    /* ── Direction toggle ── */
+    dirToggle.addEventListener("click", () => {
+      const isRtl = html.getAttribute("dir") === "rtl";
+      const newDir = isRtl ? "ltr" : "rtl";
+      html.setAttribute("dir", newDir);
+      html.setAttribute("lang", isRtl ? "en" : "ar");
+      dirLabel.textContent = newDir.toUpperCase();
+    });
+  
+    /* ── Initials ── */
+    function getInitials(name) {
+      return name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase();
+    }
+  
+    /* ── Search ── */
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase().trim();
+      filteredData = DATA.filter(
+        (d) =>
+          d.name.toLowerCase().includes(q) ||
+          d.department.toLowerCase().includes(q) ||
+          d.role.toLowerCase().includes(q) ||
+          d.location.toLowerCase().includes(q)
+      );
+      currentPage = 1;
+      applySort();
+      render();
+    });
+  
+    /* ── Sort ── */
+    document.querySelectorAll(".sortable").forEach((th) => {
+      th.addEventListener("click", () => {
+        const col = th.dataset.col;
+        if (sortCol === col) {
+          sortDir = sortDir === "asc" ? "desc" : sortDir === "desc" ? null : "asc";
+        } else {
+          sortCol = col;
+          sortDir = "asc";
+        }
+  
+        if (!sortDir) sortCol = null;
+  
+        /* Update header classes */
+        document.querySelectorAll(".sortable").forEach((h) => {
+          h.classList.remove("asc", "desc");
+        });
+        if (sortDir) th.classList.add(sortDir);
+  
+        applySort();
+        render();
+      });
+    });
+  
+    function applySort() {
+      if (!sortCol || !sortDir) {
+        filteredData = DATA.filter((d) => {
+          const q = searchInput.value.toLowerCase().trim();
+          return (
+            d.name.toLowerCase().includes(q) ||
+            d.department.toLowerCase().includes(q) ||
+            d.role.toLowerCase().includes(q) ||
+            d.location.toLowerCase().includes(q)
+          );
+        });
+        return;
+      }
+  
+      filteredData.sort((a, b) => {
+        let va = a[sortCol];
+        let vb = b[sortCol];
+        if (typeof va === "string") va = va.toLowerCase();
+        if (typeof vb === "string") vb = vb.toLowerCase();
+        if (va < vb) return sortDir === "asc" ? -1 : 1;
+        if (va > vb) return sortDir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+  
+    /* ── Render ── */
+    function render() {
+      const total = filteredData.length;
+      const totalPages = Math.max(1, Math.ceil(total / ROWS_PER_PAGE));
+      if (currentPage > totalPages) currentPage = totalPages;
+  
+      const start = (currentPage - 1) * ROWS_PER_PAGE;
+      const end = Math.min(start + ROWS_PER_PAGE, total);
+      const pageData = filteredData.slice(start, end);
+  
+      recordCount.textContent = total + " record" + (total !== 1 ? "s" : "");
+  
+      /* Render rows */
+      tableBody.innerHTML = pageData
+        .map((d, i) => {
+          const color = COLORS[(start + i) % COLORS.length];
+          const initials = getInitials(d.name);
+          return `
+            <tr>
+              <td>
+                <div class="name-cell">
+                  <div class="name-avatar" style="background:${color}">${initials}</div>
+                  <span class="name-text">${d.name}</span>
+                </div>
+              </td>
+              <td>${d.department}</td>
+              <td>${d.role}</td>
+              <td>${d.location}</td>
+              <td>
+                <span class="status-badge ${d.status}">
+                  <span class="dot"></span>
+                  ${d.status.charAt(0).toUpperCase() + d.status.slice(1)}
+                </span>
+              </td>
+              <td>${d.joined}</td>
+            </tr>
+          `;
+        })
+        .join("");
+  
+      /* Page info */
+      if (total === 0) {
+        pageInfo.textContent = "No results found";
+      } else {
+        pageInfo.textContent = `Showing ${start + 1}\u2013${end} of ${total}`;
+      }
+  
+      /* Page controls */
+      let btns = "";
+      btns += `<button class="page-btn prev" ${currentPage <= 1 ? "disabled" : ""} data-page="${currentPage - 1}">&#8249;</button>`;
+  
+      for (let p = 1; p <= totalPages; p++) {
+        btns += `<button class="page-btn ${p === currentPage ? "active" : ""}" data-page="${p}">${p}</button>`;
+      }
+  
+      btns += `<button class="page-btn next" ${currentPage >= totalPages ? "disabled" : ""} data-page="${currentPage + 1}">&#8250;</button>`;
+  
+      pageControls.innerHTML = btns;
+  
+      /* Bind page buttons */
+      pageControls.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const p = parseInt(btn.dataset.page, 10);
+          if (p >= 1 && p <= totalPages) {
+            currentPage = p;
+            render();
+          }
+        });
+      });
+    }
+  
+    /* Initial render */
+    render();
+  })();
+  
+  </script>
+solution: |
+  <style>
+  /* ── Reset & Base ── */
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --bg-primary: #0a0a0a;
+    --bg-card: #111111;
+    --bg-row-alt: #0e0e0e;
+    --bg-hover: #181818;
+    --bg-input: #181818;
+    --border: #222222;
+    --border-light: #333333;
+    --text-primary: #f0f0f0;
+    --text-secondary: #999999;
+    --text-muted: #666666;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --radius: 10px;
+  }
+  
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  
+  body {
+    min-height: 100vh;
+    padding-block: 40px;
+    padding-inline: 24px;
+  }
+  
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+  
+  /* ── Page ── */
+  .page {
+    max-inline-size: 1100px;
+    margin-inline: auto;
+  }
+  
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .toolbar-start {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  .record-count {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .dir-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-block: 6px;
+    padding-inline: 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-blue);
+    transition: background 0.2s;
+  }
+  
+  .dir-toggle:hover {
+    background: var(--bg-card);
+  }
+  
+  /* ── Table shell ── */
+  .table-shell {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  
+  /* Table toolbar */
+  .table-toolbar {
+    padding-block: 16px;
+    padding-inline: 20px;
+    border-block-end: 1px solid var(--border);
+  }
+  
+  .search-wrap {
+    position: relative;
+    max-inline-size: 320px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    inset-inline-start: 12px;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  
+  .search-input {
+    inline-size: 100%;
+    padding-block: 8px;
+    padding-inline-start: 36px;
+    padding-inline-end: 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .search-input:focus {
+    border-color: var(--accent-blue);
+  }
+  
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  /* ── Table ── */
+  .table-scroll {
+    overflow-x: auto;
+  }
+  
+  .data-table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+  
+  .data-table thead {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 5;
+  }
+  
+  .data-table th {
+    padding-block: 12px;
+    padding-inline: 20px;
+    background: var(--bg-primary);
+    border-block-end: 1px solid var(--border);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: start;
+    user-select: none;
+  }
+  
+  .th-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .sortable {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .sortable:hover {
+    color: var(--text-secondary);
+  }
+  
+  .sortable.asc .sort-icon::after,
+  .sortable.desc .sort-icon::after {
+    font-size: 0.7rem;
+    margin-inline-start: 2px;
+  }
+  
+  .sortable.asc .sort-icon::after {
+    content: "\25B2";
+  }
+  .sortable.desc .sort-icon::after {
+    content: "\25BC";
+  }
+  
+  .sortable.asc,
+  .sortable.desc {
+    color: var(--accent-blue);
+  }
+  
+  .data-table td {
+    padding-block: 14px;
+    padding-inline: 20px;
+    border-block-end: 1px solid var(--border);
+    font-size: 0.88rem;
+    text-align: start;
+  }
+  
+  /* Zebra striping */
+  .data-table tbody tr:nth-child(even) {
+    background: var(--bg-row-alt);
+  }
+  
+  .data-table tbody tr:hover {
+    background: var(--bg-hover);
+  }
+  
+  /* Name cell */
+  .name-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .name-avatar {
+    inline-size: 32px;
+    block-size: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  
+  .name-text {
+    font-weight: 500;
+  }
+  
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-block: 3px;
+    padding-inline: 10px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 500;
+  }
+  
+  .status-badge .dot {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+  }
+  
+  .status-badge.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--accent-green);
+  }
+  .status-badge.active .dot {
+    background: var(--accent-green);
+  }
+  .status-badge.away {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--accent-amber);
+  }
+  .status-badge.away .dot {
+    background: var(--accent-amber);
+  }
+  .status-badge.offline {
+    background: rgba(102, 102, 102, 0.15);
+    color: var(--text-muted);
+  }
+  .status-badge.offline .dot {
+    background: var(--text-muted);
+  }
+  
+  /* ── Pagination ── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 14px;
+    padding-inline: 20px;
+    border-block-start: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .page-info {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  
+  .page-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .page-btn {
+    padding-block: 6px;
+    padding-inline: 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  
+  .page-btn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+  }
+  
+  .page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  
+  .page-btn.active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: #fff;
+  }
+  
+  /* Flip pagination chevrons in RTL */
+  [dir="rtl"] .page-btn.prev,
+  [dir="rtl"] .page-btn.next {
+    transform: scaleX(-1);
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    body {
+      padding-inline: 16px;
+    }
+  
+    .data-table th,
+    .data-table td {
+      padding-inline: 14px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RTL Data Table</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="page">
+  
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <h1 class="page-title">Employee Directory</h1>
+          <span class="record-count" id="record-count">12 records</span>
+        </div>
+        <button class="dir-toggle" id="dir-toggle" type="button" aria-label="Toggle text direction">
+          <span id="dir-label">LTR</span>
+          <span>&#8644;</span>
+        </button>
+      </div>
+  
+      <!-- Table shell -->
+      <div class="table-shell">
+  
+        <!-- Search -->
+        <div class="table-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">&#128269;</span>
+            <input type="search" class="search-input" id="search-input" placeholder="Search employees..." aria-label="Search employees" />
+          </div>
+        </div>
+  
+        <!-- Table -->
+        <div class="table-scroll">
+          <table class="data-table" id="data-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-col="name">
+                  <span class="th-content">
+                    <span class="th-text">Name</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="department">
+                  <span class="th-content">
+                    <span class="th-text">Department</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="role">
+                  <span class="th-content">
+                    <span class="th-text">Role</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="location">
+                  <span class="th-content">
+                    <span class="th-text">Location</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="status">
+                  <span class="th-content">
+                    <span class="th-text">Status</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+                <th class="sortable" data-col="joined">
+                  <span class="th-content">
+                    <span class="th-text">Joined</span>
+                    <span class="sort-icon" aria-hidden="true"></span>
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+  
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+          <div class="page-info" id="page-info"></div>
+          <div class="page-controls" id="page-controls"></div>
+        </div>
+  
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (() => {
+    const html = document.documentElement;
+    const dirToggle = document.getElementById("dir-toggle");
+    const dirLabel = document.getElementById("dir-label");
+    const searchInput = document.getElementById("search-input");
+    const tableBody = document.getElementById("table-body");
+    const pageInfo = document.getElementById("page-info");
+    const pageControls = document.getElementById("page-controls");
+    const recordCount = document.getElementById("record-count");
+  
+    const ROWS_PER_PAGE = 5;
+    let currentPage = 1;
+    let sortCol = null;
+    let sortDir = null;
+  
+    const COLORS = [
+      "#3b82f6",
+      "#8b5cf6",
+      "#ef4444",
+      "#22c55e",
+      "#f59e0b",
+      "#06b6d4",
+      "#ec4899",
+      "#6366f1",
+      "#14b8a6",
+      "#f97316",
+      "#a855f7",
+      "#10b981",
+    ];
+  
+    const DATA = [
+      {
+        name: "Ahmed Hassan",
+        department: "Engineering",
+        role: "Senior Developer",
+        location: "Cairo",
+        status: "active",
+        joined: "2023-01-15",
+      },
+      {
+        name: "Sara Al-Rashid",
+        department: "Design",
+        role: "UI/UX Lead",
+        location: "Dubai",
+        status: "active",
+        joined: "2022-06-22",
+      },
+      {
+        name: "Mohamed Youssef",
+        department: "Engineering",
+        role: "Backend Developer",
+        location: "Riyadh",
+        status: "away",
+        joined: "2023-03-10",
+      },
+      {
+        name: "Layla Mahmoud",
+        department: "Marketing",
+        role: "Content Manager",
+        location: "Amman",
+        status: "active",
+        joined: "2022-11-05",
+      },
+      {
+        name: "Omar Khalil",
+        department: "Product",
+        role: "Product Manager",
+        location: "Cairo",
+        status: "active",
+        joined: "2021-09-18",
+      },
+      {
+        name: "Fatima Nasser",
+        department: "Engineering",
+        role: "Frontend Developer",
+        location: "Dubai",
+        status: "offline",
+        joined: "2023-07-01",
+      },
+      {
+        name: "Khalid Ibrahim",
+        department: "Sales",
+        role: "Sales Director",
+        location: "Jeddah",
+        status: "active",
+        joined: "2020-04-12",
+      },
+      {
+        name: "Nour Amin",
+        department: "Design",
+        role: "Brand Designer",
+        location: "Beirut",
+        status: "away",
+        joined: "2023-02-28",
+      },
+      {
+        name: "Youssef Tamer",
+        department: "Engineering",
+        role: "DevOps Engineer",
+        location: "Cairo",
+        status: "active",
+        joined: "2022-08-15",
+      },
+      {
+        name: "Hana Al-Saud",
+        department: "HR",
+        role: "HR Manager",
+        location: "Riyadh",
+        status: "active",
+        joined: "2021-12-01",
+      },
+      {
+        name: "Ali Farouk",
+        department: "Engineering",
+        role: "QA Engineer",
+        location: "Amman",
+        status: "offline",
+        joined: "2023-05-20",
+      },
+      {
+        name: "Reem Abdullah",
+        department: "Finance",
+        role: "Financial Analyst",
+        location: "Dubai",
+        status: "active",
+        joined: "2022-10-08",
+      },
+    ];
+  
+    let filteredData = [...DATA];
+  
+    /* ── Direction toggle ── */
+    dirToggle.addEventListener("click", () => {
+      const isRtl = html.getAttribute("dir") === "rtl";
+      const newDir = isRtl ? "ltr" : "rtl";
+      html.setAttribute("dir", newDir);
+      html.setAttribute("lang", isRtl ? "en" : "ar");
+      dirLabel.textContent = newDir.toUpperCase();
+    });
+  
+    /* ── Initials ── */
+    function getInitials(name) {
+      return name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase();
+    }
+  
+    /* ── Search ── */
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase().trim();
+      filteredData = DATA.filter(
+        (d) =>
+          d.name.toLowerCase().includes(q) ||
+          d.department.toLowerCase().includes(q) ||
+          d.role.toLowerCase().includes(q) ||
+          d.location.toLowerCase().includes(q)
+      );
+      currentPage = 1;
+      applySort();
+      render();
+    });
+  
+    /* ── Sort ── */
+    document.querySelectorAll(".sortable").forEach((th) => {
+      th.addEventListener("click", () => {
+        const col = th.dataset.col;
+        if (sortCol === col) {
+          sortDir = sortDir === "asc" ? "desc" : sortDir === "desc" ? null : "asc";
+        } else {
+          sortCol = col;
+          sortDir = "asc";
+        }
+  
+        if (!sortDir) sortCol = null;
+  
+        /* Update header classes */
+        document.querySelectorAll(".sortable").forEach((h) => {
+          h.classList.remove("asc", "desc");
+        });
+        if (sortDir) th.classList.add(sortDir);
+  
+        applySort();
+        render();
+      });
+    });
+  
+    function applySort() {
+      if (!sortCol || !sortDir) {
+        filteredData = DATA.filter((d) => {
+          const q = searchInput.value.toLowerCase().trim();
+          return (
+            d.name.toLowerCase().includes(q) ||
+            d.department.toLowerCase().includes(q) ||
+            d.role.toLowerCase().includes(q) ||
+            d.location.toLowerCase().includes(q)
+          );
+        });
+        return;
+      }
+  
+      filteredData.sort((a, b) => {
+        let va = a[sortCol];
+        let vb = b[sortCol];
+        if (typeof va === "string") va = va.toLowerCase();
+        if (typeof vb === "string") vb = vb.toLowerCase();
+        if (va < vb) return sortDir === "asc" ? -1 : 1;
+        if (va > vb) return sortDir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+  
+    /* ── Render ── */
+    function render() {
+      const total = filteredData.length;
+      const totalPages = Math.max(1, Math.ceil(total / ROWS_PER_PAGE));
+      if (currentPage > totalPages) currentPage = totalPages;
+  
+      const start = (currentPage - 1) * ROWS_PER_PAGE;
+      const end = Math.min(start + ROWS_PER_PAGE, total);
+      const pageData = filteredData.slice(start, end);
+  
+      recordCount.textContent = total + " record" + (total !== 1 ? "s" : "");
+  
+      /* Render rows */
+      tableBody.innerHTML = pageData
+        .map((d, i) => {
+          const color = COLORS[(start + i) % COLORS.length];
+          const initials = getInitials(d.name);
+          return `
+            <tr>
+              <td>
+                <div class="name-cell">
+                  <div class="name-avatar" style="background:${color}">${initials}</div>
+                  <span class="name-text">${d.name}</span>
+                </div>
+              </td>
+              <td>${d.department}</td>
+              <td>${d.role}</td>
+              <td>${d.location}</td>
+              <td>
+                <span class="status-badge ${d.status}">
+                  <span class="dot"></span>
+                  ${d.status.charAt(0).toUpperCase() + d.status.slice(1)}
+                </span>
+              </td>
+              <td>${d.joined}</td>
+            </tr>
+          `;
+        })
+        .join("");
+  
+      /* Page info */
+      if (total === 0) {
+        pageInfo.textContent = "No results found";
+      } else {
+        pageInfo.textContent = `Showing ${start + 1}\u2013${end} of ${total}`;
+      }
+  
+      /* Page controls */
+      let btns = "";
+      btns += `<button class="page-btn prev" ${currentPage <= 1 ? "disabled" : ""} data-page="${currentPage - 1}">&#8249;</button>`;
+  
+      for (let p = 1; p <= totalPages; p++) {
+        btns += `<button class="page-btn ${p === currentPage ? "active" : ""}" data-page="${p}">${p}</button>`;
+      }
+  
+      btns += `<button class="page-btn next" ${currentPage >= totalPages ? "disabled" : ""} data-page="${currentPage + 1}">&#8250;</button>`;
+  
+      pageControls.innerHTML = btns;
+  
+      /* Bind page buttons */
+      pageControls.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const p = parseInt(btn.dataset.page, 10);
+          if (p >= 1 && p <= totalPages) {
+            currentPage = p;
+            render();
+          }
+        });
+      });
+    }
+  
+    /* Initial render */
+    render();
+  })();
+  
+  </script>
+explanation: "The declaration `margin: 0;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

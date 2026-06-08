@@ -1,0 +1,471 @@
+---
+slug: "lg-15-threejs-instanced-field-remove-css-property-efa762e5"
+topic: "imported-libs-gen"
+title: "Restore missing CSS property in Three.js Instanced Mesh Field"
+type: "fix"
+difficulty: 1
+resourceSlug: "lg-15-threejs-instanced-field"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --text: #edf4ff;
+    --muted: #c2d0e7;
+    --accent: #8de8ff;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+  }
+  #scene {
+    position: fixed;
+    inset: 0;
+  }
+  .topbar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 1rem;
+    background: rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(8px);
+  }
+  .topbar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    padding: .45rem .8rem;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .overlay {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    width: min(900px, 92%);
+    margin: 0 auto;
+    display: grid;
+    align-content: center;
+    text-align: center;
+    gap: .7rem;
+  }
+  .label {
+    margin: 0;
+    color: var(--accent);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  h1,
+  p {
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(2rem, 7vw, 4rem);
+  }
+  p {
+    color: var(--muted);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 15 - Instanced Mesh Field</title>
+      <link rel="stylesheet" href="style.css" />
+      <script type="importmap">{"imports":{"gsap":"https://esm.sh/gsap@3.13.0","gsap/ScrollTrigger":"https://esm.sh/gsap@3.13.0/ScrollTrigger","gsap/SplitText":"https://esm.sh/gsap@3.13.0/SplitText","gsap/Flip":"https://esm.sh/gsap@3.13.0/Flip","gsap/ScrambleTextPlugin":"https://esm.sh/gsap@3.13.0/ScrambleTextPlugin","gsap/TextPlugin":"https://esm.sh/gsap@3.13.0/TextPlugin","gsap/all":"https://esm.sh/gsap@3.13.0/all","gsap/":"https://esm.sh/gsap@3.13.0/","lenis":"https://esm.sh/lenis@1.1.13/dist/lenis.mjs","three":"https://esm.sh/three@0.171.0","three/addons/":"https://esm.sh/three@0.171.0/examples/jsm/"}}</script>
+  </head>
+    <body>
+      <header class="topbar">
+        <a href="../">Back to demos</a>
+        <button id="toggleMotion"></button>
+      </header>
+  
+      <div id="scene"></div>
+      <section class="overlay">
+        <p class="label">Demo 15</p>
+        <h1>Instanced Mesh Field</h1>
+        <p>High object count field using GPU instancing.</p>
+      </section>
+  
+      <script type="module" src="script.js"></script>
+        </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  import * as THREE from "three";
+  
+  const host = document.getElementById("scene");
+  const toggle = document.getElementById("toggleMotion");
+  let motionEnabled = !window.MotionPreference.prefersReducedMotion();
+  
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x02040a);
+  scene.fog = new THREE.Fog(0x02040a, 8, 70);
+  
+  const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 120);
+  camera.position.set(0, 0, 18);
+  
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  host.appendChild(renderer.domElement);
+  
+  const count = 1800;
+  const geometry = new THREE.IcosahedronGeometry(0.11, 0);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x88dcff,
+    emissive: 0x2f6782,
+    emissiveIntensity: 0.35,
+    roughness: 0.35,
+    metalness: 0.25,
+  });
+  const instanced = new THREE.InstancedMesh(geometry, material, count);
+  scene.add(instanced);
+  
+  const dummy = new THREE.Object3D();
+  const data = [];
+  for (let i = 0; i < count; i += 1) {
+    data.push({
+      x: (Math.random() - 0.5) * 28,
+      y: (Math.random() - 0.5) * 16,
+      z: -Math.random() * 80,
+      speed: 0.08 + Math.random() * 0.16,
+      rot: Math.random() * Math.PI,
+    });
+  }
+  
+  scene.add(new THREE.AmbientLight(0x9abfff, 0.42));
+  const key = new THREE.PointLight(0x9fe1ff, 1.2, 55);
+  key.position.set(8, 8, 10);
+  scene.add(key);
+  
+  function setLabel() {
+    toggle.textContent = motionEnabled ? "Disable motion" : "Enable motion";
+  }
+  
+  function animate() {
+    requestAnimationFrame(animate);
+  
+    for (let i = 0; i < count; i += 1) {
+      const d = data[i];
+      if (motionEnabled) {
+        d.z += d.speed;
+        d.rot += 0.015;
+        if (d.z > 8) d.z = -80;
+      }
+  
+      dummy.position.set(d.x, d.y, d.z);
+      dummy.rotation.set(d.rot, d.rot * 0.6, d.rot * 1.1);
+      dummy.updateMatrix();
+      instanced.setMatrixAt(i, dummy.matrix);
+    }
+  
+    instanced.instanceMatrix.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+  
+  function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  
+  toggle.addEventListener("click", () => {
+    motionEnabled = !motionEnabled;
+    setLabel();
+  });
+  
+  window.addEventListener("resize", onResize);
+  setLabel();
+  animate();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --bg: #03060d;
+    --text: #edf4ff;
+    --muted: #c2d0e7;
+    --accent: #8de8ff;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+  }
+  #scene {
+    position: fixed;
+    inset: 0;
+  }
+  .topbar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 1rem;
+    background: rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(8px);
+  }
+  .topbar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    padding: .45rem .8rem;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .overlay {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    width: min(900px, 92%);
+    margin: 0 auto;
+    display: grid;
+    align-content: center;
+    text-align: center;
+    gap: .7rem;
+  }
+  .label {
+    margin: 0;
+    color: var(--accent);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  h1,
+  p {
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(2rem, 7vw, 4rem);
+  }
+  p {
+    color: var(--muted);
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Demo 15 - Instanced Mesh Field</title>
+      <link rel="stylesheet" href="style.css" />
+      <script type="importmap">{"imports":{"gsap":"https://esm.sh/gsap@3.13.0","gsap/ScrollTrigger":"https://esm.sh/gsap@3.13.0/ScrollTrigger","gsap/SplitText":"https://esm.sh/gsap@3.13.0/SplitText","gsap/Flip":"https://esm.sh/gsap@3.13.0/Flip","gsap/ScrambleTextPlugin":"https://esm.sh/gsap@3.13.0/ScrambleTextPlugin","gsap/TextPlugin":"https://esm.sh/gsap@3.13.0/TextPlugin","gsap/all":"https://esm.sh/gsap@3.13.0/all","gsap/":"https://esm.sh/gsap@3.13.0/","lenis":"https://esm.sh/lenis@1.1.13/dist/lenis.mjs","three":"https://esm.sh/three@0.171.0","three/addons/":"https://esm.sh/three@0.171.0/examples/jsm/"}}</script>
+  </head>
+    <body>
+      <header class="topbar">
+        <a href="../">Back to demos</a>
+        <button id="toggleMotion"></button>
+      </header>
+  
+      <div id="scene"></div>
+      <section class="overlay">
+        <p class="label">Demo 15</p>
+        <h1>Instanced Mesh Field</h1>
+        <p>High object count field using GPU instancing.</p>
+      </section>
+  
+      <script type="module" src="script.js"></script>
+        </body>
+  </html>
+  
+  <script>
+  if (!window.MotionPreference) {
+    const __mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const __listeners = new Set();
+  
+    const MotionPreference = {
+      prefersReducedMotion() {
+        return __mql.matches;
+      },
+      setOverride(value) {
+        const reduced = Boolean(value);
+        document.documentElement.classList.toggle("reduced-motion", reduced);
+        window.dispatchEvent(new CustomEvent("motion-preference", { detail: { reduced } }));
+        for (const listener of __listeners) {
+          try {
+            listener({ reduced, override: reduced, systemReduced: __mql.matches });
+          } catch {}
+        }
+      },
+      onChange(listener) {
+        __listeners.add(listener);
+        try {
+          listener({
+            reduced: __mql.matches,
+            override: null,
+            systemReduced: __mql.matches,
+          });
+        } catch {}
+        return () => __listeners.delete(listener);
+      },
+      getState() {
+        return { reduced: __mql.matches, override: null, systemReduced: __mql.matches };
+      },
+    };
+  
+    window.MotionPreference = MotionPreference;
+  }
+  
+  import * as THREE from "three";
+  
+  const host = document.getElementById("scene");
+  const toggle = document.getElementById("toggleMotion");
+  let motionEnabled = !window.MotionPreference.prefersReducedMotion();
+  
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x02040a);
+  scene.fog = new THREE.Fog(0x02040a, 8, 70);
+  
+  const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 120);
+  camera.position.set(0, 0, 18);
+  
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  host.appendChild(renderer.domElement);
+  
+  const count = 1800;
+  const geometry = new THREE.IcosahedronGeometry(0.11, 0);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x88dcff,
+    emissive: 0x2f6782,
+    emissiveIntensity: 0.35,
+    roughness: 0.35,
+    metalness: 0.25,
+  });
+  const instanced = new THREE.InstancedMesh(geometry, material, count);
+  scene.add(instanced);
+  
+  const dummy = new THREE.Object3D();
+  const data = [];
+  for (let i = 0; i < count; i += 1) {
+    data.push({
+      x: (Math.random() - 0.5) * 28,
+      y: (Math.random() - 0.5) * 16,
+      z: -Math.random() * 80,
+      speed: 0.08 + Math.random() * 0.16,
+      rot: Math.random() * Math.PI,
+    });
+  }
+  
+  scene.add(new THREE.AmbientLight(0x9abfff, 0.42));
+  const key = new THREE.PointLight(0x9fe1ff, 1.2, 55);
+  key.position.set(8, 8, 10);
+  scene.add(key);
+  
+  function setLabel() {
+    toggle.textContent = motionEnabled ? "Disable motion" : "Enable motion";
+  }
+  
+  function animate() {
+    requestAnimationFrame(animate);
+  
+    for (let i = 0; i < count; i += 1) {
+      const d = data[i];
+      if (motionEnabled) {
+        d.z += d.speed;
+        d.rot += 0.015;
+        if (d.z > 8) d.z = -80;
+      }
+  
+      dummy.position.set(d.x, d.y, d.z);
+      dummy.rotation.set(d.rot, d.rot * 0.6, d.rot * 1.1);
+      dummy.updateMatrix();
+      instanced.setMatrixAt(i, dummy.matrix);
+    }
+  
+    instanced.instanceMatrix.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+  
+  function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  
+  toggle.addEventListener("click", () => {
+    motionEnabled = !motionEnabled;
+    setLabel();
+  });
+  
+  window.addEventListener("resize", onResize);
+  setLabel();
+  animate();
+  
+  </script>
+explanation: "The declaration `--bg: #03060d;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

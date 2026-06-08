@@ -1,0 +1,102 @@
+---
+import type { FixChallenge } from "@schema";
+import { IFRAME_SANDBOX } from "../../lib/sandbox";
+
+interface Props {
+  challenge: FixChallenge;
+  index: number;
+}
+
+const { challenge, index } = Astro.props;
+---
+
+<article
+  class="challenge-slide hidden flex-col gap-6 py-10"
+  data-challenge
+  data-slug={challenge.slug}
+  data-type="fix"
+  data-index={index}
+  data-criterion={challenge.criterion}
+  data-regex={challenge.regexPattern ?? ""}
+>
+  <div class="space-y-2">
+    <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+    <h2 class="text-2xl font-medium leading-snug text-white">{challenge.title}</h2>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <label class="flex flex-col gap-2">
+      <span class="text-xs uppercase tracking-wider text-white/40">Your code</span>
+      <div
+        class="fix-editor-shell relative flex min-h-[14rem] overflow-hidden rounded-xl border border-white/8 bg-[#070707] font-mono text-sm leading-relaxed text-white focus-within:border-emerald-400"
+        data-editor-shell
+      >
+        <pre
+          class="select-none whitespace-pre overflow-hidden border-r border-white/8 py-3 pl-3 pr-2 text-right text-white/30"
+          aria-hidden="true"
+          data-line-numbers
+        ></pre>
+        <textarea
+          class="fix-editor min-h-[14rem] flex-1 resize-y bg-transparent py-3 pl-3 pr-3 outline-none"
+          spellcheck="false"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          wrap="off"
+          data-editor
+        >{challenge.starter}</textarea>
+      </div>
+    </label>
+
+    <div class="flex flex-col gap-2">
+      <span class="text-xs uppercase tracking-wider text-white/40">Preview</span>
+      <iframe
+        class="min-h-[14rem] rounded-xl border border-white/8 bg-white"
+        sandbox={IFRAME_SANDBOX}
+        srcdoc=""
+        data-preview
+        title="Your output"
+      ></iframe>
+    </div>
+  </div>
+
+  <!-- Hidden solution iframe; only used for the DOM comparison. -->
+  <iframe
+    class="hidden"
+    sandbox={IFRAME_SANDBOX}
+    srcdoc=""
+    data-solution
+    data-solution-source={challenge.solution}
+    title="Expected output"
+    aria-hidden="true"
+  ></iframe>
+
+  {challenge.explanation && (
+    <div
+      class="hidden rounded-xl border border-white/8 bg-white/6 p-4 text-sm leading-relaxed text-white/70"
+      data-explanation
+    >
+      {challenge.explanation}
+    </div>
+  )}
+
+  <div class="flex items-center justify-between gap-3 pt-2">
+    <p class="text-xs text-white/40" data-status>Edit the code on the left.</p>
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"
+        data-check
+      >
+        Check
+      </button>
+      <button
+        type="button"
+        class="hidden rounded-lg bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300"
+        data-next
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</article>

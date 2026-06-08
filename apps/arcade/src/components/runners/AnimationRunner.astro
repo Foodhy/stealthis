@@ -1,0 +1,97 @@
+---
+import type { AnimationChallenge } from "@schema";
+import { IFRAME_SANDBOX } from "../../lib/sandbox";
+
+interface Props {
+  challenge: AnimationChallenge;
+  index: number;
+}
+
+const { challenge, index } = Astro.props;
+const followUp = challenge.followUp;
+const embed = challenge.embed ?? "";
+---
+
+<article
+  class="challenge-slide hidden flex-col gap-6 py-10"
+  data-challenge
+  data-slug={challenge.slug}
+  data-type="animation"
+  data-has-followup={String(Boolean(followUp))}
+  data-answer={followUp ? String(followUp.answer) : ""}
+  data-index={index}
+>
+  <div class="space-y-2">
+    <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+    <h2 class="text-2xl font-medium leading-snug text-white">{challenge.title}</h2>
+  </div>
+
+  <iframe
+    class="min-h-[16rem] w-full rounded-xl border border-white/8 bg-white"
+    sandbox={IFRAME_SANDBOX}
+    srcdoc={embed}
+    title={challenge.title}
+    data-anim
+  ></iframe>
+
+  {followUp && (
+    <div class="space-y-3">
+      <p class="text-sm font-medium text-white">{followUp.question}</p>
+      <ul class="grid gap-3">
+        {followUp.options.map((opt, i) => (
+          <li>
+            <button
+              type="button"
+              class="quiz-option flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/6 px-4 py-3 text-left text-white transition hover:border-white/14 hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-70"
+              data-option-index={i}
+            >
+              <span class="grid h-6 w-6 place-items-center rounded-md border border-white/14 text-xs tabular-nums text-white/60">
+                {i + 1}
+              </span>
+              <span class="flex-1 text-sm">{opt}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+  {!followUp && (
+    <label class="grid gap-2">
+      <span class="text-sm font-medium text-white">Describe one thing that changed in the animation.</span>
+      <input
+        type="text"
+        class="rounded-xl border border-white/12 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-emerald-400"
+        placeholder="Example: the middle column gets wider when it switches to 3fr."
+        data-animation-reflection
+      />
+      <span class="text-xs text-white/45">Write at least 12 characters to continue.</span>
+    </label>
+  )}
+
+  {challenge.explanation && (
+    <div
+      class="hidden rounded-xl border border-white/8 bg-white/6 p-4 text-sm leading-relaxed text-white/70"
+      data-explanation
+    >
+      {challenge.explanation}
+    </div>
+  )}
+
+  <div class="flex items-center justify-end gap-3 pt-2">
+    <button
+      type="button"
+      class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"
+      data-check
+      disabled
+    >
+      Check
+    </button>
+    <button
+      type="button"
+      class="hidden rounded-lg bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300"
+      data-next
+    >
+      Next
+    </button>
+  </div>
+</article>

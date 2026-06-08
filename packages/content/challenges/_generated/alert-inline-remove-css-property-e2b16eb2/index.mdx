@@ -1,0 +1,501 @@
+---
+slug: "alert-inline-remove-css-property-e2b16eb2"
+topic: "alert"
+title: "Restore missing CSS property in Inline Alert"
+type: "fix"
+difficulty: 1
+resourceSlug: "alert-inline"
+estimatedSeconds: 30
+quality: "draft"
+tags:
+  - "generated"
+  - "css"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    color: #111;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  
+  /* Alert base */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border-left: 4px solid transparent;
+    animation: alert-in 0.2s ease;
+  }
+  
+  @keyframes alert-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .alert--info {
+    background: #eff6ff;
+    border-left-color: #6366f1;
+  }
+  .alert--success {
+    background: #f0fdf4;
+    border-left-color: #16a34a;
+  }
+  .alert--warning {
+    background: #fffbeb;
+    border-left-color: #d97706;
+  }
+  .alert--error {
+    background: #fef2f2;
+    border-left-color: #dc2626;
+  }
+  .alert--no-icon {
+    border-left-color: #d97706;
+  }
+  
+  .alert-icon {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  .alert-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .alert-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 3px;
+  }
+  
+  .alert-desc {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.5;
+  }
+  
+  .alert-desc a {
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .alert-desc a:hover {
+    text-decoration: underline;
+  }
+  
+  .alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #9ca3af;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+  }
+  .alert-close:hover {
+    color: #374151;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Dismiss animation */
+  .alert.dismissing {
+    animation: alert-out 0.25s ease forwards;
+    overflow: hidden;
+  }
+  
+  @keyframes alert-out {
+    from {
+      opacity: 1;
+      max-height: 200px;
+      margin-bottom: 0;
+    }
+    to {
+      opacity: 0;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-bottom: -12px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inline Alert</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="section-label">Semantic variants</h2>
+  
+    <div class="alert alert--info" role="alert">
+      <span class="alert-icon">ℹ️</span>
+      <div class="alert-content">
+        <p class="alert-title">New version available</p>
+        <p class="alert-desc">Version 3.2.1 is available. <a href="#">View changelog</a> to see what's new.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <div class="alert alert--success" role="alert">
+      <span class="alert-icon">✅</span>
+      <div class="alert-content">
+        <p class="alert-title">Payment successful</p>
+        <p class="alert-desc">Your subscription has been renewed. Receipt sent to jane@example.com.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <div class="alert alert--warning" role="alert">
+      <span class="alert-icon">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-title">Storage almost full</p>
+        <p class="alert-desc">You've used 90% of your storage. <a href="#">Upgrade your plan</a> to avoid interruption.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <div class="alert alert--error" role="alert">
+      <span class="alert-icon">🚨</span>
+      <div class="alert-content">
+        <p class="alert-title">Deployment failed</p>
+        <p class="alert-desc">Build #142 failed with exit code 1. Check the <a href="#">build log</a> for details.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">No title / simple</h2>
+  
+    <div class="alert alert--info" role="alert">
+      <span class="alert-icon">ℹ️</span>
+      <div class="alert-content">
+        <p class="alert-desc">Your session will expire in 5 minutes.</p>
+      </div>
+    </div>
+  
+    <div class="alert alert--success" role="alert">
+      <span class="alert-icon">✅</span>
+      <div class="alert-content">
+        <p class="alert-desc">All systems are operational.</p>
+      </div>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">Inline (no icon)</h2>
+  
+    <div class="alert alert--warning alert--no-icon" role="alert">
+      <div class="alert-content">
+        <p class="alert-title">Review required</p>
+        <p class="alert-desc">This action requires approval from an admin before it takes effect.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  document.querySelectorAll(".alert-close").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const alert = btn.closest(".alert");
+      alert.classList.add("dismissing");
+      alert.addEventListener("animationend", () => alert.remove(), { once: true });
+    });
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    color: #111;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  
+  .demo {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  
+  /* Alert base */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border-left: 4px solid transparent;
+    animation: alert-in 0.2s ease;
+  }
+  
+  @keyframes alert-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .alert--info {
+    background: #eff6ff;
+    border-left-color: #6366f1;
+  }
+  .alert--success {
+    background: #f0fdf4;
+    border-left-color: #16a34a;
+  }
+  .alert--warning {
+    background: #fffbeb;
+    border-left-color: #d97706;
+  }
+  .alert--error {
+    background: #fef2f2;
+    border-left-color: #dc2626;
+  }
+  .alert--no-icon {
+    border-left-color: #d97706;
+  }
+  
+  .alert-icon {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  .alert-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .alert-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 3px;
+  }
+  
+  .alert-desc {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.5;
+  }
+  
+  .alert-desc a {
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .alert-desc a:hover {
+    text-decoration: underline;
+  }
+  
+  .alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #9ca3af;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+  }
+  .alert-close:hover {
+    color: #374151;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Dismiss animation */
+  .alert.dismissing {
+    animation: alert-out 0.25s ease forwards;
+    overflow: hidden;
+  }
+  
+  @keyframes alert-out {
+    from {
+      opacity: 1;
+      max-height: 200px;
+      margin-bottom: 0;
+    }
+    to {
+      opacity: 0;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-bottom: -12px;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inline Alert</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="demo">
+    <h2 class="section-label">Semantic variants</h2>
+  
+    <div class="alert alert--info" role="alert">
+      <span class="alert-icon">ℹ️</span>
+      <div class="alert-content">
+        <p class="alert-title">New version available</p>
+        <p class="alert-desc">Version 3.2.1 is available. <a href="#">View changelog</a> to see what's new.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <div class="alert alert--success" role="alert">
+      <span class="alert-icon">✅</span>
+      <div class="alert-content">
+        <p class="alert-title">Payment successful</p>
+        <p class="alert-desc">Your subscription has been renewed. Receipt sent to jane@example.com.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <div class="alert alert--warning" role="alert">
+      <span class="alert-icon">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-title">Storage almost full</p>
+        <p class="alert-desc">You've used 90% of your storage. <a href="#">Upgrade your plan</a> to avoid interruption.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <div class="alert alert--error" role="alert">
+      <span class="alert-icon">🚨</span>
+      <div class="alert-content">
+        <p class="alert-title">Deployment failed</p>
+        <p class="alert-desc">Build #142 failed with exit code 1. Check the <a href="#">build log</a> for details.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">No title / simple</h2>
+  
+    <div class="alert alert--info" role="alert">
+      <span class="alert-icon">ℹ️</span>
+      <div class="alert-content">
+        <p class="alert-desc">Your session will expire in 5 minutes.</p>
+      </div>
+    </div>
+  
+    <div class="alert alert--success" role="alert">
+      <span class="alert-icon">✅</span>
+      <div class="alert-content">
+        <p class="alert-desc">All systems are operational.</p>
+      </div>
+    </div>
+  
+    <h2 class="section-label" style="margin-top:28px;">Inline (no icon)</h2>
+  
+    <div class="alert alert--warning alert--no-icon" role="alert">
+      <div class="alert-content">
+        <p class="alert-title">Review required</p>
+        <p class="alert-desc">This action requires approval from an admin before it takes effect.</p>
+      </div>
+      <button class="alert-close" aria-label="Dismiss">✕</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  document.querySelectorAll(".alert-close").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const alert = btn.closest(".alert");
+      alert.classList.add("dismissing");
+      alert.addEventListener("animationend", () => alert.remove(), { once: true });
+    });
+  });
+  
+  </script>
+explanation: "The declaration `box-sizing: border-box;` was removed from the stylesheet. Add it back to recover the expected layout/behavior."
+---
+
+Generated challenge.

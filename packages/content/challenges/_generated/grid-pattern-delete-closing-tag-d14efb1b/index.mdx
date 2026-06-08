@@ -1,0 +1,298 @@
+---
+slug: "grid-pattern-delete-closing-tag-d14efb1b"
+topic: "grid"
+title: "Fix the broken HTML structure in Grid Pattern"
+type: "fix"
+difficulty: 2
+resourceSlug: "grid-pattern"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: #000;
+  }
+  
+  /* --- Grid pattern container --- */
+  .grid-pattern {
+    --grid-size: 40px;
+    --grid-color: rgba(255, 255, 255, 0.08);
+    --grid-stroke: 1;
+  
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background-color: #0a0a0a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: var(--grid-size) var(--grid-size);
+    overflow: hidden;
+  }
+  
+  /* Radial fade at edges to blend the grid */
+  .grid-fade {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, #0a0a0a 100%);
+    pointer-events: none;
+  }
+  
+  /* --- Centered content --- */
+  .grid-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 480px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .grid-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a1a1aa;
+  }
+  
+  .grid-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #fafafa;
+  }
+  
+  .grid-description {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #71717a;
+    max-width: 380px;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grid Pattern
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="grid-pattern">
+      <div class="grid-fade"></div>
+      <div class="grid-content">
+        <span class="grid-badge">Background</span>
+        <h1 class="grid-title">Grid Pattern</h1>
+        <p class="grid-description">
+          A minimal SVG-based grid background with customizable size, color, and
+          stroke width via CSS custom properties.
+        </p>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Grid Pattern — optional: dynamically update the SVG grid when CSS vars change.
+  (function () {
+    "use strict";
+  
+    const container = document.querySelector(".grid-pattern");
+    if (!container) return;
+  
+    /**
+     * Rebuild the background-image SVG from current CSS custom properties.
+     * Call this after programmatically changing --grid-size, --grid-color, or --grid-stroke.
+     */
+    function updateGrid() {
+      const style = getComputedStyle(container);
+      const size = parseInt(style.getPropertyValue("--grid-size"), 10) || 40;
+      const color = style.getPropertyValue("--grid-color").trim() || "rgba(255,255,255,0.08)";
+      const stroke = style.getPropertyValue("--grid-stroke").trim() || "1";
+  
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><path d='M ${size} 0 L 0 0 0 ${size}' fill='none' stroke='${color}' stroke-width='${stroke}'/></svg>`;
+      const encoded = encodeURIComponent(svg).replace(/'/g, "%27");
+  
+      container.style.backgroundImage = `url("data:image/svg+xml,${encoded}")`;
+      container.style.backgroundSize = `${size}px ${size}px`;
+    }
+  
+    // Initial sync
+    updateGrid();
+  
+    // Expose for external use
+    window.updateGridPattern = updateGrid;
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: #000;
+  }
+  
+  /* --- Grid pattern container --- */
+  .grid-pattern {
+    --grid-size: 40px;
+    --grid-color: rgba(255, 255, 255, 0.08);
+    --grid-stroke: 1;
+  
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background-color: #0a0a0a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: var(--grid-size) var(--grid-size);
+    overflow: hidden;
+  }
+  
+  /* Radial fade at edges to blend the grid */
+  .grid-fade {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, #0a0a0a 100%);
+    pointer-events: none;
+  }
+  
+  /* --- Centered content --- */
+  .grid-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 480px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .grid-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a1a1aa;
+  }
+  
+  .grid-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #fafafa;
+  }
+  
+  .grid-description {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #71717a;
+    max-width: 380px;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grid Pattern</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="grid-pattern">
+      <div class="grid-fade"></div>
+      <div class="grid-content">
+        <span class="grid-badge">Background</span>
+        <h1 class="grid-title">Grid Pattern</h1>
+        <p class="grid-description">
+          A minimal SVG-based grid background with customizable size, color, and
+          stroke width via CSS custom properties.
+        </p>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Grid Pattern — optional: dynamically update the SVG grid when CSS vars change.
+  (function () {
+    "use strict";
+  
+    const container = document.querySelector(".grid-pattern");
+    if (!container) return;
+  
+    /**
+     * Rebuild the background-image SVG from current CSS custom properties.
+     * Call this after programmatically changing --grid-size, --grid-color, or --grid-stroke.
+     */
+    function updateGrid() {
+      const style = getComputedStyle(container);
+      const size = parseInt(style.getPropertyValue("--grid-size"), 10) || 40;
+      const color = style.getPropertyValue("--grid-color").trim() || "rgba(255,255,255,0.08)";
+      const stroke = style.getPropertyValue("--grid-stroke").trim() || "1";
+  
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><path d='M ${size} 0 L 0 0 0 ${size}' fill='none' stroke='${color}' stroke-width='${stroke}'/></svg>`;
+      const encoded = encodeURIComponent(svg).replace(/'/g, "%27");
+  
+      container.style.backgroundImage = `url("data:image/svg+xml,${encoded}")`;
+      container.style.backgroundSize = `${size}px ${size}px`;
+    }
+  
+    // Initial sync
+    updateGrid();
+  
+    // Expose for external use
+    window.updateGridPattern = updateGrid;
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

@@ -1,0 +1,1724 @@
+---
+slug: "shift-grid-delete-closing-tag-6eb55fe4"
+topic: "schedule"
+title: "Fix the broken HTML structure in Shift Grid"
+type: "fix"
+difficulty: 2
+resourceSlug: "shift-grid"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0f172a;
+    color: #f1f5f9;
+    min-height: 100vh;
+    padding: 1.5rem;
+  }
+  
+  /* ── Wrapper ── */
+  .scheduler-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  /* ── Header ── */
+  .scheduler-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .scheduler-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-right: auto;
+  }
+  
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .week-nav-btn {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  
+  .week-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #e2e8f0;
+  }
+  
+  .week-label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 190px;
+    text-align: center;
+  }
+  
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+  }
+  
+  .legend-item {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+  }
+  
+  .legend-morning {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+  }
+  .legend-afternoon {
+    background: rgba(251, 146, 60, 0.15);
+    color: #fb923c;
+  }
+  .legend-night {
+    background: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
+  }
+  .legend-dayoff {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+  }
+  
+  /* ── Grid scroll ── */
+  .grid-scroll {
+    overflow-x: auto;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  /* ── Table ── */
+  .shift-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+  }
+  
+  /* ── Header row ── */
+  .shift-table thead tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .shift-table th,
+  .shift-table td {
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8125rem;
+    vertical-align: middle;
+  }
+  
+  .col-employee {
+    text-align: left !important;
+    width: 140px;
+    min-width: 130px;
+    padding-left: 1rem !important;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .col-total {
+    width: 72px;
+    min-width: 60px;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .day-header {
+    color: #94a3b8;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  
+  .day-header .day-name {
+    display: block;
+    font-size: 0.6875rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .day-header .day-date {
+    display: block;
+    font-size: 0.875rem;
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+  
+  .day-header.today .day-date {
+    color: #38bdf8;
+  }
+  
+  /* ── Body rows ── */
+  .shift-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.12s ease;
+  }
+  
+  .shift-table tbody tr:last-child {
+    border-bottom: none;
+  }
+  
+  .shift-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  /* ── Employee cell ── */
+  .employee-cell {
+    text-align: left !important;
+    padding-left: 1rem !important;
+  }
+  
+  .employee-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .employee-avatar {
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  .employee-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    white-space: nowrap;
+  }
+  
+  /* ── Shift cells ── */
+  .shift-cell {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .shift-cell:hover .add-btn {
+    opacity: 1;
+  }
+  
+  /* ── Shift pill ── */
+  .shift-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: filter 0.12s ease, transform 0.12s ease;
+    user-select: none;
+  }
+  
+  .shift-pill:hover {
+    filter: brightness(1.15);
+    transform: scale(1.04);
+  }
+  
+  .shift-pill.morning {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+  }
+  .shift-pill.afternoon {
+    background: rgba(251, 146, 60, 0.18);
+    color: #fb923c;
+    border: 1px solid rgba(251, 146, 60, 0.3);
+  }
+  .shift-pill.night {
+    background: rgba(167, 139, 250, 0.18);
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+  }
+  .shift-pill.dayoff {
+    background: rgba(100, 116, 139, 0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.2);
+  }
+  
+  /* ── Add button ── */
+  .add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    color: #475569;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+    line-height: 1;
+  }
+  
+  .shift-cell:hover .add-btn {
+    opacity: 1;
+  }
+  
+  .add-btn:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+  }
+  
+  /* ── Total column ── */
+  .total-cell {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+  
+  /* ── Footer ── */
+  .shift-table tfoot {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .shift-table tfoot td {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+  }
+  
+  .foot-label {
+    text-align: left !important;
+    padding-left: 1rem !important;
+    color: #475569;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .foot-total {
+    color: #475569;
+  }
+  
+  .foot-day-count {
+    color: #64748b;
+    font-weight: 700;
+  }
+  
+  /* ── Popover ── */
+  .cell-popover {
+    position: fixed;
+    z-index: 200;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.875rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    min-width: 180px;
+    overflow: hidden;
+  }
+  
+  .cell-popover[hidden] {
+    display: none;
+  }
+  
+  .popover-body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .shift-type-list {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .shift-type-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: none;
+    border: none;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s ease;
+    font-family: inherit;
+  }
+  
+  .shift-type-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .shift-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .shift-type-btn.morning .shift-dot {
+    background: #38bdf8;
+  }
+  .shift-type-btn.afternoon .shift-dot {
+    background: #fb923c;
+  }
+  .shift-type-btn.night .shift-dot {
+    background: #a78bfa;
+  }
+  .shift-type-btn.dayoff .shift-dot {
+    background: #64748b;
+  }
+  
+  .shift-sub {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    color: #475569;
+    font-weight: 400;
+  }
+  
+  .popover-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    margin: 0;
+  }
+  
+  .popover-delete-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: none;
+    border: none;
+    color: #f87171;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background 0.12s ease;
+    font-family: inherit;
+  }
+  
+  .popover-delete-btn:hover {
+    background: rgba(248, 113, 113, 0.08);
+  }
+  
+  .popover-delete-btn[hidden] {
+    display: none;
+  }
+  
+  @media (max-width: 600px) {
+    body {
+      padding: 1rem;
+    }
+    .scheduler-header {
+      gap: 0.75rem;
+    }
+    .scheduler-title {
+      font-size: 1.0625rem;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .shift-pill,
+    .add-btn,
+    .week-nav-btn {
+      transition: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shift Grid
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="scheduler-wrapper">
+  
+      <!-- Header -->
+      <div class="scheduler-header">
+        <h1 class="scheduler-title">Shift Scheduler</h1>
+        <div class="week-nav">
+          <button class="week-nav-btn" id="prevWeek" aria-label="Previous week">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+          <span class="week-label" id="weekLabel">Loading…</span>
+          <button class="week-nav-btn" id="nextWeek" aria-label="Next week">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div class="legend">
+          <span class="legend-item legend-morning">Morning</span>
+          <span class="legend-item legend-afternoon">Afternoon</span>
+          <span class="legend-item legend-night">Night</span>
+          <span class="legend-item legend-dayoff">Day Off</span>
+        </div>
+      </div>
+  
+      <!-- Grid container -->
+      <div class="grid-scroll">
+        <table class="shift-table" id="shiftTable" role="grid">
+          <thead>
+            <tr id="tableHead">
+              <th class="col-employee">Employee</th>
+              <!-- Day columns injected by JS -->
+              <th class="col-total">Total</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+          <tfoot>
+            <tr id="tableFoot">
+              <td class="foot-label">Shifts / day</td>
+              <!-- Totals injected by JS -->
+              <td class="foot-total">—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+  
+    </div>
+  
+    <!-- Popover (shared, repositioned via JS) -->
+    <div class="cell-popover" id="cellPopover" hidden role="dialog" aria-label="Shift options">
+      <div class="popover-arrow"></div>
+      <div class="popover-body">
+        <div class="shift-type-list" id="shiftTypeList">
+          <button class="shift-type-btn morning" data-type="Morning">
+            <span class="shift-dot"></span> Morning <span class="shift-sub">6 AM – 2 PM</span>
+          </button>
+          <button class="shift-type-btn afternoon" data-type="Afternoon">
+            <span class="shift-dot"></span> Afternoon <span class="shift-sub">2 PM – 10 PM</span>
+          </button>
+          <button class="shift-type-btn night" data-type="Night">
+            <span class="shift-dot"></span> Night <span class="shift-sub">10 PM – 6 AM</span>
+          </button>
+          <button class="shift-type-btn dayoff" data-type="Day Off">
+            <span class="shift-dot"></span> Day Off <span class="shift-sub">—</span>
+          </button>
+        </div>
+        <hr class="popover-divider" />
+        <button class="popover-delete-btn" id="popoverDeleteBtn" hidden>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+          Remove shift
+        </button>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    // ── Config ──
+    const EMPLOYEES = [
+      { id: "alice", name: "Alice M.", color: "#38bdf8", initials: "AM" },
+      { id: "bob", name: "Bob K.", color: "#818cf8", initials: "BK" },
+      { id: "carol", name: "Carol S.", color: "#f472b6", initials: "CS" },
+      { id: "david", name: "David R.", color: "#34d399", initials: "DR" },
+      { id: "emma", name: "Emma J.", color: "#fb923c", initials: "EJ" },
+      { id: "frank", name: "Frank L.", color: "#fbbf24", initials: "FL" },
+    ];
+  
+    const SHIFT_TYPES = {
+      Morning: { label: "Morning", hours: 8, cls: "morning" },
+      Afternoon: { label: "Afternoon", hours: 8, cls: "afternoon" },
+      Night: { label: "Night", hours: 8, cls: "night" },
+      "Day Off": { label: "Day Off", hours: 0, cls: "dayoff" },
+    };
+  
+    const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  
+    // ── State ──
+    let weekOffset = 0; // 0 = current week, -1 = prev, +1 = next
+  
+    // Grid state: { [employeeId]: { [dayIndex]: "Morning" | "Afternoon" | "Night" | "Day Off" | null } }
+    const schedule = {};
+    EMPLOYEES.forEach((emp) => {
+      schedule[emp.id] = {};
+    });
+  
+    // Seed some initial data so the grid looks populated
+    const seed = [
+      ["alice", 0, "Morning"],
+      ["alice", 1, "Morning"],
+      ["alice", 2, "Afternoon"],
+      ["alice", 3, "Morning"],
+      ["alice", 4, "Morning"],
+      ["alice", 5, "Day Off"],
+      ["alice", 6, "Day Off"],
+      ["bob", 0, "Afternoon"],
+      ["bob", 1, "Afternoon"],
+      ["bob", 2, "Morning"],
+      ["bob", 3, "Night"],
+      ["bob", 4, "Afternoon"],
+      ["carol", 0, "Night"],
+      ["carol", 2, "Night"],
+      ["carol", 4, "Night"],
+      ["carol", 5, "Night"],
+      ["david", 0, "Morning"],
+      ["david", 1, "Day Off"],
+      ["david", 2, "Morning"],
+      ["david", 3, "Morning"],
+      ["david", 4, "Morning"],
+      ["emma", 0, "Afternoon"],
+      ["emma", 1, "Morning"],
+      ["emma", 3, "Afternoon"],
+      ["emma", 4, "Afternoon"],
+      ["frank", 1, "Morning"],
+      ["frank", 2, "Morning"],
+      ["frank", 3, "Day Off"],
+      ["frank", 4, "Night"],
+    ];
+    seed.forEach(([empId, dayIdx, type]) => {
+      schedule[empId][dayIdx] = type;
+    });
+  
+    // ── DOM refs ──
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+    const tableFoot = document.getElementById("tableFoot");
+    const weekLabel = document.getElementById("weekLabel");
+    const prevWeekBtn = document.getElementById("prevWeek");
+    const nextWeekBtn = document.getElementById("nextWeek");
+    const popover = document.getElementById("cellPopover");
+    const popoverDelete = document.getElementById("popoverDeleteBtn");
+    const shiftTypeBtns = popover.querySelectorAll(".shift-type-btn");
+  
+    if (!tableBody) return;
+  
+    // ── Week computation ──
+    function getWeekDates(offset) {
+      const now = new Date(2026, 0, 27); // base: Mon Jan 27 2026
+      const base = new Date(now);
+      base.setDate(base.getDate() + offset * 7);
+  
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(base);
+        d.setDate(d.getDate() + i);
+        return d;
+      });
+    }
+  
+    function formatDate(date) {
+      return date.toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
+    }
+  
+    function formatWeekRange(dates) {
+      const first = dates[0];
+      const last = dates[6];
+      const fStr = first.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const lStr = last.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      return `${fStr} – ${lStr}`;
+    }
+  
+    function isToday(date) {
+      const today = new Date(2026, 1, 2); // March 2, 2026 → simulate "today"
+      return date.toDateString() === today.toDateString();
+    }
+  
+    // ── Render ──
+    function render() {
+      const dates = getWeekDates(weekOffset);
+      weekLabel.textContent = formatWeekRange(dates);
+  
+      renderHead(dates);
+      renderBody(dates);
+      renderFoot(dates);
+    }
+  
+    function renderHead(dates) {
+      // Remove old day headers (keep first and last th)
+      while (tableHead.children[0].children.length > 2) {
+        tableHead.children[0].children[1].remove();
+      }
+      const totalTh = tableHead.children[0].lastElementChild;
+  
+      dates.forEach((date, i) => {
+        const th = document.createElement("th");
+        th.className = `day-header${isToday(date) ? " today" : ""}`;
+        th.innerHTML = `<span class="day-name">${DAYS[i]}</span><span class="day-date">${formatDate(date)}</span>`;
+        tableHead.children[0].insertBefore(th, totalTh);
+      });
+    }
+  
+    function renderBody(dates) {
+      tableBody.innerHTML = "";
+      EMPLOYEES.forEach((emp) => {
+        const tr = document.createElement("tr");
+  
+        // Employee cell
+        const tdEmp = document.createElement("td");
+        tdEmp.className = "employee-cell";
+        tdEmp.innerHTML = `
+          <div class="employee-info">
+            <div class="employee-avatar" style="background: ${emp.color}20; color: ${emp.color}; border: 1px solid ${emp.color}30">${emp.initials}</div>
+            <span class="employee-name">${emp.name}</span>
+          </div>`;
+        tr.appendChild(tdEmp);
+  
+        // Day cells
+        let totalHours = 0;
+        dates.forEach((_, dayIdx) => {
+          const shiftType = schedule[emp.id][dayIdx] || null;
+          const td = document.createElement("td");
+          td.className = "shift-cell";
+          td.dataset.empId = emp.id;
+          td.dataset.dayIdx = dayIdx;
+  
+          if (shiftType) {
+            const info = SHIFT_TYPES[shiftType];
+            totalHours += info.hours;
+            const pill = document.createElement("span");
+            pill.className = `shift-pill ${info.cls}`;
+            pill.textContent = info.label;
+            pill.addEventListener("click", (e) => {
+              e.stopPropagation();
+              openPopover(td, emp.id, dayIdx, shiftType);
+            });
+            td.appendChild(pill);
+          } else {
+            const btn = document.createElement("button");
+            btn.className = "add-btn";
+            btn.textContent = "+";
+            btn.setAttribute("aria-label", `Add shift for ${emp.name} on ${DAYS[dayIdx]}`);
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              openPopover(td, emp.id, dayIdx, null);
+            });
+            td.appendChild(btn);
+          }
+          tr.appendChild(td);
+        });
+  
+        // Total hours cell
+        const tdTotal = document.createElement("td");
+        tdTotal.className = "total-cell";
+        tdTotal.textContent = totalHours > 0 ? `${totalHours}h` : "—";
+        tr.appendChild(tdTotal);
+  
+        tableBody.appendChild(tr);
+      });
+    }
+  
+    function renderFoot(dates) {
+      // Remove old day totals
+      while (tableFoot.children[0].children.length > 2) {
+        tableFoot.children[0].children[1].remove();
+      }
+      const footTotal = tableFoot.children[0].lastElementChild;
+  
+      dates.forEach((_, dayIdx) => {
+        const td = document.createElement("td");
+        td.className = "foot-day-count";
+        const count = EMPLOYEES.filter(
+          (emp) => schedule[emp.id][dayIdx] && schedule[emp.id][dayIdx] !== "Day Off"
+        ).length;
+        td.textContent = count;
+        tableFoot.children[0].insertBefore(td, footTotal);
+      });
+    }
+  
+    // ── Popover ──
+    let activePopoverData = null;
+  
+    function openPopover(cellEl, empId, dayIdx, currentShift) {
+      activePopoverData = { empId, dayIdx, currentShift };
+  
+      // Show/hide delete
+      popoverDelete.hidden = currentShift === null;
+  
+      // Position
+      const rect = cellEl.getBoundingClientRect();
+      const pw = 200;
+      let left = rect.left + rect.width / 2 - pw / 2;
+      let top = rect.bottom + 8 + window.scrollY;
+  
+      // Clamp within viewport
+      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+      if (left < 8) left = 8;
+  
+      popover.style.left = `${left + window.scrollX}px`;
+      popover.style.top = `${top}px`;
+      popover.style.minWidth = `${pw}px`;
+      popover.hidden = false;
+  
+      // Highlight active type
+      shiftTypeBtns.forEach((btn) => {
+        btn.style.fontWeight = btn.dataset.type === currentShift ? "700" : "500";
+        btn.style.background = btn.dataset.type === currentShift ? "rgba(56,189,248,0.08)" : "";
+      });
+    }
+  
+    function closePopover() {
+      popover.hidden = true;
+      activePopoverData = null;
+    }
+  
+    shiftTypeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!activePopoverData) return;
+        const { empId, dayIdx } = activePopoverData;
+        schedule[empId][dayIdx] = btn.dataset.type;
+        closePopover();
+        render();
+      });
+    });
+  
+    popoverDelete.addEventListener("click", () => {
+      if (!activePopoverData) return;
+      const { empId, dayIdx } = activePopoverData;
+      delete schedule[empId][dayIdx];
+      closePopover();
+      render();
+    });
+  
+    document.addEventListener("click", (e) => {
+      if (!popover.hidden && !popover.contains(e.target)) closePopover();
+    });
+  
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closePopover();
+    });
+  
+    // ── Week navigation ──
+    prevWeekBtn.addEventListener("click", () => {
+      weekOffset--;
+      closePopover();
+      render();
+    });
+  
+    nextWeekBtn.addEventListener("click", () => {
+      weekOffset++;
+      closePopover();
+      render();
+    });
+  
+    // ── Init ──
+    render();
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0f172a;
+    color: #f1f5f9;
+    min-height: 100vh;
+    padding: 1.5rem;
+  }
+  
+  /* ── Wrapper ── */
+  .scheduler-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  /* ── Header ── */
+  .scheduler-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .scheduler-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-right: auto;
+  }
+  
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .week-nav-btn {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  
+  .week-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #e2e8f0;
+  }
+  
+  .week-label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 190px;
+    text-align: center;
+  }
+  
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+  }
+  
+  .legend-item {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+  }
+  
+  .legend-morning {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+  }
+  .legend-afternoon {
+    background: rgba(251, 146, 60, 0.15);
+    color: #fb923c;
+  }
+  .legend-night {
+    background: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
+  }
+  .legend-dayoff {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+  }
+  
+  /* ── Grid scroll ── */
+  .grid-scroll {
+    overflow-x: auto;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  /* ── Table ── */
+  .shift-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+  }
+  
+  /* ── Header row ── */
+  .shift-table thead tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .shift-table th,
+  .shift-table td {
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8125rem;
+    vertical-align: middle;
+  }
+  
+  .col-employee {
+    text-align: left !important;
+    width: 140px;
+    min-width: 130px;
+    padding-left: 1rem !important;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .col-total {
+    width: 72px;
+    min-width: 60px;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .day-header {
+    color: #94a3b8;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  
+  .day-header .day-name {
+    display: block;
+    font-size: 0.6875rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .day-header .day-date {
+    display: block;
+    font-size: 0.875rem;
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+  
+  .day-header.today .day-date {
+    color: #38bdf8;
+  }
+  
+  /* ── Body rows ── */
+  .shift-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.12s ease;
+  }
+  
+  .shift-table tbody tr:last-child {
+    border-bottom: none;
+  }
+  
+  .shift-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  /* ── Employee cell ── */
+  .employee-cell {
+    text-align: left !important;
+    padding-left: 1rem !important;
+  }
+  
+  .employee-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .employee-avatar {
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  .employee-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    white-space: nowrap;
+  }
+  
+  /* ── Shift cells ── */
+  .shift-cell {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .shift-cell:hover .add-btn {
+    opacity: 1;
+  }
+  
+  /* ── Shift pill ── */
+  .shift-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: filter 0.12s ease, transform 0.12s ease;
+    user-select: none;
+  }
+  
+  .shift-pill:hover {
+    filter: brightness(1.15);
+    transform: scale(1.04);
+  }
+  
+  .shift-pill.morning {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+  }
+  .shift-pill.afternoon {
+    background: rgba(251, 146, 60, 0.18);
+    color: #fb923c;
+    border: 1px solid rgba(251, 146, 60, 0.3);
+  }
+  .shift-pill.night {
+    background: rgba(167, 139, 250, 0.18);
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+  }
+  .shift-pill.dayoff {
+    background: rgba(100, 116, 139, 0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.2);
+  }
+  
+  /* ── Add button ── */
+  .add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    color: #475569;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+    line-height: 1;
+  }
+  
+  .shift-cell:hover .add-btn {
+    opacity: 1;
+  }
+  
+  .add-btn:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+  }
+  
+  /* ── Total column ── */
+  .total-cell {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+  
+  /* ── Footer ── */
+  .shift-table tfoot {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .shift-table tfoot td {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+  }
+  
+  .foot-label {
+    text-align: left !important;
+    padding-left: 1rem !important;
+    color: #475569;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .foot-total {
+    color: #475569;
+  }
+  
+  .foot-day-count {
+    color: #64748b;
+    font-weight: 700;
+  }
+  
+  /* ── Popover ── */
+  .cell-popover {
+    position: fixed;
+    z-index: 200;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.875rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    min-width: 180px;
+    overflow: hidden;
+  }
+  
+  .cell-popover[hidden] {
+    display: none;
+  }
+  
+  .popover-body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .shift-type-list {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .shift-type-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: none;
+    border: none;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s ease;
+    font-family: inherit;
+  }
+  
+  .shift-type-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .shift-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .shift-type-btn.morning .shift-dot {
+    background: #38bdf8;
+  }
+  .shift-type-btn.afternoon .shift-dot {
+    background: #fb923c;
+  }
+  .shift-type-btn.night .shift-dot {
+    background: #a78bfa;
+  }
+  .shift-type-btn.dayoff .shift-dot {
+    background: #64748b;
+  }
+  
+  .shift-sub {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    color: #475569;
+    font-weight: 400;
+  }
+  
+  .popover-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    margin: 0;
+  }
+  
+  .popover-delete-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: none;
+    border: none;
+    color: #f87171;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background 0.12s ease;
+    font-family: inherit;
+  }
+  
+  .popover-delete-btn:hover {
+    background: rgba(248, 113, 113, 0.08);
+  }
+  
+  .popover-delete-btn[hidden] {
+    display: none;
+  }
+  
+  @media (max-width: 600px) {
+    body {
+      padding: 1rem;
+    }
+    .scheduler-header {
+      gap: 0.75rem;
+    }
+    .scheduler-title {
+      font-size: 1.0625rem;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .shift-pill,
+    .add-btn,
+    .week-nav-btn {
+      transition: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shift Grid</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  
+    <div class="scheduler-wrapper">
+  
+      <!-- Header -->
+      <div class="scheduler-header">
+        <h1 class="scheduler-title">Shift Scheduler</h1>
+        <div class="week-nav">
+          <button class="week-nav-btn" id="prevWeek" aria-label="Previous week">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+          <span class="week-label" id="weekLabel">Loading…</span>
+          <button class="week-nav-btn" id="nextWeek" aria-label="Next week">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div class="legend">
+          <span class="legend-item legend-morning">Morning</span>
+          <span class="legend-item legend-afternoon">Afternoon</span>
+          <span class="legend-item legend-night">Night</span>
+          <span class="legend-item legend-dayoff">Day Off</span>
+        </div>
+      </div>
+  
+      <!-- Grid container -->
+      <div class="grid-scroll">
+        <table class="shift-table" id="shiftTable" role="grid">
+          <thead>
+            <tr id="tableHead">
+              <th class="col-employee">Employee</th>
+              <!-- Day columns injected by JS -->
+              <th class="col-total">Total</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+          <tfoot>
+            <tr id="tableFoot">
+              <td class="foot-label">Shifts / day</td>
+              <!-- Totals injected by JS -->
+              <td class="foot-total">—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+  
+    </div>
+  
+    <!-- Popover (shared, repositioned via JS) -->
+    <div class="cell-popover" id="cellPopover" hidden role="dialog" aria-label="Shift options">
+      <div class="popover-arrow"></div>
+      <div class="popover-body">
+        <div class="shift-type-list" id="shiftTypeList">
+          <button class="shift-type-btn morning" data-type="Morning">
+            <span class="shift-dot"></span> Morning <span class="shift-sub">6 AM – 2 PM</span>
+          </button>
+          <button class="shift-type-btn afternoon" data-type="Afternoon">
+            <span class="shift-dot"></span> Afternoon <span class="shift-sub">2 PM – 10 PM</span>
+          </button>
+          <button class="shift-type-btn night" data-type="Night">
+            <span class="shift-dot"></span> Night <span class="shift-sub">10 PM – 6 AM</span>
+          </button>
+          <button class="shift-type-btn dayoff" data-type="Day Off">
+            <span class="shift-dot"></span> Day Off <span class="shift-sub">—</span>
+          </button>
+        </div>
+        <hr class="popover-divider" />
+        <button class="popover-delete-btn" id="popoverDeleteBtn" hidden>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+          Remove shift
+        </button>
+      </div>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    "use strict";
+  
+    // ── Config ──
+    const EMPLOYEES = [
+      { id: "alice", name: "Alice M.", color: "#38bdf8", initials: "AM" },
+      { id: "bob", name: "Bob K.", color: "#818cf8", initials: "BK" },
+      { id: "carol", name: "Carol S.", color: "#f472b6", initials: "CS" },
+      { id: "david", name: "David R.", color: "#34d399", initials: "DR" },
+      { id: "emma", name: "Emma J.", color: "#fb923c", initials: "EJ" },
+      { id: "frank", name: "Frank L.", color: "#fbbf24", initials: "FL" },
+    ];
+  
+    const SHIFT_TYPES = {
+      Morning: { label: "Morning", hours: 8, cls: "morning" },
+      Afternoon: { label: "Afternoon", hours: 8, cls: "afternoon" },
+      Night: { label: "Night", hours: 8, cls: "night" },
+      "Day Off": { label: "Day Off", hours: 0, cls: "dayoff" },
+    };
+  
+    const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  
+    // ── State ──
+    let weekOffset = 0; // 0 = current week, -1 = prev, +1 = next
+  
+    // Grid state: { [employeeId]: { [dayIndex]: "Morning" | "Afternoon" | "Night" | "Day Off" | null } }
+    const schedule = {};
+    EMPLOYEES.forEach((emp) => {
+      schedule[emp.id] = {};
+    });
+  
+    // Seed some initial data so the grid looks populated
+    const seed = [
+      ["alice", 0, "Morning"],
+      ["alice", 1, "Morning"],
+      ["alice", 2, "Afternoon"],
+      ["alice", 3, "Morning"],
+      ["alice", 4, "Morning"],
+      ["alice", 5, "Day Off"],
+      ["alice", 6, "Day Off"],
+      ["bob", 0, "Afternoon"],
+      ["bob", 1, "Afternoon"],
+      ["bob", 2, "Morning"],
+      ["bob", 3, "Night"],
+      ["bob", 4, "Afternoon"],
+      ["carol", 0, "Night"],
+      ["carol", 2, "Night"],
+      ["carol", 4, "Night"],
+      ["carol", 5, "Night"],
+      ["david", 0, "Morning"],
+      ["david", 1, "Day Off"],
+      ["david", 2, "Morning"],
+      ["david", 3, "Morning"],
+      ["david", 4, "Morning"],
+      ["emma", 0, "Afternoon"],
+      ["emma", 1, "Morning"],
+      ["emma", 3, "Afternoon"],
+      ["emma", 4, "Afternoon"],
+      ["frank", 1, "Morning"],
+      ["frank", 2, "Morning"],
+      ["frank", 3, "Day Off"],
+      ["frank", 4, "Night"],
+    ];
+    seed.forEach(([empId, dayIdx, type]) => {
+      schedule[empId][dayIdx] = type;
+    });
+  
+    // ── DOM refs ──
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+    const tableFoot = document.getElementById("tableFoot");
+    const weekLabel = document.getElementById("weekLabel");
+    const prevWeekBtn = document.getElementById("prevWeek");
+    const nextWeekBtn = document.getElementById("nextWeek");
+    const popover = document.getElementById("cellPopover");
+    const popoverDelete = document.getElementById("popoverDeleteBtn");
+    const shiftTypeBtns = popover.querySelectorAll(".shift-type-btn");
+  
+    if (!tableBody) return;
+  
+    // ── Week computation ──
+    function getWeekDates(offset) {
+      const now = new Date(2026, 0, 27); // base: Mon Jan 27 2026
+      const base = new Date(now);
+      base.setDate(base.getDate() + offset * 7);
+  
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(base);
+        d.setDate(d.getDate() + i);
+        return d;
+      });
+    }
+  
+    function formatDate(date) {
+      return date.toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
+    }
+  
+    function formatWeekRange(dates) {
+      const first = dates[0];
+      const last = dates[6];
+      const fStr = first.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const lStr = last.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      return `${fStr} – ${lStr}`;
+    }
+  
+    function isToday(date) {
+      const today = new Date(2026, 1, 2); // March 2, 2026 → simulate "today"
+      return date.toDateString() === today.toDateString();
+    }
+  
+    // ── Render ──
+    function render() {
+      const dates = getWeekDates(weekOffset);
+      weekLabel.textContent = formatWeekRange(dates);
+  
+      renderHead(dates);
+      renderBody(dates);
+      renderFoot(dates);
+    }
+  
+    function renderHead(dates) {
+      // Remove old day headers (keep first and last th)
+      while (tableHead.children[0].children.length > 2) {
+        tableHead.children[0].children[1].remove();
+      }
+      const totalTh = tableHead.children[0].lastElementChild;
+  
+      dates.forEach((date, i) => {
+        const th = document.createElement("th");
+        th.className = `day-header${isToday(date) ? " today" : ""}`;
+        th.innerHTML = `<span class="day-name">${DAYS[i]}</span><span class="day-date">${formatDate(date)}</span>`;
+        tableHead.children[0].insertBefore(th, totalTh);
+      });
+    }
+  
+    function renderBody(dates) {
+      tableBody.innerHTML = "";
+      EMPLOYEES.forEach((emp) => {
+        const tr = document.createElement("tr");
+  
+        // Employee cell
+        const tdEmp = document.createElement("td");
+        tdEmp.className = "employee-cell";
+        tdEmp.innerHTML = `
+          <div class="employee-info">
+            <div class="employee-avatar" style="background: ${emp.color}20; color: ${emp.color}; border: 1px solid ${emp.color}30">${emp.initials}</div>
+            <span class="employee-name">${emp.name}</span>
+          </div>`;
+        tr.appendChild(tdEmp);
+  
+        // Day cells
+        let totalHours = 0;
+        dates.forEach((_, dayIdx) => {
+          const shiftType = schedule[emp.id][dayIdx] || null;
+          const td = document.createElement("td");
+          td.className = "shift-cell";
+          td.dataset.empId = emp.id;
+          td.dataset.dayIdx = dayIdx;
+  
+          if (shiftType) {
+            const info = SHIFT_TYPES[shiftType];
+            totalHours += info.hours;
+            const pill = document.createElement("span");
+            pill.className = `shift-pill ${info.cls}`;
+            pill.textContent = info.label;
+            pill.addEventListener("click", (e) => {
+              e.stopPropagation();
+              openPopover(td, emp.id, dayIdx, shiftType);
+            });
+            td.appendChild(pill);
+          } else {
+            const btn = document.createElement("button");
+            btn.className = "add-btn";
+            btn.textContent = "+";
+            btn.setAttribute("aria-label", `Add shift for ${emp.name} on ${DAYS[dayIdx]}`);
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              openPopover(td, emp.id, dayIdx, null);
+            });
+            td.appendChild(btn);
+          }
+          tr.appendChild(td);
+        });
+  
+        // Total hours cell
+        const tdTotal = document.createElement("td");
+        tdTotal.className = "total-cell";
+        tdTotal.textContent = totalHours > 0 ? `${totalHours}h` : "—";
+        tr.appendChild(tdTotal);
+  
+        tableBody.appendChild(tr);
+      });
+    }
+  
+    function renderFoot(dates) {
+      // Remove old day totals
+      while (tableFoot.children[0].children.length > 2) {
+        tableFoot.children[0].children[1].remove();
+      }
+      const footTotal = tableFoot.children[0].lastElementChild;
+  
+      dates.forEach((_, dayIdx) => {
+        const td = document.createElement("td");
+        td.className = "foot-day-count";
+        const count = EMPLOYEES.filter(
+          (emp) => schedule[emp.id][dayIdx] && schedule[emp.id][dayIdx] !== "Day Off"
+        ).length;
+        td.textContent = count;
+        tableFoot.children[0].insertBefore(td, footTotal);
+      });
+    }
+  
+    // ── Popover ──
+    let activePopoverData = null;
+  
+    function openPopover(cellEl, empId, dayIdx, currentShift) {
+      activePopoverData = { empId, dayIdx, currentShift };
+  
+      // Show/hide delete
+      popoverDelete.hidden = currentShift === null;
+  
+      // Position
+      const rect = cellEl.getBoundingClientRect();
+      const pw = 200;
+      let left = rect.left + rect.width / 2 - pw / 2;
+      let top = rect.bottom + 8 + window.scrollY;
+  
+      // Clamp within viewport
+      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+      if (left < 8) left = 8;
+  
+      popover.style.left = `${left + window.scrollX}px`;
+      popover.style.top = `${top}px`;
+      popover.style.minWidth = `${pw}px`;
+      popover.hidden = false;
+  
+      // Highlight active type
+      shiftTypeBtns.forEach((btn) => {
+        btn.style.fontWeight = btn.dataset.type === currentShift ? "700" : "500";
+        btn.style.background = btn.dataset.type === currentShift ? "rgba(56,189,248,0.08)" : "";
+      });
+    }
+  
+    function closePopover() {
+      popover.hidden = true;
+      activePopoverData = null;
+    }
+  
+    shiftTypeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!activePopoverData) return;
+        const { empId, dayIdx } = activePopoverData;
+        schedule[empId][dayIdx] = btn.dataset.type;
+        closePopover();
+        render();
+      });
+    });
+  
+    popoverDelete.addEventListener("click", () => {
+      if (!activePopoverData) return;
+      const { empId, dayIdx } = activePopoverData;
+      delete schedule[empId][dayIdx];
+      closePopover();
+      render();
+    });
+  
+    document.addEventListener("click", (e) => {
+      if (!popover.hidden && !popover.contains(e.target)) closePopover();
+    });
+  
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closePopover();
+    });
+  
+    // ── Week navigation ──
+    prevWeekBtn.addEventListener("click", () => {
+      weekOffset--;
+      closePopover();
+      render();
+    });
+  
+    nextWeekBtn.addEventListener("click", () => {
+      weekOffset++;
+      closePopover();
+      render();
+    });
+  
+    // ── Init ──
+    render();
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

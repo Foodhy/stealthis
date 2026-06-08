@@ -1,0 +1,436 @@
+---
+slug: "morphing-text-delete-closing-tag-d7d3f2fb"
+topic: "text"
+title: "Fix the broken HTML structure in Morphing Text"
+type: "fix"
+difficulty: 2
+resourceSlug: "morphing-text"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #0a0a0a;
+  }
+  
+  .container {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  /* --- Morphing Text --- */
+  .morph-container {
+    position: relative;
+  }
+  
+  .morph-filters {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+  
+  .morph-wrapper {
+    position: relative;
+    display: inline-block;
+    filter: url(#morph-blur) contrast(30);
+    min-height: 1.2em;
+  }
+  
+  .morph-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  
+    color: #e8e8e8;
+    transition: opacity 0.6s ease, filter 0.6s ease;
+  }
+  
+  .morph-text--a {
+    opacity: 1;
+  }
+  
+  .morph-text--b {
+    opacity: 0;
+  }
+  
+  /* Active states toggled by JS */
+  .morph-text--a.morph-out {
+    opacity: 0;
+  }
+  
+  .morph-text--b.morph-in {
+    opacity: 1;
+  }
+  
+  /* Reserve space with invisible text */
+  .morph-wrapper::after {
+    content: attr(data-current);
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    visibility: hidden;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  
+  .subtitle {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    color: #666;
+    letter-spacing: 0.01em;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .morph-wrapper {
+      filter: none;
+    }
+    .morph-text {
+      transition: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Morphing Text
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div
+        class="morph-container"
+        data-texts='["Innovative","Creative","Powerful","Beautiful","Seamless"]'
+      >
+        <svg class="morph-filters" aria-hidden="true">
+          <defs>
+            <filter id="morph-blur">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="8" />
+            </filter>
+          </defs>
+        </svg>
+        <div class="morph-wrapper">
+          <span class="morph-text morph-text--a">Innovative</span>
+          <span class="morph-text morph-text--b">Creative</span>
+        </div>
+      </div>
+      <p class="subtitle">Text morphs smoothly between words via SVG blur</p>
+    </div>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Morphing Text — alternates between two text elements with SVG blur morph effect
+  (function () {
+    "use strict";
+  
+    const container = document.querySelector(".morph-container");
+    if (!container) return;
+  
+    let texts;
+    try {
+      texts = JSON.parse(container.getAttribute("data-texts") || "[]");
+    } catch {
+      texts = ["Innovative", "Creative", "Powerful"];
+    }
+  
+    if (texts.length < 2) return;
+  
+    const textA = container.querySelector(".morph-text--a");
+    const textB = container.querySelector(".morph-text--b");
+    const wrapper = container.querySelector(".morph-wrapper");
+    if (!textA || !textB || !wrapper) return;
+  
+    let index = 0;
+    let showingA = true;
+    const MORPH_DURATION = 2000; // ms between morphs
+  
+    // Respect reduced motion
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+  
+    function morph() {
+      const nextIndex = (index + 1) % texts.length;
+  
+      if (showingA) {
+        // A is showing, prepare B with next text, then cross-fade
+        textB.textContent = texts[nextIndex];
+        wrapper.setAttribute("data-current", texts[nextIndex]);
+  
+        textA.classList.add("morph-out");
+        textB.classList.add("morph-in");
+  
+        setTimeout(() => {
+          textA.classList.remove("morph-out");
+          textB.classList.remove("morph-in");
+          // Swap: now B is showing, reset A's opacity
+          textA.style.opacity = "0";
+          textB.style.opacity = "1";
+          showingA = false;
+        }, 700);
+      } else {
+        // B is showing, prepare A with next text, then cross-fade
+        textA.textContent = texts[nextIndex];
+        wrapper.setAttribute("data-current", texts[nextIndex]);
+  
+        textB.style.opacity = "0";
+        textA.style.opacity = "1";
+        showingA = true;
+      }
+  
+      index = nextIndex;
+    }
+  
+    // Set initial state
+    textA.textContent = texts[0];
+    wrapper.setAttribute("data-current", texts[0]);
+  
+    setInterval(morph, MORPH_DURATION);
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #0a0a0a;
+  }
+  
+  .container {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  /* --- Morphing Text --- */
+  .morph-container {
+    position: relative;
+  }
+  
+  .morph-filters {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+  
+  .morph-wrapper {
+    position: relative;
+    display: inline-block;
+    filter: url(#morph-blur) contrast(30);
+    min-height: 1.2em;
+  }
+  
+  .morph-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  
+    color: #e8e8e8;
+    transition: opacity 0.6s ease, filter 0.6s ease;
+  }
+  
+  .morph-text--a {
+    opacity: 1;
+  }
+  
+  .morph-text--b {
+    opacity: 0;
+  }
+  
+  /* Active states toggled by JS */
+  .morph-text--a.morph-out {
+    opacity: 0;
+  }
+  
+  .morph-text--b.morph-in {
+    opacity: 1;
+  }
+  
+  /* Reserve space with invisible text */
+  .morph-wrapper::after {
+    content: attr(data-current);
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    visibility: hidden;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  
+  .subtitle {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    color: #666;
+    letter-spacing: 0.01em;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .morph-wrapper {
+      filter: none;
+    }
+    .morph-text {
+      transition: none;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Morphing Text</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div
+        class="morph-container"
+        data-texts='["Innovative","Creative","Powerful","Beautiful","Seamless"]'
+      >
+        <svg class="morph-filters" aria-hidden="true">
+          <defs>
+            <filter id="morph-blur">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="8" />
+            </filter>
+          </defs>
+        </svg>
+        <div class="morph-wrapper">
+          <span class="morph-text morph-text--a">Innovative</span>
+          <span class="morph-text morph-text--b">Creative</span>
+        </div>
+      </div>
+      <p class="subtitle">Text morphs smoothly between words via SVG blur</p>
+    </div>
+    <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  // Morphing Text — alternates between two text elements with SVG blur morph effect
+  (function () {
+    "use strict";
+  
+    const container = document.querySelector(".morph-container");
+    if (!container) return;
+  
+    let texts;
+    try {
+      texts = JSON.parse(container.getAttribute("data-texts") || "[]");
+    } catch {
+      texts = ["Innovative", "Creative", "Powerful"];
+    }
+  
+    if (texts.length < 2) return;
+  
+    const textA = container.querySelector(".morph-text--a");
+    const textB = container.querySelector(".morph-text--b");
+    const wrapper = container.querySelector(".morph-wrapper");
+    if (!textA || !textB || !wrapper) return;
+  
+    let index = 0;
+    let showingA = true;
+    const MORPH_DURATION = 2000; // ms between morphs
+  
+    // Respect reduced motion
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+  
+    function morph() {
+      const nextIndex = (index + 1) % texts.length;
+  
+      if (showingA) {
+        // A is showing, prepare B with next text, then cross-fade
+        textB.textContent = texts[nextIndex];
+        wrapper.setAttribute("data-current", texts[nextIndex]);
+  
+        textA.classList.add("morph-out");
+        textB.classList.add("morph-in");
+  
+        setTimeout(() => {
+          textA.classList.remove("morph-out");
+          textB.classList.remove("morph-in");
+          // Swap: now B is showing, reset A's opacity
+          textA.style.opacity = "0";
+          textB.style.opacity = "1";
+          showingA = false;
+        }, 700);
+      } else {
+        // B is showing, prepare A with next text, then cross-fade
+        textA.textContent = texts[nextIndex];
+        wrapper.setAttribute("data-current", texts[nextIndex]);
+  
+        textB.style.opacity = "0";
+        textA.style.opacity = "1";
+        showingA = true;
+      }
+  
+      index = nextIndex;
+    }
+  
+    // Set initial state
+    textA.textContent = texts[0];
+    wrapper.setAttribute("data-current", texts[0]);
+  
+    setInterval(morph, MORPH_DURATION);
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

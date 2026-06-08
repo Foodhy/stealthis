@@ -1,0 +1,466 @@
+---
+slug: "live-clock-delete-closing-tag-d5460c42"
+topic: "clock"
+title: "Fix the broken HTML structure in Live Clock (Analog + Digital)"
+type: "fix"
+difficulty: 2
+resourceSlug: "live-clock"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  :root {
+    --clock-size: 200px;
+    --clock-bg: rgba(30, 41, 59, 0.8);
+    --clock-border: rgba(99, 102, 241, 0.3);
+    --hand-hour: #f8fafc;
+    --hand-min: #94a3b8;
+    --hand-sec: #f43f5e;
+    --clock-glow: rgba(99, 102, 241, 0.2);
+  }
+  
+  .live-clock-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    font-family: "Inter", system-ui, sans-serif;
+    backdrop-filter: blur(16px);
+    width: fit-content;
+    margin: 0 auto;
+  }
+  
+  .clock-face {
+    width: var(--clock-size);
+    height: var(--clock-size);
+    background: var(--clock-bg);
+    border: 2px solid var(--clock-border);
+    border-radius: 50%;
+    position: relative;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4), 0 0 40px var(--clock-glow), 0 8px 32px
+      rgba(0, 0, 0, 0.5);
+  }
+  
+  .center-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: #f43f5e;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+  }
+  
+  .hand {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform-origin: bottom center;
+    border-radius: 4px;
+    transition: transform 0.5s cubic-bezier(0.4, 2.08, 0.55, 0.44);
+  }
+  
+  .hand.hour {
+    width: 5px;
+    height: 52px;
+    background: var(--hand-hour);
+    margin-left: -2.5px;
+    z-index: 3;
+    border-radius: 4px 4px 2px 2px;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  }
+  
+  .hand.minute {
+    width: 3px;
+    height: 74px;
+    background: var(--hand-min);
+    margin-left: -1.5px;
+    z-index: 2;
+    border-radius: 4px 4px 2px 2px;
+  }
+  
+  .hand.second {
+    width: 2px;
+    height: 86px;
+    background: var(--hand-sec);
+    margin-left: -1px;
+    z-index: 4;
+    border-radius: 4px 4px 1px 1px;
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.5);
+  }
+  
+  /* Clock tick marks */
+  .clock-face::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 255, 255, 0.06);
+  }
+  
+  .numbers {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    color: rgba(148, 163, 184, 0.6);
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  
+  .numbers span {
+    position: absolute;
+  }
+  
+  .numbers span:nth-child(1) {
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .numbers span:nth-child(2) {
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .numbers span:nth-child(3) {
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .numbers span:nth-child(4) {
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .digital-readout {
+    font-size: 1.625rem;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    font-family: "JetBrains Mono", "Courier New", monospace;
+  }
+  
+  #digital-ampm {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-left: 0.35rem;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Live Clock
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="live-clock-widget">
+          <div class="clock-face">
+              <div class="hand hour" id="hour-hand"></div>
+              <div class="hand minute" id="minute-hand"></div>
+              <div class="hand second" id="second-hand"></div>
+              <div class="center-dot"></div>
+              <div class="numbers">
+                  <span>12</span>
+                  <span>3</span>
+                  <span>6</span>
+                  <span>9</span>
+              </div>
+          </div>
+  
+          <div class="digital-readout">
+              <span id="digital-time">00:00:00</span>
+              <span id="digital-ampm">AM</span>
+          </div>
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  function updateLiveClock() {
+    const now = new Date();
+  
+    const seconds = now.getSeconds();
+    const minutes = now.getMinutes();
+    const hours = now.getHours();
+  
+    // Analog calculations
+    const secondDeg = (seconds / 60) * 360;
+    const minuteDeg = (minutes / 60) * 360 + (seconds / 60) * 6;
+    const hourDeg = (hours / 12) * 360 + (minutes / 60) * 30;
+  
+    document.getElementById("second-hand").style.transform =
+      `translateX(-50%) rotate(${secondDeg}deg)`;
+    document.getElementById("minute-hand").style.transform =
+      `translateX(-50%) rotate(${minuteDeg}deg)`;
+    document.getElementById("hour-hand").style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
+  
+    // Digital readout
+    const displayHours = hours % 12 || 12;
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayTime = `${displayHours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  
+    document.getElementById("digital-time").textContent = displayTime;
+    document.getElementById("digital-ampm").textContent = ampm;
+  }
+  
+  setInterval(updateLiveClock, 1000);
+  updateLiveClock();
+  
+  </script>
+solution: |
+  <style>
+  :root {
+    --clock-size: 200px;
+    --clock-bg: rgba(30, 41, 59, 0.8);
+    --clock-border: rgba(99, 102, 241, 0.3);
+    --hand-hour: #f8fafc;
+    --hand-min: #94a3b8;
+    --hand-sec: #f43f5e;
+    --clock-glow: rgba(99, 102, 241, 0.2);
+  }
+  
+  .live-clock-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    font-family: "Inter", system-ui, sans-serif;
+    backdrop-filter: blur(16px);
+    width: fit-content;
+    margin: 0 auto;
+  }
+  
+  .clock-face {
+    width: var(--clock-size);
+    height: var(--clock-size);
+    background: var(--clock-bg);
+    border: 2px solid var(--clock-border);
+    border-radius: 50%;
+    position: relative;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4), 0 0 40px var(--clock-glow), 0 8px 32px
+      rgba(0, 0, 0, 0.5);
+  }
+  
+  .center-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: #f43f5e;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+  }
+  
+  .hand {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform-origin: bottom center;
+    border-radius: 4px;
+    transition: transform 0.5s cubic-bezier(0.4, 2.08, 0.55, 0.44);
+  }
+  
+  .hand.hour {
+    width: 5px;
+    height: 52px;
+    background: var(--hand-hour);
+    margin-left: -2.5px;
+    z-index: 3;
+    border-radius: 4px 4px 2px 2px;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  }
+  
+  .hand.minute {
+    width: 3px;
+    height: 74px;
+    background: var(--hand-min);
+    margin-left: -1.5px;
+    z-index: 2;
+    border-radius: 4px 4px 2px 2px;
+  }
+  
+  .hand.second {
+    width: 2px;
+    height: 86px;
+    background: var(--hand-sec);
+    margin-left: -1px;
+    z-index: 4;
+    border-radius: 4px 4px 1px 1px;
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.5);
+  }
+  
+  /* Clock tick marks */
+  .clock-face::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 255, 255, 0.06);
+  }
+  
+  .numbers {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    color: rgba(148, 163, 184, 0.6);
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  
+  .numbers span {
+    position: absolute;
+  }
+  
+  .numbers span:nth-child(1) {
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .numbers span:nth-child(2) {
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .numbers span:nth-child(3) {
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .numbers span:nth-child(4) {
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .digital-readout {
+    font-size: 1.625rem;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    font-family: "JetBrains Mono", "Courier New", monospace;
+  }
+  
+  #digital-ampm {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-left: 0.35rem;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Live Clock</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+      <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body>
+      <div class="live-clock-widget">
+          <div class="clock-face">
+              <div class="hand hour" id="hour-hand"></div>
+              <div class="hand minute" id="minute-hand"></div>
+              <div class="hand second" id="second-hand"></div>
+              <div class="center-dot"></div>
+              <div class="numbers">
+                  <span>12</span>
+                  <span>3</span>
+                  <span>6</span>
+                  <span>9</span>
+              </div>
+          </div>
+  
+          <div class="digital-readout">
+              <span id="digital-time">00:00:00</span>
+              <span id="digital-ampm">AM</span>
+          </div>
+      </div>
+  
+      <script src="script.js"></script>
+  </body>
+  
+  </html>
+  <script>
+  function updateLiveClock() {
+    const now = new Date();
+  
+    const seconds = now.getSeconds();
+    const minutes = now.getMinutes();
+    const hours = now.getHours();
+  
+    // Analog calculations
+    const secondDeg = (seconds / 60) * 360;
+    const minuteDeg = (minutes / 60) * 360 + (seconds / 60) * 6;
+    const hourDeg = (hours / 12) * 360 + (minutes / 60) * 30;
+  
+    document.getElementById("second-hand").style.transform =
+      `translateX(-50%) rotate(${secondDeg}deg)`;
+    document.getElementById("minute-hand").style.transform =
+      `translateX(-50%) rotate(${minuteDeg}deg)`;
+    document.getElementById("hour-hand").style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
+  
+    // Digital readout
+    const displayHours = hours % 12 || 12;
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayTime = `${displayHours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  
+    document.getElementById("digital-time").textContent = displayTime;
+    document.getElementById("digital-ampm").textContent = ampm;
+  }
+  
+  setInterval(updateLiveClock, 1000);
+  updateLiveClock();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

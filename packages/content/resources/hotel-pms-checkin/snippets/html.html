@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Check-in · Aurelia Hotels</title>
+  </head>
+  <body>
+    <main class="ci">
+      <header class="topbar">
+        <div>
+          <p class="kicker">Front desk</p>
+          <h1>Check-in</h1>
+        </div>
+        <button class="cancel">Cancel</button>
+      </header>
+
+      <nav class="stepper" id="stepper">
+        <button class="step is-active" data-step="1">
+          <span class="num">1</span><span class="lbl">Lookup</span>
+        </button>
+        <span class="step-line"></span>
+        <button class="step" data-step="2">
+          <span class="num">2</span><span class="lbl">Verify &amp; Assign</span>
+        </button>
+        <span class="step-line"></span>
+        <button class="step" data-step="3">
+          <span class="num">3</span><span class="lbl">Folio &amp; Welcome</span>
+        </button>
+      </nav>
+
+      <section class="layout">
+        <section class="panel" id="panel">
+          <!-- step 1 -->
+          <article class="step-panel is-active" data-panel="1">
+            <h2 class="panel-h">Find the reservation</h2>
+            <p class="panel-sub">Search by guest name, confirmation code or last 4 digits of the card on file.</p>
+            <div class="search">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <input id="lookup" type="search" placeholder="e.g. Tanaka · AUR-21847 · 4421" />
+            </div>
+            <p class="results-h">Today's expected arrivals</p>
+            <div class="results" id="results"></div>
+          </article>
+
+          <!-- step 2 -->
+          <article class="step-panel" data-panel="2">
+            <h2 class="panel-h">Verify guest &amp; assign room</h2>
+            <p class="panel-sub">Confirm identification documents and pick a compatible room.</p>
+
+            <section class="form-block">
+              <h3>Identity</h3>
+              <div class="grid-2">
+                <label class="field"><span>Document type</span>
+                  <select><option>Passport</option><option>National ID</option><option>Driver's License</option></select>
+                </label>
+                <label class="field"><span>Document number</span>
+                  <input type="text" value="P-29384721" />
+                </label>
+                <label class="field"><span>Nationality</span>
+                  <input type="text" value="Japan" />
+                </label>
+                <label class="field"><span>Date of birth</span>
+                  <input type="text" value="1984-11-22" />
+                </label>
+              </div>
+              <label class="check"><input type="checkbox" checked /> ID document scanned &amp; verified</label>
+              <div class="sig">
+                <span>Signature</span>
+                <div class="sig-pad">Tap to sign</div>
+              </div>
+            </section>
+
+            <section class="form-block">
+              <h3>Room assignment</h3>
+              <div class="rooms" id="rooms"></div>
+            </section>
+
+            <section class="form-block">
+              <h3>Keys</h3>
+              <div class="keys">
+                <label class="key"><input type="checkbox" checked /> <strong>Mobile key</strong><small>Sent to guest app</small></label>
+                <label class="key"><input type="checkbox" /> <strong>Physical card ×2</strong><small>Encoder bay 1</small></label>
+                <label class="key"><input type="checkbox" /> <strong>Spa &amp; gym access</strong><small>Included with suite</small></label>
+              </div>
+            </section>
+          </article>
+
+          <!-- step 3 -->
+          <article class="step-panel" data-panel="3">
+            <h2 class="panel-h">Folio &amp; welcome</h2>
+            <p class="panel-sub">Review charges and capture the deposit before printing the welcome packet.</p>
+
+            <section class="folio">
+              <h3>Folio preview</h3>
+              <ul class="folio-list">
+                <li><span>Junior Suite · 5 nights</span><span>€1,205.00</span></li>
+                <li><span>City tax · 5 nights</span><span>€16.50</span></li>
+                <li><span>Welcome amenity</span><span class="incl">included</span></li>
+                <li class="total"><span>Total folio balance</span><span>€1,221.50</span></li>
+              </ul>
+            </section>
+
+            <section class="form-block">
+              <h3>Deposit / payment</h3>
+              <div class="seg" id="paySeg">
+                <button class="seg-btn is-active" data-pay="card">Card on file</button>
+                <button class="seg-btn" data-pay="auth">Pre-authorise</button>
+                <button class="seg-btn" data-pay="cash">Cash</button>
+              </div>
+              <div class="pay-body" id="payBody"></div>
+            </section>
+
+            <section class="form-block">
+              <h3>Welcome packet</h3>
+              <div class="welcome">
+                <label class="check"><input type="checkbox" checked /> Print folio + key card sleeves</label>
+                <label class="check"><input type="checkbox" checked /> Email digital receipt</label>
+                <label class="check"><input type="checkbox" /> SMS Wi-Fi password</label>
+                <label class="check"><input type="checkbox" /> Schedule turn-down service for 21:00</label>
+              </div>
+            </section>
+          </article>
+        </section>
+
+        <aside class="summary" id="summary"></aside>
+      </section>
+
+      <footer class="footer">
+        <button class="back" id="back" disabled>← Back</button>
+        <div class="footer-meta" id="footerMeta">Step 1 of 3</div>
+        <button class="next" id="next">Continue →</button>
+      </footer>
+    </main>
+
+    <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

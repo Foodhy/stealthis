@@ -1,0 +1,1198 @@
+---
+slug: "blog-post-page-delete-closing-tag-82981683"
+topic: "blog"
+title: "Fix the broken HTML structure in Blog Post Page"
+type: "fix"
+difficulty: 2
+resourceSlug: "blog-post-page"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #fff;
+    color: #111;
+  }
+  
+  /* Reading progress bar */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+  
+  .site-header {
+    position: relative;
+    top: 0;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 99;
+  }
+  
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111;
+    text-decoration: none;
+  }
+  nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  nav a {
+    font-size: 14px;
+    color: #555;
+    text-decoration: none;
+  }
+  nav a.nav-cta {
+    color: #6366f1;
+    font-weight: 600;
+  }
+  
+  /* Page layout */
+  .page-layout {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 64px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    align-items: start;
+  }
+  
+  @media (max-width: 900px) {
+    .page-layout {
+      grid-template-columns: 1fr;
+    }
+    .toc-sidebar {
+      display: none;
+    }
+  }
+  
+  /* Article */
+  .article-header {
+    margin-bottom: 40px;
+  }
+  
+  .article-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 3px 12px;
+    background: #eef2ff;
+    color: #6366f1;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .article-header h1 {
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: #111;
+  }
+  
+  .article-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+  
+  .author-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    flex-shrink: 0;
+  }
+  
+  .author-row strong {
+    font-size: 14px;
+    color: #111;
+    display: block;
+  }
+  .author-row span {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .share-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+  }
+  
+  .share-btn:hover {
+    border-color: #6366f1;
+  }
+  .share-btn svg {
+    width: 16px;
+    height: 16px;
+    color: #555;
+  }
+  
+  .cover-image {
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 16px;
+  }
+  
+  /* Article body */
+  .article-body {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #333;
+  }
+  
+  .article-body h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #111;
+    margin: 40px 0 16px;
+    scroll-margin-top: 80px;
+  }
+  
+  .article-body p {
+    margin-bottom: 20px;
+  }
+  
+  .article-body ul,
+  .article-body ol {
+    padding-left: 24px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .article-body .lead {
+    font-size: 20px;
+    color: #555;
+    font-weight: 400;
+    border-left: 4px solid #6366f1;
+    padding-left: 20px;
+    margin-bottom: 32px;
+  }
+  
+  .article-body pre {
+    background: #0f0f13;
+    color: #e5e7eb;
+    padding: 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .article-body code {
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #6366f1;
+  }
+  
+  .article-body pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+  
+  /* Author card */
+  .author-card {
+    display: flex;
+    gap: 20px;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 16px;
+    margin-top: 48px;
+  }
+  
+  .author-card-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    flex-shrink: 0;
+  }
+  
+  .author-card-info strong {
+    font-size: 16px;
+    color: #111;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .author-card-info p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .author-social {
+    display: flex;
+    gap: 12px;
+  }
+  .author-social a {
+    font-size: 13px;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  /* TOC Sidebar */
+  .toc-sidebar {
+    position: sticky;
+    top: 80px;
+  }
+  
+  .toc h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  
+  .toc ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .toc-link {
+    display: block;
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-left: 2px solid #e5e7eb;
+    transition: color 0.15s, border-color 0.15s;
+    line-height: 1.4;
+  }
+  
+  .toc-link:hover {
+    color: #6366f1;
+  }
+  .toc-link.active {
+    color: #6366f1;
+    border-left-color: #6366f1;
+    font-weight: 600;
+  }
+  
+  /* Related */
+  .related {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    border-top: 1px solid #f3f4f6;
+  }
+  
+  .related h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 24px;
+  }
+  
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  @media (max-width: 768px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .related-card {
+    text-decoration: none;
+    color: #111;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  
+  .related-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .related-thumb {
+    height: 120px;
+  }
+  .r1 {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  }
+  .r2 {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  }
+  .r3 {
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+  }
+  
+  .related-card > div {
+    padding: 0 14px 14px;
+  }
+  .related-card strong {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .related-card span {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="style.css" />
+      <title>Blog Post
+    </head>
+    <body>
+      <div class="progress-bar" id="progressBar"></div>
+  
+      <header class="site-header">
+        <a href="#" class="logo">Brand</a>
+        <nav><a href="#">Blog</a><a href="#">Docs</a><a href="#" class="nav-cta">Subscribe</a></nav>
+      </header>
+  
+      <div class="page-layout">
+        <!-- Article -->
+        <article class="article">
+          <header class="article-header">
+            <div class="article-tags">
+              <span class="tag">Design</span>
+              <span class="tag">Mobile</span>
+            </div>
+            <h1>The Complete Guide to Mobile-First CSS Design</h1>
+            <div class="article-meta">
+              <div class="author-row">
+                <div class="author-avatar"></div>
+                <div>
+                  <strong>Alex Morgan</strong>
+                  <span>March 6, 2026 · 8 min read</span>
+                </div>
+              </div>
+              <div class="share-row">
+                <button class="share-btn" id="copyLink" title="Copy link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </button>
+              </div>
+            </div>
+            <img class="cover-image" src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=900&q=75" alt="Mobile design" />
+          </header>
+  
+          <div class="article-body">
+            <p class="lead">Mobile-first design is not just about shrinking your desktop layout. It's a fundamental shift in how you think about content hierarchy, interaction patterns, and performance budgets.</p>
+  
+            <h2 id="why-mobile-first">Why Mobile-First Still Matters</h2>
+            <p>Over 60% of global web traffic now comes from mobile devices. Yet most developers still build for desktop and bolt on responsive breakpoints as an afterthought. The result is bloated pages that load slowly on mobile networks and layouts that technically work but feel awkward to touch.</p>
+            <p>Mobile-first CSS is the practice of writing your base styles for small screens, then using <code>min-width</code> media queries to progressively enhance the layout for larger viewports.</p>
+  
+            <h2 id="core-principles">Core Principles</h2>
+            <p>There are three foundational principles that guide every mobile-first decision:</p>
+            <ol>
+              <li><strong>Content first.</strong> Strip everything down to what the user actually needs. If it doesn't serve a clear purpose, it doesn't belong in the mobile view.</li>
+              <li><strong>Touch targets.</strong> Interactive elements should be at least 44×44px. Small click targets cause frustration and errors.</li>
+              <li><strong>Performance budget.</strong> Assume a slow connection. Every kilobyte of CSS and JavaScript costs real money and time for users on metered data.</li>
+            </ol>
+  
+            <h2 id="writing-mobile-first-css">Writing Mobile-First CSS</h2>
+            <p>The classic mistake is to start with a desktop layout and add <code>max-width</code> breakpoints to shrink it. This loads unnecessary CSS on mobile and fights against the cascade.</p>
+            <p>Instead, write your base styles mobile-first:</p>
+            <pre><code>/* Mobile base — no query needed */
+  .container {
+    padding: 16px;
+  }
+  
+  /* Tablet and up */
+  @media (min-width: 768px) {
+    .container {
+      padding: 32px;
+    }
+  }
+  
+  /* Desktop */
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+  }</code></pre>
+  
+            <h2 id="touch-interactions">Touch Interactions</h2>
+            <p>Desktop interactions rely on a precise pointer, hover states, and right-click menus. Mobile interactions are driven by touch — imprecise, stateless, and gesture-based.</p>
+            <p>Key rules for touch-friendly UI:</p>
+            <ul>
+              <li>Remove hover-only affordances (tooltips, dropdown previews)</li>
+              <li>Ensure all interactive elements have active/pressed states</li>
+              <li>Use <code>touch-action: manipulation</code> to remove the 300ms tap delay</li>
+              <li>Provide swipe gestures for navigation-heavy interfaces</li>
+            </ul>
+  
+            <h2 id="typography-at-scale">Typography at Scale</h2>
+            <p>Type that looks beautiful on a 27-inch monitor often becomes illegible on a 375px screen. Use <code>clamp()</code> for fluid type that scales smoothly between breakpoints without jumping:</p>
+            <pre><code>h1 {
+    font-size: clamp(24px, 5vw, 48px);
+  }
+  
+  p {
+    font-size: clamp(15px, 2vw, 18px);
+    line-height: 1.7;
+  }</code></pre>
+  
+            <h2 id="testing-on-real-devices">Testing on Real Devices</h2>
+            <p>DevTools mobile emulation is a useful starting point, but it is not a substitute for testing on physical devices. Emulators cannot replicate:</p>
+            <ul>
+              <li>Real touch latency and scrolling momentum</li>
+              <li>Safe area insets and notch behavior</li>
+              <li>Font rendering differences between Android and iOS</li>
+              <li>Network performance on cellular connections</li>
+            </ul>
+            <p>Budget for at least one real Android device and one iPhone in your testing suite.</p>
+          </div>
+  
+          <!-- Author card -->
+          <div class="author-card">
+            <div class="author-card-avatar"></div>
+            <div class="author-card-info">
+              <strong>Alex Morgan</strong>
+              <p>Senior UX Designer at Brand. Writes about mobile design, CSS architecture, and developer experience.</p>
+              <div class="author-social">
+                <a href="#">Twitter</a>
+                <a href="#">GitHub</a>
+              </div>
+            </div>
+          </div>
+        </article>
+  
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+          <nav class="toc" id="toc" aria-label="Table of contents">
+            <h3>On this page</h3>
+            <ul>
+              <li><a href="#why-mobile-first" class="toc-link">Why Mobile-First Matters</a></li>
+              <li><a href="#core-principles" class="toc-link">Core Principles</a></li>
+              <li><a href="#writing-mobile-first-css" class="toc-link">Writing Mobile-First CSS</a></li>
+              <li><a href="#touch-interactions" class="toc-link">Touch Interactions</a></li>
+              <li><a href="#typography-at-scale" class="toc-link">Typography at Scale</a></li>
+              <li><a href="#testing-on-real-devices" class="toc-link">Testing on Real Devices</a></li>
+            </ul>
+          </nav>
+        </aside>
+      </div>
+  
+      <!-- Related posts -->
+      <section class="related">
+        <h2>Related Articles</h2>
+        <div class="related-grid">
+          <a href="#" class="related-card">
+            <div class="related-thumb r1"></div>
+            <div><strong>CSS Grid vs Flexbox: When to Use Each</strong><span>5 min read</span></div>
+          </a>
+          <a href="#" class="related-card">
+            <div class="related-thumb r2"></div>
+            <div><strong>Building Accessible Navigation Menus</strong><span>7 min read</span></div>
+          </a>
+          <a href="#" class="related-card">
+            <div class="related-thumb r3"></div>
+            <div><strong>Touch Gesture Patterns for the Modern Web</strong><span>6 min read</span></div>
+          </a>
+        </div>
+      </section>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  // Reading progress bar
+  const progressBar = document.getElementById("progressBar");
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = `${pct}%`;
+  }
+  window.addEventListener("scroll", updateProgress, { passive: true });
+  
+  // Active TOC link via IntersectionObserver
+  const headings = document.querySelectorAll(".article-body h2[id]");
+  const tocLinks = document.querySelectorAll(".toc-link");
+  
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach((link) => link.classList.remove("active"));
+          const active = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+          if (active) active.classList.add("active");
+        }
+      });
+    },
+    { rootMargin: "-20% 0px -70% 0px" }
+  );
+  
+  headings.forEach((h) => observer.observe(h));
+  
+  // Copy link
+  document.getElementById("copyLink").addEventListener("click", () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      const btn = document.getElementById("copyLink");
+      btn.style.borderColor = "#22c55e";
+      setTimeout(() => (btn.style.borderColor = ""), 1500);
+    });
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #fff;
+    color: #111;
+  }
+  
+  /* Reading progress bar */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+  
+  .site-header {
+    position: relative;
+    top: 0;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 99;
+  }
+  
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111;
+    text-decoration: none;
+  }
+  nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  nav a {
+    font-size: 14px;
+    color: #555;
+    text-decoration: none;
+  }
+  nav a.nav-cta {
+    color: #6366f1;
+    font-weight: 600;
+  }
+  
+  /* Page layout */
+  .page-layout {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 64px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    align-items: start;
+  }
+  
+  @media (max-width: 900px) {
+    .page-layout {
+      grid-template-columns: 1fr;
+    }
+    .toc-sidebar {
+      display: none;
+    }
+  }
+  
+  /* Article */
+  .article-header {
+    margin-bottom: 40px;
+  }
+  
+  .article-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 3px 12px;
+    background: #eef2ff;
+    color: #6366f1;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .article-header h1 {
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: #111;
+  }
+  
+  .article-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+  
+  .author-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    flex-shrink: 0;
+  }
+  
+  .author-row strong {
+    font-size: 14px;
+    color: #111;
+    display: block;
+  }
+  .author-row span {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .share-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+  }
+  
+  .share-btn:hover {
+    border-color: #6366f1;
+  }
+  .share-btn svg {
+    width: 16px;
+    height: 16px;
+    color: #555;
+  }
+  
+  .cover-image {
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 16px;
+  }
+  
+  /* Article body */
+  .article-body {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #333;
+  }
+  
+  .article-body h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #111;
+    margin: 40px 0 16px;
+    scroll-margin-top: 80px;
+  }
+  
+  .article-body p {
+    margin-bottom: 20px;
+  }
+  
+  .article-body ul,
+  .article-body ol {
+    padding-left: 24px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .article-body .lead {
+    font-size: 20px;
+    color: #555;
+    font-weight: 400;
+    border-left: 4px solid #6366f1;
+    padding-left: 20px;
+    margin-bottom: 32px;
+  }
+  
+  .article-body pre {
+    background: #0f0f13;
+    color: #e5e7eb;
+    padding: 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .article-body code {
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #6366f1;
+  }
+  
+  .article-body pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+  
+  /* Author card */
+  .author-card {
+    display: flex;
+    gap: 20px;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 16px;
+    margin-top: 48px;
+  }
+  
+  .author-card-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    flex-shrink: 0;
+  }
+  
+  .author-card-info strong {
+    font-size: 16px;
+    color: #111;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .author-card-info p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .author-social {
+    display: flex;
+    gap: 12px;
+  }
+  .author-social a {
+    font-size: 13px;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  /* TOC Sidebar */
+  .toc-sidebar {
+    position: sticky;
+    top: 80px;
+  }
+  
+  .toc h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  
+  .toc ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .toc-link {
+    display: block;
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-left: 2px solid #e5e7eb;
+    transition: color 0.15s, border-color 0.15s;
+    line-height: 1.4;
+  }
+  
+  .toc-link:hover {
+    color: #6366f1;
+  }
+  .toc-link.active {
+    color: #6366f1;
+    border-left-color: #6366f1;
+    font-weight: 600;
+  }
+  
+  /* Related */
+  .related {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    border-top: 1px solid #f3f4f6;
+  }
+  
+  .related h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 24px;
+  }
+  
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  @media (max-width: 768px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .related-card {
+    text-decoration: none;
+    color: #111;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  
+  .related-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .related-thumb {
+    height: 120px;
+  }
+  .r1 {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  }
+  .r2 {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  }
+  .r3 {
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+  }
+  
+  .related-card > div {
+    padding: 0 14px 14px;
+  }
+  .related-card strong {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .related-card span {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  </style>
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="style.css" />
+      <title>Blog Post</title>
+    </head>
+    <body>
+      <div class="progress-bar" id="progressBar"></div>
+  
+      <header class="site-header">
+        <a href="#" class="logo">Brand</a>
+        <nav><a href="#">Blog</a><a href="#">Docs</a><a href="#" class="nav-cta">Subscribe</a></nav>
+      </header>
+  
+      <div class="page-layout">
+        <!-- Article -->
+        <article class="article">
+          <header class="article-header">
+            <div class="article-tags">
+              <span class="tag">Design</span>
+              <span class="tag">Mobile</span>
+            </div>
+            <h1>The Complete Guide to Mobile-First CSS Design</h1>
+            <div class="article-meta">
+              <div class="author-row">
+                <div class="author-avatar"></div>
+                <div>
+                  <strong>Alex Morgan</strong>
+                  <span>March 6, 2026 · 8 min read</span>
+                </div>
+              </div>
+              <div class="share-row">
+                <button class="share-btn" id="copyLink" title="Copy link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </button>
+              </div>
+            </div>
+            <img class="cover-image" src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=900&q=75" alt="Mobile design" />
+          </header>
+  
+          <div class="article-body">
+            <p class="lead">Mobile-first design is not just about shrinking your desktop layout. It's a fundamental shift in how you think about content hierarchy, interaction patterns, and performance budgets.</p>
+  
+            <h2 id="why-mobile-first">Why Mobile-First Still Matters</h2>
+            <p>Over 60% of global web traffic now comes from mobile devices. Yet most developers still build for desktop and bolt on responsive breakpoints as an afterthought. The result is bloated pages that load slowly on mobile networks and layouts that technically work but feel awkward to touch.</p>
+            <p>Mobile-first CSS is the practice of writing your base styles for small screens, then using <code>min-width</code> media queries to progressively enhance the layout for larger viewports.</p>
+  
+            <h2 id="core-principles">Core Principles</h2>
+            <p>There are three foundational principles that guide every mobile-first decision:</p>
+            <ol>
+              <li><strong>Content first.</strong> Strip everything down to what the user actually needs. If it doesn't serve a clear purpose, it doesn't belong in the mobile view.</li>
+              <li><strong>Touch targets.</strong> Interactive elements should be at least 44×44px. Small click targets cause frustration and errors.</li>
+              <li><strong>Performance budget.</strong> Assume a slow connection. Every kilobyte of CSS and JavaScript costs real money and time for users on metered data.</li>
+            </ol>
+  
+            <h2 id="writing-mobile-first-css">Writing Mobile-First CSS</h2>
+            <p>The classic mistake is to start with a desktop layout and add <code>max-width</code> breakpoints to shrink it. This loads unnecessary CSS on mobile and fights against the cascade.</p>
+            <p>Instead, write your base styles mobile-first:</p>
+            <pre><code>/* Mobile base — no query needed */
+  .container {
+    padding: 16px;
+  }
+  
+  /* Tablet and up */
+  @media (min-width: 768px) {
+    .container {
+      padding: 32px;
+    }
+  }
+  
+  /* Desktop */
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+  }</code></pre>
+  
+            <h2 id="touch-interactions">Touch Interactions</h2>
+            <p>Desktop interactions rely on a precise pointer, hover states, and right-click menus. Mobile interactions are driven by touch — imprecise, stateless, and gesture-based.</p>
+            <p>Key rules for touch-friendly UI:</p>
+            <ul>
+              <li>Remove hover-only affordances (tooltips, dropdown previews)</li>
+              <li>Ensure all interactive elements have active/pressed states</li>
+              <li>Use <code>touch-action: manipulation</code> to remove the 300ms tap delay</li>
+              <li>Provide swipe gestures for navigation-heavy interfaces</li>
+            </ul>
+  
+            <h2 id="typography-at-scale">Typography at Scale</h2>
+            <p>Type that looks beautiful on a 27-inch monitor often becomes illegible on a 375px screen. Use <code>clamp()</code> for fluid type that scales smoothly between breakpoints without jumping:</p>
+            <pre><code>h1 {
+    font-size: clamp(24px, 5vw, 48px);
+  }
+  
+  p {
+    font-size: clamp(15px, 2vw, 18px);
+    line-height: 1.7;
+  }</code></pre>
+  
+            <h2 id="testing-on-real-devices">Testing on Real Devices</h2>
+            <p>DevTools mobile emulation is a useful starting point, but it is not a substitute for testing on physical devices. Emulators cannot replicate:</p>
+            <ul>
+              <li>Real touch latency and scrolling momentum</li>
+              <li>Safe area insets and notch behavior</li>
+              <li>Font rendering differences between Android and iOS</li>
+              <li>Network performance on cellular connections</li>
+            </ul>
+            <p>Budget for at least one real Android device and one iPhone in your testing suite.</p>
+          </div>
+  
+          <!-- Author card -->
+          <div class="author-card">
+            <div class="author-card-avatar"></div>
+            <div class="author-card-info">
+              <strong>Alex Morgan</strong>
+              <p>Senior UX Designer at Brand. Writes about mobile design, CSS architecture, and developer experience.</p>
+              <div class="author-social">
+                <a href="#">Twitter</a>
+                <a href="#">GitHub</a>
+              </div>
+            </div>
+          </div>
+        </article>
+  
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+          <nav class="toc" id="toc" aria-label="Table of contents">
+            <h3>On this page</h3>
+            <ul>
+              <li><a href="#why-mobile-first" class="toc-link">Why Mobile-First Matters</a></li>
+              <li><a href="#core-principles" class="toc-link">Core Principles</a></li>
+              <li><a href="#writing-mobile-first-css" class="toc-link">Writing Mobile-First CSS</a></li>
+              <li><a href="#touch-interactions" class="toc-link">Touch Interactions</a></li>
+              <li><a href="#typography-at-scale" class="toc-link">Typography at Scale</a></li>
+              <li><a href="#testing-on-real-devices" class="toc-link">Testing on Real Devices</a></li>
+            </ul>
+          </nav>
+        </aside>
+      </div>
+  
+      <!-- Related posts -->
+      <section class="related">
+        <h2>Related Articles</h2>
+        <div class="related-grid">
+          <a href="#" class="related-card">
+            <div class="related-thumb r1"></div>
+            <div><strong>CSS Grid vs Flexbox: When to Use Each</strong><span>5 min read</span></div>
+          </a>
+          <a href="#" class="related-card">
+            <div class="related-thumb r2"></div>
+            <div><strong>Building Accessible Navigation Menus</strong><span>7 min read</span></div>
+          </a>
+          <a href="#" class="related-card">
+            <div class="related-thumb r3"></div>
+            <div><strong>Touch Gesture Patterns for the Modern Web</strong><span>6 min read</span></div>
+          </a>
+        </div>
+      </section>
+  
+      <script src="script.js"></script>
+    </body>
+  </html>
+  
+  <script>
+  // Reading progress bar
+  const progressBar = document.getElementById("progressBar");
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = `${pct}%`;
+  }
+  window.addEventListener("scroll", updateProgress, { passive: true });
+  
+  // Active TOC link via IntersectionObserver
+  const headings = document.querySelectorAll(".article-body h2[id]");
+  const tocLinks = document.querySelectorAll(".toc-link");
+  
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach((link) => link.classList.remove("active"));
+          const active = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+          if (active) active.classList.add("active");
+        }
+      });
+    },
+    { rootMargin: "-20% 0px -70% 0px" }
+  );
+  
+  headings.forEach((h) => observer.observe(h));
+  
+  // Copy link
+  document.getElementById("copyLink").addEventListener("click", () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      const btn = document.getElementById("copyLink");
+      btn.style.borderColor = "#22c55e";
+      setTimeout(() => (btn.style.borderColor = ""), 1500);
+    });
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

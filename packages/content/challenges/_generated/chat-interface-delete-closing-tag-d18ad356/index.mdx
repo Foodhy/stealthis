@@ -1,0 +1,850 @@
+---
+slug: "chat-interface-delete-closing-tag-d18ad356"
+topic: "chat"
+title: "Fix the broken HTML structure in AI Chat Interface"
+type: "fix"
+difficulty: 2
+resourceSlug: "chat-interface"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+  }
+  
+  .chat-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 720px;
+    background: #fff;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+  }
+  
+  .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  
+  .chat-model-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .model-dot {
+    width: 8px;
+    height: 8px;
+    background: #16a34a;
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  
+  .model-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .chat-status {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Messages */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .msg {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .msg-user {
+    flex-direction: row-reverse;
+  }
+  
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #6366f1;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .msg-user .msg-avatar {
+    background: #111827;
+  }
+  
+  .msg-bubble {
+    max-width: 75%;
+    background: #f3f4f6;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #111827;
+    line-height: 1.65;
+  }
+  .msg-user .msg-bubble {
+    background: #6366f1;
+    color: #fff;
+  }
+  
+  .msg-bubble p {
+    margin-bottom: 8px;
+  }
+  .msg-bubble p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .msg-bubble code {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 12px;
+    font-family: Menlo, monospace;
+  }
+  .msg-user .msg-bubble code {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Typing indicator */
+  .typing-bubble {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 14px 18px;
+  }
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    background: #9ca3af;
+    border-radius: 50%;
+    animation: typing 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  @keyframes typing {
+    0%,
+    80%,
+    100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    40% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+  }
+  
+  /* Input area */
+  .chat-input-area {
+    padding: 16px 24px 20px;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  
+  .chat-input-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 10px 10px 10px 16px;
+    transition: border-color 0.15s;
+  }
+  .chat-input-wrap:focus-within {
+    border-color: #6366f1;
+  }
+  
+  .chat-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #111;
+    resize: none;
+    font-family: inherit;
+    line-height: 1.5;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .chat-input::placeholder {
+    color: #9ca3af;
+  }
+  
+  .send-btn {
+    width: 34px;
+    height: 34px;
+    background: #6366f1;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .send-btn:not(:disabled):hover {
+    opacity: 0.85;
+  }
+  
+  .chat-disclaimer {
+    font-size: 11px;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 8px;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat Interface
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="chat-shell">
+    <header class="chat-header">
+      <div class="chat-model-badge">
+        <span class="model-dot"></span>
+        <span class="model-name">Claude Sonnet</span>
+      </div>
+      <span class="chat-status">Ready</span>
+    </header>
+  
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg msg-assistant">
+        <div class="msg-avatar">AI</div>
+        <div class="msg-bubble">
+          <p>Hi! I'm your AI assistant. Ask me anything — I can help with code, writing, analysis, and more.</p>
+        </div>
+      </div>
+    </div>
+  
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <textarea class="chat-input" id="chatInput" placeholder="Message Claude…" rows="1"></textarea>
+        <button class="send-btn" id="sendBtn" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <p class="chat-disclaimer">AI may make mistakes. Verify important information.</p>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const messages = document.getElementById("chatMessages");
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("sendBtn");
+  
+  const RESPONSES = [
+    "Sure! Here's a brief explanation:\n\nThis pattern is commonly used in React to manage state across multiple components without prop drilling. The key benefit is that it keeps your component tree clean.",
+    "Great question. The difference comes down to execution timing:\n\n- `async/await` pauses execution within the function\n- Promises chain callbacks without blocking\n\nFor most cases, `async/await` is more readable.",
+    "I'd recommend using a `Map` here instead of a plain object. Maps preserve insertion order and have better performance for frequent additions/deletions.\n\n```js\nconst cache = new Map();\ncache.set('key', value);\n```",
+    "The short answer is yes — CSS Grid handles this layout pattern better than Flexbox in this case. Use `grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))` for a responsive card grid.",
+    "There are a few options depending on your stack:\n\n1. **NextAuth.js** — easiest for Next.js apps\n2. **Lucia** — lightweight, framework-agnostic\n3. **Clerk** — hosted, zero-config\n\nFor a quick prototype, I'd start with Clerk.",
+  ];
+  
+  let responseIndex = 0;
+  let streaming = false;
+  
+  function addMessage(role, text) {
+    const msg = document.createElement("div");
+    msg.className = `msg msg-${role}`;
+    const avatar = document.createElement("div");
+    avatar.className = "msg-avatar";
+    avatar.textContent = role === "user" ? "You" : "AI";
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+    if (text) bubble.innerHTML = `<p>${text.replace(/\n/g, "</p><p>")}</p>`;
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+    return bubble;
+  }
+  
+  function showTyping() {
+    const msg = document.createElement("div");
+    msg.className = "msg msg-assistant";
+    msg.id = "typingMsg";
+    const avatar = document.createElement("div");
+    avatar.className = "msg-avatar";
+    avatar.textContent = "AI";
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble typing-bubble";
+    bubble.innerHTML =
+      '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+  
+  function removeTyping() {
+    document.getElementById("typingMsg")?.remove();
+  }
+  
+  function streamText(bubble, text, callback) {
+    // Convert newlines to <br> and **bold** to <strong>
+    const lines = text.split("\n");
+    let charIndex = 0;
+    let allChars = text.split("");
+  
+    bubble.innerHTML = "";
+    let p = document.createElement("p");
+    bubble.appendChild(p);
+  
+    function tick() {
+      if (charIndex >= allChars.length) {
+        // Final format
+        bubble.innerHTML = text
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/`([^`]+)`/g, "<code>$1</code>")
+          .split("\n")
+          .map((l) => (l ? `<p>${l}</p>` : "<br>"))
+          .join("");
+        callback?.();
+        return;
+      }
+      const char = allChars[charIndex++];
+      if (char === "\n") {
+        p = document.createElement("p");
+        bubble.appendChild(p);
+      } else {
+        p.textContent += char;
+      }
+      messages.scrollTop = messages.scrollHeight;
+      setTimeout(tick, 12 + Math.random() * 6);
+    }
+    tick();
+  }
+  
+  function send() {
+    const text = input.value.trim();
+    if (!text || streaming) return;
+  
+    addMessage("user", text);
+    input.value = "";
+    input.style.height = "auto";
+    sendBtn.disabled = true;
+    streaming = true;
+  
+    showTyping();
+  
+    setTimeout(
+      () => {
+        removeTyping();
+        const response = RESPONSES[responseIndex % RESPONSES.length];
+        responseIndex++;
+        const bubble = addMessage("assistant", "");
+        streamText(bubble, response, () => {
+          streaming = false;
+          sendBtn.disabled = false;
+        });
+      },
+      900 + Math.random() * 400
+    );
+  }
+  
+  sendBtn.addEventListener("click", send);
+  
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+  
+  // Auto-resize textarea
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 160) + "px";
+  });
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f9fafb;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+  }
+  
+  .chat-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 720px;
+    background: #fff;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+  }
+  
+  .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  
+  .chat-model-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .model-dot {
+    width: 8px;
+    height: 8px;
+    background: #16a34a;
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  
+  .model-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .chat-status {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Messages */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .msg {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .msg-user {
+    flex-direction: row-reverse;
+  }
+  
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #6366f1;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .msg-user .msg-avatar {
+    background: #111827;
+  }
+  
+  .msg-bubble {
+    max-width: 75%;
+    background: #f3f4f6;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #111827;
+    line-height: 1.65;
+  }
+  .msg-user .msg-bubble {
+    background: #6366f1;
+    color: #fff;
+  }
+  
+  .msg-bubble p {
+    margin-bottom: 8px;
+  }
+  .msg-bubble p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .msg-bubble code {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 12px;
+    font-family: Menlo, monospace;
+  }
+  .msg-user .msg-bubble code {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Typing indicator */
+  .typing-bubble {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 14px 18px;
+  }
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    background: #9ca3af;
+    border-radius: 50%;
+    animation: typing 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  @keyframes typing {
+    0%,
+    80%,
+    100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    40% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+  }
+  
+  /* Input area */
+  .chat-input-area {
+    padding: 16px 24px 20px;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  
+  .chat-input-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 10px 10px 10px 16px;
+    transition: border-color 0.15s;
+  }
+  .chat-input-wrap:focus-within {
+    border-color: #6366f1;
+  }
+  
+  .chat-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #111;
+    resize: none;
+    font-family: inherit;
+    line-height: 1.5;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .chat-input::placeholder {
+    color: #9ca3af;
+  }
+  
+  .send-btn {
+    width: 34px;
+    height: 34px;
+    background: #6366f1;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .send-btn:not(:disabled):hover {
+    opacity: 0.85;
+  }
+  
+  .chat-disclaimer {
+    font-size: 11px;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 8px;
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat Interface</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="chat-shell">
+    <header class="chat-header">
+      <div class="chat-model-badge">
+        <span class="model-dot"></span>
+        <span class="model-name">Claude Sonnet</span>
+      </div>
+      <span class="chat-status">Ready</span>
+    </header>
+  
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg msg-assistant">
+        <div class="msg-avatar">AI</div>
+        <div class="msg-bubble">
+          <p>Hi! I'm your AI assistant. Ask me anything — I can help with code, writing, analysis, and more.</p>
+        </div>
+      </div>
+    </div>
+  
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <textarea class="chat-input" id="chatInput" placeholder="Message Claude…" rows="1"></textarea>
+        <button class="send-btn" id="sendBtn" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <p class="chat-disclaimer">AI may make mistakes. Verify important information.</p>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  const messages = document.getElementById("chatMessages");
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("sendBtn");
+  
+  const RESPONSES = [
+    "Sure! Here's a brief explanation:\n\nThis pattern is commonly used in React to manage state across multiple components without prop drilling. The key benefit is that it keeps your component tree clean.",
+    "Great question. The difference comes down to execution timing:\n\n- `async/await` pauses execution within the function\n- Promises chain callbacks without blocking\n\nFor most cases, `async/await` is more readable.",
+    "I'd recommend using a `Map` here instead of a plain object. Maps preserve insertion order and have better performance for frequent additions/deletions.\n\n```js\nconst cache = new Map();\ncache.set('key', value);\n```",
+    "The short answer is yes — CSS Grid handles this layout pattern better than Flexbox in this case. Use `grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))` for a responsive card grid.",
+    "There are a few options depending on your stack:\n\n1. **NextAuth.js** — easiest for Next.js apps\n2. **Lucia** — lightweight, framework-agnostic\n3. **Clerk** — hosted, zero-config\n\nFor a quick prototype, I'd start with Clerk.",
+  ];
+  
+  let responseIndex = 0;
+  let streaming = false;
+  
+  function addMessage(role, text) {
+    const msg = document.createElement("div");
+    msg.className = `msg msg-${role}`;
+    const avatar = document.createElement("div");
+    avatar.className = "msg-avatar";
+    avatar.textContent = role === "user" ? "You" : "AI";
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+    if (text) bubble.innerHTML = `<p>${text.replace(/\n/g, "</p><p>")}</p>`;
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+    return bubble;
+  }
+  
+  function showTyping() {
+    const msg = document.createElement("div");
+    msg.className = "msg msg-assistant";
+    msg.id = "typingMsg";
+    const avatar = document.createElement("div");
+    avatar.className = "msg-avatar";
+    avatar.textContent = "AI";
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble typing-bubble";
+    bubble.innerHTML =
+      '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+  
+  function removeTyping() {
+    document.getElementById("typingMsg")?.remove();
+  }
+  
+  function streamText(bubble, text, callback) {
+    // Convert newlines to <br> and **bold** to <strong>
+    const lines = text.split("\n");
+    let charIndex = 0;
+    let allChars = text.split("");
+  
+    bubble.innerHTML = "";
+    let p = document.createElement("p");
+    bubble.appendChild(p);
+  
+    function tick() {
+      if (charIndex >= allChars.length) {
+        // Final format
+        bubble.innerHTML = text
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/`([^`]+)`/g, "<code>$1</code>")
+          .split("\n")
+          .map((l) => (l ? `<p>${l}</p>` : "<br>"))
+          .join("");
+        callback?.();
+        return;
+      }
+      const char = allChars[charIndex++];
+      if (char === "\n") {
+        p = document.createElement("p");
+        bubble.appendChild(p);
+      } else {
+        p.textContent += char;
+      }
+      messages.scrollTop = messages.scrollHeight;
+      setTimeout(tick, 12 + Math.random() * 6);
+    }
+    tick();
+  }
+  
+  function send() {
+    const text = input.value.trim();
+    if (!text || streaming) return;
+  
+    addMessage("user", text);
+    input.value = "";
+    input.style.height = "auto";
+    sendBtn.disabled = true;
+    streaming = true;
+  
+    showTyping();
+  
+    setTimeout(
+      () => {
+        removeTyping();
+        const response = RESPONSES[responseIndex % RESPONSES.length];
+        responseIndex++;
+        const bubble = addMessage("assistant", "");
+        streamText(bubble, response, () => {
+          streaming = false;
+          sendBtn.disabled = false;
+        });
+      },
+      900 + Math.random() * 400
+    );
+  }
+  
+  sendBtn.addEventListener("click", send);
+  
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+  
+  // Auto-resize textarea
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 160) + "px";
+  });
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.

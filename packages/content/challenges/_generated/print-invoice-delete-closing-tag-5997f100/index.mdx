@@ -1,0 +1,1002 @@
+---
+slug: "print-invoice-delete-closing-tag-5997f100"
+topic: "print"
+title: "Fix the broken HTML structure in Print-Ready Invoice"
+type: "fix"
+difficulty: 2
+resourceSlug: "print-invoice"
+estimatedSeconds: 35
+quality: "draft"
+tags:
+  - "generated"
+  - "html"
+  - "debugging"
+createdAt: "2026-05-22"
+updatedAt: "2026-05-22"
+criterion: "dom-equal"
+starter: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Screen styles */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 48px;
+  }
+  
+  .screen-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 28px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .screen-bar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+  }
+  .print-btn {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .print-btn:hover {
+    opacity: 0.85;
+  }
+  
+  /* Invoice */
+  .invoice {
+    width: 100%;
+    max-width: 794px;
+    background: #fff;
+    padding: 48px 56px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header */
+  .inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 36px;
+    gap: 24px;
+  }
+  
+  .inv-logo {
+    font-size: 22px;
+    font-weight: 900;
+    color: #4f46e5;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+  
+  .inv-brand-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+  
+  .inv-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 12px;
+    text-align: right;
+  }
+  
+  .inv-meta-table {
+    font-size: 13px;
+    border-collapse: collapse;
+  }
+  .inv-meta-table td {
+    padding: 3px 0 3px 20px;
+    color: #374151;
+  }
+  .inv-meta-table td:first-child {
+    color: #9ca3af;
+    padding-left: 0;
+  }
+  
+  .inv-status {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Parties */
+  .inv-parties {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding: 20px 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .inv-party-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+    margin-bottom: 6px;
+  }
+  
+  .inv-party-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+  
+  .inv-party-addr {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.7;
+  }
+  
+  .inv-pay-table {
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+  .inv-pay-table td {
+    padding: 3px 0 3px 16px;
+    color: #374151;
+  }
+  .inv-pay-table td:first-child {
+    color: #9ca3af;
+    padding-left: 0;
+    min-width: 70px;
+  }
+  
+  /* Line items */
+  .inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  
+  .inv-table thead tr {
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  .inv-table th {
+    padding: 10px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    text-align: left;
+  }
+  
+  .col-qty,
+  .col-rate,
+  .col-amount {
+    text-align: right;
+  }
+  
+  .inv-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .inv-table tbody tr:last-child {
+    border-bottom: none;
+  }
+  
+  .inv-table td {
+    padding: 12px 12px;
+    color: #374151;
+    vertical-align: top;
+  }
+  
+  .inv-table td.col-qty,
+  .inv-table td.col-rate,
+  .inv-table td.col-amount {
+    text-align: right;
+  }
+  
+  .item-name {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 3px;
+  }
+  .item-detail {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Totals */
+  .inv-totals {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 40px;
+  }
+  
+  .inv-notes-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .inv-notes-text {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.7;
+    max-width: 280px;
+  }
+  
+  .inv-totals-table {
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 220px;
+  }
+  .inv-totals-table td {
+    padding: 6px 0 6px 20px;
+    color: #374151;
+  }
+  .inv-totals-table td:first-child {
+    color: #9ca3af;
+    padding-left: 0;
+  }
+  .inv-totals-table td:last-child {
+    text-align: right;
+  }
+  .inv-totals-table .total-row td {
+    border-top: 2px solid #111827;
+    padding-top: 10px;
+    color: #111827;
+    font-size: 15px;
+  }
+  
+  /* Footer */
+  .inv-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #d1d5db;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 16px;
+  }
+  
+  /* Print media */
+  @media print {
+    .screen-bar {
+      display: none !important;
+    }
+    body {
+      background: #fff;
+      padding: 0;
+    }
+    .invoice {
+      box-shadow: none;
+      padding: 20mm 18mm;
+      max-width: 100%;
+    }
+    @page {
+      margin: 0;
+      size: A4;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice #INV-2026-0042
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="screen-bar">
+    <span class="screen-bar-title">Invoice Preview</span>
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+  </div>
+  
+  <div class="invoice" id="invoice">
+    <header class="inv-header">
+      <div class="inv-brand">
+        <div class="inv-logo">Acme</div>
+        <div class="inv-brand-details">
+          <span>Acme Corp, Inc.</span>
+          <span>123 Market Street, Suite 400</span>
+          <span>San Francisco, CA 94105</span>
+          <span>billing@acmecorp.com</span>
+        </div>
+      </div>
+      <div class="inv-meta">
+        <h1 class="inv-title">Invoice</h1>
+        <table class="inv-meta-table">
+          <tr><td>Invoice #</td><td><strong>INV-2026-0042</strong></td></tr>
+          <tr><td>Date</td><td>March 7, 2026</td></tr>
+          <tr><td>Due Date</td><td><strong>April 6, 2026</strong></td></tr>
+          <tr><td>Status</td><td><span class="inv-status">Unpaid</span></td></tr>
+        </table>
+      </div>
+    </header>
+  
+    <div class="inv-parties">
+      <div class="inv-party">
+        <div class="inv-party-label">Bill To</div>
+        <div class="inv-party-name">TechStart Solutions Ltd.</div>
+        <div class="inv-party-addr">
+          Attn: Alex Rivera, Finance Dept.<br>
+          456 Innovation Ave, Floor 12<br>
+          New York, NY 10001<br>
+          accounts@techstart.io
+        </div>
+      </div>
+      <div class="inv-party inv-party--right">
+        <div class="inv-party-label">Payment Info</div>
+        <table class="inv-pay-table">
+          <tr><td>Bank</td><td>Silicon Valley Bank</td></tr>
+          <tr><td>Account</td><td>••••4892</td></tr>
+          <tr><td>Routing</td><td>121140399</td></tr>
+          <tr><td>SWIFT</td><td>SVBKUS6S</td></tr>
+        </table>
+      </div>
+    </div>
+  
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th class="col-desc">Description</th>
+          <th class="col-qty">Qty</th>
+          <th class="col-rate">Rate</th>
+          <th class="col-amount">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="item-name">Product Design — Q1 Refresh</div>
+            <div class="item-detail">UX audit, wireframes, hi-fi mockups (Feb 3 – Mar 7)</div>
+          </td>
+          <td>40 hrs</td>
+          <td>$180.00</td>
+          <td>$7,200.00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="item-name">Frontend Development</div>
+            <div class="item-detail">React component library, Storybook setup</div>
+          </td>
+          <td>32 hrs</td>
+          <td>$220.00</td>
+          <td>$7,040.00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="item-name">Design System Tokens</div>
+            <div class="item-detail">Color, typography, spacing tokens (Figma + CSS)</div>
+          </td>
+          <td>1</td>
+          <td>$1,500.00</td>
+          <td>$1,500.00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="item-name">Project Management & Handoff</div>
+            <div class="item-detail">Weekly syncs, Loom walkthroughs, documentation</div>
+          </td>
+          <td>8 hrs</td>
+          <td>$120.00</td>
+          <td>$960.00</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <div class="inv-totals">
+      <div class="inv-totals-col">
+        <div class="inv-notes">
+          <div class="inv-notes-title">Notes</div>
+          <div class="inv-notes-text">Payment due within 30 days of invoice date. Late payments subject to 1.5% monthly interest. Thank you for your business!</div>
+        </div>
+      </div>
+      <div class="inv-totals-table-wrap">
+        <table class="inv-totals-table">
+          <tr><td>Subtotal</td><td>$16,700.00</td></tr>
+          <tr><td>Tax (8.875%)</td><td>$1,482.13</td></tr>
+          <tr><td>Discount (5%)</td><td>−$835.00</td></tr>
+          <tr class="total-row"><td><strong>Total Due</strong></td><td><strong>$17,347.13</strong></td></tr>
+        </table>
+      </div>
+    </div>
+  
+    <footer class="inv-footer">
+      <span>Acme Corp, Inc. · EIN: 12-3456789 · acmecorp.com</span>
+      <span>Questions? billing@acmecorp.com · +1 (415) 555-0100</span>
+    </footer>
+  </div>
+  <script src="./script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    // Insert Download button next to the existing Print button
+    const printBtn = document.querySelector(".print-btn");
+    if (!printBtn) return;
+  
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "\u2B07 Download HTML";
+    dlBtn.className = "print-btn";
+    dlBtn.style.cssText = "background:#fff;color:#4f46e5;border:1.5px solid #c7d2fe;margin-left:8px;";
+    printBtn.after(dlBtn);
+  
+    dlBtn.addEventListener("click", function () {
+      const styles = Array.from(document.querySelectorAll("style"))
+        .map(function (s) {
+          return s.textContent;
+        })
+        .join("\n");
+  
+      const bodyClone = document.body.cloneNode(true);
+      bodyClone.querySelector(".screen-bar")?.remove();
+  
+      const html = [
+        "<!DOCTYPE html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="UTF-8">',
+        "<title>Invoice #INV-2026-0042</title>",
+        "<style>",
+        styles,
+        ".screen-bar{display:none!important;}",
+        "</style>",
+        "</head>",
+        "<body>",
+        bodyClone.innerHTML.trim(),
+        "</body>",
+        "</html>",
+      ].join("\n");
+  
+      const blob = new Blob([html], { type: "text/html" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "invoice-INV-2026-0042.html";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  
+    // Allow Cmd/Ctrl+P to trigger native print dialog uninterrupted
+    document.addEventListener("keydown", function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "p") {
+        // browser default print — do nothing
+      }
+    });
+  })();
+  
+  </script>
+solution: |
+  <style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Screen styles */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 48px;
+  }
+  
+  .screen-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 28px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .screen-bar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+  }
+  .print-btn {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .print-btn:hover {
+    opacity: 0.85;
+  }
+  
+  /* Invoice */
+  .invoice {
+    width: 100%;
+    max-width: 794px;
+    background: #fff;
+    padding: 48px 56px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header */
+  .inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 36px;
+    gap: 24px;
+  }
+  
+  .inv-logo {
+    font-size: 22px;
+    font-weight: 900;
+    color: #4f46e5;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+  
+  .inv-brand-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+  
+  .inv-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 12px;
+    text-align: right;
+  }
+  
+  .inv-meta-table {
+    font-size: 13px;
+    border-collapse: collapse;
+  }
+  .inv-meta-table td {
+    padding: 3px 0 3px 20px;
+    color: #374151;
+  }
+  .inv-meta-table td:first-child {
+    color: #9ca3af;
+    padding-left: 0;
+  }
+  
+  .inv-status {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Parties */
+  .inv-parties {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding: 20px 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .inv-party-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+    margin-bottom: 6px;
+  }
+  
+  .inv-party-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+  
+  .inv-party-addr {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.7;
+  }
+  
+  .inv-pay-table {
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+  .inv-pay-table td {
+    padding: 3px 0 3px 16px;
+    color: #374151;
+  }
+  .inv-pay-table td:first-child {
+    color: #9ca3af;
+    padding-left: 0;
+    min-width: 70px;
+  }
+  
+  /* Line items */
+  .inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  
+  .inv-table thead tr {
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  .inv-table th {
+    padding: 10px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    text-align: left;
+  }
+  
+  .col-qty,
+  .col-rate,
+  .col-amount {
+    text-align: right;
+  }
+  
+  .inv-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .inv-table tbody tr:last-child {
+    border-bottom: none;
+  }
+  
+  .inv-table td {
+    padding: 12px 12px;
+    color: #374151;
+    vertical-align: top;
+  }
+  
+  .inv-table td.col-qty,
+  .inv-table td.col-rate,
+  .inv-table td.col-amount {
+    text-align: right;
+  }
+  
+  .item-name {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 3px;
+  }
+  .item-detail {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Totals */
+  .inv-totals {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 40px;
+  }
+  
+  .inv-notes-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .inv-notes-text {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.7;
+    max-width: 280px;
+  }
+  
+  .inv-totals-table {
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 220px;
+  }
+  .inv-totals-table td {
+    padding: 6px 0 6px 20px;
+    color: #374151;
+  }
+  .inv-totals-table td:first-child {
+    color: #9ca3af;
+    padding-left: 0;
+  }
+  .inv-totals-table td:last-child {
+    text-align: right;
+  }
+  .inv-totals-table .total-row td {
+    border-top: 2px solid #111827;
+    padding-top: 10px;
+    color: #111827;
+    font-size: 15px;
+  }
+  
+  /* Footer */
+  .inv-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #d1d5db;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 16px;
+  }
+  
+  /* Print media */
+  @media print {
+    .screen-bar {
+      display: none !important;
+    }
+    body {
+      background: #fff;
+      padding: 0;
+    }
+    .invoice {
+      box-shadow: none;
+      padding: 20mm 18mm;
+      max-width: 100%;
+    }
+    @page {
+      margin: 0;
+      size: A4;
+    }
+  }
+  
+  </style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice #INV-2026-0042</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  <div class="screen-bar">
+    <span class="screen-bar-title">Invoice Preview</span>
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+  </div>
+  
+  <div class="invoice" id="invoice">
+    <header class="inv-header">
+      <div class="inv-brand">
+        <div class="inv-logo">Acme</div>
+        <div class="inv-brand-details">
+          <span>Acme Corp, Inc.</span>
+          <span>123 Market Street, Suite 400</span>
+          <span>San Francisco, CA 94105</span>
+          <span>billing@acmecorp.com</span>
+        </div>
+      </div>
+      <div class="inv-meta">
+        <h1 class="inv-title">Invoice</h1>
+        <table class="inv-meta-table">
+          <tr><td>Invoice #</td><td><strong>INV-2026-0042</strong></td></tr>
+          <tr><td>Date</td><td>March 7, 2026</td></tr>
+          <tr><td>Due Date</td><td><strong>April 6, 2026</strong></td></tr>
+          <tr><td>Status</td><td><span class="inv-status">Unpaid</span></td></tr>
+        </table>
+      </div>
+    </header>
+  
+    <div class="inv-parties">
+      <div class="inv-party">
+        <div class="inv-party-label">Bill To</div>
+        <div class="inv-party-name">TechStart Solutions Ltd.</div>
+        <div class="inv-party-addr">
+          Attn: Alex Rivera, Finance Dept.<br>
+          456 Innovation Ave, Floor 12<br>
+          New York, NY 10001<br>
+          accounts@techstart.io
+        </div>
+      </div>
+      <div class="inv-party inv-party--right">
+        <div class="inv-party-label">Payment Info</div>
+        <table class="inv-pay-table">
+          <tr><td>Bank</td><td>Silicon Valley Bank</td></tr>
+          <tr><td>Account</td><td>••••4892</td></tr>
+          <tr><td>Routing</td><td>121140399</td></tr>
+          <tr><td>SWIFT</td><td>SVBKUS6S</td></tr>
+        </table>
+      </div>
+    </div>
+  
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th class="col-desc">Description</th>
+          <th class="col-qty">Qty</th>
+          <th class="col-rate">Rate</th>
+          <th class="col-amount">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="item-name">Product Design — Q1 Refresh</div>
+            <div class="item-detail">UX audit, wireframes, hi-fi mockups (Feb 3 – Mar 7)</div>
+          </td>
+          <td>40 hrs</td>
+          <td>$180.00</td>
+          <td>$7,200.00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="item-name">Frontend Development</div>
+            <div class="item-detail">React component library, Storybook setup</div>
+          </td>
+          <td>32 hrs</td>
+          <td>$220.00</td>
+          <td>$7,040.00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="item-name">Design System Tokens</div>
+            <div class="item-detail">Color, typography, spacing tokens (Figma + CSS)</div>
+          </td>
+          <td>1</td>
+          <td>$1,500.00</td>
+          <td>$1,500.00</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="item-name">Project Management & Handoff</div>
+            <div class="item-detail">Weekly syncs, Loom walkthroughs, documentation</div>
+          </td>
+          <td>8 hrs</td>
+          <td>$120.00</td>
+          <td>$960.00</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <div class="inv-totals">
+      <div class="inv-totals-col">
+        <div class="inv-notes">
+          <div class="inv-notes-title">Notes</div>
+          <div class="inv-notes-text">Payment due within 30 days of invoice date. Late payments subject to 1.5% monthly interest. Thank you for your business!</div>
+        </div>
+      </div>
+      <div class="inv-totals-table-wrap">
+        <table class="inv-totals-table">
+          <tr><td>Subtotal</td><td>$16,700.00</td></tr>
+          <tr><td>Tax (8.875%)</td><td>$1,482.13</td></tr>
+          <tr><td>Discount (5%)</td><td>−$835.00</td></tr>
+          <tr class="total-row"><td><strong>Total Due</strong></td><td><strong>$17,347.13</strong></td></tr>
+        </table>
+      </div>
+    </div>
+  
+    <footer class="inv-footer">
+      <span>Acme Corp, Inc. · EIN: 12-3456789 · acmecorp.com</span>
+      <span>Questions? billing@acmecorp.com · +1 (415) 555-0100</span>
+    </footer>
+  </div>
+  <script src="./script.js"></script>
+  </body>
+  </html>
+  
+  <script>
+  (function () {
+    // Insert Download button next to the existing Print button
+    const printBtn = document.querySelector(".print-btn");
+    if (!printBtn) return;
+  
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "\u2B07 Download HTML";
+    dlBtn.className = "print-btn";
+    dlBtn.style.cssText = "background:#fff;color:#4f46e5;border:1.5px solid #c7d2fe;margin-left:8px;";
+    printBtn.after(dlBtn);
+  
+    dlBtn.addEventListener("click", function () {
+      const styles = Array.from(document.querySelectorAll("style"))
+        .map(function (s) {
+          return s.textContent;
+        })
+        .join("\n");
+  
+      const bodyClone = document.body.cloneNode(true);
+      bodyClone.querySelector(".screen-bar")?.remove();
+  
+      const html = [
+        "<!DOCTYPE html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="UTF-8">',
+        "<title>Invoice #INV-2026-0042</title>",
+        "<style>",
+        styles,
+        ".screen-bar{display:none!important;}",
+        "</style>",
+        "</head>",
+        "<body>",
+        bodyClone.innerHTML.trim(),
+        "</body>",
+        "</html>",
+      ].join("\n");
+  
+      const blob = new Blob([html], { type: "text/html" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "invoice-INV-2026-0042.html";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  
+    // Allow Cmd/Ctrl+P to trigger native print dialog uninterrupted
+    document.addEventListener("keydown", function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "p") {
+        // browser default print — do nothing
+      }
+    });
+  })();
+  
+  </script>
+explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure."
+---
+
+Generated challenge.
