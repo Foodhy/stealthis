@@ -4,6 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Reference docs (read these when relevant)
+
+Before starting certain kinds of work, consult the matching guide — they hold the canonical
+process and conventions so you don't have to re-derive them:
+
+- **`PHASE-WORKFLOW.md`** — How to build a whole ROADMAP phase (20+ resources) with a **parallel
+  multi-agent `Workflow`**. Read this whenever the user asks to "finish a phase", build many
+  resources at once, or says "workflow"/"multi-agente". Explains the `agent()`/`parallel()`
+  pattern, the resume-after-cutoff flow, and how to read `/workflows`. Template script lives at
+  `docs/templates/phase-build.workflow.js`. **Workflows are opt-in** — only launch one when the
+  user explicitly asks (keyword "workflow"/"multi-agente"); otherwise build by hand.
+- **`CONTENT_AUTHORING.md`** — How to author a single resource under
+  `packages/content/resources/<slug>/` (frontmatter schema, snippets, conventions). Read this
+  when adding/editing one resource by hand.
+- **`ROADMAP.md`** — The master phase plan (verticals: Clinic, Gym, Salon, Real Estate, …). Source
+  of the work list for any phase. Update checkboxes + the per-phase "Progress" note as you finish.
+- **`ROADMAP_RECOMMENDATION.md`** — Spec for `recommendation`-type resources (topic pages grouping
+  alternatives). Read before authoring recommendations.
+- **`ROADMAP_ARCADE.md`** / **`PLAN_ARCADE.md`** — Plan + roadmap for `apps/arcade` (Duolingo-style
+  challenges). Read when working on the arcade app.
+- **`AGENTS.md`** — General agent guide / project context for this repo.
+
+---
+
 ## Commands
 
 ### Development (from monorepo root)
@@ -115,3 +139,17 @@ Hono v4 on Cloudflare Workers. Reads from the static `src/catalog.json` bundle �
 ### tsconfig
 
 **Never use `"extends": "@stealthis/config/tsconfig"`** in any app. Neither Vite/esbuild (Astro apps) nor Wrangler can resolve workspace package tsconfigs via `extends`. Astro apps extend `"astro/tsconfigs/strict"`. The MCP worker inlines its compiler options directly.
+
+### Codebase graph (graphify, local only)
+
+`graphify-out/` is **gitignored** — it is generated output (cache, `graph.json`, `graph.html`, `GRAPH_REPORT.md`). Regenerate locally or in a separate checkout; never commit it.
+
+```bash
+/graphify apps              # full build on apps/ (last run: ~2k nodes, 3k edges)
+/graphify apps --update     # incremental after code changes
+/graphify query "<question>"  # explore without rebuild (needs graphify-out/)
+```
+
+**Lift into docs / agent context (stable facts):** app inventory under `apps/` (www, lab, docs, build, mcp, arcade, dbviz, styleforge, prompt-designer, vibe, remotion); content flows through `packages/content` → www/lab content collections + `apps/mcp` catalog.json; cross-app hubs are `useI18n()`, `ResourceCard.astro`, `ForceGraph`, and per-app shells (DbVizStudioInner, useWorkspace).
+
+**Leave in graphify-out only (ephemeral):** extraction cache, token cost, manifest, interactive HTML, raw graph JSON, community labels, Obsidian/wiki exports.

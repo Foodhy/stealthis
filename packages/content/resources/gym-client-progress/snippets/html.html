@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gym — Client Progress View</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <!-- Client header -->
+    <header class="client" aria-label="Client overview">
+      <div class="client__id">
+        <div class="avatar" aria-hidden="true">MR</div>
+        <div class="client__meta">
+          <p class="eyebrow">Client · Strength &amp; Cut</p>
+          <h1>Marcus Reyes</h1>
+          <p class="client__sub">Goal: <strong>Drop 6 kg, +bench</strong> · Member since <strong>Jan 2026</strong></p>
+          <div class="chips">
+            <span class="chip chip--neon">Hypertrophy block</span>
+            <span class="chip">3×/week</span>
+            <span class="chip">Coach: Dana V.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="adherence" role="group" aria-label="Program adherence">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring__track" cx="60" cy="60" r="52" />
+          <circle class="ring__fill" cx="60" cy="60" r="52" id="ringFill" />
+        </svg>
+        <div class="adherence__txt">
+          <span class="adherence__pct" id="ringPct">87%</span>
+          <span class="adherence__lbl">Adherence</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn--neon" id="sendProgram" type="button">Send program</button>
+        <button class="btn btn--ghost" id="openNote" type="button">Add note</button>
+      </div>
+    </header>
+
+    <!-- KPI strip -->
+    <section class="kpis" aria-label="Key metrics">
+      <div class="kpi">
+        <span class="kpi__lbl">Weight</span>
+        <span class="kpi__val">82.1<small>kg</small></span>
+        <span class="delta delta--down">−4.7 kg</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi__lbl">Bench 1RM</span>
+        <span class="kpi__val">102<small>kg</small></span>
+        <span class="delta delta--up">+9 kg</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi__lbl">Body fat</span>
+        <span class="kpi__val">17.4<small>%</small></span>
+        <span class="delta delta--down">−3.1 pt</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi__lbl">Sessions</span>
+        <span class="kpi__val">42<small>/48</small></span>
+        <span class="delta delta--up">on track</span>
+      </div>
+    </section>
+
+    <div class="grid">
+      <!-- Chart card -->
+      <section class="card card--chart" aria-label="Progress chart">
+        <div class="card__head">
+          <div>
+            <p class="eyebrow">Trend · 12 weeks</p>
+            <h2 id="chartTitle">Body weight</h2>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Metric">
+            <button class="tab is-active" role="tab" aria-selected="true" data-metric="weight" type="button">Weight</button>
+            <button class="tab" role="tab" aria-selected="false" data-metric="bench" type="button">Bench</button>
+            <button class="tab" role="tab" aria-selected="false" data-metric="squat" type="button">Squat</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg id="chart" class="chart" viewBox="0 0 640 260" preserveAspectRatio="none" role="img" aria-label="Metric over time"></svg>
+        </div>
+        <div class="chart-foot" id="chartFoot"></div>
+      </section>
+
+      <!-- Measurements -->
+      <section class="card" aria-label="Body measurements">
+        <div class="card__head">
+          <div>
+            <p class="eyebrow">Tape · last 8 weeks</p>
+            <h2>Measurements</h2>
+          </div>
+        </div>
+        <table class="measure">
+          <thead>
+            <tr><th scope="col">Site</th><th scope="col">Start</th><th scope="col">Now</th><th scope="col">Δ</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Chest</th><td>104 cm</td><td>107 cm</td><td><span class="delta delta--up">+3.0</span></td></tr>
+            <tr><th scope="row">Waist</th><td>96 cm</td><td>89 cm</td><td><span class="delta delta--down">−7.0</span></td></tr>
+            <tr><th scope="row">Arms</th><td>37.5 cm</td><td>39.2 cm</td><td><span class="delta delta--up">+1.7</span></td></tr>
+            <tr><th scope="row">Thigh</th><td>59 cm</td><td>61 cm</td><td><span class="delta delta--up">+2.0</span></td></tr>
+            <tr><th scope="row">Hips</th><td>101 cm</td><td>98 cm</td><td><span class="delta delta--down">−3.0</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Attendance heat strip -->
+      <section class="card" aria-label="Session attendance">
+        <div class="card__head">
+          <div>
+            <p class="eyebrow">Attendance · 12 weeks</p>
+            <h2>Session heat</h2>
+          </div>
+          <div class="heat-key" aria-hidden="true">
+            <span>Missed</span>
+            <i class="hk hk-0"></i><i class="hk hk-1"></i><i class="hk hk-2"></i><i class="hk hk-3"></i>
+            <span>Full</span>
+          </div>
+        </div>
+        <div class="heat" id="heat" aria-label="Weekly attendance grid"></div>
+      </section>
+
+      <!-- Notes timeline -->
+      <section class="card card--notes" aria-label="Coaching notes">
+        <div class="card__head">
+          <div>
+            <p class="eyebrow">Log</p>
+            <h2>Recent notes</h2>
+          </div>
+          <button class="btn btn--ghost btn--sm" id="openNote2" type="button">+ Note</button>
+        </div>
+
+        <form class="composer" id="composer" hidden>
+          <label class="sr-only" for="noteInput">New note</label>
+          <textarea id="noteInput" rows="2" placeholder="e.g. Bumped working sets to 3×6 on bench, form solid…"></textarea>
+          <div class="composer__row">
+            <select id="noteTag" aria-label="Note tag">
+              <option value="training">Training</option>
+              <option value="nutrition">Nutrition</option>
+              <option value="recovery">Recovery</option>
+              <option value="flag">Flag</option>
+            </select>
+            <div class="composer__btns">
+              <button class="btn btn--ghost btn--sm" type="button" id="cancelNote">Cancel</button>
+              <button class="btn btn--neon btn--sm" type="submit">Save note</button>
+            </div>
+          </div>
+        </form>
+
+        <ol class="timeline" id="timeline"></ol>
+      </section>
+    </div>
+
+    <p class="footnote">Illustrative trainer UI — fictional data, not medical or coaching advice.</p>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

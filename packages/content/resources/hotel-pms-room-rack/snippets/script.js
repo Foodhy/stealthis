@@ -25,22 +25,134 @@ const ROOMS = [
 // Stays defined as offsets from "today" (col 0 = today, col 1 = +1d, …)
 // Each stay: { room, start, nights, status, name, rate, balance }
 const STAYS = [
-  { room: "101", start: -2, nights: 4, status: "checked-in", name: "Karl Henriksen", rate: "Flex BAR · €184", balance: "€736 / paid" },
-  { room: "102", start: 1, nights: 3, status: "confirmed", name: "Mariana Sosa", rate: "Promo · €152", balance: "€456 / deposit €100" },
-  { room: "103", start: 0, nights: 1, status: "due-out", name: "Ruiqi Chen", rate: "Corporate · €172", balance: "€552 / open" },
-  { room: "104", start: 4, nights: 5, status: "confirmed", name: "Patrick Wolfe", rate: "Flex BAR · €174", balance: "€870 / deposit" },
-  { room: "105", start: 8, nights: 2, status: "confirmed", name: "Linnea Aalto", rate: "Promo · €148", balance: "€296 / paid" },
+  {
+    room: "101",
+    start: -2,
+    nights: 4,
+    status: "checked-in",
+    name: "Karl Henriksen",
+    rate: "Flex BAR · €184",
+    balance: "€736 / paid",
+  },
+  {
+    room: "102",
+    start: 1,
+    nights: 3,
+    status: "confirmed",
+    name: "Mariana Sosa",
+    rate: "Promo · €152",
+    balance: "€456 / deposit €100",
+  },
+  {
+    room: "103",
+    start: 0,
+    nights: 1,
+    status: "due-out",
+    name: "Ruiqi Chen",
+    rate: "Corporate · €172",
+    balance: "€552 / open",
+  },
+  {
+    room: "104",
+    start: 4,
+    nights: 5,
+    status: "confirmed",
+    name: "Patrick Wolfe",
+    rate: "Flex BAR · €174",
+    balance: "€870 / deposit",
+  },
+  {
+    room: "105",
+    start: 8,
+    nights: 2,
+    status: "confirmed",
+    name: "Linnea Aalto",
+    rate: "Promo · €148",
+    balance: "€296 / paid",
+  },
 
-  { room: "201", start: -1, nights: 3, status: "checked-in", name: "Pilar Romero", rate: "Flex · €241", balance: "€482 / open" },
-  { room: "202", start: 2, nights: 4, status: "confirmed", name: "Maya Sharma", rate: "Promo · €212", balance: "€848 / deposit" },
-  { room: "203", start: 6, nights: 7, status: "maintenance", name: "Maintenance · plumbing", rate: "—", balance: "—" },
-  { room: "204", start: 0, nights: 3, status: "confirmed", name: "Sofia Bellini", rate: "Suite Promo · €265", balance: "€795 / deposit" },
-  { room: "205", start: 9, nights: 3, status: "confirmed", name: "Olivier Banks", rate: "Flex · €232", balance: "€696 / open" },
+  {
+    room: "201",
+    start: -1,
+    nights: 3,
+    status: "checked-in",
+    name: "Pilar Romero",
+    rate: "Flex · €241",
+    balance: "€482 / open",
+  },
+  {
+    room: "202",
+    start: 2,
+    nights: 4,
+    status: "confirmed",
+    name: "Maya Sharma",
+    rate: "Promo · €212",
+    balance: "€848 / deposit",
+  },
+  {
+    room: "203",
+    start: 6,
+    nights: 7,
+    status: "maintenance",
+    name: "Maintenance · plumbing",
+    rate: "—",
+    balance: "—",
+  },
+  {
+    room: "204",
+    start: 0,
+    nights: 3,
+    status: "confirmed",
+    name: "Sofia Bellini",
+    rate: "Suite Promo · €265",
+    balance: "€795 / deposit",
+  },
+  {
+    room: "205",
+    start: 9,
+    nights: 3,
+    status: "confirmed",
+    name: "Olivier Banks",
+    rate: "Flex · €232",
+    balance: "€696 / open",
+  },
 
-  { room: "301", start: -3, nights: 7, status: "checked-in", name: "Hassan Najjar", rate: "Family Promo · €301", balance: "€2,108 / paid" },
-  { room: "302", start: 0, nights: 5, status: "confirmed", name: "Aiko Tanaka", rate: "Flex · €241", balance: "€1,205 / deposit" },
-  { room: "303", start: 5, nights: 4, status: "confirmed", name: "Elena Vasquez", rate: "Suite Promo · €482", balance: "€1,928 / open" },
-  { room: "304", start: 1, nights: 9, status: "confirmed", name: "Marc Dupuis", rate: "Penthouse · €612", balance: "€5,508 / deposit" },
+  {
+    room: "301",
+    start: -3,
+    nights: 7,
+    status: "checked-in",
+    name: "Hassan Najjar",
+    rate: "Family Promo · €301",
+    balance: "€2,108 / paid",
+  },
+  {
+    room: "302",
+    start: 0,
+    nights: 5,
+    status: "confirmed",
+    name: "Aiko Tanaka",
+    rate: "Flex · €241",
+    balance: "€1,205 / deposit",
+  },
+  {
+    room: "303",
+    start: 5,
+    nights: 4,
+    status: "confirmed",
+    name: "Elena Vasquez",
+    rate: "Suite Promo · €482",
+    balance: "€1,928 / open",
+  },
+  {
+    room: "304",
+    start: 1,
+    nights: 9,
+    status: "confirmed",
+    name: "Marc Dupuis",
+    rate: "Penthouse · €612",
+    balance: "€5,508 / deposit",
+  },
 ];
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -70,7 +182,11 @@ function isWeekend(d) {
   return w === 0 || w === 6;
 }
 function isSameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 function fmtDay(d) {
   return d.toLocaleDateString("en-GB", { weekday: "short" });
@@ -165,7 +281,8 @@ function render() {
 
     const el = document.createElement("div");
     el.className = `stay ${stay.status}`;
-    if (selected && selected.room === stay.room && selected.start === stay.start) el.classList.add("is-selected");
+    if (selected && selected.room === stay.room && selected.start === stay.start)
+      el.classList.add("is-selected");
     el.style.gridRow = `${roomIdx + 1}`;
     el.style.gridColumn = `${visStart} / span ${span}`;
     el.innerHTML = `<span class="stay-dot"></span><span>${stay.name}</span>`;

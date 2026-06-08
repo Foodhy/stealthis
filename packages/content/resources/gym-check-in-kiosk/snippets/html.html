@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>IRONPULSE — Member Check-in Kiosk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="kiosk" id="kiosk">
+      <!-- Ambient -->
+      <div class="glow glow-a" aria-hidden="true"></div>
+      <div class="glow glow-b" aria-hidden="true"></div>
+
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">⚡</span>
+          <span class="brand-name">IRONPULSE</span>
+          <span class="brand-sub">Downtown Strength Club</span>
+        </div>
+        <div class="topbar-right">
+          <div class="clock">
+            <span class="clock-time" id="clock">--:--</span>
+            <span class="clock-date" id="clockDate">—</span>
+          </div>
+          <div class="status-dot" title="System online">
+            <span class="dot" aria-hidden="true"></span> Online
+          </div>
+        </div>
+      </header>
+
+      <main class="stage">
+        <!-- ============ IDLE STATE ============ -->
+        <section class="panel idle" id="idleView" aria-label="Check in">
+          <div class="idle-left">
+            <p class="eyebrow">Welcome to IRONPULSE</p>
+            <h1 class="headline">Let's get <span class="hl">moving.</span></h1>
+            <p class="lede">Scan your membership QR or tap the zone to check in.</p>
+
+            <button class="scanzone" id="scanZone" type="button" aria-label="Simulate QR scan to check in">
+              <span class="scan-ring" aria-hidden="true"></span>
+              <span class="scan-ring scan-ring-2" aria-hidden="true"></span>
+              <span class="scan-core">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" aria-hidden="true">
+                  <path d="M3 7V4a1 1 0 0 1 1-1h3M17 3h3a1 1 0 0 1 1 1v3M21 17v3a1 1 0 0 1-1 1h-3M7 21H4a1 1 0 0 1-1-1v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <rect x="7" y="7" width="4" height="4" rx="1" fill="currentColor"/>
+                  <rect x="13" y="7" width="4" height="4" rx="1" fill="currentColor"/>
+                  <rect x="7" y="13" width="4" height="4" rx="1" fill="currentColor"/>
+                  <rect x="13" y="13" width="4" height="4" rx="1" fill="currentColor"/>
+                </svg>
+              </span>
+              <span class="scan-label">Tap to scan</span>
+            </button>
+          </div>
+
+          <div class="idle-right">
+            <div class="keypad-head">
+              <span class="kp-eyebrow">No QR? Enter your member ID</span>
+              <output class="kp-display" id="kpDisplay" aria-live="polite">— — — —</output>
+            </div>
+            <div class="keypad" id="keypad" role="group" aria-label="Numeric keypad">
+              <button class="key" data-k="1" type="button">1</button>
+              <button class="key" data-k="2" type="button">2</button>
+              <button class="key" data-k="3" type="button">3</button>
+              <button class="key" data-k="4" type="button">4</button>
+              <button class="key" data-k="5" type="button">5</button>
+              <button class="key" data-k="6" type="button">6</button>
+              <button class="key" data-k="7" type="button">7</button>
+              <button class="key" data-k="8" type="button">8</button>
+              <button class="key" data-k="9" type="button">9</button>
+              <button class="key key-util" data-act="clear" type="button">Clear</button>
+              <button class="key" data-k="0" type="button">0</button>
+              <button class="key key-util" data-act="del" type="button" aria-label="Delete">⌫</button>
+            </div>
+            <button class="key-enter" id="enterBtn" type="button">Check in →</button>
+          </div>
+        </section>
+
+        <!-- ============ SUCCESS STATE ============ -->
+        <section class="panel success" id="successView" aria-label="Check-in confirmed" hidden>
+          <div class="success-card">
+            <div class="success-photo">
+              <span class="avatar" id="memberAvatar" aria-hidden="true">--</span>
+              <span class="check-burst" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="none">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </div>
+            <div class="success-body">
+              <p class="success-eyebrow">Checked in <span id="checkTime">just now</span></p>
+              <h2 class="success-name" id="memberName">Member</h2>
+              <div class="success-meta">
+                <span class="badge" id="statusBadge">Active</span>
+                <span class="member-id" id="memberIdLine">ID —</span>
+                <span class="streak" id="streakLine">🔥 — day streak</span>
+              </div>
+
+              <div class="success-class" id="classBlock">
+                <span class="sc-icon" aria-hidden="true">📋</span>
+                <div class="sc-text">
+                  <span class="sc-label">Today's booked class</span>
+                  <strong class="sc-value" id="bookedClass">—</strong>
+                </div>
+                <span class="sc-time" id="bookedTime">—</span>
+              </div>
+
+              <p class="success-note" id="statusNote"></p>
+
+              <div class="success-actions">
+                <button class="btn-secondary" id="doneBtn" type="button">Done</button>
+                <span class="autoreset">Auto-reset in <strong id="countdown">8</strong>s</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- ============ FOOTER TICKER ============ -->
+      <footer class="dock">
+        <div class="counter">
+          <span class="counter-num" id="todayCount">0</span>
+          <span class="counter-label">checked in today</span>
+          <span class="counter-spark" id="counterSpark" aria-hidden="true"></span>
+        </div>
+        <div class="recent">
+          <span class="recent-label">Recent</span>
+          <ul class="recent-list" id="recentList" aria-live="polite"></ul>
+        </div>
+      </footer>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

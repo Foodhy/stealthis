@@ -8,10 +8,16 @@ export const GET: APIRoute = async () => {
   const payload = {
     resources: resources.map((r) => {
       const searchTechTokens = getResourceSearchTechTokens(r);
+      // Recommendation topics: include each alternative's name so searching for a
+      // specific tool (e.g. "lovable", "stripe", "opencv") surfaces the topic.
+      const optionNames = Array.isArray(r.data.options)
+        ? r.data.options.map((o: { name: string }) => o.name)
+        : [];
       const rawSearchText = [
         r.data.title,
         r.data.description,
         ...(Array.isArray(r.data.tags) ? r.data.tags : []),
+        ...optionNames,
         ...searchTechTokens,
       ].join(" ");
 

@@ -5,6 +5,7 @@ import ActionMenu from "@components/ActionMenu.astro";
 import RemotionPreview from "@components/RemotionPreview";
 import ExpoSnackEmbed from "@components/ExpoSnackEmbed.astro";
 import CodePenExamples from "@components/CodePenExamples.astro";
+import ComparisonTable from "@components/ComparisonTable.astro";
 import TechIcon from "@components/TechIcon.astro";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -78,8 +79,74 @@ const categoryKey = `category.${category}` as
   | "category.database-schemas"
   | "category.ultra-high-definition-pages"
   | "category.music"
-  | "category.plugins";
+  | "category.plugins"
+  | "category.recommendations";
 const categoryLabel = t(categoryKey);
+
+const isRecommendation = type === "recommendation";
+const { externalUrl, logo, recommendationKind, bestFor, pros, cons, options, comparison } =
+  resource.data;
+
+// Build a logo/favicon source for an external url
+const faviconFor = (url?: string) => {
+  if (!url) return "";
+  try {
+    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`;
+  } catch {
+    return "";
+  }
+};
+// Convert a YouTube watch/share url into an embeddable url
+const toYouTubeEmbed = (url?: string): string => {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    let id = "";
+    if (u.hostname.includes("youtu.be")) id = u.pathname.slice(1);
+    else if (u.searchParams.get("v")) id = u.searchParams.get("v") ?? "";
+    else if (u.pathname.includes("/embed/")) return url;
+    return id ? `https://www.youtube.com/embed/${id}` : "";
+  } catch {
+    return "";
+  }
+};
+const kindLabel = recommendationKind
+  ? t(`recommendations.cat.${recommendationKind}` as
+      | "recommendations.cat.agent-frameworks"
+      | "recommendations.cat.ai-models"
+      | "recommendations.cat.creative-apps"
+      | "recommendations.cat.books"
+      | "recommendations.cat.practice-platforms"
+      | "recommendations.cat.hackathons-events"
+      | "recommendations.cat.internships"
+      | "recommendations.cat.app-builders"
+      | "recommendations.cat.payments"
+      | "recommendations.cat.libraries"
+      | "recommendations.cat.platforms"
+      | "recommendations.cat.learning"
+      | "recommendations.cat.editors"
+      | "recommendations.cat.backend"
+      | "recommendations.cat.local-ai"
+      | "recommendations.cat.vector-db"
+      | "recommendations.cat.agent-tools"
+      | "recommendations.cat.audio"
+      | "recommendations.cat.3d"
+      | "recommendations.cat.business-apps"
+      | "recommendations.cat.design-assets"
+      | "recommendations.cat.media"
+      | "recommendations.cat.mcp"
+      | "recommendations.cat.game-dev"
+      | "recommendations.cat.hosting"
+      | "recommendations.cat.design-tools"
+      | "recommendations.cat.graphics")
+  : "";
+let recHost = "";
+try {
+  recHost = externalUrl ? new URL(externalUrl).hostname : "";
+} catch {
+  recHost = "";
+}
+const recImg = logo ?? (recHost ? `https://www.google.com/s2/favicons?domain=${recHost}&sz=64` : "");
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
 const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
@@ -261,7 +328,9 @@ const structuredData = [
             <a href={`${prefix}/library?category=${category}`} class="chip hover:text-slate-200">
               {categoryLabel}
             </a>
-            <span class={`badge ${difficultyClass}`}>{difficultyLabel}</span>
+            {isRecommendation
+              ? kindLabel && <span class="badge badge-easy">{kindLabel}</span>
+              : <span class={`badge ${difficultyClass}`}>{difficultyLabel}</span>}
           </div>
 
           <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
@@ -285,6 +354,19 @@ const structuredData = [
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
           </button>
+          {isRecommendation && externalUrl && (
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noopener"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500/15 border border-brand-400/30 text-sm font-medium text-brand-300 hover:bg-brand-500/25 hover:text-brand-100 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              {t("recommendations.visit")}
+            </a>
+          )}
           {category === "remotion" && (
             <a
               href={SITE_URLS.remotion}
@@ -352,6 +434,99 @@ const structuredData = [
       )}
     </header>
 
+    {isRecommendation && options.length > 0 && (
+      <section class="mb-12">
+        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+          {t("recommendations.alternatives")} <span class="text-slate-600">({options.length})</span>
+        </h2>
+        <div class="grid gap-4 md:grid-cols-2">
+          {options.map((opt) => {
+            const embed = toYouTubeEmbed(opt.video);
+            const optImg = opt.logo ?? faviconFor(opt.url ?? opt.video);
+            return (
+              <article class="flex flex-col gap-3 p-5 rounded-2xl border border-white/8 bg-surface-900/50">
+                <div class="flex items-start gap-3">
+                  <div class="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl border border-white/8 bg-white/4 overflow-hidden">
+                    {optImg ? (
+                      <img src={optImg} alt="" width="22" height="22" loading="lazy" class="w-[22px] h-[22px] object-contain" />
+                    ) : (
+                      <span aria-hidden="true">✦</span>
+                    )}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-slate-100 flex items-center gap-1.5">
+                      {opt.highlight && <span class="text-brand-400" title="Recommended">★</span>}
+                      {opt.name}
+                    </h3>
+                    {opt.bestFor && <p class="text-xs text-slate-500 mt-0.5">{t("recommendations.bestFor")}: {opt.bestFor}</p>}
+                  </div>
+                </div>
+
+                {opt.description && <p class="text-sm text-slate-400 leading-relaxed">{opt.description}</p>}
+
+                {embed && (
+                  <div class="rounded-xl overflow-hidden border border-white/8 aspect-video">
+                    <iframe
+                      src={embed}
+                      title={opt.name}
+                      loading="lazy"
+                      class="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                )}
+
+                {(opt.pros.length > 0 || opt.cons.length > 0) && (
+                  <div class="grid grid-cols-2 gap-3 text-xs">
+                    {opt.pros.length > 0 && (
+                      <ul class="space-y-1 text-slate-400">
+                        {opt.pros.slice(0, 4).map((p) => (
+                          <li class="flex gap-1.5"><span class="text-emerald-500/70">+</span><span>{p}</span></li>
+                        ))}
+                      </ul>
+                    )}
+                    {opt.cons.length > 0 && (
+                      <ul class="space-y-1 text-slate-400">
+                        {opt.cons.slice(0, 4).map((c) => (
+                          <li class="flex gap-1.5"><span class="text-amber-500/70">−</span><span>{c}</span></li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                <div class="flex items-center gap-2 mt-auto pt-1">
+                  {opt.url && (
+                    <a href={opt.url} target="_blank" rel="noopener" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-white/8 hover:bg-white/14 text-slate-200 transition-colors">
+                      {t("recommendations.visit")}
+                    </a>
+                  )}
+                  {opt.docs && (
+                    <a href={opt.docs} target="_blank" rel="noopener" class="text-xs font-medium px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-colors">
+                      {t("recommendations.docs")}
+                    </a>
+                  )}
+                  {opt.demo && (
+                    <a href={opt.demo} target="_blank" rel="noopener" class="text-xs font-medium px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-colors">
+                      {t("recommendations.demo")}
+                    </a>
+                  )}
+                  {opt.video && (
+                    <a href={opt.video} target="_blank" rel="noopener" class="text-xs font-medium px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-colors">
+                      {t("recommendations.watch")}
+                    </a>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    )}
+
+    {isRecommendation && <ComparisonTable options={options} comparison={comparison} locale={locale} />}
+
     {category === "remotion" && (
       <section class="mb-12">
         <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{t("resource.section.preview")}</h2>
@@ -369,10 +544,12 @@ const structuredData = [
     )}
 
     <!-- Code tabs -->
-    <section class="mb-12">
-      <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{t("resource.section.code")}</h2>
-      <CodeTabs slug={slug} targets={targets} htmlSrcdoc={htmlSrcdoc} />
-    </section>
+    {!isRecommendation && (
+      <section class="mb-12">
+        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">{t("resource.section.code")}</h2>
+        <CodeTabs slug={slug} targets={targets} htmlSrcdoc={htmlSrcdoc} />
+      </section>
+    )}
 
     <!-- CodePen examples -->
     {codepenExamples && codepenExamples.length > 0 && (

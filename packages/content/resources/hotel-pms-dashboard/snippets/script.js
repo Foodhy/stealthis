@@ -1,31 +1,193 @@
 // ── Mock data ───────────────────────────────────────────────────────────────
 const ARRIVALS = [
-  { room: "204", name: "Mariana Sosa", meta: "2 adults · 1 child · Deluxe Suite", in: "2026-05-24", out: "2026-05-27", amount: "€612", status: "expected", vip: true, due: false },
-  { room: "118", name: "Thomas Reuter", meta: "1 adult · Classic Double", in: "2026-05-24", out: "2026-05-25", amount: "€184", status: "expected", vip: false, due: true },
-  { room: "302", name: "Aiko Tanaka", meta: "2 adults · Junior Suite", in: "2026-05-24", out: "2026-05-29", amount: "€1,205", status: "expected", vip: true, due: false },
-  { room: "121", name: "Olivier Banks", meta: "2 adults · Twin Standard", in: "2026-05-24", out: "2026-05-26", amount: "€368", status: "late", vip: false, due: true },
-  { room: "205", name: "Fátima Cervantes", meta: "1 adult · Single Standard", in: "2026-05-24", out: "2026-05-25", amount: "€142", status: "expected", vip: false, due: false },
+  {
+    room: "204",
+    name: "Mariana Sosa",
+    meta: "2 adults · 1 child · Deluxe Suite",
+    in: "2026-05-24",
+    out: "2026-05-27",
+    amount: "€612",
+    status: "expected",
+    vip: true,
+    due: false,
+  },
+  {
+    room: "118",
+    name: "Thomas Reuter",
+    meta: "1 adult · Classic Double",
+    in: "2026-05-24",
+    out: "2026-05-25",
+    amount: "€184",
+    status: "expected",
+    vip: false,
+    due: true,
+  },
+  {
+    room: "302",
+    name: "Aiko Tanaka",
+    meta: "2 adults · Junior Suite",
+    in: "2026-05-24",
+    out: "2026-05-29",
+    amount: "€1,205",
+    status: "expected",
+    vip: true,
+    due: false,
+  },
+  {
+    room: "121",
+    name: "Olivier Banks",
+    meta: "2 adults · Twin Standard",
+    in: "2026-05-24",
+    out: "2026-05-26",
+    amount: "€368",
+    status: "late",
+    vip: false,
+    due: true,
+  },
+  {
+    room: "205",
+    name: "Fátima Cervantes",
+    meta: "1 adult · Single Standard",
+    in: "2026-05-24",
+    out: "2026-05-25",
+    amount: "€142",
+    status: "expected",
+    vip: false,
+    due: false,
+  },
 ];
 const INHOUSE = [
-  { room: "102", name: "Karl Henriksen", meta: "1 adult · Classic Double", in: "2026-05-22", out: "2026-05-26", amount: "€736", status: "checked-in", vip: false, due: false },
-  { room: "210", name: "Pilar Romero", meta: "2 adults · Junior Suite", in: "2026-05-23", out: "2026-05-25", amount: "€482", status: "checked-in", vip: true, due: false },
-  { room: "308", name: "Hassan Najjar", meta: "2 adults · 1 child · Family Suite", in: "2026-05-21", out: "2026-05-28", amount: "€2,108", status: "checked-in", vip: false, due: false },
-  { room: "114", name: "Sofia Bellini", meta: "1 adult · Deluxe Double", in: "2026-05-23", out: "2026-05-26", amount: "€516", status: "checked-in", vip: false, due: false },
+  {
+    room: "102",
+    name: "Karl Henriksen",
+    meta: "1 adult · Classic Double",
+    in: "2026-05-22",
+    out: "2026-05-26",
+    amount: "€736",
+    status: "checked-in",
+    vip: false,
+    due: false,
+  },
+  {
+    room: "210",
+    name: "Pilar Romero",
+    meta: "2 adults · Junior Suite",
+    in: "2026-05-23",
+    out: "2026-05-25",
+    amount: "€482",
+    status: "checked-in",
+    vip: true,
+    due: false,
+  },
+  {
+    room: "308",
+    name: "Hassan Najjar",
+    meta: "2 adults · 1 child · Family Suite",
+    in: "2026-05-21",
+    out: "2026-05-28",
+    amount: "€2,108",
+    status: "checked-in",
+    vip: false,
+    due: false,
+  },
+  {
+    room: "114",
+    name: "Sofia Bellini",
+    meta: "1 adult · Deluxe Double",
+    in: "2026-05-23",
+    out: "2026-05-26",
+    amount: "€516",
+    status: "checked-in",
+    vip: false,
+    due: false,
+  },
 ];
 const DEPARTURES = [
-  { room: "207", name: "Elena Vasquez", meta: "2 adults · Junior Suite", in: "2026-05-20", out: "2026-05-24", amount: "€964", status: "due-out", vip: true, due: true },
-  { room: "117", name: "Ruiqi Chen", meta: "1 adult · Classic Double", in: "2026-05-21", out: "2026-05-24", amount: "€552", status: "due-out", vip: false, due: false },
-  { room: "311", name: "Marc Dupuis", meta: "2 adults · Deluxe Suite", in: "2026-05-22", out: "2026-05-24", amount: "€408", status: "due-out", vip: false, due: true },
+  {
+    room: "207",
+    name: "Elena Vasquez",
+    meta: "2 adults · Junior Suite",
+    in: "2026-05-20",
+    out: "2026-05-24",
+    amount: "€964",
+    status: "due-out",
+    vip: true,
+    due: true,
+  },
+  {
+    room: "117",
+    name: "Ruiqi Chen",
+    meta: "1 adult · Classic Double",
+    in: "2026-05-21",
+    out: "2026-05-24",
+    amount: "€552",
+    status: "due-out",
+    vip: false,
+    due: false,
+  },
+  {
+    room: "311",
+    name: "Marc Dupuis",
+    meta: "2 adults · Deluxe Suite",
+    in: "2026-05-22",
+    out: "2026-05-24",
+    amount: "€408",
+    status: "due-out",
+    vip: false,
+    due: true,
+  },
 ];
 
 const ACTS = [
-  { type: "checkin", icon: "✓", title: "Mariana Sosa checked in", sub: "Room 204 · key issued", time: "08:42" },
-  { type: "payment", icon: "€", title: "Folio payment posted", sub: "€612.00 · card · 204", time: "08:41" },
-  { type: "housekeeping", icon: "✦", title: "Room 117 reported clean", sub: "Ines · housekeeping", time: "08:36" },
-  { type: "alert", icon: "!", title: "Late check-in flagged", sub: "Olivier Banks · room 121", time: "08:21" },
-  { type: "checkin", icon: "✓", title: "Pre-check-in completed", sub: "Aiko Tanaka · room 302", time: "08:18" },
-  { type: "payment", icon: "€", title: "Deposit captured", sub: "€184.00 · 118 · hold", time: "08:11" },
-  { type: "housekeeping", icon: "✦", title: "Room 207 inspected", sub: "Departure clean", time: "08:02" },
+  {
+    type: "checkin",
+    icon: "✓",
+    title: "Mariana Sosa checked in",
+    sub: "Room 204 · key issued",
+    time: "08:42",
+  },
+  {
+    type: "payment",
+    icon: "€",
+    title: "Folio payment posted",
+    sub: "€612.00 · card · 204",
+    time: "08:41",
+  },
+  {
+    type: "housekeeping",
+    icon: "✦",
+    title: "Room 117 reported clean",
+    sub: "Ines · housekeeping",
+    time: "08:36",
+  },
+  {
+    type: "alert",
+    icon: "!",
+    title: "Late check-in flagged",
+    sub: "Olivier Banks · room 121",
+    time: "08:21",
+  },
+  {
+    type: "checkin",
+    icon: "✓",
+    title: "Pre-check-in completed",
+    sub: "Aiko Tanaka · room 302",
+    time: "08:18",
+  },
+  {
+    type: "payment",
+    icon: "€",
+    title: "Deposit captured",
+    sub: "€184.00 · 118 · hold",
+    time: "08:11",
+  },
+  {
+    type: "housekeeping",
+    icon: "✦",
+    title: "Room 207 inspected",
+    sub: "Departure clean",
+    time: "08:02",
+  },
 ];
 
 // ── Render ──────────────────────────────────────────────────────────────────
@@ -143,9 +305,9 @@ rows.addEventListener("click", (e) => {
   showToast(`${btn.textContent} · ${name}`);
 });
 
-document.querySelectorAll(".ghost-btn, .quick-btn").forEach((b) =>
-  b.addEventListener("click", () => showToast(b.textContent.trim()))
-);
+document
+  .querySelectorAll(".ghost-btn, .quick-btn")
+  .forEach((b) => b.addEventListener("click", () => showToast(b.textContent.trim())));
 
 // ── Clock + label ───────────────────────────────────────────────────────────
 const clock = document.getElementById("clock");

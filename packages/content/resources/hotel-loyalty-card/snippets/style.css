@@ -1,0 +1,431 @@
+/* ── Design tokens ── */
+:root {
+  --navy: #1a2b4a;
+  --navy-d: #0f1d36;
+  --navy-2: #2d4570;
+  --cream: #f7f3eb;
+  --cream-2: #ece5d4;
+  --bone: #fbf8f2;
+  --gold: #c9a649;
+  --gold-light: #e0c378;
+  --gold-d: #a88a2e;
+  --ink: #161e2c;
+  --ink-2: #2e3a52;
+  --warm-gray: #6c7280;
+  --line: rgba(22, 30, 44, 0.1);
+  --line-strong: rgba(22, 30, 44, 0.18);
+  --success: #4a7752;
+  --danger: #b34232;
+  --warning: #d99020;
+  --info: #4a6da0;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --shadow-1: 0 1px 2px rgba(22, 30, 44, 0.06), 0 2px 8px rgba(22, 30, 44, 0.06);
+  --shadow-2: 0 12px 36px rgba(15, 29, 54, 0.16);
+
+  /* tier colour vars (overridden per tier) */
+  --tier-a: #6c7280;
+  --tier-b: #9aa0aa;
+  --tier-text: #fff;
+  --tier-badge-bg: rgba(255, 255, 255, 0.15);
+  --tier-fill: #9aa0aa;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: var(--font-body);
+  background: radial-gradient(circle at 20% 80%, rgba(201, 166, 73, 0.12), transparent 50%),
+    linear-gradient(160deg, #14213b 0%, #0f1d36 100%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 32px 16px;
+}
+
+/* ── Widget container ── */
+.widget {
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Tier switcher ── */
+.tier-switcher {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+}
+.ts-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 8px 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ts-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+.ts-btn.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ── Loyalty card ── */
+.loyalty-card {
+  border-radius: 22px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 1.6 / 1;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transition: box-shadow 0.4s;
+}
+
+/* tier gradient skins */
+.loyalty-card[data-tier="silver"] {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 50%, #1a202c 100%);
+}
+.loyalty-card[data-tier="gold"] {
+  background: linear-gradient(135deg, #8a6d2a 0%, #c9a649 40%, #4a3510 100%);
+}
+.loyalty-card[data-tier="platinum"] {
+  background: linear-gradient(135deg, #1a3a6e 0%, #3d6cb0 45%, #0a1e42 100%);
+}
+
+/* shimmer background pattern */
+.card-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.12), transparent 55%),
+    radial-gradient(ellipse at 10% 90%, rgba(255, 255, 255, 0.06), transparent 45%);
+  pointer-events: none;
+}
+.card-bg::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 40px solid rgba(255, 255, 255, 0.06);
+}
+
+.card-inner {
+  position: relative;
+  z-index: 1;
+  padding: 22px 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ── Card top ── */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.card-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-logo {
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.card-brand-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+.card-programme {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 1px;
+}
+.tier-badge {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: background 0.3s;
+}
+
+/* ── Card mid ── */
+.card-mid {
+  padding: 4px 0;
+}
+.member-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+.member-since {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+/* ── Card bottom ── */
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.cb-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.member-num {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  font-variant-numeric: tabular-nums;
+}
+.card-bottom-right {
+  text-align: right;
+}
+.points-bal {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s;
+}
+
+/* ── Below-card sections (on light background) ── */
+.progress-section,
+.benefits-section,
+.activity-section {
+  background: var(--bone);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.section-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold-d);
+  font-weight: 700;
+}
+
+/* ── Progress bar ── */
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.prog-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.prog-pct {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold-d);
+}
+.progress-track {
+  height: 8px;
+  background: var(--cream-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--gold-d), var(--gold));
+  border-radius: 999px;
+  transition: width 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* platinum fill is blue */
+.loyalty-card[data-tier="platinum"] ~ .progress-section .progress-fill {
+  background: linear-gradient(to right, #2d5a9e, #5a8fd4);
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+}
+.prog-meta-item {
+  font-size: 0.74rem;
+  color: var(--warm-gray);
+  font-weight: 500;
+}
+
+/* ── Benefits list ── */
+.benefits-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.benefits-list li {
+  font-size: 0.84rem;
+  color: var(--ink-2);
+  padding-left: 18px;
+  position: relative;
+}
+.benefits-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--success);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+/* ── Activity list ── */
+.activity-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.activity-item:last-child {
+  border-bottom: none;
+}
+.ai-name {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.ai-date {
+  font-size: 0.7rem;
+  color: var(--warm-gray);
+  margin-top: 1px;
+}
+.ai-info {
+  display: flex;
+  flex-direction: column;
+}
+.ai-pts {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ai-pts.positive {
+  color: var(--success);
+}
+.ai-pts.negative {
+  color: var(--danger);
+}
+
+/* ── Simulate button ── */
+.simulate-btn {
+  background: var(--navy);
+  color: var(--bone);
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 14px 24px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s, transform 0.12s;
+  letter-spacing: 0.01em;
+}
+.simulate-btn:hover {
+  background: var(--navy-2);
+}
+.simulate-btn:active {
+  transform: scale(0.98);
+}
+.simulate-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy-d);
+  color: var(--bone);
+  padding: 11px 22px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(22, 30, 44, 0.28);
+  white-space: nowrap;
+  z-index: 999;
+}
+
+/* ── Responsive ── */
+@media (max-width: 440px) {
+  .widget {
+    width: 100%;
+  }
+  .loyalty-card {
+    aspect-ratio: 1.5 / 1;
+  }
+}

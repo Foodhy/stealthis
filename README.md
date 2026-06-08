@@ -28,6 +28,7 @@ The canonical source of resource content lives in `packages/content/resources/<s
 - `pt-br` — Brazilian Portuguese
 - `zh-hk` — Traditional Chinese (Hong Kong)
 - `zh-cn` — Simplified Chinese (China)
+- `de-ch` — Swiss German
 - `it` — Italian
 - `pl` — Polish
 - `uk` — Ukrainian
@@ -183,6 +184,44 @@ bun run build:lab
 bun run build:mcp
 ```
 
+## Building a Whole Phase (multi-agent workflow)
+
+The [`ROADMAP.md`](./ROADMAP.md) is organized into **phases**, each a themed vertical with
+20–35 resources (Clinic, Gym, Salon, Real Estate, …). Building those one by one is slow, so
+the repo has a documented pattern for generating a whole phase with a **parallel multi-agent
+`Workflow`** in Claude Code — one subagent per resource, running concurrently.
+
+To kick off the next phase, just ask Claude Code in plain language **including the keyword
+`workflow`** (that keyword is what authorizes the multi-agent run — without it, Claude builds
+by hand). For example:
+
+```
+finish Phase 30 (Gym) of the ROADMAP using a workflow
+```
+
+Claude then automatically:
+
+1. Reads [`PHASE-WORKFLOW.md`](./PHASE-WORKFLOW.md) (the full how-to) and the Phase 30 table in `ROADMAP.md`.
+2. Studies the pattern by opening a finished resource (e.g. `clinic-appointment-list`) to match structure/quality.
+3. Wires the new collection (`gym`) in the 4 places it must exist (schema enum, `apps/www/src/content/config.ts`, `apps/www/src/lib/collections.ts`, i18n strings).
+4. Builds the `SPECS` list (one entry per resource) from the roadmap table.
+5. Launches the workflow — a subagent per resource, in parallel (watch live with `/workflows`).
+6. Regenerates the MCP catalog and ticks the ROADMAP checkboxes.
+
+Handy add-ons you can append to the request:
+
+| If you want… | Say… |
+|---|---|
+| It to stop for review when done | "…**and pause** when Phase 30 is done" |
+| Several phases back-to-back | "finish **Phases 30, 31 and 32** with workflows, one after another" |
+| To limit scope | "only sections **30.A and 30.B**" or "only the **5 landings**" |
+| To recover after a cutoff (e.g. session limit) | "**resume** the workflow" → re-runs only what failed; finished ones return from cache for free |
+
+> A workflow spins up dozens of agents — fast in wall-clock but token-heavy. Worth it for 20+
+> resources; for 1–3, build by hand (see [Add a New Resource](#add-a-new-resource)). Full
+> mechanics, the script template, and how to read `/workflows` live in
+> [`PHASE-WORKFLOW.md`](./PHASE-WORKFLOW.md).
+
 ## Schema + Consumer Alignment
 
 If you add/rename category/type/target fields, keep these in sync:
@@ -218,9 +257,62 @@ Primary endpoints:
 - `GET /tools/search?q=...`
 - `GET /tools/get_lab/:slug`
 
+## Codebase Graph (graphify)
+
+[graphify](https://pypi.org/project/graphifyy/) turns this repo into a **local, queryable knowledge graph** of how apps, modules, and docs connect. Output lands in `graphify-out/` — that folder is **gitignored** (cache, JSON, HTML, reports). Regenerate on your machine or in a separate checkout; do not commit it.
+
+Requires the graphify skill/CLI (e.g. `/graphify` in Claude Code, or `uv tool install graphifyy`).
+
+### Build and refresh
+
+```bash
+/graphify apps              # Full extraction on apps/ (~2k nodes, 3k edges on last run)
+/graphify apps --update     # Incremental — only new/changed files (fast after first run)
+/graphify apps --cluster-only   # Re-run community detection on existing graph.json
+/graphify apps --mode deep      # More aggressive INFERRED edges (slower, richer graph)
+/graphify apps --directed       # Preserve edge direction (source → target) for call tracing
+/graphify packages/content  # Narrow scope to content package only
+/graphify apps --watch      # Auto-rebuild on file changes (no LLM, graph structure only)
+```
+
+After a full build, open `graphify-out/graph.html` in a browser for the interactive view, or read `graphify-out/GRAPH_REPORT.md` for community hubs, god nodes, and import cycles.
+
+### Explore without rebuilding
+
+These read the existing `graphify-out/graph.json` — no token cost if the graph is already built:
+
+```bash
+/graphify query "How does the MCP catalog get built?"
+/graphify query "What connects ResourceCard to i18n?" --dfs      # Trace one path (depth-first)
+/graphify query "How does lab inline snippets?" --budget 1500      # Cap answer length
+/graphify path "ForceGraph" "useI18n"                              # Shortest path between two nodes
+/graphify explain "DbVizStudioInner"                               # Plain-language node summary
+```
+
+### Optional exports
+
+```bash
+/graphify apps --svg            # graph.svg (Notion, GitHub embeds)
+/graphify apps --graphml        # graph.graphml (Gephi, yEd)
+/graphify apps --neo4j          # graphify-out/cypher.txt for Neo4j import
+/graphify apps --obsidian       # Obsidian vault (one note per node)
+/graphify apps --wiki           # Agent-crawlable wiki (index + articles)
+/graphify apps --no-viz         # Skip HTML — report + JSON only
+```
+
+### What belongs in git vs locally
+
+| Keep in repo (stable) | Local only (`graphify-out/`, gitignored) |
+|---|---|
+| App inventory under `apps/` | `cache/` extraction cache |
+| Content flow: `packages/content` → www/lab collections + `apps/mcp` catalog | `graph.json`, `graph.html`, `manifest.json`, `cost.json` |
+| Cross-app hubs: `useI18n()`, `ResourceCard.astro`, `ForceGraph`, per-app shells | `GRAPH_REPORT.md`, community labels, Obsidian/wiki exports |
+
+Full flag list: `/graphify --help`.
+
 ## Workspace Notes
 
-- Do not edit generated output in `dist/`.
+- Do not edit generated output in `dist/` or `graphify-out/`.
 - Prefer reusing shared modules from `packages/schema` and `packages/config`.
 - Use Bun commands across the monorepo (project standard).
 - For app-specific docs:

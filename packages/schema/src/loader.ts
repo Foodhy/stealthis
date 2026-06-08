@@ -2,16 +2,8 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
-import {
-  ChallengeMetaSchema,
-  LessonSchema,
-  ResourceMetaSchema,
-} from "./schema.js";
-import type {
-  ChallengeMetaOutput,
-  LessonOutput,
-  ResourceMetaOutput,
-} from "./schema.js";
+import { ChallengeMetaSchema, LessonSchema, ResourceMetaSchema } from "./schema.js";
+import type { ChallengeMetaOutput, LessonOutput, ResourceMetaOutput } from "./schema.js";
 
 export async function loadResources(contentDir: string): Promise<ResourceMetaOutput[]> {
   const pattern = join(contentDir, "resources/*/index.mdx");

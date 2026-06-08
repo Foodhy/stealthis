@@ -1,0 +1,96 @@
+---
+import type { RecommendationOption } from "@schema/types";
+import { useTranslations, type Locale } from "@i18n/index";
+
+interface Props {
+  options: RecommendationOption[];
+  comparison?: string[];
+  locale?: Locale;
+}
+
+const { options, comparison = [], locale = "en" } = Astro.props;
+const t = useTranslations(locale);
+
+// Columns: explicit `comparison` order, else the union of attribute keys.
+const derived: string[] = [];
+for (const opt of options) {
+  for (const key of Object.keys(opt.attributes ?? {})) {
+    if (!derived.includes(key)) derived.push(key);
+  }
+}
+const columns = comparison.length > 0 ? comparison : derived;
+const hasTable = options.length > 0 && columns.length > 0;
+---
+
+{hasTable && (
+  <section class="mb-12" data-comparison>
+    <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+      <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider">
+        {t("recommendations.compare")}
+      </h2>
+      <p class="text-xs text-slate-600">{t("recommendations.compareHint")}</p>
+    </div>
+
+    <!-- Row selector -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      {options.map((opt, i) => (
+        <label
+          class="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-surface-900/50 text-slate-300 cursor-pointer hover:border-white/20 transition-colors"
+        >
+          <input type="checkbox" class="cmp-toggle accent-brand-400" data-opt={i} checked />
+          {opt.name}
+        </label>
+      ))}
+    </div>
+
+    <div class="overflow-x-auto rounded-2xl border border-white/8">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="bg-white/4 text-slate-400">
+            <th class="px-4 py-3 font-semibold sticky left-0 bg-[#0f1115]">{t("recommendations.alternative")}</th>
+            {columns.map((col) => (
+              <th class="px-4 py-3 font-semibold whitespace-nowrap">{col}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {options.map((opt, i) => (
+            <tr class="cmp-row border-t border-white/8" data-opt={i}>
+              <th scope="row" class="px-4 py-3 font-medium text-slate-200 sticky left-0 bg-[#0f1115] whitespace-nowrap">
+                <span class="flex items-center gap-2">
+                  {opt.highlight && <span class="text-brand-400" title="Recommended">★</span>}
+                  {opt.url || opt.video ? (
+                    <a href={opt.url ?? opt.video} target="_blank" rel="noopener" class="hover:text-white transition-colors">
+                      {opt.name}
+                    </a>
+                  ) : (
+                    opt.name
+                  )}
+                </span>
+              </th>
+              {columns.map((col) => (
+                <td class="px-4 py-3 text-slate-400 align-top">{opt.attributes?.[col] ?? "—"}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+)}
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-comparison]").forEach((root) => {
+    const toggles = root.querySelectorAll<HTMLInputElement>(".cmp-toggle");
+    const rows = root.querySelectorAll<HTMLTableRowElement>(".cmp-row");
+    const sync = () => {
+      toggles.forEach((toggle) => {
+        const i = toggle.dataset.opt;
+        const row = root.querySelector<HTMLTableRowElement>(`.cmp-row[data-opt="${i}"]`);
+        if (row) row.style.display = toggle.checked ? "" : "none";
+      });
+    };
+    toggles.forEach((toggle) => toggle.addEventListener("change", sync));
+    sync();
+  });
+</script>

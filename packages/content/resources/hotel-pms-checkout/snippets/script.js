@@ -1,21 +1,85 @@
 // ── Folio data ─────────────────────────────────────────────────────────────
 const LINES = [
   { id: 1, section: "Accommodation" },
-  { id: 2, date: "20 May", desc: "Junior Suite · Night", cat: "acc", catLabel: "Acc", qty: 4, amount: 241 },
+  {
+    id: 2,
+    date: "20 May",
+    desc: "Junior Suite · Night",
+    cat: "acc",
+    catLabel: "Acc",
+    qty: 4,
+    amount: 241,
+  },
   { id: 3, date: "20 May", desc: "City tax", cat: "tax", catLabel: "Tax", qty: 4, amount: 4.125 },
 
   { id: 4, section: "Food & Beverage" },
-  { id: 5, date: "20 May", desc: "Welcome bottle · cava", cat: "fb", catLabel: "F&B", qty: 1, amount: 22 },
-  { id: 6, date: "21 May", desc: "Restaurant · dinner for 2", cat: "fb", catLabel: "F&B", qty: 1, amount: 96 },
-  { id: 7, date: "22 May", desc: "Breakfast buffet", cat: "fb", catLabel: "F&B", qty: 2, amount: 18 },
-  { id: 8, date: "23 May", desc: "Room service · lunch", cat: "fb", catLabel: "F&B", qty: 1, amount: 38 },
+  {
+    id: 5,
+    date: "20 May",
+    desc: "Welcome bottle · cava",
+    cat: "fb",
+    catLabel: "F&B",
+    qty: 1,
+    amount: 22,
+  },
+  {
+    id: 6,
+    date: "21 May",
+    desc: "Restaurant · dinner for 2",
+    cat: "fb",
+    catLabel: "F&B",
+    qty: 1,
+    amount: 96,
+  },
+  {
+    id: 7,
+    date: "22 May",
+    desc: "Breakfast buffet",
+    cat: "fb",
+    catLabel: "F&B",
+    qty: 2,
+    amount: 18,
+  },
+  {
+    id: 8,
+    date: "23 May",
+    desc: "Room service · lunch",
+    cat: "fb",
+    catLabel: "F&B",
+    qty: 1,
+    amount: 38,
+  },
 
   { id: 9, section: "Mini-bar" },
-  { id: 10, date: "21 May", desc: "Mini-bar · 2 × water · 1 × nuts", cat: "mini", catLabel: "Mini", qty: 1, amount: 14 },
-  { id: 11, date: "23 May", desc: "Mini-bar · 1 × whisky", cat: "mini", catLabel: "Mini", qty: 1, amount: 18 },
+  {
+    id: 10,
+    date: "21 May",
+    desc: "Mini-bar · 2 × water · 1 × nuts",
+    cat: "mini",
+    catLabel: "Mini",
+    qty: 1,
+    amount: 14,
+  },
+  {
+    id: 11,
+    date: "23 May",
+    desc: "Mini-bar · 1 × whisky",
+    cat: "mini",
+    catLabel: "Mini",
+    qty: 1,
+    amount: 18,
+  },
 
   { id: 12, section: "Spa & Wellness" },
-  { id: 13, date: "22 May", desc: "Spa · couples massage 60'", cat: "spa", catLabel: "Spa", qty: 1, amount: 145 },
+  {
+    id: 13,
+    date: "22 May",
+    desc: "Spa · couples massage 60'",
+    cat: "spa",
+    catLabel: "Spa",
+    qty: 1,
+    amount: 145,
+  },
 ];
 
 // state per line: { folio: "A"|"B", void: bool }
@@ -47,7 +111,8 @@ const settleBtn = document.getElementById("settle");
 const result = document.getElementById("result");
 const toast = document.getElementById("toast");
 
-const fmt = (n) => `€${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (n) =>
+  `€${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function visibleLines() {
   return LINES.filter((l) => l.section || state.get(l.id).folio === activeFolio);
@@ -84,7 +149,9 @@ function renderRows() {
 }
 
 function activeLines() {
-  return LINES.filter((l) => !l.section && state.get(l.id).folio === activeFolio && !state.get(l.id).void);
+  return LINES.filter(
+    (l) => !l.section && state.get(l.id).folio === activeFolio && !state.get(l.id).void
+  );
 }
 
 function totals() {
@@ -102,7 +169,8 @@ function renderTotals() {
   const { subtotal, tax, grand } = totals();
   subEl.textContent = fmt(subtotal);
   taxEl.textContent = fmt(tax);
-  let balance = subtotal + tax + (activeFolio === "A" ? 0 : 0) - (activeFolio === "A" ? PAID_DEPOSIT : 0);
+  let balance =
+    subtotal + tax + (activeFolio === "A" ? 0 : 0) - (activeFolio === "A" ? PAID_DEPOSIT : 0);
   if (balance < 0) balance = 0;
   balEl.textContent = fmt(balance);
   settleAmt.textContent = fmt(balance);
@@ -160,7 +228,9 @@ document.querySelectorAll(".folio-head .seg-btn").forEach((b) =>
       showToast("New folio created (mock)");
       return;
     }
-    document.querySelectorAll(".folio-head .seg-btn").forEach((x) => x.classList.remove("is-active"));
+    document
+      .querySelectorAll(".folio-head .seg-btn")
+      .forEach((x) => x.classList.remove("is-active"));
     b.classList.add("is-active");
     activeFolio = b.dataset.fol;
     renderRows();

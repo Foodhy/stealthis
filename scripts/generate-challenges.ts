@@ -57,7 +57,14 @@ function toMdxFrontmatter(challenge: GeneratedChallenge): string {
   const lines: string[] = ["---"];
 
   for (const [key, value] of entries) {
-    if (typeof value === "string" && (key === "starter" || key === "solution" || key === "template" || key === "code" || key === "explanation")) {
+    if (
+      typeof value === "string" &&
+      (key === "starter" ||
+        key === "solution" ||
+        key === "template" ||
+        key === "code" ||
+        key === "explanation")
+    ) {
       lines.push(`${key}: ${codeBlockToText(value)}`);
       continue;
     }
@@ -124,7 +131,12 @@ function makeDocument(html: string, css?: string, js?: string): string {
   return `${head}${html}${script}`.trim();
 }
 
-function removeCssPropertyStrategy(meta: ResourceMeta, html: string, css: string, js?: string): StrategyResult | null {
+function removeCssPropertyStrategy(
+  meta: ResourceMeta,
+  html: string,
+  css: string,
+  js?: string
+): StrategyResult | null {
   const decl = firstCssDeclaration(css);
   if (!decl) return null;
 
@@ -184,7 +196,12 @@ function blankIdentifierStrategy(meta: ResourceMeta, css: string): StrategyResul
   return { challenge, strategy: "blank-identifier" };
 }
 
-function deleteClosingTagStrategy(meta: ResourceMeta, html: string, css?: string, js?: string): StrategyResult | null {
+function deleteClosingTagStrategy(
+  meta: ResourceMeta,
+  html: string,
+  css?: string,
+  js?: string
+): StrategyResult | null {
   const lineIdx = firstClosingTagLine(html);
   if (lineIdx === -1) return null;
 
@@ -209,7 +226,8 @@ function deleteClosingTagStrategy(meta: ResourceMeta, html: string, css?: string
     criterion: "dom-equal",
     starter: makeDocument(broken.join("\n"), css, js),
     solution: makeDocument(html, css, js),
-    explanation: "A required closing tag was removed. Restore valid nesting so the output matches the expected structure.",
+    explanation:
+      "A required closing tag was removed. Restore valid nesting so the output matches the expected structure.",
   };
 
   return { challenge, strategy: "delete-closing-tag" };
@@ -373,7 +391,9 @@ async function main() {
   console.log(`[arcade] generated challenges: ${written}`);
   console.log(`[arcade] topics covered: ${writtenTopicCounts.size}`);
   console.log("[arcade] by strategy:");
-  for (const [strategy, count] of [...byStrategy.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+  for (const [strategy, count] of [...byStrategy.entries()].sort((a, b) =>
+    a[0].localeCompare(b[0])
+  )) {
     console.log(`  - ${strategy}: ${count}`);
   }
   console.log(`[arcade] output: ${generatedRoot}`);

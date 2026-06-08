@@ -13,7 +13,8 @@ export type ResourceCategoryPhase2 =
   | "music"
   | "3d-models"
   | "3d-interactions"
-  | "plugins";
+  | "plugins"
+  | "recommendations";
 
 export type ResourceCategory = ResourceCategoryPhase1 | ResourceCategoryPhase2;
 
@@ -27,7 +28,52 @@ export type ResourceType =
   | "mcp-server"
   | "architecture"
   | "boilerplate"
-  | "schema";
+  | "schema"
+  | "recommendation";
+
+export type RecommendationKind =
+  | "agent-frameworks"
+  | "ai-models"
+  | "creative-apps"
+  | "books"
+  | "practice-platforms"
+  | "hackathons-events"
+  | "internships"
+  | "app-builders"
+  | "payments"
+  | "libraries"
+  | "platforms"
+  | "learning"
+  | "editors"
+  | "backend"
+  | "local-ai"
+  | "vector-db"
+  | "agent-tools"
+  | "audio"
+  | "3d"
+  | "business-apps"
+  | "design-assets"
+  | "media"
+  | "mcp"
+  | "game-dev"
+  | "hosting"
+  | "design-tools"
+  | "graphics";
+
+export interface RecommendationOption {
+  name: string;
+  description?: string;
+  url?: string;
+  docs?: string;
+  demo?: string;
+  video?: string;
+  logo?: string;
+  bestFor?: string;
+  pros: string[];
+  cons: string[];
+  highlight: boolean;
+  attributes: Record<string, string>;
+}
 
 export type ResourceDifficulty = "easy" | "med" | "hard";
 
@@ -92,6 +138,15 @@ export interface ResourceMeta {
   license: string;
   author?: ResourceAuthor;
   codepenExamples?: CodePenExample[];
+  // Recommendation fields (only used when type === "recommendation")
+  externalUrl?: string;
+  logo?: string;
+  recommendationKind?: RecommendationKind;
+  bestFor?: string;
+  pros: string[];
+  cons: string[];
+  options: RecommendationOption[];
+  comparison: string[];
   createdAt: string;
   updatedAt: string;
 }

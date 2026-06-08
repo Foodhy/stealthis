@@ -1,29 +1,33 @@
 <script>
-  const cards = [
-    { title: "Card One", body: "This card fades in when it enters the viewport." },
-    { title: "Card Two", body: "Each card fades in independently as you scroll." },
-    { title: "Card Three", body: "Powered by the native Intersection Observer API." },
-    { title: "Card Four", body: "No libraries required — just Svelte + CSS." },
-  ];
+const cards = [
+  { title: "Card One", body: "This card fades in when it enters the viewport." },
+  { title: "Card Two", body: "Each card fades in independently as you scroll." },
+  { title: "Card Three", body: "Powered by the native Intersection Observer API." },
+  { title: "Card Four", body: "No libraries required — just Svelte + CSS." },
+];
 
-  function fadeIn(el, { delay = 0, threshold = 0.15 } = {}) {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    el.style.opacity = "0";
-    el.style.transform = "translateY(24px)";
-    el.style.transition = `opacity 0.6s ease-out ${delay}ms, transform 0.6s ease-out ${delay}ms`;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.style.opacity = "1";
-          el.style.transform = "translateY(0)";
-          observer.unobserve(el);
-        }
-      },
-      { threshold, rootMargin: "0px 0px -40px 0px" }
-    );
-    observer.observe(el);
-    return { destroy() { observer.disconnect(); } };
-  }
+function fadeIn(el, { delay = 0, threshold = 0.15 } = {}) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  el.style.opacity = "0";
+  el.style.transform = "translateY(24px)";
+  el.style.transition = `opacity 0.6s ease-out ${delay}ms, transform 0.6s ease-out ${delay}ms`;
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+        observer.unobserve(el);
+      }
+    },
+    { threshold, rootMargin: "0px 0px -40px 0px" }
+  );
+  observer.observe(el);
+  return {
+    destroy() {
+      observer.disconnect();
+    },
+  };
+}
 </script>
 
 <div style="min-height: 100vh; background: #0f172a; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; line-height: 1.6;">

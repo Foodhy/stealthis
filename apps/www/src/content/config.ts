@@ -20,6 +20,7 @@ const ResourceCategorySchema = z.enum([
   "3d-models",
   "3d-interactions",
   "plugins",
+  "recommendations",
 ]);
 
 const ResourceTypeSchema = z.enum([
@@ -33,7 +34,53 @@ const ResourceTypeSchema = z.enum([
   "architecture",
   "boilerplate",
   "schema",
+  "recommendation",
 ]);
+
+const RecommendationKindSchema = z.enum([
+  "agent-frameworks",
+  "ai-models",
+  "creative-apps",
+  "books",
+  "practice-platforms",
+  "hackathons-events",
+  "internships",
+  "app-builders",
+  "payments",
+  "libraries",
+  "platforms",
+  "learning",
+  "editors",
+  "backend",
+  "local-ai",
+  "vector-db",
+  "agent-tools",
+  "audio",
+  "3d",
+  "business-apps",
+  "design-assets",
+  "media",
+  "mcp",
+  "game-dev",
+  "hosting",
+  "design-tools",
+  "graphics",
+]);
+
+const RecommendationOptionSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  url: z.string().url().optional(),
+  docs: z.string().url().optional(),
+  demo: z.string().url().optional(),
+  video: z.string().url().optional(),
+  logo: z.string().optional(),
+  bestFor: z.string().optional(),
+  pros: z.array(z.string()).default([]),
+  cons: z.array(z.string()).default([]),
+  highlight: z.boolean().default(false),
+  attributes: z.record(z.string(), z.string()).default({}),
+});
 
 const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
 
@@ -68,6 +115,9 @@ const ResourceCollectionSchema = z.enum([
   "charts",
   "restaurant",
   "hotel",
+  "clinic",
+  "gym",
+  "salon",
 ]);
 
 const resources = defineCollection({
@@ -109,6 +159,14 @@ const resources = defineCollection({
         })
       )
       .optional(),
+    externalUrl: z.string().url().optional(),
+    logo: z.string().optional(),
+    recommendationKind: RecommendationKindSchema.optional(),
+    bestFor: z.string().optional(),
+    pros: z.array(z.string()).default([]),
+    cons: z.array(z.string()).default([]),
+    options: z.array(RecommendationOptionSchema).default([]),
+    comparison: z.array(z.string()).default([]),
     createdAt: z
       .union([z.string(), z.date()])
       .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),

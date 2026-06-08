@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gym — Members Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">PF</div>
+        <div class="brand-text">
+          <span class="brand-eyebrow">Pulse Fitness</span>
+          <h1 class="brand-title">Members Admin</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" type="button" id="exportBtn">Export CSV</button>
+        <button class="btn btn-neon" type="button" id="addBtn">+ Add member</button>
+      </div>
+    </header>
+
+    <section class="kpis" aria-label="Key metrics">
+      <article class="kpi">
+        <div class="kpi-head">
+          <span class="kpi-label">Active members</span>
+          <span class="kpi-trend up">+4.2%</span>
+        </div>
+        <div class="kpi-value">1,284</div>
+        <svg class="spark" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="0,30 15,28 30,24 45,25 60,18 75,20 90,12 105,10 120,6" />
+        </svg>
+      </article>
+      <article class="kpi">
+        <div class="kpi-head">
+          <span class="kpi-label">New this month</span>
+          <span class="kpi-trend up">+12</span>
+        </div>
+        <div class="kpi-value">87</div>
+        <svg class="spark" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="0,28 15,22 30,26 45,16 60,20 75,12 90,16 105,8 120,11" />
+        </svg>
+      </article>
+      <article class="kpi">
+        <div class="kpi-head">
+          <span class="kpi-label">Churn rate</span>
+          <span class="kpi-trend down">-0.6%</span>
+        </div>
+        <div class="kpi-value">3.1%</div>
+        <svg class="spark warn" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="0,8 15,12 30,10 45,16 60,14 75,20 90,18 105,24 120,26" />
+        </svg>
+      </article>
+      <article class="kpi">
+        <div class="kpi-head">
+          <span class="kpi-label">MRR</span>
+          <span class="kpi-trend up">+5.8%</span>
+        </div>
+        <div class="kpi-value">$94.6k</div>
+        <svg class="spark" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="0,32 15,29 30,30 45,24 60,22 75,18 90,16 105,10 120,7" />
+        </svg>
+      </article>
+    </section>
+
+    <section class="panel" aria-label="Members">
+      <div class="toolbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="search" placeholder="Search members…" aria-label="Search members" autocomplete="off" />
+        </div>
+        <div class="filters" role="group" aria-label="Filter by status">
+          <button class="chip is-active" type="button" data-filter="all">All</button>
+          <button class="chip" type="button" data-filter="active">Active</button>
+          <button class="chip" type="button" data-filter="frozen">Frozen</button>
+          <button class="chip" type="button" data-filter="trial">Trial</button>
+          <button class="chip" type="button" data-filter="lapsed">Lapsed</button>
+        </div>
+      </div>
+
+      <div class="bulkbar" id="bulkbar" hidden>
+        <span class="bulk-count"><strong id="bulkCount">0</strong> selected</span>
+        <div class="bulk-actions">
+          <button class="btn btn-sm" type="button" data-bulk="freeze">Freeze</button>
+          <button class="btn btn-sm" type="button" data-bulk="message">Message</button>
+          <button class="btn btn-sm btn-danger" type="button" data-bulk="cancel">Cancel</button>
+        </div>
+        <button class="bulk-clear" type="button" id="bulkClear" aria-label="Clear selection">&times;</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="members" aria-label="Members table">
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" id="selectAll" aria-label="Select all" /></th>
+              <th><button class="sort" type="button" data-sort="name">Member <span class="caret"></span></button></th>
+              <th><button class="sort" type="button" data-sort="tier">Tier <span class="caret"></span></button></th>
+              <th><button class="sort" type="button" data-sort="status">Status <span class="caret"></span></button></th>
+              <th><button class="sort" type="button" data-sort="joined">Joined <span class="caret"></span></button></th>
+              <th><button class="sort" type="button" data-sort="lastVisit">Last visit <span class="caret"></span></button></th>
+              <th class="num"><button class="sort" type="button" data-sort="ltv">LTV <span class="caret"></span></button></th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>No members match your filters.</div>
+      </div>
+
+      <div class="pager">
+        <span class="pager-info" id="pagerInfo">—</span>
+        <div class="pager-btns">
+          <button class="btn btn-sm" type="button" id="prevPage">Prev</button>
+          <span class="pager-pages" id="pagerPages"></span>
+          <button class="btn btn-sm" type="button" id="nextPage">Next</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="drawer-scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Member detail" tabindex="-1">
+    <button class="drawer-close" type="button" id="drawerClose" aria-label="Close detail">&times;</button>
+    <div id="drawerBody"></div>
+  </aside>
+
+  <div class="toast-stack" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

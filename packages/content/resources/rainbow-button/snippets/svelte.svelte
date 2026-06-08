@@ -44,9 +44,7 @@ const rows = [
     { label: "Start Your Journey", filled: false, size: "lg", rounded: false },
     { label: "Try Free", filled: true, size: "sm", rounded: false },
   ],
-  [
-    { label: "Join Community", filled: false, size: "md", rounded: true },
-  ],
+  [{ label: "Join Community", filled: false, size: "md", rounded: true }],
 ];
 
 function onMouseEnter(e) {

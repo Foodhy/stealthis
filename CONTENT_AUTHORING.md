@@ -120,6 +120,7 @@ Do not invent new category or type values inside a resource. Use one of the exis
 | `boilerplates` | `boilerplate` | Starter templates | `astro-tailwind-starter` |
 | `remotion` | `animation` | Remotion compositions | `remotion-intro` |
 | `database-schemas` | `schema` | SQL schemas, ERDs, seed data, queries | `lms-education` |
+| `recommendations` | `recommendation` | Curated topic of external alternatives + comparison table (no code, no Lab) | `ai-app-builders` |
 
 ### Current library groups
 
@@ -128,6 +129,7 @@ These are the current groupings on `/library`:
 - Visual & Code: `web-animations`, `web-pages`, `pages`, `ui-components`, `patterns`, `components`, `remotion`
 - AI & Dev: `prompts`, `skills`, `mcp-servers`, `architectures`, `boilerplates`
 - Data & SQL: `database-schemas`
+- Recommendations: `recommendations` (see section 10)
 
 Rule of thumb:
 
@@ -342,3 +344,134 @@ If you changed schema values, also verify every consumer that depends on them.
 - `html.html` does not reference `style.css` or `script.js`, so Lab cannot inline them
 - `tags` and `tech` are empty, making search weak
 - A new category/type/target is added in content without updating schema and i18n
+
+## 10. Recommendation Topics (Alternatives + Comparison)
+
+Recommendations are a different content type that lives in the **same** `resources` folder.
+A recommendation is **one topic** (a need, e.g. "AI App Builders") that groups several
+**alternatives** and renders a comparison table. They have **no code, no snippets, no Lab**,
+and are **excluded from the MCP catalog**.
+
+> To add a new tool, add an entry to an existing topic's `options:` list — do not create a
+> new card per tool. Create a new topic only for a new *need*.
+
+### Folder shape
+
+```text
+packages/content/resources/my-topic/
+  index.mdx        # no snippets/ folder needed
+```
+
+### Frontmatter shape
+
+```mdx
+---
+slug: my-topic                 # MUST equal the folder name
+title: My Topic
+description: One sentence describing the need this topic answers.
+category: recommendations       # always exactly this
+type: recommendation            # always exactly this
+recommendationKind: app-builders   # the badge bucket — see kinds table below
+tags: [keyword, synonym]        # search keywords (synonyms people might type)
+comparison: [Output, Hosting, Free tier]   # comparison-table COLUMNS, in order
+options:
+  - name: First Alternative
+    url: https://example.com           # external "Visit" link (optional)
+    demo: https://example.com/demo     # optional "Demo" link (e.g. a HF Space)
+    video: https://youtu.be/VIDEO_ID   # optional — embeds a YouTube player
+    logo: /logos/first.svg             # optional — else a favicon is used
+    description: One or two lines.
+    bestFor: The one thing it's best at
+    highlight: true                    # optional — marks it ★ recommended
+    pros: [Strength one, Strength two]
+    cons: [Watch-out one]
+    attributes:                        # keys SHOULD match the `comparison:` columns
+      Output: "React + backend"
+      Hosting: Built-in
+      Free tier: "Yes"
+  - name: Second Alternative
+    url: https://example.org
+    bestFor: A different strength
+    attributes:
+      Output: "UI only"
+      Hosting: Vercel
+      Free tier: "Yes"
+# Required by the resource schema — keep as-is for recommendations:
+license: MIT
+difficulty: easy        # required field, but NOT displayed for recommendations
+tech: []
+targets: []
+createdAt: 2026-06-08
+updatedAt: 2026-06-08
+---
+
+Intro paragraph (shown above the alternatives). Explain how to choose between the options.
+```
+
+### Recommendation-specific fields
+
+| Field | Required | Affects |
+| --- | --- | --- |
+| `recommendationKind` | recommended | The card badge / bucket (see kinds table) |
+| `comparison` | optional | Comparison-table columns, in order. If omitted, columns are derived from the union of `attributes` keys |
+| `options[]` | yes (to be useful) | The alternatives shown + compared |
+
+Each `options` entry:
+
+| Field | Required | Affects |
+| --- | --- | --- |
+| `name` | yes | Alternative name (also added to the search index) |
+| `description` | optional | Line on its card |
+| `url` | optional | External "Visit" link |
+| `demo` | optional | Second link rendered as "Demo" (e.g. a Hugging Face Space) |
+| `video` | optional | YouTube URL → embedded player + "Watch" link |
+| `logo` | optional | `/logos/<file>.svg` in `apps/www/public/`; else favicon from `url` |
+| `bestFor` | optional | The "best for X" one-liner |
+| `pros` / `cons` | optional | Strengths / watch-outs |
+| `highlight` | optional | `true` marks it ★ recommended |
+| `attributes` | optional | Comparison-table cells: `Column name: "value"` |
+
+### How it shows up
+
+- **Library** → a "Recommendations" group; the topic is one card showing the kind badge,
+  a few alternative chips, and the count (e.g. "4 alternatives").
+- **Landing** → a "Recommendations ★" card in "Browse by Category".
+- **Detail** (`/r/<slug>`) → intro, the alternatives list (logo, pros/cons, Visit, Demo,
+  embedded video), and the interactive comparison table (checkboxes pick which rows show).
+- **Search** indexes the topic `title`, `description`, `tags`, **and every option `name`**
+  (so searching a specific tool like "lovable" or "stripe" surfaces the topic).
+
+### Kinds (the badge bucket)
+
+`recommendationKind` must be one of the existing kinds. The full list with badge labels and
+example topics lives in **`ROADMAP_RECOMMENDATION.md`** (section "Categories (kinds) we
+have"). If none fit, add a new kind in all of these in one change:
+
+- `packages/schema/src/schema.ts` → `RecommendationKindSchema`
+- `packages/schema/src/types.ts` → `RecommendationKind`
+- `apps/www/src/content/config.ts` → `RecommendationKindSchema`
+- `apps/www/src/i18n/index.ts` → `"recommendations.cat.<kind>"` in **both** `en` and `es`
+- the small union casts in `ResourceCard.astro` and `pages/r/[slug].astro`
+
+### Validation
+
+```bash
+cd apps/www && bunx astro sync   # validates frontmatter (options/attributes/YAML)
+bun run build:www                # full build
+# No MCP step needed — recommendations are excluded from the catalog.
+```
+
+### Common pitfalls (recommendations)
+
+- Quote yes/no/number/license attribute values: `Free tier: "Yes"`, `License: "Apache-2.0"`
+  (unquoted `Yes` becomes a YAML boolean and fails validation).
+- `slug` must equal the folder name.
+- A comparison column only fills when an option's `attributes` has that **exact** key
+  (case-sensitive); missing cells show `—`.
+- Keep `category: recommendations` and `type: recommendation` exactly.
+- Do not add `snippets/`, `labRoute`, or code — recommendations are static.
+
+A complete copy-paste template, the kinds table, and worked examples are in
+**`ROADMAP_RECOMMENDATION.md`**. Good topics to copy: `ai-app-builders` (comparison),
+`payment-processors` (region columns), `learn-ux-design` (a `video` option),
+`ai-agent-tooling` (`demo` links).

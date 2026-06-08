@@ -45,9 +45,7 @@ const row2 = [
   { label: "Start Your Journey", filled: false, size: "lg", rounded: false, speed: "3s" },
   { label: "Try Free", filled: true, size: "sm", rounded: false, speed: "3s" },
 ];
-const row3 = [
-  { label: "Join Community", filled: false, size: "md", rounded: true, speed: "3s" },
-];
+const row3 = [{ label: "Join Community", filled: false, size: "md", rounded: true, speed: "3s" }];
 </script>
 
 <template>

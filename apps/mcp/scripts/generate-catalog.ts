@@ -27,7 +27,11 @@ const SNIPPET_FILES: Record<string, string> = {
   "schema-dbml": "snippets/schema.dbml",
 };
 
-const resources = await loadResources(CONTENT_DIR);
+// Recommendations are curated external links with no code snippets — keep them
+// out of the MCP catalog, which exists to serve copyable code resources.
+const resources = (await loadResources(CONTENT_DIR)).filter(
+  (resource) => resource.type !== "recommendation"
+);
 
 const entries = resources.map((resource) => {
   const resourceDir = path.join(CONTENT_DIR, `resources/${resource.slug}`);

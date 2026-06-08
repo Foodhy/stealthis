@@ -1,9 +1,33 @@
 // ── Mock data ──────────────────────────────────────────────────────────────
 const ARRIVALS = [
-  { code: "AUR-21847", name: "Aiko Tanaka", meta: "2 adults · Junior Suite · 5 nights", dates: "24 May → 29 May", status: "Expected" },
-  { code: "AUR-21848", name: "Mariana Sosa", meta: "2 adults · 1 child · Deluxe Suite", dates: "24 May → 27 May", status: "Expected" },
-  { code: "AUR-21849", name: "Thomas Reuter", meta: "1 adult · Classic Double", dates: "24 May → 25 May", status: "Expected" },
-  { code: "AUR-21850", name: "Olivier Banks", meta: "2 adults · Twin Standard · late ETA", dates: "24 May → 26 May", status: "Late" },
+  {
+    code: "AUR-21847",
+    name: "Aiko Tanaka",
+    meta: "2 adults · Junior Suite · 5 nights",
+    dates: "24 May → 29 May",
+    status: "Expected",
+  },
+  {
+    code: "AUR-21848",
+    name: "Mariana Sosa",
+    meta: "2 adults · 1 child · Deluxe Suite",
+    dates: "24 May → 27 May",
+    status: "Expected",
+  },
+  {
+    code: "AUR-21849",
+    name: "Thomas Reuter",
+    meta: "1 adult · Classic Double",
+    dates: "24 May → 25 May",
+    status: "Expected",
+  },
+  {
+    code: "AUR-21850",
+    name: "Olivier Banks",
+    meta: "2 adults · Twin Standard · late ETA",
+    dates: "24 May → 26 May",
+    status: "Late",
+  },
 ];
 
 const ROOMS = [
@@ -40,11 +64,12 @@ const lookupInput = document.getElementById("lookup");
 
 function renderResults() {
   const q = (lookupInput.value || "").toLowerCase().trim();
-  const list = ARRIVALS.filter((r) =>
-    !q ||
-    r.name.toLowerCase().includes(q) ||
-    r.code.toLowerCase().includes(q) ||
-    r.meta.toLowerCase().includes(q)
+  const list = ARRIVALS.filter(
+    (r) =>
+      !q ||
+      r.name.toLowerCase().includes(q) ||
+      r.code.toLowerCase().includes(q) ||
+      r.meta.toLowerCase().includes(q)
   );
   resultsEl.innerHTML = list
     .map(
@@ -171,7 +196,8 @@ back.addEventListener("click", () => step > 1 && goto(step - 1));
 steps.forEach((s) =>
   s.addEventListener("click", () => {
     const target = parseInt(s.dataset.step, 10);
-    if (target === 1 || (target === 2 && selectedRes) || (target === 3 && selectedRes)) goto(target);
+    if (target === 1 || (target === 2 && selectedRes) || (target === 3 && selectedRes))
+      goto(target);
   })
 );
 

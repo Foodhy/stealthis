@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gym — Class Booking Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">⚡</span>
+        <div class="brand-text">
+          <strong>PULSE<span>HAUS</span></strong>
+          <small>Studio Booking</small>
+        </div>
+      </div>
+      <div class="credits" title="Available class credits">
+        <span class="credits-num" id="creditCount">12</span>
+        <span class="credits-label">credits</span>
+      </div>
+    </header>
+
+    <!-- Step indicator -->
+    <nav class="stepper" aria-label="Booking progress">
+      <ol id="stepper">
+        <li class="step is-current" data-step="1"><span class="dot">1</span><span class="lbl">Date</span></li>
+        <li class="step" data-step="2"><span class="dot">2</span><span class="lbl">Class</span></li>
+        <li class="step" data-step="3"><span class="dot">3</span><span class="lbl">Your spot</span></li>
+        <li class="step" data-step="4"><span class="dot">4</span><span class="lbl">Confirm</span></li>
+      </ol>
+      <div class="stepper-track"><div class="stepper-fill" id="stepperFill"></div></div>
+    </nav>
+
+    <div class="layout">
+      <main class="panels" id="panels">
+
+        <!-- STEP 1 — DATE -->
+        <section class="panel is-active" data-panel="1" aria-labelledby="t1">
+          <p class="eyebrow">Step 1 / 4</p>
+          <h1 id="t1" class="panel-title">Pick a day</h1>
+          <p class="panel-sub">Choose when you want to train. New slots open daily.</p>
+          <div class="datestrip" id="dateStrip" role="radiogroup" aria-label="Select a date"></div>
+        </section>
+
+        <!-- STEP 2 — CLASS -->
+        <section class="panel" data-panel="2" aria-labelledby="t2" hidden>
+          <p class="eyebrow">Step 2 / 4</p>
+          <h1 id="t2" class="panel-title">Choose your class</h1>
+          <p class="panel-sub">Pick a session and a time slot. Spots are limited.</p>
+          <div class="classlist" id="classList" role="radiogroup" aria-label="Select a class"></div>
+        </section>
+
+        <!-- STEP 3 — SPOT -->
+        <section class="panel" data-panel="3" aria-labelledby="t3" hidden>
+          <p class="eyebrow">Step 3 / 4</p>
+          <h1 id="t3" class="panel-title">Grab your position</h1>
+          <p class="panel-sub">Tap an open spot on the floor map. Greyed-out spots are taken.</p>
+          <div class="floor">
+            <div class="floor-stage" id="floorStage">Coach / Stage</div>
+            <div class="spotgrid" id="spotGrid" role="grid" aria-label="Floor map"></div>
+            <div class="floor-legend">
+              <span><i class="lg lg-open"></i>Open</span>
+              <span><i class="lg lg-sel"></i>Yours</span>
+              <span><i class="lg lg-taken"></i>Taken</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 4 — CONFIRM -->
+        <section class="panel" data-panel="4" aria-labelledby="t4" hidden>
+          <p class="eyebrow">Step 4 / 4</p>
+          <h1 id="t4" class="panel-title">Confirm &amp; pay</h1>
+          <p class="panel-sub">Review your booking and choose how to pay.</p>
+
+          <div class="review" id="reviewBox"></div>
+
+          <fieldset class="pay" id="payChoice">
+            <legend>Payment method</legend>
+            <label class="paymethod" data-method="credits">
+              <input type="radio" name="pay" value="credits" checked />
+              <span class="pm-body">
+                <span class="pm-title">Use class credits</span>
+                <span class="pm-sub" id="pmCreditsSub">1 credit · 11 left after</span>
+              </span>
+              <span class="pm-tag">Best value</span>
+            </label>
+            <label class="paymethod" data-method="card">
+              <input type="radio" name="pay" value="card" />
+              <span class="pm-body">
+                <span class="pm-title">Pay by card</span>
+                <span class="pm-sub" id="pmCardSub">Visa ·· 4421</span>
+              </span>
+              <span class="pm-price" id="pmCardPrice">$22.00</span>
+            </label>
+          </fieldset>
+        </section>
+
+        <!-- SUCCESS -->
+        <section class="panel panel-success" data-panel="success" aria-labelledby="t5" hidden>
+          <div class="success-check" aria-hidden="true">✓</div>
+          <h1 id="t5" class="panel-title">You're booked!</h1>
+          <p class="panel-sub" id="successLine">See you on the floor.</p>
+          <div class="codebox">
+            <span class="codebox-label">Booking code</span>
+            <strong class="codebox-code" id="bookingCode">PH-000000</strong>
+          </div>
+          <div class="success-actions">
+            <button class="btn btn-ghost" id="calBtn" type="button">Add to calendar</button>
+            <button class="btn btn-primary" id="againBtn" type="button">Book another</button>
+          </div>
+        </section>
+      </main>
+
+      <!-- SUMMARY RAIL -->
+      <aside class="summary" aria-label="Booking summary">
+        <h2 class="summary-title">Your booking</h2>
+        <ul class="summary-list">
+          <li class="srow" data-srow="date"><span class="sk">Date</span><span class="sv" id="sumDate">—</span></li>
+          <li class="srow" data-srow="class"><span class="sk">Class</span><span class="sv" id="sumClass">—</span></li>
+          <li class="srow" data-srow="time"><span class="sk">Time</span><span class="sv" id="sumTime">—</span></li>
+          <li class="srow" data-srow="spot"><span class="sk">Spot</span><span class="sv" id="sumSpot">—</span></li>
+        </ul>
+        <div class="summary-total">
+          <span>Total</span>
+          <strong id="sumTotal">—</strong>
+        </div>
+      </aside>
+    </div>
+
+    <!-- NAV -->
+    <footer class="navbar">
+      <button class="btn btn-ghost" id="backBtn" type="button" disabled>Back</button>
+      <span class="navhint" id="navHint">Select a date to continue</span>
+      <button class="btn btn-primary" id="nextBtn" type="button" disabled>Continue</button>
+    </footer>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

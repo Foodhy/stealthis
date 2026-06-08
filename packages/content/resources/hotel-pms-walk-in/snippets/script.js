@@ -10,7 +10,8 @@ let cat = "single";
 let rate = 142;
 let room = null;
 
-const fmt = (n) => `€${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (n) =>
+  `€${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const $ = (id) => document.getElementById(id);
 
 function tomorrowFmt(offset) {
@@ -35,7 +36,10 @@ function renderRooms() {
     return;
   }
   $("rooms").innerHTML = list
-    .map((r) => `<button type="button" class="rpill ${room === r ? "is-selected" : ""}" data-r="${r}">${r}</button>`)
+    .map(
+      (r) =>
+        `<button type="button" class="rpill ${room === r ? "is-selected" : ""}" data-r="${r}">${r}</button>`
+    )
     .join("");
 }
 function renderQuote() {
@@ -43,7 +47,8 @@ function renderQuote() {
   const city = 1.65 * nights;
   const total = subtotal + city;
   $("totalQ").textContent = fmt(total);
-  $("quoteMeta").textContent = `${nights} night${nights > 1 ? "s" : ""} · €${rate} BAR · incl. city tax ${fmt(city)}`;
+  $("quoteMeta").textContent =
+    `${nights} night${nights > 1 ? "s" : ""} · €${rate} BAR · incl. city tax ${fmt(city)}`;
 }
 
 document.querySelectorAll(".stepper button").forEach((b) =>

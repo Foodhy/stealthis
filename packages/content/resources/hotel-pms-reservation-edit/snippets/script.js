@@ -1,7 +1,9 @@
 const ORIGINAL_TOTAL = 1205.5;
 const CITY_PER_GUEST_NIGHT = 1.65;
-const fmt = (n) => `€${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const fmtSigned = (n) => `${n < 0 ? "−" : "+"}€${Math.abs(n).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (n) =>
+  `€${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtSigned = (n) =>
+  `${n < 0 ? "−" : "+"}€${Math.abs(n).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const $ = (id) => document.getElementById(id);
 const arrive = $("arrive");
@@ -24,7 +26,8 @@ function calc() {
   const nights = diffNights();
   const rate = parseFloat(cat.selectedOptions[0].dataset.rate);
   const mult = parseFloat(plan.selectedOptions[0].dataset.mult);
-  const guests = Math.max(1, parseInt(adults.value || 1, 10)) + Math.max(0, parseInt(children.value || 0, 10));
+  const guests =
+    Math.max(1, parseInt(adults.value || 1, 10)) + Math.max(0, parseInt(children.value || 0, 10));
   const base = nights * rate;
   const discount = base * (mult - 1);
   const city = guests * CITY_PER_GUEST_NIGHT * nights;

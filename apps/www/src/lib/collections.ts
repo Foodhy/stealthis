@@ -9,6 +9,9 @@ export const RESOURCE_COLLECTION_IDS = [
   "mobile-nav",
   "charts",
   "restaurant",
+  "clinic",
+  "gym",
+  "salon",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -94,6 +97,27 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.restaurant.desc",
     accentToken: "collection-restaurant",
     order: 10,
+  },
+  {
+    id: "clinic",
+    titleKey: "collection.clinic.title",
+    descriptionKey: "collection.clinic.desc",
+    accentToken: "collection-clinic",
+    order: 11,
+  },
+  {
+    id: "gym",
+    titleKey: "collection.gym.title",
+    descriptionKey: "collection.gym.desc",
+    accentToken: "collection-gym",
+    order: 12,
+  },
+  {
+    id: "salon",
+    titleKey: "collection.salon.title",
+    descriptionKey: "collection.salon.desc",
+    accentToken: "collection-salon",
+    order: 13,
   },
 ];
 

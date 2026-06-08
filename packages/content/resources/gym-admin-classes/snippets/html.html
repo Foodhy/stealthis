@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gym — Class Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">PF</div>
+          <div class="brand-text">
+            <span class="eyebrow">Pulse Fitness · Admin</span>
+            <h1>Class Management</h1>
+          </div>
+        </div>
+        <button id="addBtn" class="btn btn-neon" type="button">
+          <span class="plus" aria-hidden="true">+</span> Add class
+        </button>
+      </header>
+
+      <section class="stats" aria-label="Class statistics">
+        <div class="stat">
+          <span class="stat-label">Total classes</span>
+          <strong class="stat-value" id="statTotal">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Active</span>
+          <strong class="stat-value" id="statActive">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Weekly capacity</span>
+          <strong class="stat-value" id="statCapacity">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Trainers</span>
+          <strong class="stat-value" id="statTrainers">0</strong>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="Filters">
+        <div class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon">
+            <path
+              d="M21 21l-4.3-4.3M11 19a8 8 0 110-16 8 8 0 010 16z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          <input
+            id="search"
+            type="search"
+            placeholder="Search classes, trainers, rooms…"
+            aria-label="Search classes"
+            autocomplete="off"
+          />
+        </div>
+        <div class="filters">
+          <label class="field">
+            <span class="field-label">Type</span>
+            <select id="filterType" aria-label="Filter by type">
+              <option value="">All types</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Trainer</span>
+            <select id="filterTrainer" aria-label="Filter by trainer">
+              <option value="">All trainers</option>
+            </select>
+          </label>
+          <button id="clearFilters" class="btn btn-ghost" type="button">Clear</button>
+        </div>
+      </section>
+
+      <section class="table-wrap" aria-label="Classes">
+        <table class="classes">
+          <thead>
+            <tr>
+              <th scope="col">Class</th>
+              <th scope="col">Trainer</th>
+              <th scope="col">Schedule</th>
+              <th scope="col">Room</th>
+              <th scope="col">Capacity</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div id="empty" class="empty" hidden>
+          <p>No classes match your filters.</p>
+          <button class="btn btn-ghost" type="button" id="emptyClear">Clear filters</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-backdrop" id="backdrop" hidden>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+        id="modal"
+      >
+        <div class="modal-head">
+          <h2 id="modalTitle">Add class</h2>
+          <button class="icon-btn" type="button" id="closeModal" aria-label="Close">×</button>
+        </div>
+        <form id="form" novalidate>
+          <input type="hidden" id="fId" />
+          <div class="grid">
+            <label class="field span-2">
+              <span class="field-label">Class name</span>
+              <input id="fName" type="text" placeholder="e.g. Sunrise HIIT" />
+              <span class="err" data-for="fName"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Type</span>
+              <select id="fType">
+                <option value="">Select type</option>
+                <option>HIIT</option>
+                <option>Strength</option>
+                <option>Spin</option>
+                <option>Yoga</option>
+                <option>Boxing</option>
+                <option>Pilates</option>
+                <option>Mobility</option>
+              </select>
+              <span class="err" data-for="fType"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Trainer</span>
+              <select id="fTrainer">
+                <option value="">Select trainer</option>
+                <option>Mara Velez</option>
+                <option>Devon Cole</option>
+                <option>Priya Nandakumar</option>
+                <option>Theo Brandt</option>
+                <option>Imani Okafor</option>
+                <option>Luca Ferreira</option>
+              </select>
+              <span class="err" data-for="fTrainer"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Day</span>
+              <select id="fDay">
+                <option value="">Select day</option>
+                <option>Monday</option>
+                <option>Tuesday</option>
+                <option>Wednesday</option>
+                <option>Thursday</option>
+                <option>Friday</option>
+                <option>Saturday</option>
+                <option>Sunday</option>
+              </select>
+              <span class="err" data-for="fDay"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Start time</span>
+              <input id="fTime" type="time" />
+              <span class="err" data-for="fTime"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Duration (min)</span>
+              <input id="fDuration" type="number" min="15" max="180" step="5" placeholder="45" />
+              <span class="err" data-for="fDuration"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Room</span>
+              <select id="fRoom">
+                <option value="">Select room</option>
+                <option>Studio A</option>
+                <option>Studio B</option>
+                <option>Spin Loft</option>
+                <option>Strength Floor</option>
+                <option>Mind &amp; Body</option>
+              </select>
+              <span class="err" data-for="fRoom"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Capacity</span>
+              <input id="fCapacity" type="number" min="1" max="120" placeholder="24" />
+              <span class="err" data-for="fCapacity"></span>
+            </label>
+            <label class="field span-2 switch-field">
+              <span class="field-label">Status</span>
+              <div class="switch-row">
+                <button type="button" class="seg" data-status="active">Active</button>
+                <button type="button" class="seg" data-status="draft">Draft</button>
+                <button type="button" class="seg" data-status="cancelled">Cancelled</button>
+              </div>
+            </label>
+          </div>
+          <div class="modal-foot">
+            <button type="button" class="btn btn-ghost" id="cancelModal">Cancel</button>
+            <button type="submit" class="btn btn-neon" id="saveBtn">Save class</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast-stack" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

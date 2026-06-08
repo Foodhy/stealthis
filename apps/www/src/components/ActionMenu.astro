@@ -280,9 +280,14 @@ if (hasHtmlTarget) {
 
 <script>
   document.querySelectorAll("[data-action-menu]").forEach((menu) => {
+    const menuEl = menu as HTMLElement;
+    const geminiPasteMsg =
+      menuEl.getAttribute("data-gemini-paste-msg") ??
+      "Copied! Opening Gemini in 3s — paste when ready.";
+    const copiedMsg = menuEl.getAttribute("data-copied-msg") ?? "Copied!";
     let snackbarTimeout: ReturnType<typeof setTimeout> | undefined;
-    const trigger = menu.querySelector<HTMLButtonElement>("#action-menu-trigger");
-    const dropdown = menu.querySelector<HTMLElement>(".action-dropdown");
+    const trigger = menuEl.querySelector<HTMLButtonElement>("#action-menu-trigger");
+    const dropdown = menuEl.querySelector<HTMLElement>(".action-dropdown");
 
     trigger?.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -296,7 +301,7 @@ if (hasHtmlTarget) {
       dropdown?.classList.add("hidden");
     });
 
-    menu.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((btn) => {
+    menuEl.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const action = btn.dataset.action;
         const content = btn.dataset.content ?? "";
@@ -318,10 +323,13 @@ if (hasHtmlTarget) {
             : "https://claude.ai/new";
           window.open(url, "_blank");
         } else if (action === "open-gemini") {
-          if (readPrompt) {
-            await navigator.clipboard.writeText(readPrompt);
+          const textToCopy = readPrompt || content;
+          if (textToCopy) {
+            await navigator.clipboard.writeText(textToCopy);
           }
-          window.open("https://gemini.google.com/app", "_blank");
+          setTimeout(() => {
+            window.open("https://gemini.google.com/app", "_blank");
+          }, 3000);
         } else if (action === "open-codepen") {
           const prefillData = btn.dataset.codepenPrefill;
           if (prefillData) {
@@ -347,11 +355,9 @@ if (hasHtmlTarget) {
         // Snackbar feedback for copy actions (dropdown closes so user wouldn't see button text)
         const isCopyAction = action === "copy-snippet" || action === "copy-markdown" || action === "open-gemini" || action === "mcp-claudecode" || action === "mcp-cursor";
         if (isCopyAction) {
-          const snackbar = menu.querySelector<HTMLElement>(".action-menu-snackbar");
+          const snackbar = menuEl.querySelector<HTMLElement>(".action-menu-snackbar");
           const textEl = snackbar?.querySelector<HTMLElement>(".action-menu-snackbar-text");
-          const msg = action === "open-gemini" && readPrompt
-            ? (menu.dataset.geminiPasteMsg ?? "Copied! Paste in Gemini.")
-            : (menu.dataset.copiedMsg ?? "Copied!");
+          const msg = action === "open-gemini" ? geminiPasteMsg : copiedMsg;
           if (snackbar && textEl) {
             textEl.textContent = msg;
             snackbar.removeAttribute("hidden");
@@ -360,7 +366,7 @@ if (hasHtmlTarget) {
             snackbarTimeout = setTimeout(() => {
               snackbar.setAttribute("aria-hidden", "true");
               snackbar.setAttribute("hidden", "");
-            }, 2500);
+            }, action === "open-gemini" ? 4000 : 2500);
           }
         }
 

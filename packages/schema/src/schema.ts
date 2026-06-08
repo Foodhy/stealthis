@@ -20,6 +20,8 @@ export const ResourceCategorySchema = z.enum([
   "3d-models",
   "3d-interactions",
   "plugins",
+  // Phase 3
+  "recommendations",
 ]);
 
 export const ResourceTypeSchema = z.enum([
@@ -35,6 +37,8 @@ export const ResourceTypeSchema = z.enum([
   "architecture",
   "boilerplate",
   "schema",
+  // Phase 3
+  "recommendation",
 ]);
 
 export const ResourceDifficultySchema = z.enum(["easy", "med", "hard"]);
@@ -72,7 +76,59 @@ export const ResourceCollectionSchema = z.enum([
   "charts",
   "restaurant",
   "hotel",
+  "clinic",
+  "gym",
+  "salon",
 ]);
+
+// Sub-kind / bucket for a recommendation topic (drives the card badge label)
+export const RecommendationKindSchema = z.enum([
+  "agent-frameworks",
+  "ai-models",
+  "creative-apps",
+  "books",
+  "practice-platforms",
+  "hackathons-events",
+  "internships",
+  "app-builders",
+  "payments",
+  "libraries",
+  "platforms",
+  "learning",
+  "editors",
+  "backend",
+  "local-ai",
+  "vector-db",
+  "agent-tools",
+  "audio",
+  "3d",
+  "business-apps",
+  "design-assets",
+  "media",
+  "mcp",
+  "game-dev",
+  "hosting",
+  "design-tools",
+  "graphics",
+]);
+
+// A single alternative inside a recommendation topic. May be a tool, book,
+// library, site, or a piece of external content (e.g. a YouTube video).
+export const RecommendationOptionSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  url: z.string().url().optional(),
+  docs: z.string().url().optional(),
+  demo: z.string().url().optional(),
+  video: z.string().url().optional(),
+  logo: z.string().optional(),
+  bestFor: z.string().optional(),
+  pros: z.array(z.string()).default([]),
+  cons: z.array(z.string()).default([]),
+  highlight: z.boolean().default(false),
+  // Comparison-table cells: dimension key -> value (e.g. { Regions: "LatAm" })
+  attributes: z.record(z.string(), z.string()).default({}),
+});
 
 export const CodePenExampleSchema = z.object({
   id: z.string().min(1),
@@ -104,6 +160,16 @@ export const ResourceMetaSchema = z.object({
     })
     .optional(),
   codepenExamples: z.array(CodePenExampleSchema).optional(),
+  // Recommendation fields (only used when type === "recommendation")
+  externalUrl: z.string().url().optional(),
+  logo: z.string().optional(),
+  recommendationKind: RecommendationKindSchema.optional(),
+  bestFor: z.string().optional(),
+  pros: z.array(z.string()).default([]),
+  cons: z.array(z.string()).default([]),
+  // Topic-based recommendations: a list of alternatives + comparison-table columns
+  options: z.array(RecommendationOptionSchema).default([]),
+  comparison: z.array(z.string()).default([]),
   createdAt: z
     .union([z.string(), z.date()])
     .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
@@ -119,13 +185,7 @@ export type ResourceMetaOutput = z.output<typeof ResourceMetaSchema>;
 // Arcade — Challenges & Lessons
 // ---------------------------------------------------------------------------
 
-export const ChallengeTypeSchema = z.enum([
-  "quiz",
-  "complete",
-  "fix",
-  "identify",
-  "animation",
-]);
+export const ChallengeTypeSchema = z.enum(["quiz", "complete", "fix", "identify", "animation"]);
 
 export const ChallengeQualitySchema = z.enum(["draft", "published"]);
 

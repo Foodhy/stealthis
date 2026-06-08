@@ -38,8 +38,45 @@ const categoryKey = `category.${category}` as
   | "category.boilerplates"
   | "category.remotion"
   | "category.database-schemas"
-  | "category.ultra-high-definition-pages";
+  | "category.ultra-high-definition-pages"
+  | "category.recommendations";
 const categoryLabel = t(categoryKey);
+const isRecommendation = resource.data.type === "recommendation";
+const recommendationKind = resource.data.recommendationKind;
+const kindLabel = recommendationKind
+  ? t(`recommendations.cat.${recommendationKind}` as
+      | "recommendations.cat.agent-frameworks"
+      | "recommendations.cat.ai-models"
+      | "recommendations.cat.creative-apps"
+      | "recommendations.cat.books"
+      | "recommendations.cat.practice-platforms"
+      | "recommendations.cat.hackathons-events"
+      | "recommendations.cat.internships"
+      | "recommendations.cat.app-builders"
+      | "recommendations.cat.payments"
+      | "recommendations.cat.libraries"
+      | "recommendations.cat.platforms"
+      | "recommendations.cat.learning"
+      | "recommendations.cat.editors"
+      | "recommendations.cat.backend"
+      | "recommendations.cat.local-ai"
+      | "recommendations.cat.vector-db"
+      | "recommendations.cat.agent-tools"
+      | "recommendations.cat.audio"
+      | "recommendations.cat.3d"
+      | "recommendations.cat.business-apps"
+      | "recommendations.cat.design-assets"
+      | "recommendations.cat.media"
+      | "recommendations.cat.mcp"
+      | "recommendations.cat.game-dev"
+      | "recommendations.cat.hosting"
+      | "recommendations.cat.design-tools"
+      | "recommendations.cat.graphics")
+  : "";
+// Alternatives inside this recommendation topic (used for the count + search tokens)
+const recOptions = isRecommendation ? resource.data.options ?? [] : [];
+const optionNames = recOptions.map((o) => o.name);
+const searchTags = [...tags, ...optionNames];
 
 const snippetFlags = getSnippetFlags(slug);
 const languageBadges = [
@@ -78,7 +115,7 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
   data-category={category}
   data-difficulty={difficulty}
   data-tech={filterTechTokens.join(",")}
-  data-tags={tags.join(",")}
+  data-tags={searchTags.join(",")}
   data-collections={resolvedCollections.join(",")}
   data-author={authorName ?? ""}
   data-created-at={resource.data.createdAt}
@@ -96,11 +133,30 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
       </h2>
     </div>
 
-    <span class={`badge ${difficultyClass} shrink-0 mt-0.5`}>{difficultyLabel}</span>
+    {isRecommendation ? (
+      kindLabel && <span class="badge badge-easy shrink-0 mt-0.5">{kindLabel}</span>
+    ) : (
+      <span class={`badge ${difficultyClass} shrink-0 mt-0.5`}>{difficultyLabel}</span>
+    )}
   </div>
 
   <!-- Description -->
   <p class="text-sm text-slate-400 leading-relaxed line-clamp-2">{description}</p>
+
+  <!-- Recommendation alternatives -->
+  {isRecommendation && recOptions.length > 0 && (
+    <div class="flex flex-wrap items-center gap-1.5">
+      {optionNames.slice(0, 3).map((name) => (
+        <span class="chip text-xs">{name}</span>
+      ))}
+      {recOptions.length > 3 && (
+        <span class="chip text-xs" title={optionNames.slice(3).join(", ")}>
+          +{recOptions.length - 3}
+        </span>
+      )}
+      <span class="text-xs text-slate-600 ml-auto">{recOptions.length} {t("recommendations.alternatives")}</span>
+    </div>
+  )}
 
   <!-- Tech chips -->
   {tech.length > 0 && (

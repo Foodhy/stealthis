@@ -51,25 +51,25 @@ orbMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 scene.add(orbMesh);
 
 // ─── Orb State ────────────────────────────────────────────────────────────────
-const pos  = new Float32Array(N * 3); // current positions
-const vel  = new Float32Array(N * 3); // velocities
+const pos = new Float32Array(N * 3); // current positions
+const vel = new Float32Array(N * 3); // velocities
 const home = new Float32Array(N * 3); // rest positions
 
 // Distribute on a disc-like sphere shell (flatten z-axis for frontal view)
 for (let i = 0; i < N; i++) {
-  const phi   = Math.acos(1 - 2 * Math.random());
+  const phi = Math.acos(1 - 2 * Math.random());
   const theta = Math.random() * Math.PI * 2;
-  const r     = 2.8 + Math.random() * 3.2;
+  const r = 2.8 + Math.random() * 3.2;
 
-  home[i*3]   = pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-  home[i*3+1] = pos[i*3+1] = r * Math.cos(phi);
-  home[i*3+2] = pos[i*3+2] = r * Math.sin(phi) * Math.sin(theta) * 0.45;
+  home[i * 3] = pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+  home[i * 3 + 1] = pos[i * 3 + 1] = r * Math.cos(phi);
+  home[i * 3 + 2] = pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta) * 0.45;
 }
 
 // Pre-apply identity matrices so the mesh has valid initial transforms
 const dummy = new THREE.Object3D();
 for (let i = 0; i < N; i++) {
-  dummy.position.set(pos[i*3], pos[i*3+1], pos[i*3+2]);
+  dummy.position.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]);
   dummy.scale.setScalar(1);
   dummy.updateMatrix();
   orbMesh.setMatrixAt(i, dummy.matrix);
@@ -77,26 +77,30 @@ for (let i = 0; i < N; i++) {
 orbMesh.instanceMatrix.needsUpdate = true;
 
 // ─── Cursor Tracking ──────────────────────────────────────────────────────────
-const mouse      = new THREE.Vector2();
-const cursor3D   = new THREE.Vector3();
-const raycaster  = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const cursor3D = new THREE.Vector3();
+const raycaster = new THREE.Raycaster();
 // Plane at z=0, facing camera
 const frontPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
 
 const onPointer = (x, y) => {
-  mouse.x = (x / innerWidth)  * 2 - 1;
+  mouse.x = (x / innerWidth) * 2 - 1;
   mouse.y = -(y / innerHeight) * 2 + 1;
 };
-window.addEventListener("mousemove", e => onPointer(e.clientX, e.clientY));
-window.addEventListener("touchmove", e => {
-  onPointer(e.touches[0].clientX, e.touches[0].clientY);
-}, { passive: true });
+window.addEventListener("mousemove", (e) => onPointer(e.clientX, e.clientY));
+window.addEventListener(
+  "touchmove",
+  (e) => {
+    onPointer(e.touches[0].clientX, e.touches[0].clientY);
+  },
+  { passive: true }
+);
 
 // ─── Physics Constants ────────────────────────────────────────────────────────
 const ATTRACT = 0.052;
 const RESTORE = 0.016;
 const DAMPING = 0.875;
-const NOISE   = 0.007;
+const NOISE = 0.007;
 
 // ─── Render Loop ─────────────────────────────────────────────────────────────
 (function animate() {
@@ -118,24 +122,39 @@ const NOISE   = 0.007;
     const ix = i * 3;
 
     // Spring force: toward cursor + toward home + noise jitter
-    vel[ix]   = (vel[ix]   + (cursor3D.x - pos[ix])   * ATTRACT + (home[ix]   - pos[ix])   * RESTORE + (Math.random()-0.5)*NOISE) * DAMPING;
-    vel[ix+1] = (vel[ix+1] + (cursor3D.y - pos[ix+1]) * ATTRACT + (home[ix+1] - pos[ix+1]) * RESTORE + (Math.random()-0.5)*NOISE) * DAMPING;
-    vel[ix+2] = (vel[ix+2] + (cursor3D.z - pos[ix+2]) * ATTRACT + (home[ix+2] - pos[ix+2]) * RESTORE + (Math.random()-0.5)*NOISE) * DAMPING;
+    vel[ix] =
+      (vel[ix] +
+        (cursor3D.x - pos[ix]) * ATTRACT +
+        (home[ix] - pos[ix]) * RESTORE +
+        (Math.random() - 0.5) * NOISE) *
+      DAMPING;
+    vel[ix + 1] =
+      (vel[ix + 1] +
+        (cursor3D.y - pos[ix + 1]) * ATTRACT +
+        (home[ix + 1] - pos[ix + 1]) * RESTORE +
+        (Math.random() - 0.5) * NOISE) *
+      DAMPING;
+    vel[ix + 2] =
+      (vel[ix + 2] +
+        (cursor3D.z - pos[ix + 2]) * ATTRACT +
+        (home[ix + 2] - pos[ix + 2]) * RESTORE +
+        (Math.random() - 0.5) * NOISE) *
+      DAMPING;
 
-    pos[ix]   += vel[ix];
-    pos[ix+1] += vel[ix+1];
-    pos[ix+2] += vel[ix+2];
+    pos[ix] += vel[ix];
+    pos[ix + 1] += vel[ix + 1];
+    pos[ix + 2] += vel[ix + 2];
 
     // Scale: larger near cursor + slow pulsation
     const dx = cursor3D.x - pos[ix];
-    const dy = cursor3D.y - pos[ix+1];
-    const dz = cursor3D.z - pos[ix+2];
-    const dist   = Math.sqrt(dx*dx + dy*dy + dz*dz);
-    const prox   = Math.max(0, 1 - dist / 6); // 0..1, peaks at cursor
-    const pulse  = 1 + Math.sin(t * 1.8 + i * 0.25) * 0.08;
-    const scale  = (0.55 + prox * 0.9) * pulse;
+    const dy = cursor3D.y - pos[ix + 1];
+    const dz = cursor3D.z - pos[ix + 2];
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const prox = Math.max(0, 1 - dist / 6); // 0..1, peaks at cursor
+    const pulse = 1 + Math.sin(t * 1.8 + i * 0.25) * 0.08;
+    const scale = (0.55 + prox * 0.9) * pulse;
 
-    dummy.position.set(pos[ix], pos[ix+1], pos[ix+2]);
+    dummy.position.set(pos[ix], pos[ix + 1], pos[ix + 2]);
     dummy.scale.setScalar(scale);
     dummy.updateMatrix();
     orbMesh.setMatrixAt(i, dummy.matrix);
