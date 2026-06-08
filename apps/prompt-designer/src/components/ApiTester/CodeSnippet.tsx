@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { Header } from "@/hooks/useApiTester";
 import { Button } from "@/components/native/button";
-import { Copy, Check } from "lucide-react";
-import Editor from "@monaco-editor/react";
+import type { Header } from "@/hooks/useApiTester";
 import { useI18n } from "@/i18n";
+import Editor from "@monaco-editor/react";
+import { Check, Copy } from "lucide-react";
+import type { FC } from "react";
+import { useState } from "react";
 
 interface CodeSnippetProps {
   url: string;
@@ -12,7 +13,7 @@ interface CodeSnippetProps {
   body: string;
 }
 
-export const CodeSnippet: React.FC<CodeSnippetProps> = ({ url, method, headers, body }) => {
+export const CodeSnippet: FC<CodeSnippetProps> = ({ url, method, headers, body }) => {
   const { t } = useI18n();
   const [language, setLanguage] = useState<"javascript" | "python">("javascript");
   const [copied, setCopied] = useState(false);
@@ -100,10 +101,11 @@ print(response.text)`;
   return (
     <div className="space-y-2 pt-4 border-t">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium">{t("apiTester.code.requestCode")}</label>
+        <span className="text-sm font-medium">{t("apiTester.code.requestCode")}</span>
         <div className="flex items-center gap-2">
           <div className="flex bg-muted rounded-lg p-1">
             <button
+              type="button"
               onClick={() => setLanguage("javascript")}
               className={`px-3 py-1 text-xs rounded-md transition-colors ${
                 language === "javascript"
@@ -114,6 +116,7 @@ print(response.text)`;
               {t("apiTester.code.javascript")}
             </button>
             <button
+              type="button"
               onClick={() => setLanguage("python")}
               className={`px-3 py-1 text-xs rounded-md transition-colors ${
                 language === "python"

@@ -1,5 +1,5 @@
+import { type DriveStep, type Driver, driver } from "driver.js";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { driver, type DriveStep, type Driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import type { TranslationKey } from "../i18n";
 
@@ -195,7 +195,7 @@ export function useTour(t: TFunc, setSettingsOpen: SetSettingsOpen, setActiveTab
 
     driverRef.current = d;
     d.drive();
-  }, [t, setSettingsOpen, tourTheme]);
+  }, [t, setSettingsOpen, setActiveTab, tourTheme]);
 
   // Clean up on unmount
   useEffect(() => {

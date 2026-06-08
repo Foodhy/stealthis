@@ -138,7 +138,18 @@ const kindLabel = recommendationKind
       | "recommendations.cat.game-dev"
       | "recommendations.cat.hosting"
       | "recommendations.cat.design-tools"
-      | "recommendations.cat.graphics")
+      | "recommendations.cat.graphics"
+      | "recommendations.cat.auth"
+      | "recommendations.cat.email"
+      | "recommendations.cat.databases"
+      | "recommendations.cat.analytics"
+      | "recommendations.cat.cms"
+      | "recommendations.cat.search"
+      | "recommendations.cat.realtime"
+      | "recommendations.cat.monitoring"
+      | "recommendations.cat.jobs"
+      | "recommendations.cat.feature-flags"
+      | "recommendations.cat.storage")
   : "";
 let recHost = "";
 try {
@@ -183,11 +194,13 @@ if (hasHtmlPreview) {
   const jsPath = path.join(snippetsDir, "script.js");
   if (existsSync(cssPath)) {
     const css = readFileSync(cssPath, "utf-8");
-    rawHtml = rawHtml.replace("</head>", `<style>${css}</style></head>`);
+    // Function replacer: snippet text is inserted verbatim, so `$$`/`$&` in the
+    // CSS/JS are not interpreted as String.replace special patterns.
+    rawHtml = rawHtml.replace("</head>", () => `<style>${css}</style></head>`);
   }
   if (existsSync(jsPath)) {
     const js = readFileSync(jsPath, "utf-8");
-    rawHtml = rawHtml.replace("</body>", `<script>${js}<\/script></body>`);
+    rawHtml = rawHtml.replace("</body>", () => `<script>${js}<\/script></body>`);
   }
   htmlSrcdoc = rawHtml;
 }
@@ -510,6 +523,11 @@ const structuredData = [
                   {opt.demo && (
                     <a href={opt.demo} target="_blank" rel="noopener" class="text-xs font-medium px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-colors">
                       {t("recommendations.demo")}
+                    </a>
+                  )}
+                  {opt.github && (
+                    <a href={opt.github} target="_blank" rel="noopener" class="text-xs font-medium px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-colors">
+                      {t("recommendations.github")}
                     </a>
                   )}
                   {opt.video && (

@@ -129,7 +129,7 @@ choose between the options — what makes each different and who each is best fo
 
 ## 🏷️ Categories (kinds) we have (sets the card badge)
 
-`recommendationKind` is the bucket shown as the card badge. We currently have **26 kinds**.
+`recommendationKind` is the bucket shown as the card badge. We currently have **38 kinds**.
 Pick the closest one; topics can share a kind. Each row shows the value, the badge label
 (`en`), and an example topic to copy from.
 
@@ -147,20 +147,52 @@ Pick the closest one; topics can share a kind. Each row shows the value, the bad
 | `creative-apps` | Creative & Video Apps | `ai-image-generation`, `ai-video-generation`, `open-image-models` |
 | `audio` | Speech & Voice AI | `speech-voice-ai` |
 | `3d` | 3D Generation | `3d-generation` |
-| `libraries` | Libraries & SDKs | `computer-vision-libraries`, `robotics-js-libraries` |
-| `platforms` | Platforms & Hubs | `ml-ai-hubs` |
+| `libraries` | Libraries & SDKs | `computer-vision-libraries`, `robotics-js-libraries`, `3d-web-libraries`, `orm-query-builders`, `ui-component-libraries`, `web-animation-libraries`, `chart-libraries`, `state-data-fetching`, `e2e-testing-tools`, `api-layer-tools`, `maps-libraries`, `mobile-frameworks` |
+| `platforms` | Platforms & Hubs | `ml-ai-hubs`, `customer-support-tools`, `scheduling-booking`, `forms-surveys`, `developer-documentation`, `caching-kv`, `webhook-platforms`, `secrets-management`, `push-notification-services`, `privacy-consent-tools`, `legal-document-tools`, `email-marketing-tools`, `crm-sales-tools`, `dns-domain-registrars`, `localization-platforms`, `invoicing-accounting-tools` |
 | `business-apps` | Business Apps | `open-business-apps` |
-| `hosting` | Hosting & Deploy | `hosting-deploy` |
+| `hosting` | Hosting & Deploy | `hosting-deploy`, `ci-cd-platforms` |
 | `media` | Media & Image CDN | `media-optimization` |
-| `design-assets` | Design Assets | `design-assets` |
-| `design-tools` | Responsive Design | `design-dev-tools` |
+| `design-assets` | Design Assets | `design-assets`, `icons-and-fonts` |
+| `design-tools` | Responsive Design | `design-dev-tools`, `css-frameworks`, `design-software`, `prototyping-tools`, `accessibility-tools`, `design-tokens-tools` |
 | `mcp` | MCP Servers | `mcp-servers-directory` |
 | `game-dev` | Game Engines | `game-engines` |
-| `practice-platforms` | Practice & Training | `coding-practice-platforms` |
+| `practice-platforms` | Practice & Training | `coding-practice-platforms`, `interview-prep-platforms` |
 | `hackathons-events` | Hackathons & Events | `hackathon-platforms` |
-| `internships` | Internships & Programs | `internship-programs` |
-| `learning` | Learning & Courses | `learn-ux-design`, `learn-to-code-platforms` |
+| `internships` | Internships & Programs | `internship-programs`, `open-source-contributor-programs` |
+| `learning` | Learning & Courses | `learn-ux-design`, `learn-to-code-platforms`, `learn-system-design`, `dev-podcasts-newsletters` |
 | `books` | Books | `tech-coding-books`, `business-strategy-books`, `entrepreneurship-books`, `venture-investing-books` |
+| `graphics` | Graphics & Rendering | `graphics-rendering-apis` |
+| `auth` | Authentication | `auth-providers` |
+| `email` | Email & SMS | `email-sms-providers` |
+| `databases` | Databases | `serverless-databases` |
+| `analytics` | Analytics | `product-analytics`, `mobile-analytics` |
+| `cms` | Headless CMS | `headless-cms` |
+| `search` | Search | `search-services` |
+| `realtime` | Realtime | `realtime-services` |
+| `monitoring` | Monitoring | `error-monitoring`, `logging-platforms`, `status-pages`, `apm-tracing` |
+| `jobs` | Background Jobs | `background-jobs` |
+| `feature-flags` | Feature Flags | `feature-flags` |
+| `storage` | Object Storage | `object-storage` |
+
+---
+
+## Library theme navigation (sub-sections)
+
+The Library **Recommendations** group is split into six coarser navigation themes (distinct
+from `recommendationKind`, which stays on each card as a badge):
+
+| Theme ID | EN label | What goes here |
+|---|---|---|
+| `ai` | AI | Models, agents, creative AI, MCP, vector DBs, CV libs |
+| `software` | Software | Docs platforms, CMS, product analytics, charts, state/data fetching, E2E testing, API layer, mobile frameworks, maps, 3D web, game engines, robotics JS, graphics APIs, i18n platforms |
+| `infra` | Infra | Hosting, CI/CD, BaaS, payments, auth, email, DBs, ORM, jobs, flags, storage, cache/KV, search, realtime, monitoring, logging, status pages, APM/tracing, webhooks, secrets, push, mobile analytics, DNS, media CDN |
+| `design` | Design | Design software, prototyping, a11y, design tokens, assets, icons & fonts, UI libs, CSS, web animation, responsive QA |
+| `learning` | Learning | Courses, system design, OSS programs, podcasts, interview prep, practice, hackathons, internships, tech books |
+| `business` | Business | Open business apps, support, scheduling, forms, email marketing, CRM, privacy/consent, legal docs, invoicing, strategy/entrepreneurship/investing books |
+
+Mapping lives in `apps/www/src/lib/recommendation-themes.ts` (`RECOMMENDATION_THEME_BY_SLUG`).
+**When you add a new topic**, add its slug to that map in the same PR. Labels are in i18n under
+`recommendations.theme.*` (`en` + `es`).
 
 ### Adding a new kind
 
@@ -217,15 +249,30 @@ Then add its label to `apps/www/src/i18n/index.ts` under both `en` and `es`:
 - i18n: `apps/www/src/i18n/index.ts` (`category.recommendations`, `recommendations.cat.*`,
   `recommendations.bestFor|pros|cons|visit|watch|alternatives|alternative|compare|compareHint`)
 
-## Seeded topics (34, edit these for examples)
+## Seeded topics (86, edit these for examples)
 
 ai-coding-agents · ai-code-editors · ai-agent-tooling · ai-models-providers ·
 free-ai-apis · run-llms-locally · ai-app-builders · backend-as-a-service ·
 payment-processors · vector-databases · ai-video-generation · ai-image-generation ·
 open-image-models · speech-voice-ai · 3d-generation · computer-vision-libraries ·
 robotics-js-libraries · ml-ai-hubs · open-business-apps · hosting-deploy ·
-media-optimization · design-assets · design-dev-tools · mcp-servers-directory ·
-game-engines · learn-ux-design (has a video option) · learn-to-code-platforms ·
+media-optimization · graphics-rendering-apis · design-assets · design-dev-tools ·
+icons-and-fonts · ui-component-libraries · css-frameworks · web-animation-libraries ·
+design-software · prototyping-tools · accessibility-tools · design-tokens-tools ·
+mcp-servers-directory · game-engines · auth-providers ·
+email-sms-providers · serverless-databases · product-analytics · headless-cms ·
+search-services · realtime-services · error-monitoring · 3d-web-libraries ·
+background-jobs · feature-flags · orm-query-builders · object-storage ·
+chart-libraries · state-data-fetching · e2e-testing-tools · api-layer-tools ·
+developer-documentation · ci-cd-platforms · caching-kv · maps-libraries · logging-platforms ·
+webhook-platforms · status-pages · secrets-management · apm-tracing ·
+mobile-frameworks · push-notification-services · mobile-analytics ·
+dns-domain-registrars · localization-platforms ·
+customer-support-tools · scheduling-booking · forms-surveys ·
+privacy-consent-tools · legal-document-tools ·
+email-marketing-tools · crm-sales-tools · invoicing-accounting-tools ·
+learn-ux-design (has a video option) · learn-to-code-platforms · learn-system-design ·
+open-source-contributor-programs · dev-podcasts-newsletters · interview-prep-platforms ·
 coding-practice-platforms · hackathon-platforms · internship-programs ·
 tech-coding-books · business-strategy-books · entrepreneurship-books ·
 venture-investing-books.
@@ -240,4 +287,3 @@ difficulty rating shown.
 - Index option *descriptions* too if name-only search is too narrow (e.g. searching an
   author like "Don Norman" rather than the book title).
 - Real logo SVGs in `apps/www/public/logos/` (favicon fallback for now).
-- Confirm canonical URLs for OpenClaw / Houston / Hermes Agent / Async.

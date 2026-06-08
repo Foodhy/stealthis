@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useTranslations, type Locale } from "../i18n";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type Locale, useTranslations } from "../i18n";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -152,12 +152,6 @@ function tableHeight(t: SchemaTable) {
 }
 
 type Point = { x: number; y: number };
-
-function colCenterY(t: SchemaTable, colName: string): number {
-  const idx = t.columns.findIndex((c) => c.name === colName);
-  if (idx < 0) return t.y + HEADER_H / 2;
-  return t.y + HEADER_H + idx * ROW_H + ROW_H / 2;
-}
 
 function getEdgePoints(fromTable: SchemaTable, toTable: SchemaTable): { a: Point; b: Point } {
   // Pick left or right edge based on relative horizontal position
@@ -334,14 +328,14 @@ function TableNode({
         strokeWidth={selected ? 2 : 1}
       />
       {/* Header gradient fill */}
-      <rect width={TABLE_W} height={HEADER_H} rx={10} fill={table.color + "22"} />
-      <rect y={HEADER_H - 10} width={TABLE_W} height={10} fill={table.color + "22"} />
+      <rect width={TABLE_W} height={HEADER_H} rx={10} fill={`${table.color}22`} />
+      <rect y={HEADER_H - 10} width={TABLE_W} height={10} fill={`${table.color}22`} />
       {/* Header underline */}
       <rect
         y={HEADER_H - 1}
         width={TABLE_W}
         height={1}
-        fill={selected ? table.color : table.color + "44"}
+        fill={selected ? table.color : `${table.color}44`}
       />
       {/* Colored left accent stripe */}
       <rect width={3} height={h} rx={10} fill={table.color} opacity={selected ? 1 : 0.6} />
@@ -458,7 +452,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
     } catch (err) {
       setParseError(err instanceof Error ? err.message : t("canvas.parseError"));
     }
-  }, [diagramMmd]);
+  }, [diagramMmd, t]);
 
   const handleDrag = useCallback((id: string, dx: number, dy: number) => {
     setTables((prev) => prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t)));
@@ -484,6 +478,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
       <div className="flex min-h-[340px] items-center justify-center rounded-xl border border-amber-400/20 bg-amber-500/5 p-6 text-center">
         <div>
           <svg
+            aria-hidden="true"
             viewBox="0 0 24 24"
             className="mx-auto mb-3 h-8 w-8 text-amber-400"
             fill="none"
@@ -508,6 +503,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <svg
+            aria-hidden="true"
             viewBox="0 0 24 24"
             className="h-3.5 w-3.5 text-slate-500"
             fill="none"
@@ -524,6 +520,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => setAnimated((v) => !v)}
             className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold border transition-all duration-200 ${
               animated
@@ -531,37 +528,51 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
                 : "border-white/10 text-slate-400 hover:text-slate-200"
             }`}
           >
-            {animated ? "✦ " + t("canvas.animated") : t("canvas.static")}
+            {animated ? `✦ ${t("canvas.animated")}` : t("canvas.static")}
           </button>
           <div className="flex items-center gap-0.5 rounded-lg border border-white/10 px-0.5 py-0.5">
             <button
+              type="button"
               onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
               disabled={zoom <= 0.25}
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom out"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-3.5 w-3.5"
+              >
                 <path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" />
               </svg>
             </button>
             <button
+              type="button"
               onClick={() => setZoom(1)}
               className="min-w-[34px] rounded px-1 py-0.5 text-center text-[10px] text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
             >
               {Math.round(zoom * 100)}%
             </button>
             <button
+              type="button"
               onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
               disabled={zoom >= 3}
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom in"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-3.5 w-3.5"
+              >
                 <path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" />
               </svg>
             </button>
           </div>
           <button
+            type="button"
             onClick={() => {
               handleReset();
               setZoom(1);
@@ -579,6 +590,10 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
         className="overflow-auto rounded-xl border border-white/10 bg-slate-950"
         style={{ minHeight: 380 }}
         onClick={() => setSelected(null)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setSelected(null);
+        }}
+        role="presentation"
         onWheel={(e) => {
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
@@ -591,6 +606,7 @@ export default function SchemaDiagramCanvas({ diagramMmd, locale }: SchemaDiagra
           .animate-dash { animation: dash 0.8s linear infinite; }
         `}</style>
         <svg
+          aria-hidden="true"
           width={canvasW * zoom}
           height={canvasH * zoom}
           className="block"

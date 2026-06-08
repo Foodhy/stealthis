@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Real Estate — Listing Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">◈</span>
+        <div class="brand__text">
+          <p class="brand__kicker">Halewood &amp; Marsh — Brokerage Studio</p>
+          <h1 class="brand__title">Listing Editor</h1>
+        </div>
+      </div>
+      <div class="masthead__actions">
+        <span class="status-pill" id="statusPill" data-state="draft">
+          <span class="status-pill__dot" aria-hidden="true"></span>
+          <span id="statusLabel">Draft</span>
+        </span>
+        <button class="btn btn--ghost" id="saveBtn" type="button">Save draft</button>
+        <button class="btn btn--solid" id="publishBtn" type="button">Publish listing</button>
+      </div>
+    </header>
+
+    <main class="editor" aria-label="Listing editor">
+      <!-- LEFT: form -->
+      <form class="form" id="listingForm" novalidate>
+        <!-- Photos -->
+        <section class="panel" aria-labelledby="photosHd">
+          <div class="panel__head">
+            <h2 class="panel__title" id="photosHd">Photography</h2>
+            <p class="panel__hint">Drag to reorder · the first photo becomes the cover</p>
+          </div>
+
+          <div class="uploader">
+            <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Add photos to this listing">
+              <input type="file" id="fileInput" accept="image/*" multiple hidden />
+              <span class="dropzone__icon" aria-hidden="true">＋</span>
+              <span class="dropzone__title">Add photos</span>
+              <span class="dropzone__sub">Drop here, or browse — demo images are simulated</span>
+            </label>
+
+            <ul class="photo-grid" id="photoGrid" aria-label="Listing photos, drag to reorder"></ul>
+          </div>
+        </section>
+
+        <!-- Core details -->
+        <section class="panel" aria-labelledby="detailsHd">
+          <div class="panel__head">
+            <h2 class="panel__title" id="detailsHd">Property details</h2>
+          </div>
+
+          <div class="grid grid--2">
+            <div class="field field--full">
+              <label class="field__label" for="address">Street address</label>
+              <input class="input" id="address" name="address" type="text"
+                     value="118 Lantern Hill Road" placeholder="Street &amp; number" />
+              <p class="field__error" data-error="address" hidden>Add a street address.</p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="city">City &amp; state</label>
+              <input class="input" id="city" name="city" type="text" value="Mill Valley, CA" placeholder="City, ST" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="zip">ZIP</label>
+              <input class="input" id="zip" name="zip" type="text" inputmode="numeric" value="94941" placeholder="00000" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="price">List price (USD)</label>
+              <div class="input-money">
+                <span class="input-money__sign" aria-hidden="true">$</span>
+                <input class="input input--money" id="price" name="price" type="text"
+                       inputmode="numeric" value="2,395,000" placeholder="0" />
+              </div>
+              <p class="field__error" data-error="price" hidden>Enter a valid price.</p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="type">Property type</label>
+              <div class="select-wrap">
+                <select class="input" id="type" name="type">
+                  <option>Single-family home</option>
+                  <option>Townhouse</option>
+                  <option>Condominium</option>
+                  <option>Loft</option>
+                  <option>Estate / Villa</option>
+                  <option>Land</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="beds">Bedrooms</label>
+              <input class="input" id="beds" name="beds" type="number" min="0" max="20" step="1" value="4" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="baths">Bathrooms</label>
+              <input class="input" id="baths" name="baths" type="number" min="0" max="20" step="0.5" value="3.5" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sqft">Living area (sq ft)</label>
+              <input class="input" id="sqft" name="sqft" type="number" min="0" step="1" value="3120" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="year">Year built</label>
+              <input class="input" id="year" name="year" type="number" min="1800" max="2030" step="1" value="1996" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Description -->
+        <section class="panel" aria-labelledby="descHd">
+          <div class="panel__head">
+            <h2 class="panel__title" id="descHd">Description</h2>
+            <span class="char-count" id="charCount" aria-live="polite">0 / 600</span>
+          </div>
+          <textarea class="input textarea" id="description" name="description" rows="5" maxlength="600"
+            placeholder="Describe the home — light, finishes, the feeling of arriving.">Set behind a row of olive trees, this sun-washed contemporary pairs white-oak floors with walls of glass that open to a level garden. The chef's kitchen anchors an open great room, and the primary suite reads like a private retreat above the canopy.</textarea>
+        </section>
+
+        <!-- Features -->
+        <section class="panel" aria-labelledby="featHd">
+          <div class="panel__head">
+            <h2 class="panel__title" id="featHd">Features &amp; amenities</h2>
+            <p class="panel__hint">Highlighted on the public listing</p>
+          </div>
+          <fieldset class="features" id="features">
+            <legend class="sr-only">Select features included with this property</legend>
+          </fieldset>
+        </section>
+      </form>
+
+      <!-- RIGHT: live preview -->
+      <aside class="preview" aria-label="Live preview">
+        <div class="preview__sticky">
+          <p class="preview__eyebrow">Live preview</p>
+          <article class="listing-card" id="previewCard">
+            <div class="listing-card__media" id="previewMedia" data-tone="0">
+              <span class="listing-card__cover-tag" id="previewCount">1 / 1</span>
+              <span class="listing-card__status" id="previewStatus">Draft</span>
+              <span class="listing-card__price" id="previewPrice">$2,395,000</span>
+            </div>
+            <div class="listing-card__body">
+              <h3 class="listing-card__title" id="previewAddress">118 Lantern Hill Road</h3>
+              <p class="listing-card__loc" id="previewLoc">Mill Valley, CA 94941</p>
+
+              <ul class="spec-row" id="previewSpecs">
+                <li><strong id="specBeds">4</strong> beds</li>
+                <li><strong id="specBaths">3.5</strong> baths</li>
+                <li><strong id="specSqft">3,120</strong> sq ft</li>
+              </ul>
+
+              <p class="listing-card__type" id="previewType">Single-family home · Built 1996</p>
+              <p class="listing-card__desc" id="previewDesc"></p>
+
+              <ul class="chip-row" id="previewFeatures"></ul>
+
+              <div class="listing-card__agent">
+                <span class="avatar" aria-hidden="true">RA</span>
+                <div>
+                  <p class="agent__name">Rowan Albright</p>
+                  <p class="agent__role">Listing agent · DRE #01992441</p>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

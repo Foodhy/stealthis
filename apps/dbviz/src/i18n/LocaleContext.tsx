@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import { type Locale, LOCALE_STORAGE_KEY, useTranslations } from "./index";
+import { type ReactNode, createContext, useCallback, useContext, useState } from "react";
+import { LOCALE_STORAGE_KEY, type Locale, useTranslations } from "./index";
 
 type LocaleCtx = {
   locale: Locale;

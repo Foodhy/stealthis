@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ChallengeMetaSchema } from "../packages/schema/src/schema";
 
@@ -264,9 +264,9 @@ function wrongValueMcqStrategy(meta: ResourceMeta, css: string): StrategyResult 
     code: brokenCode,
     options: [
       `\`${decl.prop}: ${wrongValue};\` should be \`${decl.prop}: ${decl.value};\``,
-      `The selector should be removed entirely`,
-      `The declaration should use !important`,
-      `Nothing is wrong`,
+      "The selector should be removed entirely",
+      "The declaration should use !important",
+      "Nothing is wrong",
     ],
     answer: 0,
     explanation: `The mutated value \`${wrongValue}\` is incorrect for this snippet.`,
@@ -292,7 +292,7 @@ async function parseResourceMeta(resourceDir: string): Promise<ResourceMeta | nu
 
   const tagsRaw = pick("tags");
   const tags =
-    tagsRaw && tagsRaw.startsWith("[") && tagsRaw.endsWith("]")
+    tagsRaw?.startsWith("[") && tagsRaw.endsWith("]")
       ? tagsRaw
           .slice(1, -1)
           .split(",")

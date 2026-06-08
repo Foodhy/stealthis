@@ -98,6 +98,7 @@ updatedAt: 2026-02-21
 - Home featured/category sections: `apps/www/src/pages/index.astro`
 - Curated filter presets: `apps/www/src/lib/collections.ts`
 - i18n labels: `apps/www/src/i18n/index.ts`
+- **Docs catalog (when adding a collection ID):** `apps/docs/src/content/docs/collections.mdx` — add a table row; preview at `http://localhost:4322/collections/`
 
 Resources are rendered from the Astro content collection (`apps/www/src/content/config.ts`), not from a manual JSON registry.
 

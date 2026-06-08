@@ -1,14 +1,14 @@
-import React from "react";
-import { Card } from "@/components/native/card";
 import { Badge } from "@/components/native/badge";
-import Editor from "@monaco-editor/react";
+import { Card } from "@/components/native/card";
 import { useI18n } from "@/i18n";
+import Editor from "@monaco-editor/react";
+import type { FC } from "react";
 
 interface ApiResponse {
   status: number;
   statusText: string;
   headers: Record<string, string>;
-  data: any;
+  data: unknown;
   duration: number;
 }
 
@@ -17,7 +17,7 @@ interface ResponsePanelProps {
   error: string | null;
 }
 
-export const ResponsePanel: React.FC<ResponsePanelProps> = ({ response, error }) => {
+export const ResponsePanel: FC<ResponsePanelProps> = ({ response, error }) => {
   const { t } = useI18n();
   const responseAsText =
     response == null
@@ -30,7 +30,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({ response, error })
 
   return (
     <div className="h-full flex flex-col">
-      <label className="text-sm font-medium mb-2">{t("apiTester.response.title")}</label>
+      <span className="text-sm font-medium mb-2">{t("apiTester.response.title")}</span>
       <Card className="flex-1 p-0 overflow-hidden flex flex-col border min-h-[400px]">
         {error && (
           <div className="p-4 bg-red-50 text-red-600 border-b border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50">

@@ -13,13 +13,14 @@ const { challenge, index } = Astro.props;
 const parts: Array<{ kind: "text"; value: string } | { kind: "blank"; key: string }> = [];
 const regex = /\{\{(BLANK_[A-Za-z0-9_]+)\}\}/g;
 let cursor = 0;
-let m: RegExpExecArray | null;
-while ((m = regex.exec(challenge.template)) !== null) {
-  if (m.index > cursor) {
-    parts.push({ kind: "text", value: challenge.template.slice(cursor, m.index) });
+let match = regex.exec(challenge.template);
+while (match !== null) {
+  if (match.index > cursor) {
+    parts.push({ kind: "text", value: challenge.template.slice(cursor, match.index) });
   }
-  parts.push({ kind: "blank", key: m[1] });
-  cursor = m.index + m[0].length;
+  parts.push({ kind: "blank", key: match[1] });
+  cursor = match.index + match[0].length;
+  match = regex.exec(challenge.template);
 }
 if (cursor < challenge.template.length) {
   parts.push({ kind: "text", value: challenge.template.slice(cursor) });

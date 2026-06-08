@@ -25,7 +25,7 @@ function normalize(node: Node): string {
     .map(normalize)
     .filter((s) => s !== "")
     .join("");
-  return `<${tag}${attrs ? " " + attrs : ""}>${children}</${tag}>`;
+  return `<${tag}${attrs ? ` ${attrs}` : ""}>${children}</${tag}>`;
 }
 
 export function snapshot(root: Document | Element): string {

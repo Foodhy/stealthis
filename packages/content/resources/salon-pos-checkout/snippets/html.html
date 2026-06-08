@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Checkout · Maison Lumière Salon</title>
+  </head>
+  <body>
+    <main class="pos" aria-label="Point of sale checkout">
+      <!-- ================= LEFT : ITEM PICKER ================= -->
+      <section class="pos__picker" aria-label="Add items">
+        <header class="picker__head">
+          <p class="kicker">Maison Lumière Salon</p>
+          <h1 class="picker__title">Checkout</h1>
+          <p class="picker__meta">
+            Ticket <strong>#ML-2048</strong> · Stylist <strong>Aria Vance</strong> ·
+            Client <strong>Noor Halabi</strong>
+          </p>
+        </header>
+
+        <div class="tabs" role="tablist" aria-label="Item categories">
+          <button class="tab is-active" role="tab" aria-selected="true" data-tab="services" id="tab-services">
+            Services
+          </button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="retail" id="tab-retail">
+            Retail
+          </button>
+          <span class="tabs__hint">Tap an item to add it to the ticket</span>
+        </div>
+
+        <div class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="search__ico">
+            <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="search" id="search" placeholder="Search the menu…" aria-label="Search items" autocomplete="off" />
+        </div>
+
+        <div class="grid" id="grid" role="tabpanel" aria-labelledby="tab-services" aria-live="polite">
+          <!-- item cards injected here -->
+        </div>
+        <p class="grid__empty" id="gridEmpty" hidden>No items match your search.</p>
+      </section>
+
+      <!-- ================= RIGHT : CART / TILL ================= -->
+      <aside class="pos__till" aria-label="Current ticket">
+        <header class="till__head">
+          <p class="kicker">Current ticket</p>
+          <h2 class="till__title">Order summary</h2>
+        </header>
+
+        <ul class="cart" id="cart" aria-label="Items in ticket" aria-live="polite"></ul>
+
+        <div class="cart__empty" id="cartEmpty">
+          <span class="cart__emptyMark" aria-hidden="true">✦</span>
+          <p>Your ticket is empty.</p>
+          <p class="cart__emptySub">Add services or retail to begin.</p>
+        </div>
+
+        <div class="till__body" id="tillBody" hidden>
+          <!-- Promo -->
+          <div class="promo">
+            <label class="field__label" for="promo">Promo code</label>
+            <div class="promo__row">
+              <input type="text" id="promo" placeholder="e.g. LUMIERE10" autocomplete="off" />
+              <button class="btn-ghost" id="applyPromo" type="button">Apply</button>
+            </div>
+            <p class="promo__msg" id="promoMsg" role="status" aria-live="polite"></p>
+          </div>
+
+          <!-- Tip -->
+          <div class="tip">
+            <div class="tip__top">
+              <span class="field__label">Add a tip for Aria</span>
+              <span class="tip__amt" id="tipAmt">$0.00</span>
+            </div>
+            <div class="tip__presets" role="group" aria-label="Tip percentage">
+              <button class="chip tip__chip" data-tip="0" type="button" aria-pressed="true">None</button>
+              <button class="chip tip__chip" data-tip="15" type="button" aria-pressed="false">15%</button>
+              <button class="chip tip__chip is-active" data-tip="18" type="button" aria-pressed="true">18%</button>
+              <button class="chip tip__chip" data-tip="20" type="button" aria-pressed="false">20%</button>
+              <button class="chip tip__chip" data-tip="25" type="button" aria-pressed="false">25%</button>
+              <div class="tip__custom">
+                <span aria-hidden="true">$</span>
+                <input type="number" id="tipCustom" min="0" step="0.50" inputmode="decimal" placeholder="Custom" aria-label="Custom tip amount" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Totals -->
+          <dl class="totals">
+            <div class="totals__row"><dt>Subtotal</dt><dd id="subtotal">$0.00</dd></div>
+            <div class="totals__row totals__row--disc" id="discRow" hidden>
+              <dt>Discount <span id="discLabel"></span></dt><dd id="discount">−$0.00</dd>
+            </div>
+            <div class="totals__row"><dt>Tip</dt><dd id="tipLine">$0.00</dd></div>
+            <div class="totals__row"><dt>Tax <span class="totals__hint">(8.5%)</span></dt><dd id="tax">$0.00</dd></div>
+            <div class="totals__row totals__row--grand"><dt>Total due</dt><dd id="grand">$0.00</dd></div>
+          </dl>
+
+          <!-- Payment -->
+          <div class="pay">
+            <span class="field__label">Payment method</span>
+            <div class="pay__chips" role="group" aria-label="Payment method">
+              <button class="chip pay__chip is-active" data-pay="card" type="button" aria-pressed="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Card
+              </button>
+              <button class="chip pay__chip" data-pay="cash" type="button" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+                Cash
+              </button>
+              <button class="chip pay__chip" data-pay="gift" type="button" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8s-3-5-5-3 1 3 5 3zm0 0s3-5 5-3-1 3-5 3z"/></svg>
+                Gift card
+              </button>
+            </div>
+
+            <div class="cash" id="cashPanel" hidden>
+              <label class="field__label" for="tendered">Cash tendered</label>
+              <div class="cash__row">
+                <div class="cash__input"><span aria-hidden="true">$</span>
+                  <input type="number" id="tendered" min="0" step="1" inputmode="decimal" placeholder="0.00" />
+                </div>
+                <div class="cash__quick">
+                  <button class="btn-ghost btn-quick" data-cash="exact" type="button">Exact</button>
+                  <button class="btn-ghost btn-quick" data-cash="100" type="button">$100</button>
+                  <button class="btn-ghost btn-quick" data-cash="200" type="button">$200</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-charge" id="charge" type="button">
+            <span class="btn-charge__label">Charge <span id="chargeAmt">$0.00</span></span>
+          </button>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Success overlay -->
+    <div class="paid" id="paid" hidden>
+      <div class="paid__card" role="alertdialog" aria-modal="true" aria-labelledby="paidTitle">
+        <span class="paid__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+        </span>
+        <p class="kicker">Payment approved</p>
+        <h3 class="paid__total" id="paidTitle">$0.00</h3>
+        <p class="paid__method" id="paidMethod"></p>
+        <div class="paid__change" id="paidChange" hidden>
+          <span>Change due</span><strong id="changeDue">$0.00</strong>
+        </div>
+        <button class="btn-charge btn-charge--ghost" id="newSale" type="button">New sale</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

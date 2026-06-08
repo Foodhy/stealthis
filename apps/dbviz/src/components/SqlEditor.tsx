@@ -1,5 +1,11 @@
-import { useRef, useEffect, useCallback } from "react";
+import { type CSSProperties, useCallback, useRef } from "react";
 import { highlightSql } from "../lib/markdown";
+
+const textareaStyle: CSSProperties & { fieldSizing?: "content" | "fixed" } = {
+  fieldSizing: "fixed",
+  whiteSpace: "pre",
+  overflowWrap: "normal",
+};
 
 type Props = {
   value: string;
@@ -27,8 +33,9 @@ export default function SqlEditor({ value, onChange }: Props) {
       >
         <code
           className="hljs language-sql"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: highlight.js output for the user's own SQL input.
           dangerouslySetInnerHTML={{
-            __html: highlightSql(value) + "\n",
+            __html: `${highlightSql(value)}\n`,
           }}
         />
       </pre>
@@ -40,7 +47,7 @@ export default function SqlEditor({ value, onChange }: Props) {
         onChange={(e) => onChange(e.target.value)}
         onScroll={syncScroll}
         className="sql-editor-textarea absolute inset-0 h-full w-full resize-none bg-transparent px-4 py-3 font-mono text-xs leading-5 text-transparent caret-slate-200 outline-none"
-        style={{ fieldSizing: "fixed" as any, whiteSpace: "pre", overflowWrap: "normal" }}
+        style={textareaStyle}
         spellCheck={false}
         wrap="off"
       />

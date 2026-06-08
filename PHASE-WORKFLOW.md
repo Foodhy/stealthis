@@ -13,7 +13,7 @@ multi-agente** en vez de escribir cada recurso a mano, uno por uno.
 
 1. **Lee el patrón** — abre un recurso terminado de la colección y copia su estructura.
 2. **Saca la lista de trabajo** — qué slugs faltan, cuáles tienen `index.mdx` pero sin snippets.
-3. **Verifica el cableado** (wiring) — la colección debe existir en schema + config + collections + i18n.
+3. **Verifica el cableado** (wiring) — la colección debe existir en schema + config + collections + i18n + **docs**.
 4. **Lanza el workflow** — un agente por recurso, en paralelo (ver script abajo).
 5. **Valida** — que todos los recursos cargan; regenera el catálogo MCP.
 6. **Actualiza el ROADMAP** — marca los checkboxes y la nota de progreso.
@@ -183,7 +183,7 @@ Cruza esto con la tabla de la fase en `ROADMAP.md` (los `[ ]` vs `✅`).
 
 ## Paso 3 — Verifica el cableado de la colección
 
-Una colección nueva (`gym`, `salon`, `realestate`…) debe añadirse en **4 sitios** antes de
+Una colección nueva (`gym`, `salon`, `realestate`…) debe añadirse en **5 sitios** antes de
 que los recursos carguen. Si la colección ya existe (como `clinic`), salta este paso.
 
 ```bash
@@ -191,9 +191,18 @@ grep -n "<colección>" packages/schema/src/schema.ts          # ResourceCollecti
 grep -n "<colección>" apps/www/src/content/config.ts          # enum del content collection
 grep -n "<colección>" apps/www/src/lib/collections.ts         # tarjeta (id, titleKey, descKey, accentToken)
 grep -n "<colección>" apps/www/src/i18n/index.ts              # collection.<col>.title/.desc
+grep -n "<colección>" apps/docs/src/content/docs/collections.mdx  # fila en la tabla "All collections"
 ```
 
-Si falta, añádelo en los 4 (incluye `accentToken` en `collections.ts`).
+Si falta, añádelo en los 5 (incluye `accentToken` en `collections.ts`).
+
+**Docs (obligatorio):** en `apps/docs/src/content/docs/collections.mdx`, añade una fila a la
+tabla con el `id`, título, descripción (copia del i18n `en`) y enlace
+`https://stealthis.dev/library?collection=<id>`. Previsualiza en
+`http://localhost:4322/collections/` (`bun run dev:docs`).
+
+Si es una colección **vertical** (clinic, gym, restaurant…), añade también una fila en
+`apps/docs/src/content/docs/choose-your-path.mdx` → sección *Build for a specific industry*.
 
 **Sobre i18n / idiomas**: `apps/www` declara ~15 locales en `astro.config.mjs`
 (`en, es, fr, ja, ms, hi, ko, nl, de, pt-br, zh-hk, zh-cn, it, pl, uk`), pero solo 6 tienen

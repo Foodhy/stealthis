@@ -22,6 +22,9 @@ process and conventions so you don't have to re-derive them:
   of the work list for any phase. Update checkboxes + the per-phase "Progress" note as you finish.
 - **`ROADMAP_RECOMMENDATION.md`** — Spec for `recommendation`-type resources (topic pages grouping
   alternatives). Read before authoring recommendations.
+- **`apps/docs/src/content/docs/collections.mdx`** — User-facing catalog of library collections
+  (`docs.stealthis.dev/collections/`). **Update this page whenever you add a new collection ID**
+  (table row + link). For industry verticals, also add a row in `choose-your-path.mdx`.
 - **`ROADMAP_ARCADE.md`** / **`PLAN_ARCADE.md`** — Plan + roadmap for `apps/arcade` (Duolingo-style
   challenges). Read when working on the arcade app.
 - **`AGENTS.md`** — General agent guide / project context for this repo.
@@ -135,6 +138,24 @@ Hono v4 on Cloudflare Workers. Reads from the static `src/catalog.json` bundle �
 2. Add snippet files to `packages/content/resources/<slug>/snippets/`
 3. If it has a lab demo, set `labRoute: /<category>/<slug>` in frontmatter
 4. Regenerate the MCP catalog: `bun run --filter @stealthis/mcp catalog`
+
+### Adding a new library collection
+
+A new collection ID (e.g. `gym`, `editorial`) must be wired in **five places** before resources
+can use it — plus the **docs catalog** so users and agents can discover it:
+
+1. `packages/schema/src/schema.ts` — `ResourceCollectionSchema` enum
+2. `apps/www/src/content/config.ts` — content collection enum
+3. `apps/www/src/lib/collections.ts` — Collection Explorer card (`id`, `titleKey`, `descKey`, `accentToken`, `order`)
+4. `apps/www/src/i18n/index.ts` — `collection.<id>.title` and `collection.<id>.desc` (at minimum `en`; `es` for Spanish routes)
+5. **`apps/docs/src/content/docs/collections.mdx`** — add a row to the **All collections** table (ID, title, purpose, direct link). Preview at `http://localhost:4322/collections/` (`bun run dev:docs`).
+
+For **industry vertical** collections, also add a row under **Build for a specific industry** in
+`apps/docs/src/content/docs/choose-your-path.mdx`.
+
+Optional: extend heuristics in `apps/www/src/lib/resource-collections.ts` if resources should auto-join without explicit `collections:` frontmatter.
+
+See `PHASE-WORKFLOW.md` § Paso 3 for the grep checklist used during phase builds.
 
 ### tsconfig
 

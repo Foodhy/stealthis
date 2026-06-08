@@ -12,12 +12,32 @@ export const RESOURCE_COLLECTION_IDS = [
   "clinic",
   "gym",
   "salon",
+  "realestate",
+  "editorial",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
 export type CollectionFilterValue = ResourceCollection | "all";
 
 export const ALL_COLLECTION_FILTER_VALUE: CollectionFilterValue = "all";
+
+/** Industry vertical collections — show a "New" badge in the library explorer. */
+export const NEW_LIBRARY_COLLECTION_IDS = [
+  "restaurant",
+  "clinic",
+  "gym",
+  "salon",
+  "realestate",
+  "editorial",
+] as const satisfies readonly ResourceCollection[];
+
+const newLibraryCollectionIdsSet = new Set<ResourceCollection>(NEW_LIBRARY_COLLECTION_IDS);
+
+export function isNewLibraryCollection(id: ResourceCollection): boolean {
+  return newLibraryCollectionIdsSet.has(id);
+}
+
+export const IS_NEW_RECOMMENDATIONS_SECTION = true;
 
 export interface LibraryCollection {
   id: ResourceCollection;
@@ -118,6 +138,20 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.salon.desc",
     accentToken: "collection-salon",
     order: 13,
+  },
+  {
+    id: "realestate",
+    titleKey: "collection.realestate.title",
+    descriptionKey: "collection.realestate.desc",
+    accentToken: "collection-realestate",
+    order: 14,
+  },
+  {
+    id: "editorial",
+    titleKey: "collection.editorial.title",
+    descriptionKey: "collection.editorial.desc",
+    accentToken: "collection-editorial",
+    order: 15,
   },
 ];
 

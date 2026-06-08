@@ -5,6 +5,7 @@ import {
   ALL_COLLECTION_FILTER_VALUE,
   type CollectionFilterValue,
   RESOURCE_COLLECTION_IDS,
+  isNewLibraryCollection,
   libraryCollections,
 } from "@lib/collections";
 import { resolveResourceCollections } from "@lib/resource-collections";
@@ -41,7 +42,10 @@ for (const collection of libraryCollections) {
 
 <section class="mb-10 collection-explorer" data-collection-explorer>
   <div class="flex items-center gap-3 mb-4">
-    <h2 class="text-base font-bold text-white whitespace-nowrap">{t("collections.title")}</h2>
+    <h2 class="text-base font-bold text-white whitespace-nowrap flex items-center gap-1.5">
+      {t("collections.title")}
+      <span class="lib-new-badge">{t("badge.new")}</span>
+    </h2>
     <span class="text-xs text-slate-600 whitespace-nowrap hidden sm:block">{t("collections.explorerSubtitle")}</span>
     <div class="flex-1 border-t border-white/6"></div>
   </div>
@@ -49,7 +53,7 @@ for (const collection of libraryCollections) {
   <div class="collection-chip-row" role="tablist" aria-label={t("collections.title")}>
     <button
       type="button"
-      class="chip chip--active"
+      class="chip chip--compact chip--active"
       role="tab"
       aria-selected="true"
       data-filter="collection"
@@ -62,7 +66,7 @@ for (const collection of libraryCollections) {
     {libraryCollections.map((collection) => (
       <button
         type="button"
-        class="chip"
+        class="chip chip--compact"
         role="tab"
         aria-selected="false"
         data-filter="collection"
@@ -70,6 +74,9 @@ for (const collection of libraryCollections) {
         data-collection-chip={collection.id}
       >
         {t(collection.titleKey as any)}
+        {isNewLibraryCollection(collection.id) && (
+          <span class="lib-new-badge">{t("badge.new")}</span>
+        )}
       </button>
     ))}
   </div>
@@ -90,7 +97,12 @@ for (const collection of libraryCollections) {
         >
           <div class="collection-panel-head">
             <div>
-              <p class="collection-panel-title">{title}</p>
+              <p class="collection-panel-title">
+                {title}
+                {activeCollection && isNewLibraryCollection(activeCollection.id) && (
+                  <span class="lib-new-badge">{t("badge.new")}</span>
+                )}
+              </p>
               <p class="collection-panel-subtitle">{description}</p>
             </div>
             <div class="collection-panel-controls">
@@ -174,9 +186,10 @@ for (const collection of libraryCollections) {
 
   .collection-chip-row {
     display: flex;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.35rem;
     overflow-x: auto;
-    padding-bottom: 0.25rem;
+    padding-bottom: 0.2rem;
     scrollbar-width: thin;
   }
 
@@ -205,6 +218,9 @@ for (const collection of libraryCollections) {
   }
 
   .collection-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
     font-size: 0.95rem;
     font-weight: 600;
     color: rgb(241 245 249 / 98%);

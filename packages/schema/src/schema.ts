@@ -79,6 +79,8 @@ export const ResourceCollectionSchema = z.enum([
   "clinic",
   "gym",
   "salon",
+  "realestate",
+  "editorial",
 ]);
 
 // Sub-kind / bucket for a recommendation topic (drives the card badge label)
@@ -110,6 +112,17 @@ export const RecommendationKindSchema = z.enum([
   "hosting",
   "design-tools",
   "graphics",
+  "auth",
+  "email",
+  "databases",
+  "analytics",
+  "cms",
+  "search",
+  "realtime",
+  "monitoring",
+  "jobs",
+  "feature-flags",
+  "storage",
 ]);
 
 // A single alternative inside a recommendation topic. May be a tool, book,
@@ -120,6 +133,7 @@ export const RecommendationOptionSchema = z.object({
   url: z.string().url().optional(),
   docs: z.string().url().optional(),
   demo: z.string().url().optional(),
+  github: z.string().url().optional(),
   video: z.string().url().optional(),
   logo: z.string().optional(),
   bestFor: z.string().optional(),

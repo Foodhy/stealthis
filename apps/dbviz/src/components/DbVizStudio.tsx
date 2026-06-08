@@ -1,42 +1,42 @@
 import { PGlite, type Results } from "@electric-sql/pglite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { renderMarkdown } from "../lib/markdown";
-import SqlEditor from "./SqlEditor";
-import HelpChat from "./HelpChat";
-import CrowsFootDiagram from "./CrowsFootDiagram";
+import { tabTranslationKey, tourThemeTranslationKey } from "../i18n";
 import { LocaleProvider, useLocale } from "../i18n/LocaleContext";
 import {
+  type AiModel,
   type AiProvider,
   type AiProviderConfig,
-  type AiModel,
   type ChatMessage,
   PROVIDER_DEFAULTS,
   listModels as listProviderModels,
   chat as providerChat,
 } from "../lib/ai-providers";
+import { renderMarkdown } from "../lib/markdown";
 import {
-  SYSTEM_PROMPT,
   QUERY_SYSTEM_PROMPT,
-  buildClarificationMessage,
-  buildGenerateMessage,
-  buildRefinementMessage,
-  buildNameMessage,
+  SYSTEM_PROMPT,
   buildAskMessage,
-  buildPlanMessage,
-  buildExecuteMessage,
-  buildQueryAskMessage,
-  buildQueryPlanMessage,
-  buildQueryExecuteMessage,
   buildAutoGenerateQueriesMessage,
-  isReadyResponse,
+  buildClarificationMessage,
+  buildExecuteMessage,
+  buildGenerateMessage,
+  buildNameMessage,
+  buildPlanMessage,
+  buildQueryAskMessage,
+  buildQueryExecuteMessage,
+  buildQueryPlanMessage,
   extractQuestions,
-  parseSchemaOutput,
-  parseQueryOutput,
-  hasSchemaMarkers,
   hasQueryMarkers,
+  hasSchemaMarkers,
+  isReadyResponse,
+  parseQueryOutput,
+  parseSchemaOutput,
 } from "../lib/schema-prompts";
+import { TOUR_THEMES, type TourTheme, useTour } from "../lib/useTour";
+import CrowsFootDiagram from "./CrowsFootDiagram";
+import HelpChat from "./HelpChat";
 import SchemaDiagramCanvas from "./SchemaDiagramCanvas";
-import { useTour, TOUR_THEMES, type TourTheme } from "../lib/useTour";
+import SqlEditor from "./SqlEditor";
 
 export type DbVizExample = {
   slug: string;
@@ -440,7 +440,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
   const [lastResults, setLastResults] = useState<QueryResultEntry[]>([]);
 
   const [engineStatus, setEngineStatus] = useState<EngineStatus>("idle");
-  const [engineMessage, setEngineMessage] = useState("");
+  const [_engineMessage, setEngineMessage] = useState("");
   const [isRunningCommand, setIsRunningCommand] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
   const [selectedProvider] = useState<DbVizRuntimeProvider>("local");
@@ -513,7 +513,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
     [selectedLocalEngine, selectedProvider]
   );
 
-  const executedCount = useMemo(
+  const _executedCount = useMemo(
     () => entries.filter((entry) => entry.kind === "ok").length,
     [entries]
   );
@@ -946,6 +946,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
     selectedExample,
     selectedLocalEngine,
     selectedProvider,
+    t,
   ]);
 
   useEffect(() => {
@@ -1427,6 +1428,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
   }
 
   // Scroll chat to bottom
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll when chat content updates.
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, chatPreview]);
@@ -1457,6 +1459,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
   }
 
   // Scroll chat to bottom on new messages
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll when AI chat content updates.
   useEffect(() => {
     aiChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [aiChat, aiPreview]);
@@ -1610,7 +1613,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                 className={`flex items-center justify-center rounded px-1.5 py-1 transition-all ${
                   tourTheme === th ? "bg-white/[0.1]" : "hover:bg-white/[0.06]"
                 }`}
-                title={t(`tour.theme.${th}` as any)}
+                title={t(tourThemeTranslationKey(th))}
               >
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${dots[th]} ${tourTheme === th ? "" : "opacity-40"}`}
@@ -1796,6 +1799,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                       {entry.role === "assistant" ? (
                         <div
                           className="chat-markdown"
+                          // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted markdown renderer for chat history.
                           dangerouslySetInnerHTML={{ __html: renderMarkdown(entry.content) }}
                         />
                       ) : (
@@ -1816,6 +1820,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                     <div className="max-w-[90%] rounded-xl bg-white/[0.06] px-3.5 py-2.5">
                       <div
                         className="chat-markdown text-xs leading-5 text-slate-300"
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted markdown renderer for chat preview.
                         dangerouslySetInnerHTML={{ __html: renderMarkdown(chatPreview) }}
                       />
                     </div>
@@ -2024,6 +2029,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                       {entry.role === "assistant" ? (
                         <div
                           className="chat-markdown"
+                          // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted markdown renderer for chat history.
                           dangerouslySetInnerHTML={{ __html: renderMarkdown(entry.content) }}
                         />
                       ) : (
@@ -2205,7 +2211,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${colors.dot} ${isActive ? "" : "opacity-40"}`}
                   />
-                  {t(`tab.${tab.key}` as any)}
+                  {t(tabTranslationKey(tab.key))}
                   {tab.key === "results" && lastResults.length > 0 ? (
                     <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-db-500/20 px-1 text-[10px] text-db-300">
                       {lastResults.length}
@@ -2252,7 +2258,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                   return queries.length > 0 ? (
                     <div className="flex-1 overflow-auto">
                       <div className="space-y-1 p-3">
-                        {queries.map((query, i) => {
+                        {queries.map((query) => {
                           const lines = query.split("\n");
                           const commentLine = lines[0]?.startsWith("--")
                             ? lines[0].replace(/^--\s*/, "")
@@ -2262,7 +2268,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                             : query.trim();
                           return (
                             <div
-                              key={i}
+                              key={`${commentLine}:${sqlOnly}`}
                               className="group relative rounded-lg bg-white/[0.03] ring-1 ring-white/[0.04] transition-colors hover:bg-white/[0.05]"
                             >
                               {commentLine ? (
@@ -2589,9 +2595,9 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
             <div className="flex-1 space-y-5 overflow-auto px-5 py-5">
               {/* Provider selector */}
               <div>
-                <label className="mb-1.5 block text-[11px] font-medium text-slate-400">
+                <span className="mb-1.5 block text-[11px] font-medium text-slate-400">
                   {t("settings.provider")}
-                </label>
+                </span>
                 <div className="grid grid-cols-2 gap-1.5">
                   {(Object.keys(PROVIDER_DEFAULTS) as AiProvider[]).map((p) => {
                     const isActive = providerCfg.provider === p;
@@ -2624,12 +2630,16 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
 
               {/* Base URL */}
               <div>
-                <label className="mb-1.5 block text-[11px] font-medium text-slate-400">
+                <label
+                  htmlFor="settings-base-url"
+                  className="mb-1.5 block text-[11px] font-medium text-slate-400"
+                >
                   {providerCfg.provider === "ollama"
                     ? t("settings.ollamaUrl")
                     : t("settings.baseUrl")}
                 </label>
                 <input
+                  id="settings-base-url"
                   type="text"
                   value={providerCfg.baseUrl}
                   onChange={(e) => updateProviderCfg({ baseUrl: e.target.value })}
@@ -2643,7 +2653,10 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
               {providerCfg.provider !== "ollama" ? (
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <label className="text-[11px] font-medium text-slate-400">
+                    <label
+                      htmlFor="settings-api-key"
+                      className="text-[11px] font-medium text-slate-400"
+                    >
                       {t("settings.apiKey")}
                     </label>
                     {PROVIDER_DEFAULTS[providerCfg.provider].keyUrl ? (
@@ -2658,6 +2671,7 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
                     ) : null}
                   </div>
                   <input
+                    id="settings-api-key"
                     type="password"
                     value={providerCfg.apiKey}
                     onChange={(e) => updateProviderCfg({ apiKey: e.target.value })}
@@ -2688,10 +2702,14 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
               {/* Model selector */}
               {aiModels.length > 0 ? (
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-medium text-slate-400">
+                  <label
+                    htmlFor="settings-model"
+                    className="mb-1.5 block text-[11px] font-medium text-slate-400"
+                  >
                     {t("settings.model")}
                   </label>
                   <select
+                    id="settings-model"
                     value={aiSelectedModel}
                     onChange={(e) => {
                       setAiSelectedModel(e.target.value);
@@ -2738,12 +2756,15 @@ function DbVizStudioInner({ examples, runtimeConfig }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl dbviz-modal-bg p-6 shadow-2xl ring-1 ring-white/[0.08]">
             <h3 className="mb-4 text-sm font-semibold text-slate-100">{t("save.title")}</h3>
-            <label className="mb-1.5 block text-[11px] font-medium text-slate-400">
+            <label
+              htmlFor="save-project-name"
+              className="mb-1.5 block text-[11px] font-medium text-slate-400"
+            >
               {t("save.nameLabel")}
             </label>
             <input
+              id="save-project-name"
               type="text"
-              autoFocus
               value={saveName}
               onChange={(e) => setSaveName(e.target.value)}
               onKeyDown={(e) => {

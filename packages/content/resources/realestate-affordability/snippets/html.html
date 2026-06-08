@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Affordability Estimator — Meridian &amp; Hale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="brandmark">
+        <span class="brand-glyph" aria-hidden="true">M&amp;H</span>
+        <div class="brand-text">
+          <p class="brand-name">Meridian &amp; Hale</p>
+          <p class="brand-tag">Private Residential Advisory</p>
+        </div>
+      </div>
+      <nav class="masthead-nav" aria-label="Sections">
+        <a href="#estimator" class="nav-link is-active">Affordability</a>
+        <a href="#listings" class="nav-link">Matched Homes</a>
+        <span class="nav-pill">Pre-qualification preview</span>
+      </nav>
+    </header>
+
+    <main class="layout" id="estimator">
+      <section class="intro">
+        <p class="eyebrow">Buyer Tools · 2026</p>
+        <h1 class="display">Find the home price you can comfortably afford.</h1>
+        <p class="lede">
+          Enter your income, obligations, and savings. We model a lender-style
+          debt-to-income calculation to recommend a realistic purchase range —
+          then preview homes that fit it.
+        </p>
+      </section>
+
+      <div class="grid">
+        <!-- ============ INPUTS ============ -->
+        <form class="panel inputs" id="afford-form" novalidate>
+          <div class="panel-head">
+            <h2 class="panel-title">Your finances</h2>
+            <button type="button" class="ghost-btn" id="reset-btn">Reset</button>
+          </div>
+
+          <div class="field">
+            <div class="field-row">
+              <label for="income">Gross annual income</label>
+              <output class="field-val" id="income-out">$140,000</output>
+            </div>
+            <div class="money-input">
+              <span class="prefix">$</span>
+              <input
+                type="number"
+                id="income"
+                inputmode="numeric"
+                min="0"
+                step="1000"
+                value="140000"
+                aria-describedby="income-hint"
+              />
+              <span class="suffix">/ yr</span>
+            </div>
+            <input type="range" id="income-range" min="30000" max="500000" step="1000" value="140000" aria-label="Annual income slider" />
+            <p class="hint" id="income-hint">Pre-tax household income from all earners.</p>
+          </div>
+
+          <div class="field">
+            <div class="field-row">
+              <label for="debts">Monthly debt payments</label>
+              <output class="field-val" id="debts-out">$650</output>
+            </div>
+            <div class="money-input">
+              <span class="prefix">$</span>
+              <input
+                type="number"
+                id="debts"
+                inputmode="numeric"
+                min="0"
+                step="25"
+                value="650"
+                aria-describedby="debts-hint"
+              />
+              <span class="suffix">/ mo</span>
+            </div>
+            <input type="range" id="debts-range" min="0" max="6000" step="25" value="650" aria-label="Monthly debts slider" />
+            <p class="hint" id="debts-hint">Car loans, student loans, credit cards, etc.</p>
+          </div>
+
+          <div class="field">
+            <div class="field-row">
+              <label for="down">Down payment</label>
+              <output class="field-val" id="down-out">$90,000</output>
+            </div>
+            <div class="money-input">
+              <span class="prefix">$</span>
+              <input
+                type="number"
+                id="down"
+                inputmode="numeric"
+                min="0"
+                step="1000"
+                value="90000"
+                aria-describedby="down-hint"
+              />
+              <span class="suffix">cash</span>
+            </div>
+            <input type="range" id="down-range" min="0" max="400000" step="1000" value="90000" aria-label="Down payment slider" />
+            <p class="hint" id="down-hint">Cash applied toward purchase, lowering the loan.</p>
+          </div>
+
+          <div class="field-split">
+            <div class="field">
+              <div class="field-row">
+                <label for="rate">Interest rate</label>
+                <output class="field-val" id="rate-out">6.50%</output>
+              </div>
+              <input type="range" id="rate" min="2" max="10" step="0.05" value="6.5" aria-label="Interest rate slider" />
+            </div>
+            <div class="field">
+              <div class="field-row">
+                <label for="dti">DTI target</label>
+                <output class="field-val" id="dti-out">36%</output>
+              </div>
+              <input type="range" id="dti" min="28" max="45" step="1" value="36" aria-label="Debt to income target slider" />
+            </div>
+          </div>
+
+          <fieldset class="field term-field">
+            <legend>Loan term</legend>
+            <div class="seg" role="radiogroup" aria-label="Loan term">
+              <label class="seg-opt">
+                <input type="radio" name="term" value="15" />
+                <span>15 yr</span>
+              </label>
+              <label class="seg-opt">
+                <input type="radio" name="term" value="30" checked />
+                <span>30 yr</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <p class="assump">
+            Estimate folds in <strong>~1.15%</strong> property tax, insurance &amp;
+            HOA into the monthly housing figure.
+          </p>
+        </form>
+
+        <!-- ============ RESULTS ============ -->
+        <section class="panel results" aria-live="polite">
+          <div class="panel-head">
+            <h2 class="panel-title">What you can afford</h2>
+            <span class="status-chip" id="status-chip" data-tone="ok">Comfortable</span>
+          </div>
+
+          <div class="gauge-wrap">
+            <svg class="gauge" viewBox="0 0 220 130" role="img" aria-labelledby="gauge-label">
+              <title id="gauge-label">Affordability gauge</title>
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#2f9e6f" />
+                  <stop offset="0.6" stop-color="#b08d57" />
+                  <stop offset="1" stop-color="#c4503e" />
+                </linearGradient>
+              </defs>
+              <path class="gauge-track" d="M20 120 A90 90 0 0 1 200 120" />
+              <path class="gauge-fill" id="gauge-fill" d="M20 120 A90 90 0 0 1 200 120" />
+              <line class="gauge-needle" id="gauge-needle" x1="110" y1="120" x2="110" y2="42" />
+              <circle class="gauge-hub" cx="110" cy="120" r="7" />
+            </svg>
+            <div class="gauge-readout">
+              <p class="readout-label">Recommended max price</p>
+              <p class="readout-price" id="max-price">$612,000</p>
+              <p class="readout-range" id="price-range">Sweet spot $520k – $612k</p>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <p class="metric-k">Est. monthly housing</p>
+              <p class="metric-v" id="m-payment">$3,540</p>
+              <p class="metric-sub" id="m-payment-sub">at 36% DTI</p>
+            </div>
+            <div class="metric">
+              <p class="metric-k">Loan amount</p>
+              <p class="metric-v" id="m-loan">$522,000</p>
+              <p class="metric-sub">after down payment</p>
+            </div>
+            <div class="metric">
+              <p class="metric-k">Income needed</p>
+              <p class="metric-v" id="m-income">$140,000</p>
+              <p class="metric-sub">to clear this band</p>
+            </div>
+            <div class="metric">
+              <p class="metric-k">Down payment</p>
+              <p class="metric-v" id="m-down">15%</p>
+              <p class="metric-sub" id="m-down-sub">$90,000 cash</p>
+            </div>
+          </div>
+
+          <div class="breakdown">
+            <p class="breakdown-title">Monthly housing breakdown</p>
+            <ul class="bars" id="breakdown-bars">
+              <li>
+                <span class="bar-k">Principal &amp; interest</span>
+                <div class="bar-track"><i class="bar-fill" id="bar-pi" style="width:74%"></i></div>
+                <span class="bar-v" id="val-pi">$2,620</span>
+              </li>
+              <li>
+                <span class="bar-k">Property tax</span>
+                <div class="bar-track"><i class="bar-fill alt" id="bar-tax" style="width:16%"></i></div>
+                <span class="bar-v" id="val-tax">$587</span>
+              </li>
+              <li>
+                <span class="bar-k">Insurance &amp; HOA</span>
+                <div class="bar-track"><i class="bar-fill alt2" id="bar-ins" style="width:10%"></i></div>
+                <span class="bar-v" id="val-ins">$333</span>
+              </li>
+            </ul>
+          </div>
+
+          <button type="button" class="cta" id="save-btn">Save estimate &amp; see matches</button>
+        </section>
+      </div>
+
+      <!-- ============ MATCHED LISTINGS ============ -->
+      <section class="listings" id="listings" aria-labelledby="listings-h">
+        <div class="listings-head">
+          <h2 id="listings-h" class="section-h">Homes in your range</h2>
+          <p class="section-sub" id="match-summary">3 of 4 listings fit your recommended price.</p>
+        </div>
+        <div class="cards" id="cards"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Meridian &amp; Hale · 118 Carrow Lane, Westhaven · Estimates are illustrative, not a loan offer.</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

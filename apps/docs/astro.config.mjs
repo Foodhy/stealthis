@@ -1,7 +1,7 @@
-import { defineConfig } from "astro/config";
-import starlight from "@astrojs/starlight";
-import cloudflare from "@astrojs/cloudflare";
 import { fileURLToPath } from "node:url";
+import cloudflare from "@astrojs/cloudflare";
+import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
 
 export default defineConfig({
   output: "static",
@@ -42,6 +42,15 @@ export default defineConfig({
             { label: "Getting Started", link: "/getting-started/" },
             { label: "How to Integrate", link: "/integrate/" },
             { label: "Resource Format", link: "/resource-format/" },
+          ],
+        },
+        {
+          label: "Library Guide",
+          badge: "New",
+          items: [
+            { label: "Choose Your Path", link: "/choose-your-path/", badge: "New" },
+            { label: "Recommendations", link: "/recommendations/", badge: "New" },
+            { label: "Collections", link: "/collections/", badge: "New" },
           ],
         },
         {

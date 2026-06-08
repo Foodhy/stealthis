@@ -649,6 +649,17 @@ const translations = {
 
 export type TranslationKey = keyof typeof translations.en;
 
+export type TabKey = "diagram" | "erd" | "schema" | "seed" | "queries" | "migrations" | "results";
+export type TourThemeKey = "dark" | "soft";
+
+export function tabTranslationKey(key: TabKey): TranslationKey {
+  return `tab.${key}`;
+}
+
+export function tourThemeTranslationKey(theme: TourThemeKey): TranslationKey {
+  return `tour.theme.${theme}`;
+}
+
 export function useTranslations(locale: Locale) {
   return function t(key: TranslationKey): string {
     return translations[locale]?.[key] ?? translations.en[key] ?? key;

@@ -58,7 +58,18 @@ export type RecommendationKind =
   | "game-dev"
   | "hosting"
   | "design-tools"
-  | "graphics";
+  | "graphics"
+  | "auth"
+  | "email"
+  | "databases"
+  | "analytics"
+  | "cms"
+  | "search"
+  | "realtime"
+  | "monitoring"
+  | "jobs"
+  | "feature-flags"
+  | "storage";
 
 export interface RecommendationOption {
   name: string;
@@ -66,6 +77,7 @@ export interface RecommendationOption {
   url?: string;
   docs?: string;
   demo?: string;
+  github?: string;
   video?: string;
   logo?: string;
   bestFor?: string;

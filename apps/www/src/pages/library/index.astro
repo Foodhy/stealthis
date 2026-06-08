@@ -5,7 +5,13 @@ import FilterBar from "@components/FilterBar.astro";
 import CollectionExplorer from "@components/CollectionExplorer.astro";
 import { getCollection } from "astro:content";
 import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
+import { IS_NEW_RECOMMENDATIONS_SECTION } from "@lib/collections";
 import { SHOW_SORT_BAR } from "@lib/constant";
+import {
+  groupRecommendationsByTheme,
+  RECOMMENDATION_THEMES,
+  type RecommendationThemeLabelKey,
+} from "@lib/recommendation-themes";
 import { getResourceFilterTechTokens } from "@lib/resource-tech";
 import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 import { SITE_URLS } from "@lib/urls";
@@ -42,6 +48,9 @@ for (const r of allResources) {
   if (!byCategory.has(cat)) byCategory.set(cat, []);
   byCategory.get(cat)!.push(r);
 }
+
+const recommendationResources = byCategory.get("recommendations") ?? [];
+const recommendationsByTheme = groupRecommendationsByTheme(recommendationResources);
 
 const CATEGORY_GROUPS = [
   {
@@ -441,29 +450,76 @@ const discoverI18n = {
             <div data-category-group={group.id} class="mb-12">
               <!-- Group header -->
               <div class="flex items-center gap-3 mb-6">
-                <h2 class="text-base font-bold text-white whitespace-nowrap">{group.label}</h2>
+                <h2 class="text-base font-bold text-white whitespace-nowrap flex items-center gap-1.5">
+                  {group.label}
+                  {group.id === "recommendations" && IS_NEW_RECOMMENDATIONS_SECTION && (
+                    <span class="lib-new-badge">{t("badge.new")}</span>
+                  )}
+                </h2>
                 <span class="text-xs text-slate-600 whitespace-nowrap hidden sm:block">{group.description}</span>
                 <div class="flex-1 border-t border-white/6"></div>
               </div>
 
-              {group.categories.map((cat) => {
-                const resources = byCategory.get(cat);
-                if (!resources?.length) return null;
-                const catKey = `category.${cat}` as CategoryKey;
-                return (
-                  <div data-category-section={cat} class="mb-8 last:mb-0">
-                    <div class="flex items-center gap-2 mb-3">
-                      <h3 class="text-sm font-semibold text-slate-400">{t(catKey)}</h3>
-                      <span class="text-xs text-slate-600 tabular-nums">{resources.length}</span>
+              {group.id === "recommendations" ? (
+                <>
+                  <nav
+                    class="flex flex-wrap gap-2 mb-6"
+                    aria-label={t("recommendations.theme.jump")}
+                  >
+                    {RECOMMENDATION_THEMES.map((theme) => {
+                      const count = recommendationsByTheme.get(theme.id)?.length ?? 0;
+                      if (!count) return null;
+                      const themeKey = theme.labelKey as RecommendationThemeLabelKey;
+                      return (
+                        <a href={`#rec-${theme.id}`} class="chip chip--compact">
+                          {t(themeKey)} <span class="text-slate-600 tabular-nums">{count}</span>
+                        </a>
+                      );
+                    })}
+                  </nav>
+                  {RECOMMENDATION_THEMES.map((theme) => {
+                    const resources = recommendationsByTheme.get(theme.id) ?? [];
+                    if (!resources.length) return null;
+                    const themeKey = theme.labelKey as RecommendationThemeLabelKey;
+                    return (
+                      <div
+                        id={`rec-${theme.id}`}
+                        data-category-section={`recommendations-${theme.id}`}
+                        class="mb-8 last:mb-0 scroll-mt-24"
+                      >
+                        <div class="flex items-center gap-2 mb-3">
+                          <h3 class="text-sm font-semibold text-slate-400">{t(themeKey)}</h3>
+                          <span class="text-xs text-slate-600 tabular-nums">{resources.length}</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                          {resources.map((resource) => (
+                            <ResourceCard resource={resource} locale={locale} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                group.categories.map((cat) => {
+                  const resources = byCategory.get(cat);
+                  if (!resources?.length) return null;
+                  const catKey = `category.${cat}` as CategoryKey;
+                  return (
+                    <div data-category-section={cat} class="mb-8 last:mb-0">
+                      <div class="flex items-center gap-2 mb-3">
+                        <h3 class="text-sm font-semibold text-slate-400">{t(catKey)}</h3>
+                        <span class="text-xs text-slate-600 tabular-nums">{resources.length}</span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {resources.map((resource) => (
+                          <ResourceCard resource={resource} locale={locale} />
+                        ))}
+                      </div>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {resources.map((resource) => (
-                        <ResourceCard resource={resource} locale={locale} />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           );
         })}

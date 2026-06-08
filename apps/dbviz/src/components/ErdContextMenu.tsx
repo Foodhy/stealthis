@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import type { TranslationKey } from "../i18n";
 
 // ─── Target types ───────────────────────────────────────────────────────────
 
@@ -23,7 +24,7 @@ interface ErdContextMenuProps {
   target: ErdContextMenuTarget;
   onAction: (action: ErdAction) => void;
   onClose: () => void;
-  t: (key: string) => string;
+  t: (key: TranslationKey) => string;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -86,25 +87,25 @@ export default function ErdContextMenu({
 
   if (target.kind === "canvas") {
     items.push({
-      label: t("erd.ctx.addTable" as any),
+      label: t("erd.ctx.addTable"),
       action: { type: "addTable", svgX: target.svgX, svgY: target.svgY },
     });
   } else if (target.kind === "table") {
     items.push({
-      label: t("erd.ctx.addColumn" as any),
+      label: t("erd.ctx.addColumn"),
       action: { type: "addColumn", tableId: target.tableId },
     });
     items.push({
-      label: t("erd.ctx.renameTable" as any),
+      label: t("erd.ctx.renameTable"),
       action: { type: "renameTable", tableId: target.tableId },
     });
     items.push({
-      label: t("erd.ctx.deleteTable" as any),
+      label: t("erd.ctx.deleteTable"),
       action: { type: "deleteTable", tableId: target.tableId },
     });
   } else if (target.kind === "column") {
     items.push({
-      label: t("erd.ctx.editColumn" as any),
+      label: t("erd.ctx.editColumn"),
       action: {
         type: "editColumn",
         tableId: target.tableId,
@@ -112,7 +113,7 @@ export default function ErdContextMenu({
       },
     });
     items.push({
-      label: t("erd.ctx.deleteColumn" as any),
+      label: t("erd.ctx.deleteColumn"),
       action: {
         type: "deleteColumn",
         tableId: target.tableId,
@@ -120,7 +121,7 @@ export default function ErdContextMenu({
       },
     });
     items.push({
-      label: t("erd.ctx.addColumn" as any),
+      label: t("erd.ctx.addColumn"),
       action: { type: "addColumn", tableId: target.tableId },
     });
   }
@@ -131,9 +132,10 @@ export default function ErdContextMenu({
       className="fixed z-50 min-w-[160px] rounded-lg border border-white/10 bg-slate-900 py-1 shadow-xl shadow-black/40"
       style={{ left: x, top: y }}
     >
-      {items.map((item, i) => (
+      {items.map((item) => (
         <button
-          key={i}
+          type="button"
+          key={`${item.action.type}-${item.label}`}
           className="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
           onClick={() => onAction(item.action)}
         >

@@ -1,6 +1,6 @@
+import { join } from "node:path";
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
-import { join } from "node:path";
 
 // Astro Content Layer can't reuse the Zod schemas from @stealthis/schema directly because
 // Astro requires schemas built from its own `z` instance. We mirror the shape loosely and

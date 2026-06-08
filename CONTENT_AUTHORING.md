@@ -292,6 +292,16 @@ Collection Explorer uses explicit `collections`, but the site also resolves some
 
 If you want predictable collection placement, set `collections` directly instead of relying only on heuristics.
 
+### New collection IDs (contributors)
+
+Adding a **new** collection (not just tagging resources into an existing one) requires wiring in
+schema, www config, `collections.ts`, i18n, and the **docs catalog**:
+
+- `apps/docs/src/content/docs/collections.mdx` — add a row to the All collections table
+- `apps/docs/src/content/docs/choose-your-path.mdx` — for industry verticals, add under *Build for a specific industry*
+
+Preview: `bun run dev:docs` → `http://localhost:4322/collections/`. Full checklist: `CLAUDE.md` § Adding a new library collection.
+
 ## 7. Recommended Authoring Workflow
 
 1. Pick the closest existing example in the same category.

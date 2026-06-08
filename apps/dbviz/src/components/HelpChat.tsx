@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { type Locale, useTranslations } from "../i18n";
 import { type AiProviderConfig, type ChatMessage, chat as providerChat } from "../lib/ai-providers";
-import { useTranslations, type Locale } from "../i18n";
 import { renderMarkdown } from "../lib/markdown";
 
 const HELP_SYSTEM_PROMPT = `You are the DbViz Help Assistant — a bilingual (English/Spanish) guide for the DbViz platform.
@@ -75,6 +75,7 @@ export default function HelpChat({
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll when the message list updates.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -137,15 +138,16 @@ export default function HelpChat({
           });
         },
       });
-    } catch (err: any) {
-      if (err?.name !== "AbortError") {
+    } catch (err: unknown) {
+      if (!(err instanceof Error && err.name === "AbortError")) {
+        const message = err instanceof Error ? err.message : "Unknown error";
         setMessages((prev) => {
           const copy = [...prev];
           const last = copy[copy.length - 1];
           if (last?.role === "assistant") {
             copy[copy.length - 1] = {
               ...last,
-              content: `Error: ${err?.message ?? "Unknown error"}`,
+              content: `Error: ${message}`,
             };
           }
           return copy;
@@ -155,7 +157,7 @@ export default function HelpChat({
       setLoading(false);
       abortRef.current = null;
     }
-  }, [input, loading, messages, aiConfig]);
+  }, [input, loading, messages, aiConfig, t]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -167,11 +169,13 @@ export default function HelpChat({
   if (!open) {
     return (
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-violet-600 text-white shadow-lg transition-transform hover:scale-105 hover:bg-violet-500"
         title={t("help.title")}
       >
         <svg
+          aria-hidden="true"
           width="22"
           height="22"
           viewBox="0 0 24 24"
@@ -198,6 +202,7 @@ export default function HelpChat({
           <p className="text-[10px] text-slate-500">{t("help.subtitle")}</p>
         </div>
         <button
+          type="button"
           onClick={() => setOpen(false)}
           className="text-xs text-slate-500 hover:text-slate-300"
         >
@@ -213,6 +218,7 @@ export default function HelpChat({
             <div className="space-y-1.5">
               {[t("help.q1"), t("help.q2"), t("help.q3"), t("help.q4")].map((q) => (
                 <button
+                  type="button"
                   key={q}
                   onClick={() => {
                     setInput(q);
@@ -241,6 +247,7 @@ export default function HelpChat({
               {msg.role === "assistant" && msg.content ? (
                 <div
                   className="chat-markdown"
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted markdown renderer for assistant replies.
                   dangerouslySetInnerHTML={{
                     __html: renderMarkdown(msg.content),
                   }}
@@ -269,6 +276,7 @@ export default function HelpChat({
             className="flex-1 resize-none rounded-lg border border-white/[0.08] bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-violet-500/50"
           />
           <button
+            type="button"
             onClick={send}
             disabled={!input.trim() || loading}
             className="rounded-lg bg-violet-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-violet-500 disabled:opacity-40"

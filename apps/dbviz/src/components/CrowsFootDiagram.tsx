@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useTranslations, type Locale } from "../i18n";
-import ErdContextMenu, { type ErdContextMenuTarget, type ErdAction } from "./ErdContextMenu";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type Locale, useTranslations } from "../i18n";
 import { tablesToSql } from "../lib/sql-generator";
+import ErdContextMenu, { type ErdContextMenuTarget, type ErdAction } from "./ErdContextMenu";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -29,6 +29,24 @@ interface SchemaRelation {
   toTable: string;
   toColumn: string;
   nullable: boolean;
+}
+
+function buildRelations(tbls: SchemaTable[]): SchemaRelation[] {
+  const rels: SchemaRelation[] = [];
+  for (const tbl of tbls) {
+    for (const col of tbl.columns) {
+      if (col.fk && col.references) {
+        rels.push({
+          fromTable: tbl.id,
+          fromColumn: col.name,
+          toTable: col.references.table,
+          toColumn: col.references.column,
+          nullable: col.nullable,
+        });
+      }
+    }
+  }
+  return rels;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -70,8 +88,8 @@ function parseSqlDDL(sql: string): {
   const tableRegex =
     /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?:"[^"]+"|[\w.]+)\.)?(?:"([^"]+)"|(\w+))\s*\(([\s\S]*?)\)\s*;/gi;
 
-  let tableMatch: RegExpExecArray | null;
-  while ((tableMatch = tableRegex.exec(cleaned)) !== null) {
+  let tableMatch = tableRegex.exec(cleaned);
+  while (tableMatch !== null) {
     const tableName = (tableMatch[1] || tableMatch[2] || "").replace(/^(?:public|dbo)\./, "");
     const body = tableMatch[3] || "";
 
@@ -186,6 +204,7 @@ function parseSqlDDL(sql: string): {
     }
 
     tables.push({ id: tableName, name: tableName, columns });
+    tableMatch = tableRegex.exec(cleaned);
   }
 
   // Build relations from FK references
@@ -566,14 +585,14 @@ function TableNode({
         strokeWidth={selected ? 2 : 1}
       />
       {/* Header fill */}
-      <rect width={TABLE_W} height={HEADER_H} rx={10} fill={table.color + "4D"} />
-      <rect y={HEADER_H - 10} width={TABLE_W} height={10} fill={table.color + "4D"} />
+      <rect width={TABLE_W} height={HEADER_H} rx={10} fill={`${table.color}4D`} />
+      <rect y={HEADER_H - 10} width={TABLE_W} height={10} fill={`${table.color}4D`} />
       {/* Header underline */}
       <rect
         y={HEADER_H - 1}
         width={TABLE_W}
         height={1}
-        fill={selected ? table.color : table.color + "66"}
+        fill={selected ? table.color : `${table.color}66`}
       />
       {/* Left accent stripe */}
       <rect width={3} height={h} rx={10} fill={table.color} opacity={selected ? 1 : 0.6} />
@@ -739,7 +758,7 @@ export default function CrowsFootDiagram({
     } catch (err) {
       setParseError(err instanceof Error ? err.message : t("erd.parseError"));
     }
-  }, [schemaSql]);
+  }, [schemaSql, t]);
 
   const handleDrag = useCallback((id: string, dx: number, dy: number) => {
     setTables((prev) => prev.map((t) => (t.id === id ? { ...t, x: t.x + dx, y: t.y + dy } : t)));
@@ -760,33 +779,17 @@ export default function CrowsFootDiagram({
     setSelected(null);
   }, []);
 
-  // Helper: rebuild relations from tables array
-  const buildRelations = (tbls: SchemaTable[]): SchemaRelation[] => {
-    const rels: SchemaRelation[] = [];
-    for (const tbl of tbls) {
-      for (const col of tbl.columns) {
-        if (col.fk && col.references) {
-          rels.push({
-            fromTable: tbl.id,
-            fromColumn: col.name,
-            toTable: col.references.table,
-            toColumn: col.references.column,
-            nullable: col.nullable,
-          });
-        }
-      }
-    }
-    return rels;
-  };
-
   // Apply a mutation to tables, regenerate SQL, push to parent
-  const applyEdit = (next: SchemaTable[]) => {
-    isInternalEdit.current = true;
-    setTables(next);
-    setRelations(buildRelations(next));
-    onSchemaChange?.(tablesToSql(next));
-    setContextMenu(null);
-  };
+  const applyEdit = useCallback(
+    (next: SchemaTable[]) => {
+      isInternalEdit.current = true;
+      setTables(next);
+      setRelations(buildRelations(next));
+      onSchemaChange?.(tablesToSql(next));
+      setContextMenu(null);
+    },
+    [onSchemaChange]
+  );
 
   // Handle table right-click
   const handleTableContextMenu = useCallback(
@@ -822,7 +825,7 @@ export default function CrowsFootDiagram({
   const handleErdAction = useCallback(
     (action: ErdAction) => {
       if (action.type === "addTable") {
-        const name = window.prompt(t("erd.ctx.promptTableName" as any));
+        const name = window.prompt(t("erd.ctx.promptTableName"));
         if (!name || !name.trim()) return;
         const safeName = name.trim().replace(/\s+/g, "_").toLowerCase();
         const next = tables.map((tbl) => ({ ...tbl, columns: [...tbl.columns] }));
@@ -846,7 +849,7 @@ export default function CrowsFootDiagram({
       } else if (action.type === "renameTable") {
         const tbl = tables.find((t) => t.id === action.tableId);
         if (!tbl) return;
-        const newName = window.prompt(t("erd.ctx.promptTableName" as any), tbl.name);
+        const newName = window.prompt(t("erd.ctx.promptTableName"), tbl.name);
         if (!newName || !newName.trim() || newName.trim() === tbl.name) return;
         const safeName = newName.trim().replace(/\s+/g, "_").toLowerCase();
         const oldName = tbl.name;
@@ -866,7 +869,7 @@ export default function CrowsFootDiagram({
       } else if (action.type === "deleteTable") {
         const tbl = tables.find((t) => t.id === action.tableId);
         if (!tbl) return;
-        const msg = t("erd.ctx.confirmDeleteTable" as any).replace("{name}", tbl.name);
+        const msg = t("erd.ctx.confirmDeleteTable").replace("{name}", tbl.name);
         if (!window.confirm(msg)) return;
         const oldName = tbl.name;
         const next = tables
@@ -882,7 +885,7 @@ export default function CrowsFootDiagram({
           }));
         applyEdit(next);
       } else if (action.type === "addColumn") {
-        const input = window.prompt(t("erd.ctx.promptColumnDef" as any));
+        const input = window.prompt(t("erd.ctx.promptColumnDef"));
         if (!input || !input.trim()) return;
         const parts = input.trim().split(/\s+/);
         const colName = parts[0] || "col";
@@ -912,7 +915,7 @@ export default function CrowsFootDiagram({
         const col = tbl.columns.find((c) => c.name === action.columnName);
         if (!col) return;
         const prefill = `${col.name} ${col.type}${col.nullable ? "" : " NOT NULL"}`;
-        const input = window.prompt(t("erd.ctx.promptColumnDef" as any), prefill);
+        const input = window.prompt(t("erd.ctx.promptColumnDef"), prefill);
         if (!input || !input.trim()) return;
         const parts = input.trim().split(/\s+/);
         const newName = parts[0] || col.name;
@@ -938,7 +941,7 @@ export default function CrowsFootDiagram({
       } else if (action.type === "deleteColumn") {
         const tbl = tables.find((t) => t.id === action.tableId);
         if (!tbl) return;
-        const msg = t("erd.ctx.confirmDeleteColumn" as any).replace("{name}", action.columnName);
+        const msg = t("erd.ctx.confirmDeleteColumn").replace("{name}", action.columnName);
         if (!window.confirm(msg)) return;
         const next = tables.map((tb) => {
           if (tb.id !== action.tableId) return { ...tb, columns: [...tb.columns] };
@@ -950,7 +953,7 @@ export default function CrowsFootDiagram({
         applyEdit(next);
       }
     },
-    [tables, t, onSchemaChange]
+    [tables, t, applyEdit]
   );
 
   // Pan handler for empty canvas area
@@ -991,6 +994,7 @@ export default function CrowsFootDiagram({
       <div className="flex min-h-[340px] items-center justify-center rounded-xl border border-amber-400/20 bg-amber-500/5 p-6 text-center">
         <div>
           <svg
+            aria-hidden="true"
             viewBox="0 0 24 24"
             className="mx-auto mb-3 h-8 w-8 text-amber-400"
             fill="none"
@@ -1015,6 +1019,7 @@ export default function CrowsFootDiagram({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <svg
+            aria-hidden="true"
             viewBox="0 0 24 24"
             className="h-3.5 w-3.5 text-slate-500"
             fill="none"
@@ -1037,33 +1042,47 @@ export default function CrowsFootDiagram({
           </span>
           <div className="flex items-center gap-0.5 rounded-lg border border-white/10 px-0.5 py-0.5">
             <button
+              type="button"
               onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
               disabled={zoom <= 0.25}
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom out"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-3.5 w-3.5"
+              >
                 <path d="M6 10a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 10Z" />
               </svg>
             </button>
             <button
+              type="button"
               onClick={() => setZoom(1)}
               className="min-w-[34px] rounded px-1 py-0.5 text-center text-[10px] text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
             >
               {Math.round(zoom * 100)}%
             </button>
             <button
+              type="button"
               onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
               disabled={zoom >= 3}
               className="rounded p-1 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 disabled:opacity-30"
               title="Zoom in"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-3.5 w-3.5"
+              >
                 <path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" />
               </svg>
             </button>
           </div>
           <button
+            type="button"
             onClick={() => {
               handleReset();
               setZoom(1);
@@ -1109,6 +1128,7 @@ export default function CrowsFootDiagram({
         }}
       >
         <svg
+          aria-hidden="true"
           width={canvasW * zoom}
           height={canvasH * zoom}
           className="block"
@@ -1171,7 +1191,7 @@ export default function CrowsFootDiagram({
           <span className="font-mono font-bold text-[#a855f7]">FK</span> {t("erd.foreignKey")}
         </span>
         <span className="flex items-center gap-1.5">
-          <svg width="28" height="16" viewBox="0 0 28 16">
+          <svg aria-hidden="true" width="28" height="16" viewBox="0 0 28 16">
             <line x1="2" y1="8" x2="8" y2="8" stroke="#64748b" strokeWidth="1.5" />
             <line x1="8" y1="3" x2="8" y2="13" stroke="#64748b" strokeWidth="1.5" />
             <line x1="11" y1="3" x2="11" y2="13" stroke="#64748b" strokeWidth="1.5" />
@@ -1179,7 +1199,7 @@ export default function CrowsFootDiagram({
           {t("erd.exactlyOne")}
         </span>
         <span className="flex items-center gap-1.5">
-          <svg width="32" height="16" viewBox="0 0 32 16">
+          <svg aria-hidden="true" width="32" height="16" viewBox="0 0 32 16">
             <line x1="18" y1="8" x2="22" y2="8" stroke="#64748b" strokeWidth="1.5" />
             <line x1="22" y1="3" x2="22" y2="13" stroke="#64748b" strokeWidth="1.5" />
             <line x1="18" y1="8" x2="8" y2="2" stroke="#64748b" strokeWidth="1.5" />
@@ -1189,7 +1209,7 @@ export default function CrowsFootDiagram({
           {t("erd.oneToMany")}
         </span>
         <span className="flex items-center gap-1.5">
-          <svg width="38" height="16" viewBox="0 0 38 16">
+          <svg aria-hidden="true" width="38" height="16" viewBox="0 0 38 16">
             <circle cx="8" cy="8" r="4.5" fill="none" stroke="#64748b" strokeWidth="1.5" />
             <line x1="24" y1="8" x2="28" y2="8" stroke="#64748b" strokeWidth="1.5" />
             <line x1="28" y1="3" x2="28" y2="13" stroke="#64748b" strokeWidth="1.5" />

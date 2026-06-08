@@ -1,8 +1,8 @@
 import { ToastProvider, Toaster } from "@/components/native/toast";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/i18n";
-import { legacyRouteAliases, routes } from "@/lib/routes";
 import { Route, Router, Routes } from "@/lib/router";
+import { legacyRouteAliases, routes } from "@/lib/routes";
 import Changelog from "@/pages/Changelog";
 import Index from "@/pages/Index";
 import NewDataSource from "@/pages/NewDataSource";

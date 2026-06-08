@@ -1627,7 +1627,7 @@ Each landing ships with:
 
 ---
 
-## Phase 31 — Salon / Beauty / Barbershop Theme 💈 PLAN
+## Phase 31 — Salon / Beauty / Barbershop Theme 💈 ✅ DONE
 
 > Booking-heavy + visual-heavy vertical — stylist calendar, service catalog, client portal, POS, plus themed landings (hair salon, barbershop, nail bar, day spa, med-spa).
 >
@@ -1635,53 +1635,55 @@ Each landing ships with:
 > Shared design language: rose-gold + cream + matte black · elegant serif (Cormorant) + clean sans · high-touch photography · subtle gold accents.
 > Collection: `salon`.
 
+**Progress (2026-06-08):** ✅ **Complete — all 23 resources built** via a 23-agent parallel workflow (see `PHASE-WORKFLOW.md`). The `salon` collection is fully wired (`schema.ts` + Astro `config.ts` enums, `apps/www/src/lib/collections.ts` card order 13, i18n EN+ES) and the MCP catalog is regenerated (875 resources, all frontmatter validated). Every resource has `index.mdx` + `snippets/{html,css,js}`; the 5 themed landings each use their own palette (rose-gold luxe, oxblood barbershop, blush nail-bar, sage spa, pearl med-spa).
+
 ### 31.A — Client / Customer Side
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `salon-booking` | Service + Stylist + Time Booking | pages | med | [ ] |
-| 2 | `salon-service-catalog` | Service Catalog (categories · price) | pages | easy | [ ] |
-| 3 | `salon-stylist-profile` | Stylist Profile + portfolio | ui-components | easy | [ ] |
-| 4 | `salon-client-portal` | Client Portal (past visits · rebook) | pages | med | [ ] |
-| 5 | `salon-loyalty-rewards` | Loyalty & Referral Card | ui-components | easy | [ ] |
-| 6 | `salon-gift-card` | Gift Card Purchase / Redeem | ui-components | easy | [ ] |
+| 1 | `salon-booking` | Service + Stylist + Time Booking | pages | med | ✅ |
+| 2 | `salon-service-catalog` | Service Catalog (categories · price) | pages | easy | ✅ |
+| 3 | `salon-stylist-profile` | Stylist Profile + portfolio | ui-components | easy | ✅ |
+| 4 | `salon-client-portal` | Client Portal (past visits · rebook) | pages | med | ✅ |
+| 5 | `salon-loyalty-rewards` | Loyalty & Referral Card | ui-components | easy | ✅ |
+| 6 | `salon-gift-card` | Gift Card Purchase / Redeem | ui-components | easy | ✅ |
 
 ### 31.B — Staff / Stylist Side
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `salon-stylist-calendar` | Stylist Day Calendar | pages | med | [ ] |
-| 8 | `salon-appointment-card` | Appointment Detail Card | ui-components | easy | [ ] |
-| 9 | `salon-color-formula` | Color Formula Tracker (per client) | ui-components | med | [ ] |
-| 10 | `salon-client-notes` | Client Notes (preferences · allergies) | ui-components | easy | [ ] |
-| 11 | `salon-pos-checkout` | POS Checkout (services + retail) | pages | med | [ ] |
-| 12 | `salon-tip-split` | Tip & Commission Split | ui-components | easy | [ ] |
+| 7 | `salon-stylist-calendar` | Stylist Day Calendar | pages | med | ✅ |
+| 8 | `salon-appointment-card` | Appointment Detail Card | ui-components | easy | ✅ |
+| 9 | `salon-color-formula` | Color Formula Tracker (per client) | ui-components | med | ✅ |
+| 10 | `salon-client-notes` | Client Notes (preferences · allergies) | ui-components | easy | ✅ |
+| 11 | `salon-pos-checkout` | POS Checkout (services + retail) | pages | med | ✅ |
+| 12 | `salon-tip-split` | Tip & Commission Split | ui-components | easy | ✅ |
 
 ### 31.C — Marketing Pages
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 13 | `salon-page-landing` | Salon Landing | pages | med | [ ] |
-| 14 | `salon-page-services` | Services & Prices | pages | easy | [ ] |
-| 15 | `salon-page-team` | Team / Stylists | pages | easy | [ ] |
-| 16 | `salon-page-gallery` | Portfolio / Gallery | pages | easy | [ ] |
+| 13 | `salon-page-landing` | Salon Landing | pages | med | ✅ |
+| 14 | `salon-page-services` | Services & Prices | pages | easy | ✅ |
+| 15 | `salon-page-team` | Team / Stylists | pages | easy | ✅ |
+| 16 | `salon-page-gallery` | Portfolio / Gallery | pages | easy | ✅ |
 
 ### 31.D — Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 17 | `salon-admin-dashboard` | Revenue per Stylist + Service Mix | pages | med | [ ] |
-| 18 | `salon-admin-inventory` | Retail Inventory (products) | pages | med | [ ] |
+| 17 | `salon-admin-dashboard` | Revenue per Stylist + Service Mix | pages | med | ✅ |
+| 18 | `salon-admin-inventory` | Retail Inventory (products) | pages | med | ✅ |
 
 ### 31.E — Themed Salon Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 19 | `salon-landing-hair` | Modern Hair Salon | Rose gold + cream + black · elegant serif · luxe, editorial | med | [ ] |
-| 20 | `salon-landing-barber` | Classic Barbershop | Oxblood + walnut + cream · slab serif · vintage, masculine | med | [ ] |
-| 21 | `salon-landing-nail-bar` | Nail Bar / Studio | Blush + lavender + chrome · playful sans · trendy, Instagrammable | easy | [ ] |
-| 22 | `salon-landing-spa` | Day Spa | Sage + sand + bronze · light serif · serene, wellness | med | [ ] |
-| 23 | `salon-landing-medspa` | Med-Spa / Aesthetic | Pearl + champagne + soft pink · clinical serif · premium, medical-elegant | hard | [ ] |
+| 19 | `salon-landing-hair` | Modern Hair Salon | Rose gold + cream + black · elegant serif · luxe, editorial | med | ✅ |
+| 20 | `salon-landing-barber` | Classic Barbershop | Oxblood + walnut + cream · slab serif · vintage, masculine | med | ✅ |
+| 21 | `salon-landing-nail-bar` | Nail Bar / Studio | Blush + lavender + chrome · playful sans · trendy, Instagrammable | easy | ✅ |
+| 22 | `salon-landing-spa` | Day Spa | Sage + sand + bronze · light serif · serene, wellness | med | ✅ |
+| 23 | `salon-landing-medspa` | Med-Spa / Aesthetic | Pearl + champagne + soft pink · clinical serif · premium, medical-elegant | hard | ✅ |
 
 ### Build order (Phase 31)
 
@@ -1695,7 +1697,7 @@ Each landing ships with:
 
 ---
 
-## Phase 32 — Real Estate Theme 🏡 PLAN
+## Phase 32 — Real Estate Theme 🏡 ✅ DONE
 
 > Listings + agent CRM + buyer/seller flows + themed brokerage landings (luxury, urban condo, suburban, commercial, vacation rental).
 >
@@ -1707,51 +1709,51 @@ Each landing ships with:
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `realestate-search` | Search Listings (filters + map) | pages | hard | [ ] |
-| 2 | `realestate-listing-card` | Listing Card (price · beds · sqft) | ui-components | easy | [ ] |
-| 3 | `realestate-listing-detail` | Listing Detail (gallery · map · schools) | pages | hard | [ ] |
-| 4 | `realestate-virtual-tour` | Virtual Tour Viewer | ui-components | med | [ ] |
-| 5 | `realestate-mortgage-calc` | Mortgage Calculator | ui-components | med | [ ] |
-| 6 | `realestate-affordability` | Affordability Estimator | ui-components | med | [ ] |
-| 7 | `realestate-saved-search` | Saved Searches / Alerts | ui-components | easy | [ ] |
-| 8 | `realestate-tour-booking` | Schedule Tour / Open House | ui-components | easy | [ ] |
+| 1 | `realestate-search` | Search Listings (filters + map) | pages | hard | ✅ |
+| 2 | `realestate-listing-card` | Listing Card (price · beds · sqft) | ui-components | easy | ✅ |
+| 3 | `realestate-listing-detail` | Listing Detail (gallery · map · schools) | pages | hard | ✅ |
+| 4 | `realestate-virtual-tour` | Virtual Tour Viewer | ui-components | med | ✅ |
+| 5 | `realestate-mortgage-calc` | Mortgage Calculator | ui-components | med | ✅ |
+| 6 | `realestate-affordability` | Affordability Estimator | ui-components | med | ✅ |
+| 7 | `realestate-saved-search` | Saved Searches / Alerts | ui-components | easy | ✅ |
+| 8 | `realestate-tour-booking` | Schedule Tour / Open House | ui-components | easy | ✅ |
 
 ### 32.B — Agent / CRM Side
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 9 | `realestate-agent-dashboard` | Agent Dashboard (leads · listings · pipeline) | pages | hard | [ ] |
-| 10 | `realestate-listing-editor` | Listing Editor (photos · description · price) | pages | med | [ ] |
-| 11 | `realestate-lead-card` | Lead Card (contact · status · notes) | ui-components | easy | [ ] |
-| 12 | `realestate-cma-report` | CMA / Comp Report | pages | med | [ ] |
-| 13 | `realestate-offer-tracker` | Offer Tracker (offers · counters) | ui-components | med | [ ] |
-| 14 | `realestate-transaction-pipeline` | Transaction Pipeline (Kanban) | pages | hard | [ ] |
+| 9 | `realestate-agent-dashboard` | Agent Dashboard (leads · listings · pipeline) | pages | hard | ✅ |
+| 10 | `realestate-listing-editor` | Listing Editor (photos · description · price) | pages | med | ✅ |
+| 11 | `realestate-lead-card` | Lead Card (contact · status · notes) | ui-components | easy | ✅ |
+| 12 | `realestate-cma-report` | CMA / Comp Report | pages | med | ✅ |
+| 13 | `realestate-offer-tracker` | Offer Tracker (offers · counters) | ui-components | med | ✅ |
+| 14 | `realestate-transaction-pipeline` | Transaction Pipeline (Kanban) | pages | hard | ✅ |
 
 ### 32.C — Marketing Pages
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 15 | `realestate-page-brokerage` | Brokerage Landing | pages | med | [ ] |
-| 16 | `realestate-page-agent` | Agent Profile / Personal Brand | pages | easy | [ ] |
-| 17 | `realestate-page-neighborhood` | Neighborhood Guide | pages | med | [ ] |
+| 15 | `realestate-page-brokerage` | Brokerage Landing | pages | med | ✅ |
+| 16 | `realestate-page-agent` | Agent Profile / Personal Brand | pages | easy | ✅ |
+| 17 | `realestate-page-neighborhood` | Neighborhood Guide | pages | med | ✅ |
 
 ### 32.D — Brokerage Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 18 | `realestate-admin-dashboard` | Brokerage Dashboard (volume · GCI) | pages | hard | [ ] |
-| 19 | `realestate-admin-team` | Team / Agent Roster | pages | med | [ ] |
-| 20 | `realestate-admin-compliance` | Compliance / Document Tracker | ui-components | med | [ ] |
+| 18 | `realestate-admin-dashboard` | Brokerage Dashboard (volume · GCI) | pages | hard | ✅ |
+| 19 | `realestate-admin-team` | Team / Agent Roster | pages | med | ✅ |
+| 20 | `realestate-admin-compliance` | Compliance / Document Tracker | ui-components | med | ✅ |
 
 ### 32.E — Themed Real Estate Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 21 | `realestate-landing-luxury` | Luxury Estates | Ivory + deep green + brass · Cormorant + Inter · editorial, refined | hard | [ ] |
-| 22 | `realestate-landing-urban` | Urban Condo Tower | Charcoal + glass blue + chrome · clean grotesque · modern, sleek | hard | [ ] |
-| 23 | `realestate-landing-suburban` | Suburban Family Homes | Sage + cream + warm wood · friendly serif + sans · welcoming, family | med | [ ] |
-| 24 | `realestate-landing-commercial` | Commercial / Industrial | Steel + navy + amber · clean sans · authoritative, B2B | med | [ ] |
-| 25 | `realestate-landing-vacation` | Vacation / Short-term Rental | Sand + teal + coral · airy sans · escape, lifestyle | med | [ ] |
+| 21 | `realestate-landing-luxury` | Luxury Estates | Ivory + deep green + brass · Cormorant + Inter · editorial, refined | hard | ✅ |
+| 22 | `realestate-landing-urban` | Urban Condo Tower | Charcoal + glass blue + chrome · clean grotesque · modern, sleek | hard | ✅ |
+| 23 | `realestate-landing-suburban` | Suburban Family Homes | Sage + cream + warm wood · friendly serif + sans · welcoming, family | med | ✅ |
+| 24 | `realestate-landing-commercial` | Commercial / Industrial | Steel + navy + amber · clean sans · authoritative, B2B | med | ✅ |
+| 25 | `realestate-landing-vacation` | Vacation / Short-term Rental | Sand + teal + coral · airy sans · escape, lifestyle | med | ✅ |
 
 ### Build order (Phase 32)
 
@@ -1762,6 +1764,13 @@ Each landing ships with:
 5. **Marketing** — 15 → 17.
 6. **Admin** — 18 → 20.
 7. **Landings** — 21 → 25.
+
+**Progress (2026-06-08):** ✅ DONE — all 25 resources built via multi-agent workflow
+(`docs/templates/phase32-realestate.workflow.js`). Each has `index.mdx` + 3 snippets
+(html/css/js). `realestate` collection wired in schema, www content config, `collections.ts`
+(order 14), and i18n (`en` + `es`). MCP catalog regenerated (875 resources, 25 realestate).
+Shared editorial design system: Cormorant Garamond + Inter, ivory/deep-green/brass; 5 themed
+landings use per-variant palette overrides.
 
 ---
 
@@ -2023,6 +2032,7 @@ If themes start repeating UI primitives (booking widgets, calendars, payment for
 > Naming convention: `news-<area>-<slug>`.
 > Shared design language: ink black + newsprint cream + one accent red · serif display (Playfair / Times-like) + grotesque body · strict column grids · rules, drop caps, pull quotes, bylines.
 > Collection: `editorial`.
+using the style of the news
 
 ### 46.A — Reader-Facing Layouts
 

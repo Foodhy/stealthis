@@ -12,10 +12,10 @@
  * Docs: https://blog.codepen.io/documentation/prefill/
  */
 
-import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSync } from "node:child_process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT_DIR = path.resolve(__dirname, "../../packages/content");
@@ -74,12 +74,13 @@ function buildPrefill(slug) {
   // Extract external CSS links (fonts, etc.)
   const cssExternal = [];
   const linkRegex = /<link[^>]*href=["']([^"']+)["'][^>]*>/gi;
-  let linkMatch;
-  while ((linkMatch = linkRegex.exec(headContent)) !== null) {
+  let linkMatch = linkRegex.exec(headContent);
+  while (linkMatch !== null) {
     const href = linkMatch[1];
     if (href.startsWith("http") && !href.includes("style.css")) {
       cssExternal.push(href);
     }
+    linkMatch = linkRegex.exec(headContent);
   }
 
   // Parse import map and rewrite bare import specifiers → full CDN URLs
