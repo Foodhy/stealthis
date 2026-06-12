@@ -1,0 +1,126 @@
+---
+import Base from "@layouts/Base.astro";
+import { getAlternateLinks, getLocaleFromUrl, useTranslations } from "@i18n/index";
+import { loadAgentSkills } from "@lib/agent-skills";
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+const alternateLinks = getAlternateLinks("/skills");
+const skills = loadAgentSkills();
+
+const skillIcons: Record<string, string> = {
+  "create-site-pages": "◻",
+  "page-resources": "▭",
+  "content-authoring": "◈",
+  "add-collection": "◎",
+};
+
+const docs = [
+  {
+    name: "AGENTS.md / CLAUDE.md",
+    role: t("skills.docs.agents"),
+  },
+  {
+    name: ".agents/skills/*/SKILL.md",
+    role: t("skills.docs.skills"),
+  },
+  {
+    name: "CONTENT_AUTHORING.md",
+    role: t("skills.docs.content"),
+  },
+  {
+    name: "PHASE-WORKFLOW.md",
+    role: t("skills.docs.phase"),
+  },
+];
+---
+
+<Base
+  title={t("skills.title")}
+  description={t("skills.description")}
+  canonicalPath="/skills"
+  alternateLinks={alternateLinks}
+>
+  <section class="container-xl py-16 pb-20">
+    <header class="mb-12 max-w-3xl">
+      <p class="text-sm font-medium uppercase tracking-[0.2em] text-brand-400 mb-3">
+        {t("skills.badge")}
+      </p>
+      <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">{t("skills.title")}</h1>
+      <p class="mt-4 text-slate-400 text-lg leading-relaxed">{t("skills.intro")}</p>
+      <p class="mt-3 text-sm text-slate-500 font-mono">.agents/skills/&lt;name&gt;/SKILL.md</p>
+    </header>
+
+    <div class="grid gap-6 lg:grid-cols-2 mb-16">
+      {skills.map((skill) => (
+        <article class="border border-white/8 rounded-2xl bg-surface-900/30 p-6 sm:p-8 flex flex-col">
+          <div class="flex items-start gap-4 mb-4">
+            <span class="text-2xl text-brand-400 shrink-0" aria-hidden="true">
+              {skillIcons[skill.id] ?? "✦"}
+            </span>
+            <div class="min-w-0">
+              <h2 class="text-xl font-semibold text-white">{skill.title}</h2>
+              <p class="mt-1 text-xs font-mono text-slate-500">{skill.repoPath}</p>
+            </div>
+          </div>
+
+          <p class="text-slate-300 leading-relaxed mb-5">{skill.description}</p>
+
+          {skill.tags.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-5">
+              {skill.tags.map((tag) => (
+                <span class="text-xs px-2.5 py-1 rounded-full bg-white/6 text-slate-400 border border-white/8">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {skill.whenToUse.length > 0 && (
+            <div class="mt-auto">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                {t("skills.whenToUse")}
+              </h3>
+              <ul class="space-y-2 text-sm text-slate-400">
+                {skill.whenToUse.map((item) => (
+                  <li class="flex gap-2">
+                    <span class="text-brand-400 shrink-0">→</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </article>
+      ))}
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-2">
+      <section class="border border-white/8 rounded-2xl bg-surface-900/20 p-6 sm:p-8">
+        <h2 class="text-lg font-semibold text-white mb-4">{t("skills.docsTitle")}</h2>
+        <ul class="space-y-3">
+          {docs.map((doc) => (
+            <li class="flex flex-col sm:flex-row sm:items-baseline sm:gap-3 border-b border-white/6 pb-3 last:border-0 last:pb-0">
+              <span class="font-mono text-sm text-brand-300 shrink-0">{doc.name}</span>
+              <span class="text-sm text-slate-400">{doc.role}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="border border-white/8 rounded-2xl bg-surface-900/20 p-6 sm:p-8">
+        <h2 class="text-lg font-semibold text-white mb-4">{t("skills.anatomyTitle")}</h2>
+        <pre class="text-sm text-slate-400 font-mono leading-relaxed overflow-x-auto"><code>{`---
+name: skill-id
+description: When the agent should load this skill.
+---
+
+## When to use
+## Workflow
+## Checklist
+## Related files`}</code></pre>
+        <p class="mt-4 text-sm text-slate-500">{t("skills.anatomyNote")}</p>
+      </section>
+    </div>
+  </section>
+</Base>
