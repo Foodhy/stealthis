@@ -16,6 +16,19 @@ You are maintaining and extending `stealthis`, a Bun-workspace monorepo for:
 
 Build output lives in `dist/`; never edit generated files directly.
 
+## Agent skills
+
+Task-specific workflows live in `.agents/skills/<name>/SKILL.md`. Load the matching skill when the task fits:
+
+| Skill | Use when |
+| --- | --- |
+| `create-site-pages` | New Astro route on `apps/www` (i18n, SEO, sitemap) |
+| `page-resources` | Full-page Library template (`category: pages`, Lab demo) |
+| `content-authoring` | Any resource under `packages/content/resources/` |
+| `add-collection` | New Library collection ID (schema + i18n + docs) |
+
+Index: `.agents/skills/README.md`
+
 ## Agent rules
 
 1. Continue from current project state and existing planning docs (`todo.md`, `PROGRESS.md`) when relevant.

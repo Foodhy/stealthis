@@ -452,6 +452,21 @@ const en = {
   "changelog.intro":
     "Notable changes, new resources, and improvements. For full release history see GitHub.",
   "changelog.seeGitHub": "Releases on GitHub",
+  "skills.title": "Agent Skills",
+  "skills.description":
+    "On-demand knowledge modules for AI agents working in the stealthis monorepo — task-specific workflows for pages, resources, and collections.",
+  "skills.badge": "For agents & contributors",
+  "skills.intro":
+    "Each skill is a packaged workflow loaded when a task matches. They complement AGENTS.md with focused checklists for common repo tasks.",
+  "skills.whenToUse": "When to use",
+  "skills.docsTitle": "How skills relate to other docs",
+  "skills.docs.agents": "Always-on project context and command reference",
+  "skills.docs.skills": "Task-specific workflows loaded when relevant",
+  "skills.docs.content": "Full reference for resource frontmatter and snippets",
+  "skills.docs.phase": "Multi-agent batch builds for ROADMAP phases (opt-in)",
+  "skills.anatomyTitle": "Anatomy of a skill",
+  "skills.anatomyNote": "Optional subfolders (rules/, examples/) can hold deeper reference without bloating the entry point.",
+  "nav.skills": "Skills",
   "showcase.title": "Showcase",
   "showcase.livePreviews": "live previews",
   "showcase.filterAria": "Filter by category",
@@ -862,6 +877,21 @@ const es = {
   "changelog.intro":
     "Cambios destacados, nuevos recursos e mejoras. Para el historial completo ver GitHub.",
   "changelog.seeGitHub": "Releases en GitHub",
+  "skills.title": "Agent Skills",
+  "skills.description":
+    "Módulos de conocimiento bajo demanda para agentes de IA en el monorepo stealthis — flujos para páginas, recursos y colecciones.",
+  "skills.badge": "Para agentes y contribuidores",
+  "skills.intro":
+    "Cada skill es un flujo empaquetado que se carga cuando la tarea coincide. Complementan AGENTS.md con checklists enfocados.",
+  "skills.whenToUse": "Cuándo usar",
+  "skills.docsTitle": "Cómo se relacionan con otros docs",
+  "skills.docs.agents": "Contexto del proyecto y referencia de comandos",
+  "skills.docs.skills": "Flujos de tarea cargados cuando aplican",
+  "skills.docs.content": "Referencia completa de frontmatter y snippets",
+  "skills.docs.phase": "Builds multi-agente para fases del ROADMAP (opcional)",
+  "skills.anatomyTitle": "Anatomía de una skill",
+  "skills.anatomyNote": "Subcarpetas opcionales (rules/, examples/) para referencia más profunda.",
+  "nav.skills": "Skills",
   "showcase.title": "Showcase",
   "showcase.livePreviews": "previews en vivo",
   "showcase.filterAria": "Filtrar por categoría",
