@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Music — Waveform / Progress Scrubber</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="stage">
+    <header class="stage__head">
+      <span class="kicker">Now Playing</span>
+      <h1 class="stage__title">Waveform Scrubber</h1>
+      <p class="stage__sub">A SoundCloud-style progress scrubber with draggable playhead, hover preview, and variable playback speed.</p>
+    </header>
+
+    <!-- ============ PRIMARY PLAYER ============ -->
+    <section class="player" aria-label="Now playing track">
+      <div class="player__top">
+        <div class="cover" data-theme="reservoir" aria-hidden="true">
+          <span class="cover__shape cover__shape--1"></span>
+          <span class="cover__shape cover__shape--2"></span>
+          <span class="cover__ring"></span>
+        </div>
+        <div class="meta">
+          <span class="meta__badge">Single · Lossless</span>
+          <h2 class="meta__title">Midnight Reservoir</h2>
+          <p class="meta__artist">Neon Tides</p>
+          <div class="meta__stats">
+            <span class="stat"><svg viewBox="0 0 24 24" class="ico"><path d="M8 5v14l11-7z"/></svg> 1,284,902 plays</span>
+            <span class="stat"><svg viewBox="0 0 24 24" class="ico"><path d="M12 21s-7.5-4.6-10-9.2C.7 9.1 1.6 5.7 4.6 4.7 7 3.9 9 5.1 12 8c3-2.9 5-4.1 7.4-3.3 3 .9 3.9 4.4 2.6 7.1C19.5 16.4 12 21 12 21z"/></svg> 42.1k</span>
+          </div>
+        </div>
+        <button class="like" type="button" aria-pressed="false" aria-label="Like this track">
+          <svg viewBox="0 0 24 24" class="ico"><path d="M12 21s-7.5-4.6-10-9.2C.7 9.1 1.6 5.7 4.6 4.7 7 3.9 9 5.1 12 8c3-2.9 5-4.1 7.4-3.3 3 .9 3.9 4.4 2.6 7.1C19.5 16.4 12 21 12 21z"/></svg>
+        </button>
+      </div>
+
+      <!-- The scrubber: tooltip + hover preview + bars are injected by JS -->
+      <div
+        class="scrub"
+        id="scrub"
+        role="slider"
+        tabindex="0"
+        aria-label="Seek through track"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        aria-valuetext="0:00 of 3:42"
+      >
+        <div class="scrub__hover" id="scrubHover" aria-hidden="true"></div>
+        <div class="scrub__tip" id="scrubTip" aria-hidden="true">0:00</div>
+        <div class="scrub__bars" id="scrubBars"></div>
+        <div class="scrub__head" id="scrubHead" aria-hidden="true"></div>
+      </div>
+
+      <div class="controls">
+        <div class="controls__left">
+          <button class="iconbtn" id="rewind" type="button" aria-label="Rewind 10 seconds">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+          </button>
+          <button class="playbtn" id="play" type="button" aria-pressed="false" aria-label="Play">
+            <svg class="playbtn__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path class="playbtn__play" d="M8 5v14l11-7z"/>
+              <path class="playbtn__pause" d="M7 5h3v14H7zM14 5h3v14h-3z"/>
+            </svg>
+          </button>
+          <button class="iconbtn" id="forward" type="button" aria-label="Forward 10 seconds">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M12 5V1l5 5-5 5V7a5 5 0 1 0 5 5h2a7 7 0 1 1-7-7z"/></svg>
+          </button>
+        </div>
+
+        <div class="controls__time">
+          <span class="time time--current" id="curTime">0:00</span>
+          <span class="time__sep">/</span>
+          <span class="time time--total" id="totTime">3:42</span>
+        </div>
+
+        <div class="controls__speed">
+          <span class="eq" id="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <label class="speed">
+            <span class="speed__label">Speed</span>
+            <select id="speed" aria-label="Playback speed">
+              <option value="0.5">0.5×</option>
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2×</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MINI QUEUE — compact scrubbers ============ -->
+    <section class="queue" aria-label="Up next">
+      <h3 class="queue__head">Up next in the queue</h3>
+      <ul class="queue__list" id="queue"></ul>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

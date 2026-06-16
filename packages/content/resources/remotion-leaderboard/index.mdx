@@ -1,0 +1,48 @@
+---
+slug: remotion-leaderboard
+title: "Remotion — Animated Leaderboard"
+description: "An animated weekly leaderboard for 8 fictional players rendered in Remotion. Rows slide in from the right with a staggered spring entrance, each showing a rank medal, avatar circle with initials, player name, a score bar that fills with spring physics, and a live count-up score label. The top-ranked row glows gold and receives a shimmer sweep after all entries appear."
+category: remotion
+type: animation
+tags: [remotion, leaderboard, ranking, scoreboard]
+tech: [remotion, react, typescript]
+difficulty: med
+targets: [react]
+collections: [remotion]
+license: MIT
+createdAt: 2026-06-12
+updatedAt: 2026-06-12
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## Animated Leaderboard
+
+Eight fictional players — Xera Nova, Kaito Ryuu, Zara Voss, and five others — fill a dark-cinema leaderboard across seven seconds. The "Weekly Leaderboard · Season 7" title fades and slides down in the first 20 frames, followed by subtle column headers, before the rows begin their entrance. Each row slides in from the right using a cubic `interpolate` ease with a 20-frame stagger between entries, so the ranking is progressively revealed from 1st place down to 8th. The top three rows display medal emojis (🥇🥈🥉) while ranks 4–8 show a muted `#N` numeral.
+
+Every row contains a colored avatar circle displaying the player's initials, their full name, and a horizontal score bar backed by a dark track. The bar fills left-to-right via `spring()` physics — it accelerates out of zero and settles at the correct fraction of the maximum score. Alongside the bar, a score label counts up from 0 to the final value using a matching spring, formatted with locale thousands separators. The first-place row is enclosed in a warm amber border with a subtle gold radial glow that fades in once its bar has finished filling; at frame 192, a bright shimmer band sweeps across that row from left to right for a final visual reward.
+
+The background uses a layered radial gradient — a wide indigo-to-gold ellipse behind the list and a tighter gold bloom above it — so the leaderboard feels lit from the top rather than floating in a flat void. All color assignments are vibrant and distinct: indigo, cyan, orange, emerald, violet, rose, sky, and pink ensure no two avatars clash.
+
+### Composition specs
+
+| Property | Value |
+|---|---|
+| Resolution | 1280 × 720 |
+| FPS | 30 |
+| Duration | 7 s (210 frames) |
+
+### Data format
+
+All player data is declared in the `PLAYERS` constant at the top of the file. Each entry carries an `id`, `initials` (two-letter abbreviation), `name`, `score` (integer points), and `avatarColor` (hex string). The array is sorted descending by `score` into `SORTED_PLAYERS` before rendering, so re-ordering the source array has no effect — simply change the `score` values to reprioritize ranks.
+
+```ts
+const PLAYERS: Player[] = [
+  { id: "p1", initials: "XN", name: "Xera Nova",   score: 98450, avatarColor: "#6366f1" },
+  { id: "p2", initials: "KR", name: "Kaito Ryuu",  score: 87320, avatarColor: "#06b6d4" },
+  // …up to 8–12 entries
+];
+```
+
+To change the number of rows, add or remove entries from `PLAYERS`. The `ROW_STAGGER` constant (default 20 frames) controls the entrance cadence; reduce it for faster reveal or increase it for a more dramatic staggered drop.

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Submit success / confirmation states</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="card" aria-labelledby="form-title">
+        <header class="card__head">
+          <span class="badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M2 12a10 10 0 1 1 20 0 10 10 0 0 1-20 0m13.7-2.3-4.8 4.8-2.3-2.3-1.4 1.4 3.7 3.7 6.2-6.2z"
+              />
+            </svg>
+            Submit lifecycle
+          </span>
+          <h1 id="form-title" class="card__title">Contact our team</h1>
+          <p class="card__sub">
+            Send us a message and watch the full submit flow — idle, sending, then a
+            confirmed receipt with a reference number.
+          </p>
+        </header>
+
+        <!-- Error banner (shown only on the failure path) -->
+        <div
+          id="error-banner"
+          class="banner"
+          role="alert"
+          hidden
+        >
+          <svg class="banner__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 2 1 21h22zm0 6 .9 7h-1.8zm-1 9h2v2h-2z"
+            />
+          </svg>
+          <div class="banner__body">
+            <strong class="banner__title">We couldn't send your message</strong>
+            <span class="banner__text">
+              The request timed out before it reached us. Nothing was lost — just retry.
+            </span>
+          </div>
+          <button type="button" class="banner__retry" data-retry>Retry</button>
+        </div>
+
+        <form id="contact" class="form" novalidate>
+          <!-- Name -->
+          <div class="field" data-field="name">
+            <label class="field__label" for="name">
+              Full name <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="control">
+              <input
+                id="name"
+                name="name"
+                type="text"
+                class="input"
+                autocomplete="name"
+                placeholder="Priya Aaltonen"
+                required
+                aria-required="true"
+                aria-describedby="name-help"
+              />
+              <span class="control__icon" aria-hidden="true"></span>
+            </div>
+            <p id="name-help" class="help">So we know who we're replying to.</p>
+          </div>
+
+          <!-- Email -->
+          <div class="field" data-field="email">
+            <label class="field__label" for="email">
+              Work email <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="control">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                class="input"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="priya@meridian.io"
+                required
+                aria-required="true"
+                aria-describedby="email-help"
+              />
+              <span class="control__icon" aria-hidden="true"></span>
+            </div>
+            <p id="email-help" class="help">We'll send the confirmation here.</p>
+          </div>
+
+          <!-- Topic -->
+          <div class="field" data-field="topic">
+            <label class="field__label" for="topic">
+              What's this about? <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="control">
+              <select
+                id="topic"
+                name="topic"
+                class="input select"
+                required
+                aria-required="true"
+                aria-describedby="topic-help"
+              >
+                <option value="" selected disabled>Choose a topic…</option>
+                <option value="sales">Sales &amp; pricing</option>
+                <option value="support">Technical support</option>
+                <option value="partnership">Partnership</option>
+                <option value="other">Something else</option>
+              </select>
+              <span class="select__chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path fill="currentColor" d="m7 10 5 5 5-5z" />
+                </svg>
+              </span>
+            </div>
+            <p id="topic-help" class="help">Helps us route you to the right people.</p>
+          </div>
+
+          <!-- Message -->
+          <div class="field" data-field="message">
+            <label class="field__label" for="message">
+              Message <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="control control--area">
+              <textarea
+                id="message"
+                name="message"
+                class="input textarea"
+                rows="4"
+                placeholder="Tell us a little about what you need…"
+                required
+                aria-required="true"
+                aria-describedby="message-help message-count"
+              ></textarea>
+            </div>
+            <div class="help-row">
+              <p id="message-help" class="help">A sentence or two is plenty. Min 12 characters.</p>
+              <span id="message-count" class="counter" aria-live="off">0 / 600</span>
+            </div>
+          </div>
+
+          <button id="submit" type="submit" class="submit">
+            <span class="submit__spin" aria-hidden="true"></span>
+            <span class="submit__label">Send message</span>
+          </button>
+
+          <p class="form__foot">
+            We reply within one business day. No marketing — promise.
+          </p>
+        </form>
+
+        <!-- Success / confirmation state -->
+        <div id="success" class="success" hidden>
+          <div class="success__check" aria-hidden="true">
+            <svg viewBox="0 0 52 52" width="72" height="72">
+              <circle class="success__circle" cx="26" cy="26" r="24" fill="none" />
+              <path class="success__tick" fill="none" d="M14 27l8 8 16-17" />
+            </svg>
+          </div>
+          <h2 class="success__title" tabindex="-1">Message sent</h2>
+          <p class="success__text">
+            Thanks, <strong id="success-name">there</strong> — your message is with our team.
+            A copy is on its way to <strong id="success-email">your inbox</strong>.
+          </p>
+          <dl class="receipt">
+            <div class="receipt__row">
+              <dt>Reference</dt>
+              <dd><code id="success-ref">—</code></dd>
+            </div>
+            <div class="receipt__row">
+              <dt>Expected reply</dt>
+              <dd>Within 1 business day</dd>
+            </div>
+          </dl>
+          <button type="button" class="ghost" id="reset">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7"
+              />
+            </svg>
+            Submit another
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Polite live region announces the result -->
+    <div id="status" class="sr-only" role="status" aria-live="polite"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

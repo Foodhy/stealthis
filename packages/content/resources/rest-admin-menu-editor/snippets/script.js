@@ -269,16 +269,43 @@ const saveMeta = document.getElementById("saveMeta");
 const searchEl = document.getElementById("itemSearch");
 const toast = document.getElementById("toast");
 
+// Modal refs
+const modalOverlay = document.getElementById("modalOverlay");
+const modalAddCat = document.getElementById("modalAddCat");
+const formAddCat = document.getElementById("formAddCat");
+const catNameInput = document.getElementById("catNameInput");
+const catIconInput = document.getElementById("catIconInput");
+const cancelAddCat = document.getElementById("cancelAddCat");
+const modalAddItem = document.getElementById("modalAddItem");
+const formAddItem = document.getElementById("formAddItem");
+const iNameInput = document.getElementById("iNameInput");
+const iPriceInput = document.getElementById("iPriceInput");
+const iCatInput = document.getElementById("iCatInput");
+const iDescInput = document.getElementById("iDescInput");
+const cancelAddItem = document.getElementById("cancelAddItem");
+
+function openModal(modal) {
+  modalOverlay.hidden = false;
+  modal.showModal();
+  const first = modal.querySelector("input, select, textarea, button");
+  if (first) first.focus();
+}
+
+function closeModal(modal) {
+  modal.close();
+  modalOverlay.hidden = true;
+}
+
 function countFor(catId) {
   return ITEMS.filter((i) => i.cat === catId).length;
 }
 
+const DEFAULT_ICONS = { ent: "🥖", pasta: "🍝", fuego: "🔥", post: "🍰", bev: "🍷", side: "🥗" };
+
 function renderCats() {
   catListEl.innerHTML = CATS.map(
     (c) => `<li class="${c.id === activeCat ? "is-active" : ""}" data-cat="${c.id}">
-      <span class="ic">${
-        { ent: "🥖", pasta: "🍝", fuego: "🔥", post: "🍰", bev: "🍷", side: "🥗" }[c.id]
-      }</span>
+      <span class="ic">${c.icon || DEFAULT_ICONS[c.id] || "📋"}</span>
       <span>${c.name}</span>
       <span class="count">${countFor(c.id)}</span>
     </li>`
@@ -428,10 +455,59 @@ searchEl.addEventListener("input", (e) => {
 });
 
 document.getElementById("addCat").addEventListener("click", () => {
-  showToast("Add-category panel would open here.");
+  openModal(modalAddCat);
 });
 document.getElementById("addItem").addEventListener("click", () => {
-  showToast("Add-item panel would open here.");
+  iCatInput.innerHTML = CATS.map(
+    (c) => `<option value="${c.id}">${c.name}</option>`
+  ).join("");
+  openModal(modalAddItem);
+});
+
+cancelAddCat.addEventListener("click", () => closeModal(modalAddCat));
+cancelAddItem.addEventListener("click", () => closeModal(modalAddItem));
+
+modalOverlay.addEventListener("click", () => {
+  if (modalAddCat.open) closeModal(modalAddCat);
+  if (modalAddItem.open) closeModal(modalAddItem);
+});
+
+formAddCat.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = catNameInput.value.trim();
+  const icon = catIconInput.value.trim() || "📋";
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  CATS.push({ id, name, icon, course: "1st course" });
+  renderCats();
+  renderItems();
+  closeModal(modalAddCat);
+  formAddCat.reset();
+  showToast(`Category "${name}" added`);
+});
+
+formAddItem.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = iNameInput.value.trim();
+  const price = Number(iPriceInput.value) || 0;
+  const catId = iCatInput.value;
+  const desc = iDescInput.value.trim();
+  const newItem = {
+    id: Date.now().toString(36),
+    name,
+    price,
+    course: "mains",
+    desc,
+    cat: catId,
+    visible: true,
+    chips: [],
+  };
+  ITEMS.push(newItem);
+  const catName = CATS.find((c) => c.id === catId)?.name || catId;
+  renderCats();
+  renderItems();
+  closeModal(modalAddItem);
+  formAddItem.reset();
+  showToast(`"${name}" added to ${catName}`);
 });
 
 function showToast(msg) {

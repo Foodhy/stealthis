@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cala Verdana — Map &amp; Stays</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#poi-list">Skip to results</a>
+
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+          <path d="M12 2C8.1 2 5 5 5 8.9 5 14 12 22 12 22s7-8 7-13.1C19 5 15.9 2 12 2Z" fill="currentColor"/>
+          <circle cx="12" cy="9" r="2.6" fill="#fbf7f1"/>
+        </svg>
+      </span>
+      <div class="brand__text">
+        <strong>Cala&nbsp;Verdana</strong>
+        <span>Coastal stays &amp; trails</span>
+      </div>
+    </div>
+
+    <form class="searchbar" role="search" autocomplete="off">
+      <label class="visually-hidden" for="search">Search places</label>
+      <span class="searchbar__icon" aria-hidden="true">⌕</span>
+      <input id="search" type="search" placeholder="Search stays, coves, eats…" />
+    </form>
+
+    <button id="viewToggle" class="view-toggle" type="button" aria-pressed="false">
+      <span data-when="list">View map</span>
+      <span data-when="map">View list</span>
+    </button>
+  </header>
+
+  <nav class="filterbar" aria-label="Filter results">
+    <div class="chips" role="group" aria-label="Category">
+      <button class="chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+      <button class="chip" type="button" data-filter="stay" aria-pressed="false">🏠 Stay</button>
+      <button class="chip" type="button" data-filter="eat" aria-pressed="false">🍽 Eat</button>
+      <button class="chip" type="button" data-filter="beach" aria-pressed="false">🏖 Beach</button>
+      <button class="chip" type="button" data-filter="trail" aria-pressed="false">🥾 Trail</button>
+      <button class="chip" type="button" data-filter="sight" aria-pressed="false">📷 Sights</button>
+    </div>
+    <div class="filterbar__right">
+      <label class="price" for="price">Up to <strong id="priceOut">$$$$</strong>
+        <input id="price" type="range" min="1" max="4" value="4" step="1" aria-label="Maximum price tier" />
+      </label>
+      <button id="savedToggle" class="saved-toggle" type="button" aria-pressed="false">
+        ♥ Saved <span id="savedCount" class="saved-toggle__count">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="split" data-view="list">
+    <!-- LIST PANE -->
+    <section class="pane pane--list" aria-label="Places list" id="poi-list">
+      <div class="list-head">
+        <h1>Stays near <span>Cala&nbsp;Verdana</span></h1>
+        <p id="resultCount" aria-live="polite">12 places on the map</p>
+      </div>
+      <ul class="cards" id="cards"></ul>
+      <p class="empty" id="emptyState" hidden>No places match these filters. Try widening the price or clearing the category.</p>
+    </section>
+
+    <!-- MAP PANE -->
+    <section class="pane pane--map" aria-label="Map of places">
+      <div class="map" id="map">
+        <div class="map__viewport" id="mapViewport">
+          <svg class="map__canvas" id="mapCanvas" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Stylised coastal map of Cala Verdana">
+            <defs>
+              <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#7fcfd0"/>
+                <stop offset="1" stop-color="#2f9fa6"/>
+              </linearGradient>
+              <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#f0e6d2"/>
+                <stop offset="1" stop-color="#dcc9a8"/>
+              </linearGradient>
+              <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#cdd9a8"/>
+                <stop offset="1" stop-color="#9fb877"/>
+              </linearGradient>
+              <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0" stop-color="#ffffff" stop-opacity="0.5"/>
+                <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- sea -->
+            <rect x="0" y="0" width="1000" height="700" fill="url(#sea)"/>
+            <g opacity="0.35" stroke="#bfeaea" stroke-width="2" fill="none">
+              <path d="M40 120 q30 -14 60 0 t60 0 t60 0"/>
+              <path d="M620 90 q30 -14 60 0 t60 0 t60 0"/>
+              <path d="M120 600 q30 -14 60 0 t60 0 t60 0"/>
+            </g>
+
+            <!-- land mass -->
+            <path d="M300 700 C 250 520 360 470 320 360 C 290 270 380 210 470 200
+                     C 560 190 600 120 720 130 C 860 140 1000 90 1000 60
+                     L1000 700 Z" fill="url(#land)"/>
+            <!-- hills -->
+            <path d="M520 250 C 600 200 690 220 760 200 C 830 180 920 210 1000 180 L1000 320
+                     C 900 300 820 330 740 320 C 640 308 560 330 520 300 Z" fill="url(#hill)" opacity="0.9"/>
+            <!-- beach band -->
+            <path d="M300 700 C 250 520 360 470 320 360 C 305 318 330 300 360 300
+                     C 360 420 330 540 360 700 Z" fill="#f6ead0" opacity="0.8"/>
+
+            <!-- coast road / route -->
+            <path id="route" d="M360 660 C 420 560 380 470 440 420 C 510 360 560 420 640 380 C 740 330 760 250 860 240"
+                  fill="none" stroke="#e8623f" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14" opacity="0.85"/>
+
+            <!-- pin layer (filled by JS) -->
+            <g id="pins"></g>
+          </svg>
+        </div>
+
+        <div class="map__controls" role="group" aria-label="Map zoom">
+          <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+          <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+          <button id="zoomReset" type="button" aria-label="Reset map view" title="Reset view">⤾</button>
+        </div>
+
+        <div class="map__badge" aria-hidden="true">Cala Verdana · fictional</div>
+
+        <!-- hovered/active preview card -->
+        <div class="map__pop" id="mapPop" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

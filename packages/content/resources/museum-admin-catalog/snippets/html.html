@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Museum — Collection Catalog Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="masthead">
+      <div class="brand">
+        <div class="seal" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="40" height="40">
+            <rect x="2" y="2" width="36" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <path d="M8 30 L20 10 L32 30 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+            <circle cx="20" cy="24" r="2.4" fill="currentColor" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <p class="kicker">Halford Museum of Art</p>
+          <h1>Collection Catalog Manager</h1>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <span class="dept-tag">Registrar · Permanent Collection</span>
+      </div>
+    </header>
+
+    <section class="stats" aria-label="Catalog summary">
+      <div class="stat-card">
+        <p class="stat-label">Total objects</p>
+        <p class="stat-value" id="stat-total">0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">On view</p>
+        <p class="stat-value" id="stat-onview">0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">In storage</p>
+        <p class="stat-value" id="stat-storage">0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">On loan</p>
+        <p class="stat-value" id="stat-loan">0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">In conservation</p>
+        <p class="stat-value" id="stat-conservation">0</p>
+      </div>
+    </section>
+
+    <section class="toolbar" aria-label="Catalog controls">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+          <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="1.6" />
+          <line x1="13.5" y1="13.5" x2="18" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        <input type="search" id="search" placeholder="Search title, artist, accession no., medium…"
+          aria-label="Search catalog" autocomplete="off" />
+      </div>
+      <div class="filters">
+        <label class="field">
+          <span>Status</span>
+          <select id="filter-status" aria-label="Filter by status">
+            <option value="">All statuses</option>
+            <option value="On view">On view</option>
+            <option value="In storage">In storage</option>
+            <option value="On loan">On loan</option>
+            <option value="In conservation">In conservation</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Medium</span>
+          <select id="filter-medium" aria-label="Filter by medium">
+            <option value="">All media</option>
+          </select>
+        </label>
+      </div>
+      <button class="btn btn-primary" id="add-btn" type="button">
+        <span aria-hidden="true">＋</span> New object
+      </button>
+    </section>
+
+    <div class="bulk-bar" id="bulk-bar" hidden>
+      <span class="bulk-count" id="bulk-count">0 selected</span>
+      <div class="bulk-actions">
+        <label class="field inline">
+          <span>Set status</span>
+          <select id="bulk-status" aria-label="Bulk set status">
+            <option value="">Choose…</option>
+            <option value="On view">On view</option>
+            <option value="In storage">In storage</option>
+            <option value="On loan">On loan</option>
+            <option value="In conservation">In conservation</option>
+          </select>
+        </label>
+        <button class="btn btn-ghost" id="bulk-apply" type="button">Apply</button>
+        <button class="btn btn-quiet" id="bulk-clear" type="button">Clear selection</button>
+      </div>
+    </div>
+
+    <section class="table-wrap" aria-label="Catalog objects">
+      <table class="catalog">
+        <thead>
+          <tr>
+            <th class="col-check">
+              <input type="checkbox" id="select-all" aria-label="Select all visible objects" />
+            </th>
+            <th><button class="sort" data-key="accession" type="button">Accession <span class="arrow"></span></button></th>
+            <th><button class="sort" data-key="title" type="button">Title <span class="arrow"></span></button></th>
+            <th><button class="sort" data-key="artist" type="button">Artist <span class="arrow"></span></button></th>
+            <th class="col-num"><button class="sort" data-key="date" type="button">Date <span class="arrow"></span></button></th>
+            <th>Medium</th>
+            <th>Location</th>
+            <th><button class="sort" data-key="status" type="button">Status <span class="arrow"></span></button></th>
+            <th class="col-act" aria-label="Actions"></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>
+        <p class="empty-title">No objects match</p>
+        <p class="empty-sub">Adjust your search or filters to widen the results.</p>
+        <button class="btn btn-ghost" id="empty-reset" type="button">Reset filters</button>
+      </div>
+    </section>
+
+    <footer class="pager" aria-label="Pagination">
+      <p class="pager-info" id="pager-info">Showing 0 of 0</p>
+      <div class="pager-controls">
+        <button class="btn btn-quiet" id="prev" type="button">Previous</button>
+        <span class="pager-pages" id="pager-pages"></span>
+        <button class="btn btn-quiet" id="next" type="button">Next</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Slide-over form -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="slideover" id="slideover" role="dialog" aria-modal="true" aria-labelledby="slide-title" hidden>
+    <header class="slide-head">
+      <h2 id="slide-title">New object</h2>
+      <button class="icon-btn" id="slide-close" type="button" aria-label="Close form">✕</button>
+    </header>
+    <form id="object-form" novalidate>
+      <div class="form-grid">
+        <label class="field block">
+          <span>Accession no. <i>*</i></span>
+          <input name="accession" id="f-accession" placeholder="2024.118.3" required />
+          <em class="err" data-for="accession"></em>
+        </label>
+        <label class="field block">
+          <span>Title <i>*</i></span>
+          <input name="title" id="f-title" placeholder="Untitled (Study in Ochre)" required />
+          <em class="err" data-for="title"></em>
+        </label>
+        <label class="field block">
+          <span>Artist</span>
+          <input name="artist" id="f-artist" placeholder="Unknown / Maker name" />
+          <em class="err" data-for="artist"></em>
+        </label>
+        <label class="field block">
+          <span>Date <i>*</i></span>
+          <input name="date" id="f-date" placeholder="c. 1921" required />
+          <em class="err" data-for="date"></em>
+        </label>
+        <label class="field block">
+          <span>Medium</span>
+          <input name="medium" id="f-medium" placeholder="Oil on canvas" list="medium-list" />
+          <em class="err" data-for="medium"></em>
+        </label>
+        <label class="field block">
+          <span>Location</span>
+          <input name="location" id="f-location" placeholder="Gallery 14 · West Wing" />
+          <em class="err" data-for="location"></em>
+        </label>
+        <label class="field block">
+          <span>Status</span>
+          <select name="status" id="f-status">
+            <option value="On view">On view</option>
+            <option value="In storage">In storage</option>
+            <option value="On loan">On loan</option>
+            <option value="In conservation">In conservation</option>
+          </select>
+        </label>
+      </div>
+      <datalist id="medium-list"></datalist>
+      <div class="slide-foot">
+        <button class="btn btn-quiet" type="button" id="slide-cancel">Cancel</button>
+        <button class="btn btn-primary" type="submit" id="slide-save">Save object</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Confirm delete -->
+  <div class="scrim" id="confirm-scrim" hidden></div>
+  <div class="confirm" id="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" hidden>
+    <h2 id="confirm-title">Remove object?</h2>
+    <p id="confirm-body">This will permanently remove the record from the catalog.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-quiet" id="confirm-cancel" type="button">Keep</button>
+      <button class="btn btn-danger" id="confirm-ok" type="button">Remove</button>
+    </div>
+  </div>
+
+  <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

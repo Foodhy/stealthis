@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neon Ronin — Episode Upload / Panel Sequencer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- ===== Header ===== -->
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand__badge" aria-hidden="true">INK</span>
+          <div class="brand__text">
+            <span class="brand__kicker">Creator Studio</span>
+            <h1 class="brand__title">Panel Sequencer</h1>
+          </div>
+        </div>
+        <div class="topbar__meta">
+          <span class="chip chip--draft" id="statusChip">Draft</span>
+          <span class="topbar__count"><strong id="panelCountTop">0</strong> panels</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <!-- ===== Left: editor ===== -->
+        <section class="editor" aria-label="Episode editor">
+          <!-- Episode details -->
+          <div class="card">
+            <h2 class="card__title">Episode details</h2>
+            <div class="grid grid--2">
+              <label class="field field--wide">
+                <span class="field__label">Series</span>
+                <input class="input" id="seriesField" type="text" value="Neon Ronin" />
+              </label>
+              <label class="field">
+                <span class="field__label">Episode #</span>
+                <input class="input" id="numberField" type="number" min="1" value="7" />
+              </label>
+              <label class="field field--wide">
+                <span class="field__label">Episode title <span class="req">*</span></span>
+                <input
+                  class="input"
+                  id="titleField"
+                  type="text"
+                  placeholder="e.g. Ghost in the Rainline"
+                  value="Ghost in the Rainline"
+                />
+              </label>
+              <fieldset class="field field--wide visibility">
+                <legend class="field__label">Visibility</legend>
+                <div class="seg" role="radiogroup" aria-label="Episode visibility">
+                  <label class="seg__opt">
+                    <input type="radio" name="vis" value="public" checked />
+                    <span>Public</span>
+                  </label>
+                  <label class="seg__opt">
+                    <input type="radio" name="vis" value="members" />
+                    <span>Members</span>
+                  </label>
+                  <label class="seg__opt">
+                    <input type="radio" name="vis" value="private" />
+                    <span>Private</span>
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <!-- Drop zone -->
+          <div class="card">
+            <h2 class="card__title">Panels</h2>
+            <button
+              type="button"
+              class="dropzone"
+              id="dropzone"
+              aria-label="Add panels — click or drop image files"
+            >
+              <span class="dropzone__sfx" aria-hidden="true">DROP!</span>
+              <span class="dropzone__main">Click to add panels</span>
+              <span class="dropzone__hint">or drop image files here · simulated upload</span>
+            </button>
+            <div class="seedrow">
+              <button type="button" class="btn btn--ghost" id="addOneBtn">+ Add one panel</button>
+              <button type="button" class="btn btn--ghost" id="addBatchBtn">+ Add 3 panels</button>
+              <button type="button" class="btn btn--ghost btn--danger" id="clearBtn">
+                Clear all
+              </button>
+            </div>
+          </div>
+
+          <!-- Panel list -->
+          <div class="card">
+            <div class="card__head">
+              <h2 class="card__title">Sequence <span class="muted">(drag to reorder)</span></h2>
+              <span class="chip chip--num"><span id="panelCountList">0</span></span>
+            </div>
+            <ul class="panellist" id="panelList" aria-label="Panel sequence"></ul>
+            <p class="empty" id="emptyState">
+              No panels yet — add some above to start sequencing your episode.
+            </p>
+          </div>
+        </section>
+
+        <!-- ===== Right: live preview ===== -->
+        <aside class="preview" aria-label="Reading preview">
+          <div class="preview__bar">
+            <span class="preview__sfx" aria-hidden="true">LIVE</span>
+            <div class="preview__titles">
+              <span class="preview__series" id="previewSeries">Neon Ronin</span>
+              <span class="preview__ep" id="previewTitle">Episode</span>
+            </div>
+          </div>
+          <div class="reader" id="reader" tabindex="0" aria-live="polite">
+            <p class="reader__empty" id="readerEmpty">Your panels will read here, top to bottom.</p>
+          </div>
+          <button type="button" class="btn btn--publish" id="publishBtn">
+            Publish episode
+          </button>
+        </aside>
+      </main>
+    </div>
+
+    <!-- toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- per-panel row template -->
+    <template id="panelTpl">
+      <li class="panel" draggable="true">
+        <div class="panel__handle" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="panel__thumb">
+          <span class="panel__idx">1</span>
+          <span class="panel__sfx"></span>
+        </div>
+        <div class="panel__body">
+          <div class="panel__row">
+            <span class="panel__name"></span>
+            <div class="panel__moves">
+              <button type="button" class="iconbtn" data-act="up" aria-label="Move panel up">↑</button>
+              <button type="button" class="iconbtn" data-act="down" aria-label="Move panel down">↓</button>
+              <button type="button" class="iconbtn iconbtn--del" data-act="del" aria-label="Remove panel">✕</button>
+            </div>
+          </div>
+          <label class="field field--mini">
+            <span class="field__label">Caption</span>
+            <input class="input input--sm" data-field="caption" type="text" placeholder="On-panel caption…" />
+          </label>
+          <label class="field field--mini">
+            <span class="field__label">Alt text <span class="req">*</span></span>
+            <input class="input input--sm" data-field="alt" type="text" placeholder="Describe the art for screen readers…" />
+          </label>
+        </div>
+      </li>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>

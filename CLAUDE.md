@@ -27,6 +27,11 @@ process and conventions so you don't have to re-derive them:
   (table row + link). For industry verticals, also add a row in `choose-your-path.mdx`.
 - **`ROADMAP_ARCADE.md`** / **`PLAN_ARCADE.md`** — Plan + roadmap for `apps/arcade` (Duolingo-style
   challenges). Read when working on the arcade app.
+- **`SUPPLY_CHAIN_SECURITY.md`** — How dependency installs are hardened against supply-chain
+  attacks (3-day `minimumReleaseAge` cooldown + Socket scanner in `bunfig.toml`, default
+  postinstall blocking, `bun audit`). Read before adding/updating deps, changing `bunfig.toml`,
+  or setting up a new bun/pnpm project. The recurring "what's outdated / what to update across
+  all 14 workspaces" check is the `/pkg-audit` command.
 - **`AGENTS.md`** — General agent guide / project context for this repo.
 
 ---

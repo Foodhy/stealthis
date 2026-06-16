@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hollow Reign — World Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__sigil" aria-hidden="true">◈</span>
+      <div class="brand__text">
+        <span class="brand__title">Hollow Reign</span>
+        <span class="brand__sub">World Atlas · Nullforge Studio</span>
+      </div>
+    </div>
+    <div class="topbar__meta">
+      <span class="meta-chip">Chapter IV · Embers of the Crown</span>
+      <span class="meta-chip meta-chip--accent">Lv 34 · Wardenslayer Kael</span>
+    </div>
+  </header>
+
+  <main class="atlas">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar" aria-label="Map controls">
+
+      <section class="panel side-card">
+        <h2 class="side-card__title">Map Layers</h2>
+        <div class="toggles" id="layerToggles">
+          <label class="toggle">
+            <input type="checkbox" checked data-layer="town" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__icon t-town" aria-hidden="true">⌂</span>
+            <span class="toggle__label">Settlements</span>
+            <span class="toggle__count" data-count="town"></span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" checked data-layer="dungeon" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__icon t-dungeon" aria-hidden="true">⚔</span>
+            <span class="toggle__label">Dungeons</span>
+            <span class="toggle__count" data-count="dungeon"></span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" checked data-layer="boss" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__icon t-boss" aria-hidden="true">☠</span>
+            <span class="toggle__label">World Bosses</span>
+            <span class="toggle__count" data-count="boss"></span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" checked data-layer="travel" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__icon t-travel" aria-hidden="true">✦</span>
+            <span class="toggle__label">Fast Travel</span>
+            <span class="toggle__count" data-count="travel"></span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" checked data-layer="shop" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__icon t-shop" aria-hidden="true">⬢</span>
+            <span class="toggle__label">Merchants</span>
+            <span class="toggle__count" data-count="shop"></span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" checked data-layer="quest" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__icon t-quest" aria-hidden="true">❢</span>
+            <span class="toggle__label">Quests</span>
+            <span class="toggle__count" data-count="quest"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel side-card">
+        <h2 class="side-card__title">Legend</h2>
+        <ul class="legend">
+          <li><span class="legend__pin t-town" aria-hidden="true">⌂</span> Settlement — rest &amp; resupply</li>
+          <li><span class="legend__pin t-dungeon" aria-hidden="true">⚔</span> Dungeon — instanced delve</li>
+          <li><span class="legend__pin t-boss" aria-hidden="true">☠</span> World boss — group content</li>
+          <li><span class="legend__pin t-travel" aria-hidden="true">✦</span> Waypoint — fast travel node</li>
+          <li><span class="legend__pin legend__pin--fog" aria-hidden="true">?</span> Fogged — click to chart</li>
+          <li><span class="legend__pin legend__pin--lock" aria-hidden="true">✖</span> Sealed — story-locked</li>
+        </ul>
+      </section>
+
+      <section class="panel side-card">
+        <h2 class="side-card__title">Region Progress</h2>
+        <div class="meters">
+          <div class="meter" data-region="verdant">
+            <div class="meter__head"><span>Verdant Hollow</span><b data-meter-val>0%</b></div>
+            <div class="meter__bar"><span class="meter__fill f-verdant" data-meter-fill></span></div>
+          </div>
+          <div class="meter" data-region="frost">
+            <div class="meter__head"><span>Frostveil Tundra</span><b data-meter-val>0%</b></div>
+            <div class="meter__bar"><span class="meter__fill f-frost" data-meter-fill></span></div>
+          </div>
+          <div class="meter" data-region="marrow">
+            <div class="meter__head"><span>Sunken Marrows</span><b data-meter-val>0%</b></div>
+            <div class="meter__bar"><span class="meter__fill f-marrow" data-meter-fill></span></div>
+          </div>
+          <div class="meter" data-region="ember">
+            <div class="meter__head"><span>Emberfall Reach</span><b data-meter-val>0%</b></div>
+            <div class="meter__bar"><span class="meter__fill f-ember" data-meter-fill></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel side-card side-card--lens">
+        <h2 class="side-card__title">Cartographer's Lens</h2>
+        <p class="side-card__desc">Burn one lens charge to reveal a random uncharted location in the Shattered Realm.</p>
+        <button class="btn btn--primary" id="lensBtn" type="button">✦ Reveal a Location</button>
+        <div class="charted">
+          <span class="charted__label">Charted</span>
+          <span class="charted__value" id="chartedStat">0 / 0</span>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ===== Map ===== -->
+    <section class="panel map-frame" aria-label="World map">
+
+      <div class="map-toolbar">
+        <div class="map-toolbar__title">
+          <h2>The Shattered Realm</h2>
+          <span>Sector 7 — Wardens' Front</span>
+        </div>
+        <div class="map-toolbar__tools">
+          <span class="coords" id="coordsReadout" aria-hidden="true">X ···· · Y ····</span>
+          <div class="zoom-ctrl" role="group" aria-label="Zoom controls">
+            <button class="zoom-btn" id="zoomOut" type="button" aria-label="Zoom out">−</button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button class="zoom-btn" id="zoomIn" type="button" aria-label="Zoom in">+</button>
+            <button class="zoom-btn zoom-btn--reset" id="zoomReset" type="button" aria-label="Reset view">⟳</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-viewport" id="viewport">
+        <div class="map-world" id="world">
+          <div class="map-grid" aria-hidden="true"></div>
+
+          <div class="region region--verdant" aria-hidden="true"></div>
+          <div class="region region--frost" aria-hidden="true"></div>
+          <div class="region region--marrow" aria-hidden="true"></div>
+          <div class="region region--ember" aria-hidden="true"></div>
+
+          <svg class="routes" viewBox="0 0 1400 900" aria-hidden="true">
+            <path d="M252 198 Q560 80 924 144" />
+            <path d="M924 144 Q1020 380 868 558" />
+            <path d="M252 198 Q160 420 224 594" />
+            <path d="M224 594 Q540 700 868 558" />
+          </svg>
+
+          <span class="region-label" style="left:22%; top:8%;" aria-hidden="true">Verdant Hollow</span>
+          <span class="region-label" style="left:70%; top:6%;" aria-hidden="true">Frostveil Tundra</span>
+          <span class="region-label" style="left:16%; top:55%;" aria-hidden="true">Sunken Marrows</span>
+          <span class="region-label" style="left:66%; top:52%;" aria-hidden="true">Emberfall Reach</span>
+
+          <!-- pins injected by script.js -->
+        </div>
+
+        <div class="compass" aria-hidden="true">
+          <span class="compass__n">N</span>
+          <span class="compass__needle"></span>
+        </div>
+
+        <div class="popover" id="popover" role="dialog" aria-modal="false" aria-labelledby="popName" hidden>
+          <div class="popover__head">
+            <span class="popover__type" id="popType">Dungeon</span>
+            <span class="popover__level" id="popLevel">Lv 8–14</span>
+          </div>
+          <h3 class="popover__name" id="popName">Mossgrave Barrow</h3>
+          <p class="popover__desc" id="popDesc"></p>
+          <div class="popover__status" id="popStatus"></div>
+          <div class="popover__actions">
+            <button class="btn btn--primary" id="travelBtn" type="button">✦ Fast Travel</button>
+            <button class="btn btn--ghost" id="markBtn" type="button">⚑ Set Marker</button>
+          </div>
+          <button class="popover__close" id="popClose" type="button" aria-label="Close details">✕</button>
+        </div>
+      </div>
+
+      <footer class="map-hints" aria-hidden="true">
+        <span>⤧ Drag to pan</span>
+        <span>± Zoom or scroll</span>
+        <span>? Click fogged pins to chart them</span>
+      </footer>
+
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

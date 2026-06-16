@@ -41,6 +41,19 @@ import { QuoteCard } from "./animations/remotion-quote-card";
 import { StepProcess } from "./animations/remotion-step-process";
 import { GradientWave } from "./animations/remotion-gradient-wave";
 
+import { ProductAdSpot } from "./animations/remotion-product-ad";
+import { AppStorePromo } from "./animations/remotion-app-promo";
+import { SaleAnnouncementSpot } from "./animations/remotion-sale-spot";
+import { FlashSaleAd } from "./animations/remotion-flash-sale";
+import { HolidayPromo } from "./animations/remotion-holiday-promo";
+import { BlackFridayDeal } from "./animations/remotion-black-friday";
+import { EventPromo } from "./animations/remotion-event-promo";
+import { WebinarPromo } from "./animations/remotion-webinar-promo";
+import { CouponReveal } from "./animations/remotion-coupon-reveal";
+import { DiscountBanner } from "./animations/remotion-discount-banner";
+import { LimitedOffer } from "./animations/remotion-limited-offer";
+import { GiveawayAnnouncement } from "./animations/remotion-giveaway";
+
 export interface RemotionComposition {
   id: string;
   title: string;
@@ -459,6 +472,127 @@ export const remotionCompositions: RemotionComposition[] = [
     width: W,
     height: H,
     resourceSlug: "remotion-gradient-wave",
+  },
+  // ── Phase 65 — Ads & Promo ────────────────────────────────────────
+  {
+    id: "remotion-product-ad",
+    title: "Product Ad Spot",
+    component: ProductAdSpot,
+    durationInFrames: 150,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-product-ad",
+  },
+  {
+    id: "remotion-app-promo",
+    title: "App Store Promo",
+    component: AppStorePromo,
+    durationInFrames: 180,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-app-promo",
+  },
+  {
+    id: "remotion-sale-spot",
+    title: "Sale Announcement Spot",
+    component: SaleAnnouncementSpot,
+    durationInFrames: 90,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-sale-spot",
+  },
+  {
+    id: "remotion-flash-sale",
+    title: "Flash Sale Countdown Ad",
+    component: FlashSaleAd,
+    durationInFrames: 150,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-flash-sale",
+  },
+  {
+    id: "remotion-holiday-promo",
+    title: "Holiday Promo",
+    component: HolidayPromo,
+    durationInFrames: 150,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-holiday-promo",
+  },
+  {
+    id: "remotion-black-friday",
+    title: "Black Friday Deal",
+    component: BlackFridayDeal,
+    durationInFrames: 120,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-black-friday",
+  },
+  {
+    id: "remotion-event-promo",
+    title: "Event Promo Teaser",
+    component: EventPromo,
+    durationInFrames: 150,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-event-promo",
+  },
+  {
+    id: "remotion-webinar-promo",
+    title: "Webinar Promo",
+    component: WebinarPromo,
+    durationInFrames: 120,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-webinar-promo",
+  },
+  {
+    id: "remotion-coupon-reveal",
+    title: "Coupon Reveal Animation",
+    component: CouponReveal,
+    durationInFrames: 90,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-coupon-reveal",
+  },
+  {
+    id: "remotion-discount-banner",
+    title: "Discount Banner",
+    component: DiscountBanner,
+    durationInFrames: 90,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-discount-banner",
+  },
+  {
+    id: "remotion-limited-offer",
+    title: "Limited-Time Offer",
+    component: LimitedOffer,
+    durationInFrames: 150,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-limited-offer",
+  },
+  {
+    id: "remotion-giveaway",
+    title: "Giveaway Announcement",
+    component: GiveawayAnnouncement,
+    durationInFrames: 120,
+    fps: FPS,
+    width: W,
+    height: H,
+    resourceSlug: "remotion-giveaway",
   },
 ];
 

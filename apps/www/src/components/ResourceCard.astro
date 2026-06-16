@@ -133,6 +133,20 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
   data-lab-route={labRoute ?? ""}
   data-type={resource.data.type}
 >
+  <!-- Live preview (revealed only in collection-preview mode; src set lazily by FilterBar) -->
+  {labRoute && (
+    <div class="card-preview" data-card-preview>
+      <div class="card-preview-skeleton" aria-hidden="true"></div>
+      <iframe
+        class="card-preview-iframe"
+        data-card-preview-iframe
+        sandbox="allow-scripts allow-same-origin"
+        loading="lazy"
+        title={`${title} live preview`}
+      ></iframe>
+    </div>
+  )}
+
   <!-- Header -->
   <div class="flex items-start justify-between gap-3">
     <div class="flex-1 min-w-0">
@@ -237,6 +251,71 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
 </article>
 
 <style>
+  /* Showcase-style live preview — hidden until the card is in collection-preview mode.
+     The lab demo renders at a desktop logical size and is scaled down to a thumbnail
+     (scale set inline by FilterBar) so the whole page is visible, not just its top. */
+  .card-preview {
+    display: none;
+  }
+
+  article.is-preview .card-preview {
+    display: block;
+    position: relative;
+    margin: -1.25rem -1.25rem 0; /* bleed over the p-5 padding to the card edge */
+    height: 210px;
+    overflow: hidden;
+    background: #0b1221;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+  }
+
+  .card-preview-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 900px;
+    border: 0;
+    transform-origin: top left;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  article.is-preview .card-preview.is-loaded .card-preview-iframe {
+    opacity: 1;
+  }
+
+  /* Shimmer placeholder shown until the iframe fires its load event */
+  .card-preview-skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      rgba(148, 163, 184, 0.04) 30%,
+      rgba(148, 163, 184, 0.12) 50%,
+      rgba(148, 163, 184, 0.04) 70%
+    );
+    background-size: 200% 100%;
+    animation: card-preview-shimmer 1.4s ease-in-out infinite;
+  }
+
+  article.is-preview .card-preview.is-loaded .card-preview-skeleton {
+    opacity: 0;
+    animation: none;
+    transition: opacity 0.3s ease;
+  }
+
+  @keyframes card-preview-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-preview-skeleton { animation: none; }
+    .card-preview-iframe { transition: none; }
+  }
+
   .quick-action {
     @apply flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/8 transition-colors;
   }

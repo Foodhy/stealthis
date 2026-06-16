@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web3 — Connect Wallet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="aurora" aria-hidden="true"></div>
+
+    <main class="stage">
+      <header class="masthead">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">◈</span>
+          <span class="brand-name">NovaSwap</span>
+          <span class="brand-chain">Lumen Chain</span>
+        </div>
+
+        <!-- This wrapper swaps between the connect button and the connected chip -->
+        <div class="wallet-zone" id="walletZone">
+          <button class="btn-connect" id="connectBtn" type="button" aria-haspopup="dialog">
+            <span class="bolt" aria-hidden="true">⚡</span>
+            <span>Connect Wallet</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <p class="eyebrow">UI-only simulation</p>
+        <h1>Connect a wallet to start trading on <span class="grad">NovaSwap</span></h1>
+        <p class="lede">
+          A polished, self-contained Connect Wallet flow — modal with wallet options, a simulated
+          connecting state, and a live address chip with balance. No real wallet or RPC is ever
+          touched.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-ghost" id="heroConnect" type="button">Launch wallet picker</button>
+          <span class="net-pill"><i class="dot dot-live"></i> Lumen Mainnet</span>
+        </div>
+      </section>
+
+      <section class="meta-cards" aria-label="Network stats">
+        <article class="meta-card">
+          <span class="meta-label">Gas (fast)</span>
+          <span class="meta-value mono" data-count="12">0</span><span class="meta-unit"> gwei</span>
+        </article>
+        <article class="meta-card">
+          <span class="meta-label">NOVA price</span>
+          <span class="meta-value mono">$<span data-count="4.82" data-dec="2">0</span></span>
+          <span class="chg pos">+3.1%</span>
+        </article>
+        <article class="meta-card">
+          <span class="meta-label">Block</span>
+          <span class="meta-value mono" data-count="19284517">0</span>
+        </article>
+        <article class="meta-card">
+          <span class="meta-label">TVL</span>
+          <span class="meta-value mono">$<span data-count="48.6" data-dec="1">0</span>M</span>
+        </article>
+      </section>
+    </main>
+
+    <!-- ===== Connect modal ===== -->
+    <div class="overlay" id="overlay" hidden>
+      <div
+        class="modal"
+        id="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+        aria-describedby="modalDesc"
+      >
+        <header class="modal-head">
+          <div>
+            <h2 id="modalTitle">Connect a wallet</h2>
+            <p id="modalDesc" class="modal-sub">Choose how you'd like to connect</p>
+          </div>
+          <button class="icon-btn" id="modalClose" type="button" aria-label="Close dialog">✕</button>
+        </header>
+
+        <ul class="wallet-list" id="walletList" role="list">
+          <li>
+            <button class="wallet-row" type="button" data-wallet="MetaMask" data-balance="2.418">
+              <span class="w-icon ic-mm" aria-hidden="true">🦊</span>
+              <span class="w-meta">
+                <span class="w-name">MetaMask</span>
+                <span class="w-desc mono">0x7a3f…c41d</span>
+              </span>
+              <span class="badge badge-installed">Installed</span>
+            </button>
+          </li>
+          <li>
+            <button class="wallet-row" type="button" data-wallet="Coinbase Wallet" data-balance="0.812">
+              <span class="w-icon ic-cb" aria-hidden="true">🔵</span>
+              <span class="w-meta">
+                <span class="w-name">Coinbase Wallet</span>
+                <span class="w-desc">Smart wallet + passkeys</span>
+              </span>
+              <span class="badge badge-popular">Popular</span>
+            </button>
+          </li>
+          <li>
+            <button class="wallet-row" type="button" data-wallet="WalletConnect" data-balance="5.004">
+              <span class="w-icon ic-wc" aria-hidden="true">🔗</span>
+              <span class="w-meta">
+                <span class="w-name">WalletConnect</span>
+                <span class="w-desc">Scan with 400+ mobile wallets</span>
+              </span>
+              <span class="badge badge-popular">Popular</span>
+            </button>
+          </li>
+          <li>
+            <button class="wallet-row" type="button" data-wallet="Rabby" data-balance="1.337">
+              <span class="w-icon ic-rb" aria-hidden="true">🐰</span>
+              <span class="w-meta">
+                <span class="w-name">Rabby</span>
+                <span class="w-desc mono">0x9c11…a0f2</span>
+              </span>
+              <span class="badge badge-installed">Installed</span>
+            </button>
+          </li>
+          <li>
+            <button class="wallet-row" type="button" data-wallet="Ledger" data-balance="9.901">
+              <span class="w-icon ic-lg" aria-hidden="true">▰</span>
+              <span class="w-meta">
+                <span class="w-name">Ledger</span>
+                <span class="w-desc">Hardware — confirm on device</span>
+              </span>
+              <span class="badge badge-hw">Hardware</span>
+            </button>
+          </li>
+        </ul>
+
+        <!-- Connecting state (hidden by default) -->
+        <div class="connecting" id="connecting" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <p class="connecting-title">Connecting to <span id="connectingName">MetaMask</span>…</p>
+          <p class="connecting-sub">Approve the connection request in your wallet</p>
+          <button class="btn-ghost sm" id="connectingCancel" type="button">Cancel</button>
+        </div>
+
+        <footer class="modal-foot">
+          <span class="shield" aria-hidden="true">🛡️</span>
+          <p>NovaSwap never has access to your funds. This is a UI simulation — nothing is signed.</p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ===== Connected account dropdown (template injected via JS) ===== -->
+
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

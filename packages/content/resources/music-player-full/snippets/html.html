@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Music — Full-Screen Now Playing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Blurred cover-art backdrop -->
+  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <main class="player" id="player">
+    <header class="topbar">
+      <button class="icon-btn" id="minimize" type="button" aria-label="Minimize player">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="topbar-meta">
+        <span class="topbar-label">Playing from album</span>
+        <strong class="topbar-album" id="topbarAlbum">Midnight Reservoir</strong>
+      </div>
+      <button class="icon-btn" id="more" type="button" aria-label="More options">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      </button>
+    </header>
+
+    <section class="stage">
+      <!-- Ambient glow + big CSS-drawn cover -->
+      <div class="cover-wrap">
+        <div class="glow" id="glow" aria-hidden="true"></div>
+        <div class="cover spinning" id="cover" role="img" aria-label="Album cover artwork">
+          <div class="cover-art" id="coverArt"></div>
+          <div class="cover-ring" aria-hidden="true"></div>
+          <div class="cover-hole" aria-hidden="true"></div>
+        </div>
+        <div class="eq" id="eq" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="track-meta">
+        <div class="track-text">
+          <h1 class="track-title" id="trackTitle">Paper Lanterns</h1>
+          <p class="track-artist" id="trackArtist">Neon Tides</p>
+        </div>
+        <button class="like-btn" id="like" type="button" aria-pressed="false" aria-label="Like this track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.2C-0.2 7.6 2.3 4 5.8 4 8 4 9.4 5.3 12 8c2.6-2.7 4-4 6.2-4 3.5 0 6 3.6 3.8 7.8C19.5 16.4 12 21 12 21z"/></svg>
+        </button>
+      </div>
+
+      <!-- Waveform / progress scrubber -->
+      <div class="scrub-block">
+        <div class="scrubber" id="scrubber" role="slider" tabindex="0"
+             aria-label="Seek track position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="wave" id="wave" aria-hidden="true"></div>
+          <div class="wave-played" id="wavePlayed" aria-hidden="true"></div>
+          <div class="scrub-handle" id="scrubHandle" aria-hidden="true"></div>
+        </div>
+        <div class="time-row">
+          <span class="time" id="timeCurrent">0:00</span>
+          <span class="time" id="timeTotal">3:42</span>
+        </div>
+      </div>
+
+      <!-- Transport controls -->
+      <div class="transport">
+        <button class="t-btn" id="shuffle" type="button" aria-pressed="false" aria-label="Shuffle">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+        </button>
+        <button class="t-btn" id="prev" type="button" aria-label="Previous track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 20L9 12l10-8v16z"/><rect x="5" y="4" width="2.5" height="16" rx="1"/></svg>
+        </button>
+        <button class="play-btn" id="play" type="button" aria-pressed="false" aria-label="Play">
+          <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
+        </button>
+        <button class="t-btn" id="next" type="button" aria-label="Next track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4l10 8-10 8V4z"/><rect x="16.5" y="4" width="2.5" height="16" rx="1"/></svg>
+        </button>
+        <button class="t-btn" id="repeat" type="button" aria-pressed="false" aria-label="Repeat">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+        </button>
+      </div>
+
+      <!-- Secondary actions -->
+      <div class="actions">
+        <button class="a-btn" id="addPlaylist" type="button" aria-label="Add to playlist">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          <span>Add</span>
+        </button>
+        <button class="a-btn" id="share" type="button" aria-label="Share track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6"/></svg>
+          <span>Share</span>
+        </button>
+        <button class="a-btn" id="swap" type="button" aria-label="Play a different track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0115.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>
+          <span>Shuffle Pick</span>
+        </button>
+        <button class="a-btn" id="queueToggle" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Show up next queue">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h11M4 12h11M4 18h7"/><path d="M17 14l4 3-4 3z"/></svg>
+          <span>Queue</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Lyrics / Up-next drawer -->
+    <aside class="drawer" id="drawer" aria-hidden="true">
+      <div class="drawer-handle" id="drawerHandle" role="button" tabindex="0" aria-label="Toggle drawer"></div>
+      <div class="drawer-tabs" role="tablist">
+        <button class="d-tab is-active" id="tabUpnext" role="tab" aria-selected="true" type="button">Up Next</button>
+        <button class="d-tab" id="tabLyrics" role="tab" aria-selected="false" type="button">Lyrics</button>
+      </div>
+
+      <div class="drawer-panel" id="panelUpnext" role="tabpanel">
+        <ul class="queue" id="queue"></ul>
+      </div>
+
+      <div class="drawer-panel is-hidden" id="panelLyrics" role="tabpanel">
+        <div class="lyrics" id="lyrics"></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

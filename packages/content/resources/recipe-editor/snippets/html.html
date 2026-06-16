@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recipe Editor — Cookbook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">🍅</span>
+      <div class="brand-text">
+        <span class="kicker">Cookbook Studio</span>
+        <h1>Recipe Editor</h1>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span id="saveState" class="save-state" aria-live="polite">Draft saved locally</span>
+      <button type="button" class="btn btn-ghost" id="resetBtn">Clear</button>
+      <button type="button" class="btn btn-primary" id="saveBtn">Save recipe</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- EDITOR -->
+    <section class="editor" aria-label="Recipe editor">
+      <form id="recipeForm" novalidate>
+        <fieldset class="card">
+          <legend class="card-legend">The basics</legend>
+          <div class="field">
+            <label for="f-title">Recipe title</label>
+            <input id="f-title" name="title" type="text" maxlength="80"
+                   placeholder="e.g. Sun-Roasted Tomato &amp; Basil Galette" autocomplete="off" />
+            <p class="hint" id="titleErr" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="f-desc">Short description</label>
+            <textarea id="f-desc" name="desc" rows="2" maxlength="220"
+                      placeholder="A blistered, jammy tomato tart with a buttery rye crust and torn basil."></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-legend">Meta</legend>
+          <div class="meta-grid">
+            <div class="field">
+              <label for="f-prep">Prep (min)</label>
+              <input id="f-prep" name="prep" type="number" min="0" max="999" inputmode="numeric" placeholder="20" />
+            </div>
+            <div class="field">
+              <label for="f-cook">Cook (min)</label>
+              <input id="f-cook" name="cook" type="number" min="0" max="999" inputmode="numeric" placeholder="35" />
+            </div>
+            <div class="field">
+              <label for="f-servings">Servings</label>
+              <input id="f-servings" name="servings" type="number" min="1" max="99" inputmode="numeric" placeholder="4" />
+            </div>
+            <div class="field">
+              <label for="f-diff">Difficulty</label>
+              <select id="f-diff" name="difficulty">
+                <option value="Easy">Easy</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+            <div class="field field-wide">
+              <label for="f-diet">Diet / tags</label>
+              <input id="f-diet" name="diet" type="text" maxlength="60"
+                     placeholder="Vegetarian · Nut-free" autocomplete="off" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-legend">Ingredients</legend>
+          <p class="card-sub">Drag the handle to reorder, or use the arrows. Quantities scale in the preview.</p>
+          <ol class="builder" id="ingList" aria-label="Ingredient rows"></ol>
+          <button type="button" class="btn btn-add" id="addIng">＋ Add ingredient</button>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-legend">Method</legend>
+          <p class="card-sub">Numbered steps. Reorder to refine the flow.</p>
+          <ol class="builder" id="stepList" aria-label="Method steps"></ol>
+          <button type="button" class="btn btn-add" id="addStep">＋ Add step</button>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- PREVIEW -->
+    <section class="preview-wrap" aria-label="Live preview">
+      <div class="preview-bar">
+        <span class="kicker">Live preview</span>
+        <div class="scaler" role="group" aria-label="Scale servings">
+          <button type="button" class="step-btn" id="scaleDown" aria-label="Fewer servings">−</button>
+          <span id="scaleVal" aria-live="polite">4 servings</span>
+          <button type="button" class="step-btn" id="scaleUp" aria-label="More servings">＋</button>
+        </div>
+      </div>
+
+      <article class="recipe-card" id="card">
+        <div class="hero" aria-hidden="true">
+          <span class="hero-emoji">🍅</span>
+          <span class="hero-badge" id="cardDiff">Medium</span>
+        </div>
+        <div class="card-body">
+          <span class="kicker" id="cardDiet">Vegetarian · Nut-free</span>
+          <h2 id="cardTitle">Sun-Roasted Tomato &amp; Basil Galette</h2>
+          <p class="card-desc" id="cardDesc">A blistered, jammy tomato tart with a buttery rye crust and torn basil.</p>
+
+          <dl class="card-meta">
+            <div><dt>Prep</dt><dd id="cardPrep">20 min</dd></div>
+            <div><dt>Cook</dt><dd id="cardCook">35 min</dd></div>
+            <div><dt>Total</dt><dd id="cardTotal">55 min</dd></div>
+            <div><dt>Serves</dt><dd id="cardServes">4</dd></div>
+          </dl>
+
+          <h3 class="card-h">Ingredients</h3>
+          <ul class="card-ings" id="cardIngs"></ul>
+
+          <h3 class="card-h">Method</h3>
+          <ol class="card-steps" id="cardSteps"></ol>
+
+          <footer class="card-foot">
+            <span aria-hidden="true">🌿</span> Recipe by you · Cookbook Studio
+          </footer>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

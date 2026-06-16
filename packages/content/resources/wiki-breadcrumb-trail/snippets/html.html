@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OAuth 2.0 — Aurora Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#" aria-label="Aurora DB documentation home">
+        <span class="brand-mark" aria-hidden="true">◆</span>
+        <span class="brand-name">Aurora<span class="brand-dim">Docs</span></span>
+      </a>
+      <span class="brand-ver">v4.2</span>
+      <div class="topbar-spacer"></div>
+      <nav class="topbar-nav" aria-label="Sections">
+        <a href="#">Guides</a>
+        <a href="#" aria-current="true">Reference</a>
+        <a href="#">API</a>
+        <a href="#">Changelog</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar" aria-label="Documentation sections">
+      <p class="side-heading">Authentication</p>
+      <ul class="side-list">
+        <li><a href="#">Overview</a></li>
+        <li><a href="#">API keys</a></li>
+        <li><a href="#">Sessions &amp; cookies</a></li>
+        <li><a href="#" class="is-current" aria-current="page">OAuth 2.0</a></li>
+        <li><a href="#">SAML SSO</a></li>
+        <li><a href="#">Scoped tokens</a></li>
+        <li><a href="#">Rotating secrets</a></li>
+      </ul>
+    </aside>
+
+    <main id="main" class="content">
+      <!-- ============ BREADCRUMB TRAIL ============ -->
+      <nav class="crumbs" aria-label="Breadcrumb" id="crumbs">
+        <ol class="crumb-list">
+          <li class="crumb"><a href="#">Home</a></li>
+          <li class="crumb-sep" aria-hidden="true">›</li>
+
+          <li class="crumb crumb-hide"><a href="#">Guides</a></li>
+          <li class="crumb-sep crumb-hide" aria-hidden="true">›</li>
+
+          <li class="crumb crumb-hide"><a href="#">Security</a></li>
+          <li class="crumb-sep crumb-hide" aria-hidden="true">›</li>
+
+          <!-- Collapsed ellipsis: revealed crumbs hidden behind it on narrow widths -->
+          <li class="crumb crumb-ellipsis">
+            <button
+              type="button"
+              class="crumb-expand"
+              aria-label="Show hidden breadcrumb levels"
+              aria-expanded="false"
+              data-expand
+            >…</button>
+          </li>
+          <li class="crumb-sep crumb-sep-ellipsis" aria-hidden="true">›</li>
+
+          <li class="crumb"><a href="#">Authentication</a></li>
+          <li class="crumb-sep" aria-hidden="true">›</li>
+
+          <!-- Current crumb with a sibling switcher dropdown -->
+          <li class="crumb crumb-current">
+            <button
+              type="button"
+              class="crumb-current-btn"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-current="page"
+              data-menu
+            >
+              <span class="crumb-current-label">OAuth 2.0</span>
+              <span class="crumb-caret" aria-hidden="true">▾</span>
+            </button>
+            <ul class="crumb-menu" role="menu" aria-label="Sibling pages" data-menu-list hidden>
+              <li role="none"><a role="menuitem" href="#" tabindex="-1">API keys</a></li>
+              <li role="none"><a role="menuitem" href="#" tabindex="-1">Sessions &amp; cookies</a></li>
+              <li role="none"><a role="menuitem" href="#" tabindex="-1" class="is-active" aria-current="true">OAuth 2.0</a></li>
+              <li role="none"><a role="menuitem" href="#" tabindex="-1">SAML SSO</a></li>
+              <li role="none"><a role="menuitem" href="#" tabindex="-1">Scoped tokens</a></li>
+            </ul>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- ============ ARTICLE ============ -->
+      <article class="article">
+        <header class="article-head">
+          <p class="eyebrow">Authentication · Reference</p>
+          <h1>OAuth 2.0 authorization</h1>
+          <p class="lede">
+            Authorize third-party applications against an Aurora DB workspace using the OAuth 2.0
+            authorization-code flow with PKCE. This page covers the grant lifecycle, scope model, and
+            token exchange endpoints exposed by the Verdant identity service.
+          </p>
+        </header>
+
+        <p>
+          Aurora DB delegates external authentication to <strong>Verdant</strong>, the platform
+          identity service shared across Project Nimbus deployments. An application registers a client,
+          requests a set of <a href="#scopes">scopes</a>, and redirects the user to the Verdant consent
+          screen. After consent, Verdant returns a short-lived authorization code that the client
+          exchanges for an access token and a refresh token.
+        </p>
+
+        <p>
+          We strongly recommend the authorization-code flow with PKCE for every client type, including
+          single-page and native apps. The implicit flow is deprecated and will be removed in
+          <code>v5.0</code>.
+        </p>
+
+        <h2 id="flow">Authorization-code flow</h2>
+        <p>
+          A typical exchange looks like the following. The <code>code_verifier</code> is generated by
+          the client and never leaves the device until the token exchange step.
+        </p>
+        <pre><code>POST /oauth/token HTTP/1.1
+Host: auth.verdant.dev
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=ac_9f2c41be
+&amp;redirect_uri=https://app.example.com/callback
+&amp;client_id=cli_nimbus_42
+&amp;code_verifier=dBjftJeZ4CVP-mB92K27uhbUJU1p1r</code></pre>
+
+        <h2 id="scopes">Scope model</h2>
+        <p>
+          Scopes are namespaced by resource. Request the narrowest set your integration needs — Verdant
+          surfaces every requested scope on the consent screen, and over-broad requests reduce install
+          conversion.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Scope</th><th>Grants</th><th>Tier</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>db.read</code></td><td>Read rows from tables and views</td><td>Standard</td></tr>
+              <tr><td><code>db.write</code></td><td>Insert, update, and delete rows</td><td>Standard</td></tr>
+              <tr><td><code>schema.manage</code></td><td>Create or alter tables and indexes</td><td>Elevated</td></tr>
+              <tr><td><code>secrets.read</code></td><td>Read connection secrets and keys</td><td>Restricted</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <blockquote>
+          <p>
+            <strong>Note —</strong> Restricted scopes require workspace-owner approval and are audited.
+            Press <kbd>R</kbd> in the dashboard to open the request log.
+          </p>
+        </blockquote>
+
+        <h2 id="refresh">Refreshing tokens</h2>
+        <p>
+          Access tokens live for one hour. Use the refresh token to mint a new pair without prompting
+          the user again. Refresh tokens rotate on every use — store only the latest value and discard
+          the previous one to keep your client within the replay window.
+        </p>
+
+        <!-- ============ PREV / NEXT PAGER ============ -->
+        <nav class="pager" aria-label="Page navigation">
+          <a class="pager-link pager-prev" href="#">
+            <span class="pager-dir">← Previous</span>
+            <span class="pager-title">Sessions &amp; cookies</span>
+          </a>
+          <a class="pager-link pager-next" href="#">
+            <span class="pager-dir">Next →</span>
+            <span class="pager-title">SAML SSO</span>
+          </a>
+        </nav>
+      </article>
+
+      <!-- ============ RELATED ARTICLES ============ -->
+      <section class="related" aria-labelledby="related-h">
+        <h2 id="related-h" class="related-title">Related articles</h2>
+        <ul class="related-list">
+          <li class="related-item">
+            <a href="#">
+              <span class="related-kicker">Guide</span>
+              <span class="related-name">Rotating client secrets safely</span>
+              <span class="related-desc">A zero-downtime pattern for replacing OAuth client secrets across deployments.</span>
+            </a>
+          </li>
+          <li class="related-item">
+            <a href="#">
+              <span class="related-kicker">Reference</span>
+              <span class="related-name">Scoped tokens &amp; least privilege</span>
+              <span class="related-desc">How scope intersections are resolved when a token carries overlapping grants.</span>
+            </a>
+          </li>
+          <li class="related-item">
+            <a href="#">
+              <span class="related-kicker">Tutorial</span>
+              <span class="related-name">Wiring SAML SSO to the Verdant Empire</span>
+              <span class="related-desc">Map enterprise IdP assertions onto Aurora DB workspace roles step by step.</span>
+            </a>
+          </li>
+          <li class="related-item">
+            <a href="#">
+              <span class="related-kicker">Concept</span>
+              <span class="related-name">PKCE, explained from scratch</span>
+              <span class="related-desc">Why the proof-key exchange closes the interception gap in public clients.</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <aside class="toc" aria-label="On this page">
+      <p class="toc-title">On this page</p>
+      <ul class="toc-list">
+        <li><a href="#flow">Authorization-code flow</a></li>
+        <li><a href="#scopes">Scope model</a></li>
+        <li><a href="#refresh">Refreshing tokens</a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

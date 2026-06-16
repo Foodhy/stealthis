@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pulsedeck — Real-time monitoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar -->
+    <nav class="sidebar" aria-label="Primary">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◈</span>
+        <span class="brand-name">Pulsedeck</span>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navList" aria-label="Toggle navigation">☰</button>
+      <ul class="nav-list" id="navList">
+        <li><a href="#" class="nav-item is-active" aria-current="page"><span class="ni-ico" aria-hidden="true">◉</span> Live monitor</a></li>
+        <li><a href="#" class="nav-item"><span class="ni-ico" aria-hidden="true">▤</span> Services</a></li>
+        <li><a href="#" class="nav-item"><span class="ni-ico" aria-hidden="true">◴</span> Latency</a></li>
+        <li><a href="#" class="nav-item"><span class="ni-ico" aria-hidden="true">⚑</span> Alerts <span class="nav-badge" id="navAlertBadge">0</span></a></li>
+        <li><a href="#" class="nav-item"><span class="ni-ico" aria-hidden="true">▦</span> Logs</a></li>
+        <li><a href="#" class="nav-item"><span class="ni-ico" aria-hidden="true">⚙</span> Settings</a></li>
+      </ul>
+      <div class="sidebar-foot">
+        <div class="conn" id="connStatus" data-state="live" role="status" aria-live="polite">
+          <span class="conn-dot" aria-hidden="true"></span>
+          <span class="conn-label" id="connLabel">Connected</span>
+        </div>
+        <p class="sidebar-region">Region <strong>eu-west-1</strong></p>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main" role="main">
+      <header class="page-head">
+        <div class="ph-titles">
+          <h1>Real-time monitoring</h1>
+          <p class="ph-sub">Helios Grid · edge fleet telemetry · streaming every <span id="intervalLabel">1.0s</span></p>
+        </div>
+        <div class="ph-controls">
+          <span class="live-pill" id="livePill" data-state="live" aria-live="polite">
+            <span class="lp-dot" aria-hidden="true"></span><span id="livePillText">LIVE</span>
+          </span>
+          <div class="seg" role="group" aria-label="Stream speed">
+            <button type="button" class="seg-btn" data-speed="2000">0.5×</button>
+            <button type="button" class="seg-btn is-active" data-speed="1000" aria-pressed="true">1×</button>
+            <button type="button" class="seg-btn" data-speed="500">2×</button>
+            <button type="button" class="seg-btn" data-speed="250">4×</button>
+          </div>
+          <button type="button" class="btn btn-primary" id="pauseBtn" aria-pressed="false">
+            <span id="pauseIcon" aria-hidden="true">❚❚</span> <span id="pauseLabel">Pause</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Alert banner (threshold breach) -->
+      <div class="alert-bar" id="alertBar" role="alert" aria-live="assertive" hidden>
+        <span class="ab-ico" aria-hidden="true">⚠</span>
+        <span class="ab-text" id="alertBarText">Threshold exceeded.</span>
+        <button type="button" class="ab-dismiss" id="alertDismiss" aria-label="Dismiss alert">✕</button>
+      </div>
+
+      <!-- KPI row -->
+      <section class="kpi-row" aria-label="Key metrics">
+        <article class="kpi" data-metric="cpu">
+          <header class="kpi-head">
+            <span class="kpi-label">CPU load</span>
+            <button type="button" class="card-menu" aria-label="CPU options">⋯</button>
+          </header>
+          <div class="kpi-value"><span data-kpi-value>0</span><span class="kpi-unit">%</span></div>
+          <div class="kpi-foot">
+            <span class="delta" data-kpi-delta><span class="d-arrow" aria-hidden="true">▲</span><span data-kpi-delta-num>0.0</span>%</span>
+            <svg class="spark" viewBox="0 0 96 28" preserveAspectRatio="none" data-kpi-spark aria-hidden="true"></svg>
+          </div>
+        </article>
+
+        <article class="kpi" data-metric="ram">
+          <header class="kpi-head">
+            <span class="kpi-label">Memory</span>
+            <button type="button" class="card-menu" aria-label="Memory options">⋯</button>
+          </header>
+          <div class="kpi-value"><span data-kpi-value>0</span><span class="kpi-unit">%</span></div>
+          <div class="kpi-foot">
+            <span class="delta" data-kpi-delta><span class="d-arrow" aria-hidden="true">▲</span><span data-kpi-delta-num>0.0</span>%</span>
+            <svg class="spark" viewBox="0 0 96 28" preserveAspectRatio="none" data-kpi-spark aria-hidden="true"></svg>
+          </div>
+        </article>
+
+        <article class="kpi" data-metric="req">
+          <header class="kpi-head">
+            <span class="kpi-label">Requests / sec</span>
+            <button type="button" class="card-menu" aria-label="Requests options">⋯</button>
+          </header>
+          <div class="kpi-value"><span data-kpi-value>0</span><span class="kpi-unit">rps</span></div>
+          <div class="kpi-foot">
+            <span class="delta" data-kpi-delta><span class="d-arrow" aria-hidden="true">▲</span><span data-kpi-delta-num>0.0</span>%</span>
+            <svg class="spark" viewBox="0 0 96 28" preserveAspectRatio="none" data-kpi-spark aria-hidden="true"></svg>
+          </div>
+        </article>
+
+        <article class="kpi" data-metric="lat">
+          <header class="kpi-head">
+            <span class="kpi-label">p95 latency</span>
+            <button type="button" class="card-menu" aria-label="Latency options">⋯</button>
+          </header>
+          <div class="kpi-value"><span data-kpi-value>0</span><span class="kpi-unit">ms</span></div>
+          <div class="kpi-foot">
+            <span class="delta" data-kpi-delta><span class="d-arrow" aria-hidden="true">▲</span><span data-kpi-delta-num>0.0</span>%</span>
+            <svg class="spark" viewBox="0 0 96 28" preserveAspectRatio="none" data-kpi-spark aria-hidden="true"></svg>
+          </div>
+        </article>
+      </section>
+
+      <!-- Widget grid -->
+      <section class="grid" id="grid" aria-label="Monitoring widgets">
+
+        <!-- Streaming charts -->
+        <article class="card card-stream" draggable="true" data-card="stream">
+          <header class="card-head">
+            <div class="ch-titles">
+              <h2 class="card-title">Live streams <span class="drag-hint" aria-hidden="true">⠿</span></h2>
+              <p class="card-meta">60-second rolling window · threshold lines dashed</p>
+            </div>
+            <div class="stream-tabs" role="tablist" aria-label="Stream metric">
+              <button type="button" class="st-tab is-active" role="tab" aria-selected="true" data-stream="cpu">CPU</button>
+              <button type="button" class="st-tab" role="tab" aria-selected="false" data-stream="ram">RAM</button>
+              <button type="button" class="st-tab" role="tab" aria-selected="false" data-stream="req">Requests</button>
+            </div>
+          </header>
+          <div class="chart-wrap">
+            <svg class="stream-chart" id="streamChart" viewBox="0 0 600 220" preserveAspectRatio="none" role="img" aria-label="Streaming metric over time">
+              <defs>
+                <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--brand)" stop-opacity="0.28" />
+                  <stop offset="100%" stop-color="var(--brand)" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <g class="grid-lines" id="gridLines"></g>
+              <line class="threshold-line" id="thresholdLine" x1="0" x2="600" y1="0" y2="0" />
+              <path class="stream-fill" id="streamFill" d="" />
+              <path class="stream-path" id="streamPath" d="" />
+              <circle class="stream-head" id="streamHead" r="4" cx="0" cy="0" />
+            </svg>
+            <div class="chart-axis" id="chartAxis" aria-hidden="true"></div>
+          </div>
+          <p class="chart-readout" aria-live="off">
+            <span class="cr-now" id="streamNow">0</span>
+            <span class="cr-unit" id="streamUnit">%</span>
+            <span class="cr-sep">·</span>
+            peak <span id="streamPeak">0</span><span id="streamPeakUnit">%</span>
+            <span class="cr-sep">·</span>
+            threshold <span id="streamThresh">0</span><span id="streamThreshUnit">%</span>
+          </p>
+        </article>
+
+        <!-- Gauges -->
+        <article class="card card-gauges" draggable="true" data-card="gauges">
+          <header class="card-head">
+            <h2 class="card-title">Live gauges <span class="drag-hint" aria-hidden="true">⠿</span></h2>
+            <button type="button" class="card-menu" aria-label="Gauge options">⋯</button>
+          </header>
+          <div class="gauges">
+            <div class="gauge" data-gauge="cpu">
+              <svg viewBox="0 0 120 76" class="gauge-svg" role="img" aria-label="CPU gauge">
+                <path class="g-track" d="M14 70 A46 46 0 0 1 106 70" />
+                <path class="g-fill" d="M14 70 A46 46 0 0 1 106 70" />
+                <g class="g-needle"><line x1="60" y1="70" x2="60" y2="30" /><circle cx="60" cy="70" r="4" /></g>
+              </svg>
+              <div class="gauge-cap"><span class="g-val">0</span><span class="g-unit">%</span></div>
+              <span class="gauge-name">CPU</span>
+            </div>
+            <div class="gauge" data-gauge="ram">
+              <svg viewBox="0 0 120 76" class="gauge-svg" role="img" aria-label="Memory gauge">
+                <path class="g-track" d="M14 70 A46 46 0 0 1 106 70" />
+                <path class="g-fill" d="M14 70 A46 46 0 0 1 106 70" />
+                <g class="g-needle"><line x1="60" y1="70" x2="60" y2="30" /><circle cx="60" cy="70" r="4" /></g>
+              </svg>
+              <div class="gauge-cap"><span class="g-val">0</span><span class="g-unit">%</span></div>
+              <span class="gauge-name">Memory</span>
+            </div>
+            <div class="gauge" data-gauge="disk">
+              <svg viewBox="0 0 120 76" class="gauge-svg" role="img" aria-label="Disk I/O gauge">
+                <path class="g-track" d="M14 70 A46 46 0 0 1 106 70" />
+                <path class="g-fill" d="M14 70 A46 46 0 0 1 106 70" />
+                <g class="g-needle"><line x1="60" y1="70" x2="60" y2="30" /><circle cx="60" cy="70" r="4" /></g>
+              </svg>
+              <div class="gauge-cap"><span class="g-val">0</span><span class="g-unit">%</span></div>
+              <span class="gauge-name">Disk I/O</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Node tiles -->
+        <article class="card card-nodes" draggable="true" data-card="nodes">
+          <header class="card-head">
+            <div class="ch-titles">
+              <h2 class="card-title">Node health <span class="drag-hint" aria-hidden="true">⠿</span></h2>
+              <p class="card-meta"><span id="nodesUp">0</span> healthy · <span id="nodesWarn">0</span> warning · <span id="nodesDown">0</span> critical</p>
+            </div>
+          </header>
+          <ul class="node-grid" id="nodeGrid" aria-label="Fleet nodes"></ul>
+        </article>
+
+        <!-- Event log -->
+        <article class="card card-log" draggable="true" data-card="log">
+          <header class="card-head">
+            <h2 class="card-title">Event stream <span class="drag-hint" aria-hidden="true">⠿</span></h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="clearLog">Clear</button>
+          </header>
+          <ol class="log" id="logStream" aria-live="polite" aria-label="Live event log"></ol>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

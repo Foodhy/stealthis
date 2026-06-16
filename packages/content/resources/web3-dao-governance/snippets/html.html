@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lumen Collective — DAO Governance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+  </div>
+
+  <div class="shell">
+    <!-- ===== Top bar ===== -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="3.2" fill="currentColor"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <strong>Lumen Collective</strong>
+          <span class="brand-sub"><span class="chain-dot" aria-hidden="true"></span>Lumen Chain · Governor v3</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-ghost" id="delegateBtn">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
+            <path d="M17 8l4 4-4 4M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Delegate
+        </button>
+        <button type="button" class="wallet-chip" id="walletChip" aria-label="Connected wallet 0x7a3f…c41d">
+          <span class="wallet-status" aria-hidden="true"></span>
+          <span class="mono">0x7a3f…c41d</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== Hero / stats ===== -->
+    <section class="hero" aria-label="Your governance overview">
+      <article class="stat-card stat-power">
+        <p class="stat-label">Your voting power</p>
+        <p class="stat-value mono"><span id="votingPower" data-value="184250">184,250</span> <span class="stat-unit">vNOVA</span></p>
+        <div class="stat-split">
+          <span><span class="mono">128,400</span> NOVA held</span>
+          <span class="split-dot" aria-hidden="true">·</span>
+          <span><span class="mono">55,850</span> delegated to you</span>
+        </div>
+        <div class="power-meter" role="img" aria-label="Your voting power is 0.74 percent of total supply">
+          <span class="power-fill" style="width:7.4%"></span>
+        </div>
+        <p class="stat-foot"><span class="mono">0.74%</span> of total voting supply</p>
+      </article>
+
+      <article class="stat-card">
+        <p class="stat-label">Treasury value</p>
+        <p class="stat-value mono">$42.8M</p>
+        <p class="stat-foot"><span class="delta-pos mono">▲ +2.31%</span> 7d · 61% NOVA / 27% lmUSD / 12% wLUM</p>
+      </article>
+
+      <article class="stat-card">
+        <p class="stat-label">Active proposals</p>
+        <p class="stat-value mono" id="activeCount">3</p>
+        <p class="stat-foot"><span class="mono" id="votedCount">1</span> voted by you · quorum <span class="mono">40.0M</span> vNOVA</p>
+      </article>
+
+      <article class="stat-card stat-cta">
+        <p class="stat-label">Got an idea?</p>
+        <p class="stat-cta-text">Proposing requires <span class="mono">100,000</span> vNOVA — you qualify.</p>
+        <button type="button" class="btn btn-primary" id="newProposalBtn">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          New proposal
+        </button>
+      </article>
+    </section>
+
+    <!-- ===== Filters ===== -->
+    <nav class="filters" role="tablist" aria-label="Filter proposals by status">
+      <button type="button" class="filter-tab is-active" role="tab" aria-selected="true" data-filter="all">All <span class="count mono" data-count="all"></span></button>
+      <button type="button" class="filter-tab" role="tab" aria-selected="false" data-filter="active">Active <span class="count mono" data-count="active"></span></button>
+      <button type="button" class="filter-tab" role="tab" aria-selected="false" data-filter="passed">Passed <span class="count mono" data-count="passed"></span></button>
+      <button type="button" class="filter-tab" role="tab" aria-selected="false" data-filter="failed">Failed <span class="count mono" data-count="failed"></span></button>
+      <button type="button" class="filter-tab" role="tab" aria-selected="false" data-filter="pending">Pending <span class="count mono" data-count="pending"></span></button>
+    </nav>
+
+    <!-- ===== Main layout: list + detail ===== -->
+    <main class="layout">
+      <section class="proposal-list" id="proposalList" aria-label="Proposals" aria-live="polite">
+        <!-- proposal cards injected by script.js -->
+      </section>
+
+      <aside class="detail-panel" id="detailPanel" aria-label="Proposal detail" hidden>
+        <!-- detail injected by script.js -->
+      </aside>
+    </main>
+
+    <footer class="page-foot">
+      <span>Lumen Collective Governor v3 · <span class="mono">0x1c9b…e770</span></span>
+      <span>UI simulation — no real chain calls</span>
+    </footer>
+  </div>
+
+  <!-- ===== Create proposal modal (stub) ===== -->
+  <div class="modal-overlay" id="proposalModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <h2 id="modalTitle">Create proposal</h2>
+        <button type="button" class="icon-btn" id="modalClose" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <label class="field">
+          <span class="field-label">Title</span>
+          <input type="text" id="propTitle" placeholder="LIP-48: Your proposal title" maxlength="90" />
+        </label>
+        <label class="field">
+          <span class="field-label">Summary</span>
+          <textarea id="propSummary" rows="4" placeholder="What should the DAO do, and why?"></textarea>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Voting period</span>
+            <select id="propPeriod">
+              <option>3 days</option>
+              <option selected>5 days</option>
+              <option>7 days</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Action type</span>
+            <select id="propAction">
+              <option>Signal only</option>
+              <option>Treasury transfer</option>
+              <option>Parameter change</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="risk-note" role="note">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+            <path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18.6a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p>Submitting locks a <strong class="mono">10,000 NOVA</strong> proposal bond until voting ends. The bond is slashed if the Security Council flags the proposal as spam.</p>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="modalCancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="modalSubmit">Sign &amp; submit <span class="mono modal-bond">−10,000 NOVA</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

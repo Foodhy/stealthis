@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trip Planner — Wander Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#planner">Skip to planner</a>
+
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <path d="M16 2C9.9 2 5 6.9 5 13c0 7.5 9.4 16 10.4 16.9.4.3.9.3 1.2 0C17.6 29 27 20.5 27 13 27 6.9 22.1 2 16 2Z" fill="var(--coral)"/>
+          <circle cx="16" cy="13" r="4.4" fill="#fff"/>
+        </svg>
+      </span>
+      <span class="brand__text">Wander<span>Atlas</span></span>
+    </div>
+    <nav class="topbar__nav" aria-label="Primary">
+      <a href="#planner" class="is-current" aria-current="page">Plan</a>
+      <a href="#explore">Explore</a>
+      <a href="#itinerary">Itinerary</a>
+    </nav>
+    <div class="topbar__actions">
+      <button class="btn btn--ghost" id="saveBtn" type="button">Save trip</button>
+      <button class="btn btn--quiet" id="clearBtn" type="button">Clear</button>
+    </div>
+  </header>
+
+  <section class="hero" aria-label="Trip overview">
+    <div class="hero__scene" aria-hidden="true">
+      <svg class="hero__svg" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice" role="img">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffd9a0"/>
+            <stop offset=".55" stop-color="#f6b08a"/>
+            <stop offset="1" stop-color="#e98f78"/>
+          </linearGradient>
+          <linearGradient id="ridge1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2f7d82"/>
+            <stop offset="1" stop-color="#1f5f6b"/>
+          </linearGradient>
+          <linearGradient id="ridge2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3f9b97"/>
+            <stop offset="1" stop-color="#2a7a7c"/>
+          </linearGradient>
+        </defs>
+        <rect width="1200" height="360" fill="url(#sky)"/>
+        <circle cx="930" cy="120" r="54" fill="#fff3df" opacity=".9"/>
+        <path d="M0 250 L160 170 L320 240 L470 150 L640 250 L820 160 L1000 250 L1200 180 L1200 360 L0 360Z" fill="url(#ridge1)" opacity=".55"/>
+        <path d="M0 300 L180 220 L360 300 L540 210 L720 300 L900 220 L1080 300 L1200 250 L1200 360 L0 360Z" fill="url(#ridge2)"/>
+      </svg>
+    </div>
+    <div class="hero__body">
+      <p class="hero__eyebrow">14-night journey · Adriatic &amp; Alps</p>
+      <h1 class="hero__title" id="tripTitle" contenteditable="true" spellcheck="false" role="textbox" aria-label="Trip title, editable">Coast to Summit Escape</h1>
+      <p class="hero__sub">Build it spot by spot — add destinations, drag them between days, and watch your route and budget update live.</p>
+      <dl class="hero__stats">
+        <div class="stat"><dt>Days</dt><dd id="statDays">0</dd></div>
+        <div class="stat"><dt>Stops</dt><dd id="statStops">0</dd></div>
+        <div class="stat"><dt>Est. budget</dt><dd id="statBudget">$0</dd></div>
+        <div class="stat"><dt>Per day</dt><dd id="statPerDay">$0</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <main class="planner" id="planner">
+    <!-- Explore column -->
+    <section class="col col--explore" id="explore" aria-labelledby="exploreHd">
+      <div class="col__head">
+        <h2 id="exploreHd">Explore spots</h2>
+        <p class="col__hint">Search the atlas, then add to your trip.</p>
+      </div>
+
+      <div class="search">
+        <span class="search__icon" aria-hidden="true">⌕</span>
+        <input id="searchInput" type="search" placeholder="Search Dubrovnik, fjords, gelato…" aria-label="Search destinations" autocomplete="off" />
+      </div>
+
+      <div class="filters" role="group" aria-label="Filter by category">
+        <button class="chip is-active" data-cat="all" type="button" aria-pressed="true">All</button>
+        <button class="chip" data-cat="sight" type="button" aria-pressed="false">⛪ Sights</button>
+        <button class="chip" data-cat="nature" type="button" aria-pressed="false">⛰ Nature</button>
+        <button class="chip" data-cat="food" type="button" aria-pressed="false">🍝 Food</button>
+        <button class="chip" data-cat="stay" type="button" aria-pressed="false">🛏 Stays</button>
+      </div>
+
+      <ul class="poi-list" id="poiList" aria-live="polite"></ul>
+      <p class="poi-empty" id="poiEmpty" hidden>No spots match that search.</p>
+    </section>
+
+    <!-- Itinerary column -->
+    <section class="col col--itin" id="itinerary" aria-labelledby="itinHd">
+      <div class="col__head col__head--row">
+        <div>
+          <h2 id="itinHd">Your itinerary</h2>
+          <p class="col__hint">Drag a spot to reorder or move it to another day.</p>
+        </div>
+        <button class="btn btn--soft" id="addDayBtn" type="button">+ Add day</button>
+      </div>
+      <div class="days" id="days"></div>
+    </section>
+
+    <!-- Map + budget column -->
+    <aside class="col col--map" aria-labelledby="mapHd">
+      <div class="col__head">
+        <h2 id="mapHd">Route map</h2>
+        <p class="col__hint">Pins follow your day order.</p>
+      </div>
+
+      <div class="map" id="map">
+        <svg class="map__svg" viewBox="0 0 320 360" role="img" aria-label="Mini route map of your trip">
+          <defs>
+            <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#dceef0"/>
+              <stop offset="1" stop-color="#bfe2e6"/>
+            </linearGradient>
+            <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#efe3cf"/>
+              <stop offset="1" stop-color="#e3d3b8"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="360" fill="url(#sea)"/>
+          <path d="M0 60 Q90 40 150 90 T320 70 L320 0 L0 0Z" fill="url(#land)" opacity=".9"/>
+          <path d="M0 300 Q80 260 170 300 T320 280 L320 360 L0 360Z" fill="url(#land)"/>
+          <path d="M40 150 q30 -40 80 -20 t90 30 q40 -10 70 20 l0 60 q-50 30 -110 10 t-130 -30Z" fill="#f3ead9" opacity=".85"/>
+          <g id="routeLayer" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-dasharray="3 5" stroke-linecap="round"></g>
+          <g id="pinLayer"></g>
+        </svg>
+        <p class="map__empty" id="mapEmpty">Add spots to draw your route.</p>
+      </div>
+
+      <div class="budget">
+        <h3 class="budget__hd">Budget breakdown</h3>
+        <ul class="budget__list" id="budgetList"></ul>
+        <div class="budget__total">
+          <span>Total</span>
+          <strong id="budgetTotal">$0</strong>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <footer class="foot" role="contentinfo">
+    Illustrative travel UI — fictional destinations, prices &amp; maps. Trip auto-saves to your browser.
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

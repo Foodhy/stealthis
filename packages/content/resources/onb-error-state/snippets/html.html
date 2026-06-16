@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Something went wrong — Error state</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="page__head">
+      <span class="eyebrow">Empty states</span>
+      <h1>Something-went-wrong state</h1>
+      <p class="lede">A resilient error surface for failed data loads — with retry, a faux error code, and a switch between framings and layouts.</p>
+    </header>
+
+    <section class="controls" aria-label="Demo controls">
+      <div class="seg" role="group" aria-label="Error framing">
+        <span class="seg__label">Framing</span>
+        <div class="seg__btns">
+          <button type="button" class="seg__btn is-active" data-frame="generic" aria-pressed="true">Server 500</button>
+          <button type="button" class="seg__btn" data-frame="offline" aria-pressed="false">Network</button>
+          <button type="button" class="seg__btn" data-frame="notfound" aria-pressed="false">Not found</button>
+        </div>
+      </div>
+
+      <div class="seg" role="group" aria-label="Layout">
+        <span class="seg__label">Layout</span>
+        <div class="seg__btns">
+          <button type="button" class="seg__btn is-active" data-layout="inline" aria-pressed="true">Inline card</button>
+          <button type="button" class="seg__btn" data-layout="full" aria-pressed="false">Full page</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" data-layout="inline" aria-live="polite">
+      <!-- Faux dashboard chrome so the inline card sits in real context -->
+      <div class="panel">
+        <div class="panel__bar">
+          <div class="panel__title">
+            <span class="dot dot--a"></span>
+            <span>Revenue analytics</span>
+          </div>
+          <span class="panel__meta">Last 30 days</span>
+        </div>
+
+        <div class="panel__body" id="panelBody">
+          <!-- ERROR STATE -->
+          <div class="state state--error" data-state="error">
+            <div class="art" aria-hidden="true">
+              <svg class="art__svg" viewBox="0 0 120 120" fill="none">
+                <circle cx="60" cy="60" r="54" class="art__ring" />
+                <path class="art__tri" d="M60 28 L92 84 L28 84 Z" />
+                <line class="art__bang" x1="60" y1="50" x2="60" y2="68" />
+                <circle class="art__dot" cx="60" cy="76" r="2.6" />
+              </svg>
+            </div>
+            <h2 class="state__title" id="stTitle">Something went wrong</h2>
+            <p class="state__desc" id="stDesc">We couldn’t load your revenue analytics. This is on our side — please try again in a moment.</p>
+            <p class="errcode">
+              <span class="errcode__k">Error</span>
+              <code id="stCode">ERR_500_GATEWAY · req_8f3a1c</code>
+              <button type="button" class="copy" id="copyBtn" aria-label="Copy error code">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              </button>
+            </p>
+            <div class="state__actions">
+              <button type="button" class="btn btn--primary" id="retryBtn">
+                <span class="btn__spin" aria-hidden="true"></span>
+                <svg class="btn__ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+                <span class="btn__txt">Try again</span>
+              </button>
+              <a href="#support" class="btn btn--ghost" id="supportBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Contact support
+              </a>
+            </div>
+            <p class="retry-note" id="retryNote" aria-live="polite"></p>
+          </div>
+
+          <!-- SUCCESS STATE (revealed after a successful retry) -->
+          <div class="state state--ok" data-state="ok" hidden>
+            <div class="art art--ok" aria-hidden="true">
+              <svg class="art__svg" viewBox="0 0 120 120" fill="none">
+                <circle cx="60" cy="60" r="54" class="art__ring art__ring--ok" />
+                <path class="art__check" d="M40 62 L54 76 L82 46" />
+              </svg>
+            </div>
+            <h2 class="state__title">Back online</h2>
+            <p class="state__desc">Your revenue analytics loaded successfully. Everything looks healthy.</p>
+            <div class="success-chart" aria-hidden="true">
+              <span style="--h:38%"></span><span style="--h:62%"></span><span style="--h:50%"></span>
+              <span style="--h:78%"></span><span style="--h:66%"></span><span style="--h:92%"></span>
+              <span style="--h:74%"></span>
+            </div>
+            <button type="button" class="btn btn--ghost" id="breakBtn">Simulate failure again</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

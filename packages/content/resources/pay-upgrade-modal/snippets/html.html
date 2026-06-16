@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Northwind — Upgrade Modal (Plan Compare)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <!-- Product chrome / billing settings card that hosts the Upgrade trigger -->
+    <header class="appbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
+            <path d="m8 12 3 3 5-6" />
+          </svg>
+        </span>
+        <span class="brand-name">Northwind</span>
+      </div>
+      <span class="appbar-pill" aria-hidden="true">Workspace settings</span>
+    </header>
+
+    <main class="settings">
+      <section class="billing-card" aria-labelledby="billingTitle">
+        <div class="billing-head">
+          <div>
+            <p class="eyebrow">Billing &amp; plan</p>
+            <h1 class="billing-title" id="billingTitle">You're on the <span class="cur-plan">Starter</span> plan</h1>
+            <p class="billing-sub">Acme Robotics workspace · 4 of 5 seats used · renews June 13, 2026</p>
+          </div>
+          <span class="plan-tag" id="planTag">Starter</span>
+        </div>
+
+        <ul class="usage" aria-label="Current usage against Starter limits">
+          <li class="usage-row">
+            <span class="usage-label">Projects</span>
+            <span class="usage-bar"><span class="usage-fill" style="width:90%"></span></span>
+            <span class="usage-num"><strong>9</strong> / 10</span>
+          </li>
+          <li class="usage-row is-cap">
+            <span class="usage-label">Team seats</span>
+            <span class="usage-bar"><span class="usage-fill is-warn" style="width:80%"></span></span>
+            <span class="usage-num"><strong>4</strong> / 5</span>
+          </li>
+          <li class="usage-row">
+            <span class="usage-label">API calls / mo</span>
+            <span class="usage-bar"><span class="usage-fill" style="width:68%"></span></span>
+            <span class="usage-num"><strong>34k</strong> / 50k</span>
+          </li>
+        </ul>
+
+        <div class="billing-foot">
+          <p class="nudge">
+            <span class="nudge-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12l1-8.5Z" />
+              </svg>
+            </span>
+            You're close to your Starter limits. Pro doubles your seats and lifts caps.
+          </p>
+          <button class="btn btn-primary btn-lg" id="upgradeTrigger" type="button">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
+            </svg>
+            Upgrade plan
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Upgrade modal -->
+    <div class="overlay" id="overlay" hidden></div>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalSub" hidden>
+      <div class="modal-head">
+        <div>
+          <p class="modal-eyebrow">Recommended upgrade</p>
+          <h2 class="modal-title" id="modalTitle">Move to Pro</h2>
+          <p class="modal-sub" id="modalSub">Unlock more seats, higher limits, and the features your team keeps bumping into.</p>
+        </div>
+        <button class="icon-btn" id="modalClose" type="button" aria-label="Close upgrade dialog">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Billing cycle toggle -->
+      <div class="cycle" role="group" aria-label="Billing cycle">
+        <button class="cycle-opt is-active" data-cycle="monthly" type="button" aria-pressed="true">Monthly</button>
+        <button class="cycle-opt" data-cycle="annual" type="button" aria-pressed="false">
+          Annual <span class="cycle-save">Save 20%</span>
+        </button>
+      </div>
+
+      <!-- Side-by-side compare -->
+      <div class="compare">
+        <!-- Current plan -->
+        <article class="col col-current" aria-labelledby="colCurName">
+          <span class="col-flag col-flag-current">Your plan</span>
+          <h3 class="col-name" id="colCurName">Starter</h3>
+          <p class="col-price">
+            <span class="amount" data-price="starter">$19</span><span class="per" data-per>/mo</span>
+          </p>
+          <p class="col-meta">For small, scrappy teams.</p>
+          <ul class="col-features" aria-label="Starter plan includes">
+            <li class="feat"><span class="tick tick-on" aria-hidden="true">✓</span> 10 projects</li>
+            <li class="feat"><span class="tick tick-on" aria-hidden="true">✓</span> 5 team seats</li>
+            <li class="feat"><span class="tick tick-on" aria-hidden="true">✓</span> 50k API calls / mo</li>
+            <li class="feat is-off"><span class="tick tick-off" aria-hidden="true">–</span> Advanced roles</li>
+            <li class="feat is-off"><span class="tick tick-off" aria-hidden="true">–</span> Audit log</li>
+            <li class="feat is-off"><span class="tick tick-off" aria-hidden="true">–</span> Priority support</li>
+          </ul>
+        </article>
+
+        <!-- Delta connector -->
+        <div class="delta" aria-hidden="true">
+          <span class="delta-arrow">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+            </svg>
+          </span>
+        </div>
+
+        <!-- Recommended plan -->
+        <article class="col col-target" aria-labelledby="colTgtName">
+          <span class="col-flag col-flag-rec">Recommended</span>
+          <h3 class="col-name" id="colTgtName">Pro</h3>
+          <p class="col-price">
+            <span class="amount" data-price="pro">$49</span><span class="per" data-per>/mo</span>
+          </p>
+          <p class="col-meta">For teams hitting their limits.</p>
+          <ul class="col-features" aria-label="Pro plan includes">
+            <li class="feat is-new"><span class="tick tick-on" aria-hidden="true">✓</span> 50 projects <span class="newtag">+40</span></li>
+            <li class="feat is-new"><span class="tick tick-on" aria-hidden="true">✓</span> 20 team seats <span class="newtag">+15</span></li>
+            <li class="feat is-new"><span class="tick tick-on" aria-hidden="true">✓</span> 500k API calls / mo</li>
+            <li class="feat is-new"><span class="tick tick-on" aria-hidden="true">✓</span> Advanced roles <span class="newtag">New</span></li>
+            <li class="feat is-new"><span class="tick tick-on" aria-hidden="true">✓</span> Audit log <span class="newtag">New</span></li>
+            <li class="feat is-new"><span class="tick tick-on" aria-hidden="true">✓</span> Priority support <span class="newtag">New</span></li>
+          </ul>
+        </article>
+      </div>
+
+      <!-- Price delta summary -->
+      <div class="delta-bar" aria-live="polite">
+        <div class="delta-bar-copy">
+          <p class="delta-bar-line">
+            <span class="delta-plus">+<span id="deltaAmount">$30</span><span class="delta-per" id="deltaPer">/mo</span></span>
+            more than Starter
+          </p>
+          <p class="delta-bar-sub" id="deltaSub">Charged today, prorated for the rest of this cycle.</p>
+        </div>
+        <div class="delta-bar-total">
+          <span class="total-label">New total</span>
+          <span class="total-amount"><span id="totalAmount">$49</span><span class="total-per" id="totalPer">/mo</span></span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="laterBtn" type="button">Maybe later</button>
+        <button class="btn btn-primary btn-confirm" id="confirmBtn" type="button">
+          <span class="confirm-label">Upgrade to Pro</span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <p class="modal-foot">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4" y="11" width="16" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        </svg>
+        Secure checkout · cancel anytime · prices in USD
+      </p>
+    </div>
+
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

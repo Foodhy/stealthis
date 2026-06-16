@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop — Product Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Admin navigation">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◈</span>
+        <span class="brand-name">Northwind</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-item"><span aria-hidden="true">▦</span> Dashboard</a>
+        <a href="#" class="nav-item is-active" aria-current="page"><span aria-hidden="true">▤</span> Products</a>
+        <a href="#" class="nav-item"><span aria-hidden="true">▥</span> Orders</a>
+        <a href="#" class="nav-item"><span aria-hidden="true">▧</span> Customers</a>
+        <a href="#" class="nav-item"><span aria-hidden="true">▨</span> Analytics</a>
+      </nav>
+      <div class="nav-foot">
+        <div class="store-chip">
+          <span class="store-dot" aria-hidden="true"></span>
+          <div>
+            <strong>Northwind Goods</strong>
+            <small>store.northwind.shop</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" aria-labelledby="page-title">
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">Products</h1>
+          <p class="subtitle" id="catalog-count">Loading catalog…</p>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" class="btn btn-ghost" id="exportBtn">Export CSV</button>
+          <button type="button" class="btn btn-primary" id="addBtn">＋ Add product</button>
+        </div>
+      </header>
+
+      <!-- Stat cards -->
+      <section class="stats" aria-label="Catalog summary">
+        <div class="stat">
+          <span class="stat-label">Total products</span>
+          <strong class="stat-value" id="stat-total">—</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Published</span>
+          <strong class="stat-value stat-ok" id="stat-published">—</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Out of stock</span>
+          <strong class="stat-value stat-sale" id="stat-oos">—</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Inventory value</span>
+          <strong class="stat-value" id="stat-value">—</strong>
+        </div>
+      </section>
+
+      <!-- Toolbar -->
+      <section class="toolbar" aria-label="Filter products">
+        <div class="search">
+          <span class="search-ico" aria-hidden="true">⌕</span>
+          <input type="search" id="search" placeholder="Search by name or SKU…" aria-label="Search products" autocomplete="off" />
+        </div>
+        <div class="filters" role="tablist" aria-label="Filter by status">
+          <button type="button" class="chip is-active" role="tab" aria-selected="true" data-status="all">All</button>
+          <button type="button" class="chip" role="tab" aria-selected="false" data-status="published">Published</button>
+          <button type="button" class="chip" role="tab" aria-selected="false" data-status="draft">Draft</button>
+          <button type="button" class="chip" role="tab" aria-selected="false" data-status="archived">Archived</button>
+        </div>
+      </section>
+
+      <!-- Bulk bar -->
+      <div class="bulkbar" id="bulkbar" hidden role="region" aria-label="Bulk actions">
+        <span class="bulk-count"><strong id="bulk-n">0</strong> selected</span>
+        <div class="bulk-actions">
+          <button type="button" class="btn btn-ghost" data-bulk="publish">Publish</button>
+          <button type="button" class="btn btn-ghost" data-bulk="archive">Archive</button>
+          <button type="button" class="btn btn-danger" data-bulk="delete">Delete</button>
+        </div>
+        <button type="button" class="bulk-clear" id="bulkClear" aria-label="Clear selection">✕</button>
+      </div>
+
+      <!-- Table -->
+      <section class="table-wrap" aria-label="Products table">
+        <table class="ptable">
+          <thead>
+            <tr>
+              <th class="col-check">
+                <input type="checkbox" id="checkAll" aria-label="Select all rows" />
+              </th>
+              <th class="col-prod"><button type="button" class="sort" data-sort="title">Product <span class="sort-ind" aria-hidden="true"></span></button></th>
+              <th class="col-sku"><button type="button" class="sort" data-sort="sku">SKU <span class="sort-ind" aria-hidden="true"></span></button></th>
+              <th class="col-price"><button type="button" class="sort" data-sort="price">Price <span class="sort-ind" aria-hidden="true"></span></button></th>
+              <th class="col-stock"><button type="button" class="sort" data-sort="stock">Stock <span class="sort-ind" aria-hidden="true"></span></button></th>
+              <th class="col-status">Status</th>
+              <th class="col-act"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="rows"><!-- rows injected --></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>
+          <span class="empty-ico" aria-hidden="true">⌕</span>
+          <p>No products match your filters.</p>
+          <button type="button" class="btn btn-ghost" id="resetFilters">Clear filters</button>
+        </div>
+      </section>
+
+      <!-- Pagination -->
+      <footer class="pager" aria-label="Pagination">
+        <span class="pager-info" id="pagerInfo">—</span>
+        <div class="pager-ctrls">
+          <button type="button" class="btn btn-ghost" id="prevPage">‹ Prev</button>
+          <span class="pager-pages" id="pagerPages"></span>
+          <button type="button" class="btn btn-ghost" id="nextPage">Next ›</button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Drawer -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="drawerTitle" role="dialog" aria-modal="true">
+    <header class="drawer-head">
+      <h2 id="drawerTitle">Add product</h2>
+      <button type="button" class="drawer-close" id="drawerClose" aria-label="Close drawer">✕</button>
+    </header>
+    <form class="drawer-body" id="prodForm" novalidate>
+      <div class="d-preview" id="dPreview" aria-hidden="true"></div>
+
+      <label class="field">
+        <span class="field-label">Product title</span>
+        <input type="text" name="title" id="fTitle" required placeholder="e.g. Cedar Pour-Over Kettle" />
+        <span class="field-err" id="errTitle"></span>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Price (USD)</span>
+          <div class="input-prefix">
+            <span aria-hidden="true">$</span>
+            <input type="number" name="price" id="fPrice" min="0" step="0.01" required placeholder="0.00" inputmode="decimal" />
+          </div>
+          <span class="field-err" id="errPrice"></span>
+        </label>
+        <label class="field">
+          <span class="field-label">Inventory</span>
+          <input type="number" name="stock" id="fStock" min="0" step="1" required placeholder="0" inputmode="numeric" />
+          <span class="field-err" id="errStock"></span>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">SKU</span>
+        <input type="text" name="sku" id="fSku" placeholder="Auto-generated if blank" autocomplete="off" />
+      </label>
+
+      <fieldset class="field">
+        <legend class="field-label">Variants</legend>
+        <div class="variants" id="variants"></div>
+        <div class="variant-add">
+          <input type="text" id="variantInput" placeholder="Add a variant (e.g. Large)" aria-label="New variant" autocomplete="off" />
+          <button type="button" class="btn btn-ghost" id="variantAdd">Add</button>
+        </div>
+      </fieldset>
+
+      <label class="field">
+        <span class="field-label">Status</span>
+        <select name="status" id="fStatus">
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+          <option value="archived">Archived</option>
+        </select>
+      </label>
+    </form>
+    <footer class="drawer-foot">
+      <button type="button" class="btn btn-ghost" id="drawerCancel">Cancel</button>
+      <button type="submit" form="prodForm" class="btn btn-primary" id="drawerSave">Save product</button>
+    </footer>
+  </aside>
+
+  <div class="toast-host" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

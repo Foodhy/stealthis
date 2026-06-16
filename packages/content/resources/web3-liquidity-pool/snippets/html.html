@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web3 — Liquidity Pool / Provide LP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="lp-app" aria-label="Liquidity pool — provide LP">
+
+    <!-- ===== Pool header ===== -->
+    <header class="pool-head">
+      <div class="pair">
+        <div class="pair-icons" aria-hidden="true">
+          <span class="coin coin-eth">Ξ</span>
+          <span class="coin coin-usdc">$</span>
+        </div>
+        <div class="pair-meta">
+          <h1>ETH / USDC</h1>
+          <div class="pair-sub">
+            <span class="chain-pill"><span class="chain-dot"></span>Lumen Chain</span>
+            <span class="fee-pill mono" id="head-fee-pill">0.30% fee</span>
+            <span class="addr mono" title="Pool contract (fictional)">0x7a3f…c41d</span>
+          </div>
+        </div>
+      </div>
+      <div class="wallet-chip" role="status" aria-label="Connected wallet (simulated)">
+        <span class="wallet-dot" aria-hidden="true"></span>
+        <span class="mono">0x4Be2…9aF1</span>
+      </div>
+    </header>
+
+    <!-- ===== Pool stats strip ===== -->
+    <section class="stats-strip" aria-label="Pool statistics">
+      <div class="stat">
+        <span class="stat-label">TVL</span>
+        <span class="stat-value mono" id="stat-tvl" data-animate>$48.2M</span>
+        <span class="stat-delta pos mono">+2.4%</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">24h Volume</span>
+        <span class="stat-value mono" id="stat-vol" data-animate>$9.7M</span>
+        <span class="stat-delta neg mono">−1.1%</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">24h Fees</span>
+        <span class="stat-value mono" id="stat-fees">$29.1K</span>
+        <span class="stat-delta pos mono">+0.8%</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Pool price</span>
+        <span class="stat-value mono" id="stat-price">2,584.30 USDC</span>
+        <span class="stat-delta muted mono">per ETH</span>
+      </div>
+    </section>
+
+    <div class="lp-grid">
+
+      <!-- ===== Left: Add / Remove panel ===== -->
+      <section class="panel glass" aria-label="Manage liquidity">
+
+        <div class="tabs" role="tablist" aria-label="Add or remove liquidity">
+          <button class="tab is-active" id="tab-add" role="tab" aria-selected="true" aria-controls="pane-add">Add</button>
+          <button class="tab" id="tab-remove" role="tab" aria-selected="false" aria-controls="pane-remove">Remove</button>
+          <span class="tab-glider" aria-hidden="true"></span>
+        </div>
+
+        <!-- ---- ADD pane ---- -->
+        <div class="pane" id="pane-add" role="tabpanel" aria-labelledby="tab-add">
+
+          <!-- Fee tier selector -->
+          <fieldset class="fee-tiers">
+            <legend>Fee tier</legend>
+            <div class="fee-options" role="radiogroup" aria-label="Fee tier">
+              <label class="fee-opt">
+                <input type="radio" name="fee" value="0.0005" />
+                <span class="fee-card">
+                  <span class="fee-rate mono">0.05%</span>
+                  <span class="fee-desc">Stable pairs</span>
+                  <span class="fee-share mono">8% of TVL</span>
+                </span>
+              </label>
+              <label class="fee-opt">
+                <input type="radio" name="fee" value="0.003" checked />
+                <span class="fee-card">
+                  <span class="fee-rate mono">0.30%</span>
+                  <span class="fee-desc">Most pairs</span>
+                  <span class="fee-share mono">87% of TVL</span>
+                </span>
+              </label>
+              <label class="fee-opt">
+                <input type="radio" name="fee" value="0.01" />
+                <span class="fee-card">
+                  <span class="fee-rate mono">1.00%</span>
+                  <span class="fee-desc">Exotic pairs</span>
+                  <span class="fee-share mono">5% of TVL</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Token A input -->
+          <div class="token-box">
+            <div class="token-box-top">
+              <label for="amount-eth">Deposit</label>
+              <span class="balance">Balance <span class="mono" id="bal-eth">4.2618</span>
+                <button class="max-btn" type="button" data-max="eth">MAX</button>
+              </span>
+            </div>
+            <div class="token-box-main">
+              <input class="amount mono" id="amount-eth" type="text" inputmode="decimal" placeholder="0.0" autocomplete="off" aria-label="ETH amount" />
+              <span class="token-tag">
+                <span class="coin coin-eth sm" aria-hidden="true">Ξ</span>
+                <span class="token-sym">ETH</span>
+              </span>
+            </div>
+            <div class="token-box-sub mono" id="usd-eth">≈ $0.00</div>
+          </div>
+
+          <div class="link-divider" aria-hidden="true">
+            <span class="link-icon">⇅</span>
+            <span class="link-note">ratio-linked</span>
+          </div>
+
+          <!-- Token B input -->
+          <div class="token-box">
+            <div class="token-box-top">
+              <label for="amount-usdc">Deposit</label>
+              <span class="balance">Balance <span class="mono" id="bal-usdc">12,840.55</span>
+                <button class="max-btn" type="button" data-max="usdc">MAX</button>
+              </span>
+            </div>
+            <div class="token-box-main">
+              <input class="amount mono" id="amount-usdc" type="text" inputmode="decimal" placeholder="0.0" autocomplete="off" aria-label="USDC amount" />
+              <span class="token-tag">
+                <span class="coin coin-usdc sm" aria-hidden="true">$</span>
+                <span class="token-sym">USDC</span>
+              </span>
+            </div>
+            <div class="token-box-sub mono" id="usd-usdc">≈ $0.00</div>
+          </div>
+
+          <!-- Estimates -->
+          <div class="estimates" aria-live="polite">
+            <div class="est-row">
+              <span>Pool share</span>
+              <span class="mono" id="est-share">0.0000%</span>
+            </div>
+            <div class="est-row">
+              <span>LP tokens received</span>
+              <span class="mono" id="est-lp">0.0000 LUM-LP</span>
+            </div>
+            <div class="est-row">
+              <span>Fee APR <span class="apr-badge" id="apr-badge">est.</span></span>
+              <span class="mono pos" id="est-apr">22.0%</span>
+            </div>
+            <div class="est-row est-sub">
+              <span>Network fee</span>
+              <span class="mono">~0.0012 ETH</span>
+            </div>
+          </div>
+
+          <button class="cta" id="btn-add" type="button" disabled>Enter an amount</button>
+          <p class="risk-note">Providing liquidity exposes you to <strong>impermanent loss</strong> if the pair price diverges. Simulation only.</p>
+        </div>
+
+        <!-- ---- REMOVE pane ---- -->
+        <div class="pane" id="pane-remove" role="tabpanel" aria-labelledby="tab-remove" hidden>
+          <div class="remove-head">
+            <span class="remove-label">Amount to remove</span>
+            <span class="remove-pct mono" id="remove-pct">25%</span>
+          </div>
+
+          <input class="pct-slider" id="remove-slider" type="range" min="0" max="100" value="25" step="1" aria-label="Percentage of position to remove" />
+
+          <div class="pct-presets" role="group" aria-label="Quick percentages">
+            <button type="button" data-pct="25">25%</button>
+            <button type="button" data-pct="50">50%</button>
+            <button type="button" data-pct="75">75%</button>
+            <button type="button" data-pct="100">MAX</button>
+          </div>
+
+          <div class="estimates" aria-live="polite">
+            <div class="est-row">
+              <span><span class="coin coin-eth sm inline" aria-hidden="true">Ξ</span> ETH you receive</span>
+              <span class="mono" id="rm-eth">0.4180</span>
+            </div>
+            <div class="est-row">
+              <span><span class="coin coin-usdc sm inline" aria-hidden="true">$</span> USDC you receive</span>
+              <span class="mono" id="rm-usdc">1,080.24</span>
+            </div>
+            <div class="est-row">
+              <span>LP tokens burned</span>
+              <span class="mono" id="rm-lp">10.5625 LUM-LP</span>
+            </div>
+            <div class="est-row est-sub">
+              <span>Unclaimed fees (auto-collected)</span>
+              <span class="mono pos">+$31.92</span>
+            </div>
+          </div>
+
+          <button class="cta cta-danger" id="btn-remove" type="button">Remove 25% liquidity</button>
+          <p class="risk-note">Removing liquidity stops fee accrual on the withdrawn share. Simulation only.</p>
+        </div>
+      </section>
+
+      <!-- ===== Right: Position summary ===== -->
+      <aside class="panel glass position" aria-label="Your position">
+        <div class="pos-head">
+          <h2>Your position</h2>
+          <span class="status-pill"><span class="status-dot"></span>In range</span>
+        </div>
+
+        <div class="pos-value">
+          <span class="pos-value-label">Position value</span>
+          <span class="pos-value-num mono" id="pos-value">$5,402.18</span>
+          <span class="pos-delta pos mono">+$112.40 (2.1%) past 7d</span>
+        </div>
+
+        <ul class="pos-tokens">
+          <li>
+            <span class="pos-token"><span class="coin coin-eth sm" aria-hidden="true">Ξ</span> ETH</span>
+            <span class="pos-amts">
+              <span class="mono" id="pos-eth">1.6720</span>
+              <span class="mono sub" id="pos-eth-usd">$4,320.97</span>
+            </span>
+          </li>
+          <li>
+            <span class="pos-token"><span class="coin coin-usdc sm" aria-hidden="true">$</span> USDC</span>
+            <span class="pos-amts">
+              <span class="mono" id="pos-usdc">4,320.97</span>
+              <span class="mono sub" id="pos-usdc-usd">$4,320.97</span>
+            </span>
+          </li>
+        </ul>
+
+        <div class="pos-meta">
+          <div class="pos-meta-row">
+            <span>LP tokens</span>
+            <span class="mono" id="pos-lp">42.2500 LUM-LP</span>
+          </div>
+          <div class="pos-meta-row">
+            <span>Pool share</span>
+            <span class="mono" id="pos-share">0.0112%</span>
+          </div>
+          <div class="pos-meta-row">
+            <span>Fees earned (lifetime)</span>
+            <span class="mono pos" id="pos-fees">$127.66</span>
+          </div>
+          <div class="pos-meta-row">
+            <span>Deposited</span>
+            <span class="mono">Mar 18, 2026</span>
+          </div>
+        </div>
+
+        <div class="apr-card">
+          <div class="apr-card-top">
+            <span>Fee APR (7d)</span>
+            <span class="mono apr-num" id="pos-apr">22.0%</span>
+          </div>
+          <div class="apr-bar" role="img" aria-label="APR vs pool average">
+            <span class="apr-bar-fill" style="width:62%"></span>
+          </div>
+          <span class="apr-foot">vs 17.4% pool average — based on 24h fees / TVL, not guaranteed</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ===== Confirm modal ===== -->
+    <div class="modal-backdrop" id="modal" hidden>
+      <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-step" id="modal-confirm">
+          <h3 id="modal-title">Confirm add liquidity</h3>
+          <div class="confirm-pair">
+            <div class="confirm-token">
+              <span class="coin coin-eth" aria-hidden="true">Ξ</span>
+              <span class="mono confirm-amt" id="cf-eth">0.0000</span>
+              <span class="confirm-sym">ETH</span>
+            </div>
+            <span class="confirm-plus" aria-hidden="true">+</span>
+            <div class="confirm-token">
+              <span class="coin coin-usdc" aria-hidden="true">$</span>
+              <span class="mono confirm-amt" id="cf-usdc">0.00</span>
+              <span class="confirm-sym">USDC</span>
+            </div>
+          </div>
+          <div class="estimates modal-est">
+            <div class="est-row"><span>Fee tier</span><span class="mono" id="cf-fee">0.30%</span></div>
+            <div class="est-row"><span>Pool share</span><span class="mono" id="cf-share">0.0000%</span></div>
+            <div class="est-row"><span>LP tokens</span><span class="mono" id="cf-lp">0.0000 LUM-LP</span></div>
+            <div class="est-row"><span>Slippage tolerance</span><span class="mono">0.5%</span></div>
+          </div>
+          <div class="warn-box" role="note">
+            <span class="warn-icon" aria-hidden="true">⚠</span>
+            <span>You are signing a simulated transaction on <strong>Lumen Chain</strong>. Rates may shift if the pool moves before confirmation.</span>
+          </div>
+          <div class="modal-actions">
+            <button class="ghost-btn" id="btn-cancel" type="button">Cancel</button>
+            <button class="cta" id="btn-confirm" type="button">Sign &amp; supply</button>
+          </div>
+        </div>
+
+        <div class="modal-step" id="modal-pending" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <h3>Supplying liquidity…</h3>
+          <p class="pending-sub">Waiting for confirmation on Lumen Chain</p>
+          <span class="mono tx-hash" id="tx-hash">0x91c4…e7b2</span>
+        </div>
+
+        <div class="modal-step" id="modal-success" hidden>
+          <div class="success-ring" aria-hidden="true">✓</div>
+          <h3>Liquidity added</h3>
+          <p class="pending-sub">Your position has been updated</p>
+          <span class="mono tx-hash">0x91c4…e7b2 · block 18,442,901</span>
+          <div class="modal-actions">
+            <button class="cta" id="btn-done" type="button">Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-zone" id="toast-zone" aria-live="polite"></div>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

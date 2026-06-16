@@ -1,0 +1,56 @@
+---
+slug: remotion-sports-score
+title: "Sports Scoreboard (Remotion)"
+description: A broadcast-quality 6-second sports scoreboard animation built in Remotion, featuring a spring-animated score bar that slides in from above showing two rival teams, a pulsing LIVE badge with real-time clock, a dramatic GOAL sequence with a yellow flash and scorer chyron, a physics-driven confetti burst across 14 colored rectangles, and a clean added-time wrap-up — all over a dark charcoal stadium atmosphere with subtle field gradient.
+category: remotion
+type: animation
+tags: [remotion, sports, scoreboard, score, broadcast, football]
+tech: [remotion, react, typescript]
+difficulty: med
+targets: [react]
+collections: [remotion]
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-06-13
+updatedAt: 2026-06-13
+---
+
+## Sports Scoreboard
+
+A cinematic TV sports scoreboard overlay built entirely in Remotion with no external image assets. The composition opens on a dark charcoal canvas (`#0d1117`) with a subtle stadium field gradient blooming up from the bottom 20% of the frame. A wide pill-shaped scoreboard bar springs down from the top of the screen — driven by a spring config with `damping: 14, stiffness: 120` — displaying Chicago Hawks vs Dallas Wolves with colored team logos, a pulsing red LIVE badge, and the match clock. A secondary stat strip fades in below with Possession, Shots, and On Target numbers for both sides.
+
+At frame 40 the GOAL event fires: a full-frame yellow-gold flash washes over the scene while the word GOAL! scales in from zero to full size using a tight spring (`damping: 6, stiffness: 260`), casting a warm glow shadow. The scorer chyron — J. MARTINEZ #9 — springs up from below the frame half a second later. Simultaneously, the Team A score digit in the scoreboard transitions from 2 to 3 via a smooth count-up interpolation with a scale flash on update. Between frames 100 and 150, 14 confetti rectangles burst outward from the goal position using simple physics (constant velocity plus gravity accumulation per frame), each fading out over the final 15 frames of that window. The composition closes at frame 150 with the added-time clock stamp (90+2) springing into place, holding until a global fade-out wipes the frame clean.
+
+Every piece of copy and every color is defined as an UPPERCASE constant at the top of the file. Swapping teams, scorer name, or accent palette requires editing a single block — no hunting through JSX. The composition is structured into named sub-components (`StadiumBackground`, `ScoreboardBar`, `ScoreDigit`, `LiveBadge`, `GoalOverlay`, `ConfettiLayer`, `MatchStatStrip`, `FullTimeStamp`) so each scene can be iterated independently.
+
+### Composition specs
+
+| Property | Value |
+|---|---|
+| Resolution | 1280 × 720 |
+| FPS | 30 |
+| Duration | 6.0 s (180 frames) |
+
+### Timeline
+
+| Time | Frames | Action |
+|---|---|---|
+| 0.0 – 1.3 s | 0 – 40 | Stadium background blooms; scoreboard bar springs down; stat strip fades in |
+| 1.3 – 3.3 s | 40 – 100 | GOAL flash; GOAL! text springs in; scorer chyron rises; Team A score counts 2 → 3 |
+| 3.3 – 5.0 s | 100 – 150 | Confetti burst — 14 colored rects arc outward with gravity; scoreboard holds at 3-1 |
+| 5.0 – 6.0 s | 150 – 180 | Added-time clock (90+2) springs in; global fade-out over final 15 frames |
+
+### Customization
+
+- `TEAM_A` / `TEAM_B` — full team names displayed in the scoreboard bar
+- `TEAM_A_INITIALS` / `TEAM_B_INITIALS` — two-or-three-letter logo initials inside the colored circles
+- `TEAM_A_COLOR` / `TEAM_B_COLOR` — primary accent color for each team (border, text tint, goal stripe)
+- `SCORE_A` / `SCORE_B` / `SCORE_A_FINAL` — initial scores and the updated score after the GOAL event
+- `SCORER` / `SCORER_NUMBER` — scorer name and shirt number shown in the goal chyron
+- `CLOCK` / `CLOCK_FINAL` — match clock displayed during play and in the added-time scene
+- `ACCENT_YELLOW` — goal flash and GOAL! text color (default `#ffd700`)
+- `ACCENT_RED` — LIVE badge background (default `#e8001e`)
+- `CONFETTI_COLORS` — array of hex strings cycling across the 14 confetti rectangles
+- `CHANNEL` — watermark text shown in the bottom-right corner

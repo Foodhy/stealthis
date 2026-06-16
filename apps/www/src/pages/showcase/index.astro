@@ -1,6 +1,4 @@
 ---
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
 import { getCollection } from "astro:content";
 import ShowcaseCard from "@components/ShowcaseCard.astro";
 import { getLocaleFromUrl } from "@i18n/index";
@@ -8,48 +6,23 @@ import Base from "@layouts/Base.astro";
 const locale = getLocaleFromUrl(Astro.url);
 
 const allResources = await getCollection("resources");
-const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
 
+// Cap how many previews each category contributes to the wall. Keeps the page
+// curated (the full library is 800+ resources) and the HTML small — iframes load
+// their demo from the lab via `src`, so nothing is inlined per card.
+const PER_CATEGORY_CAP = 24;
+
+const perCategoryCount = new Map<string, number>();
 const showcaseItems = allResources
   .filter((r) => typeof r.data.labRoute === "string" && r.data.labRoute.length > 0)
-  .map((resource) => {
-    const { slug } = resource.data;
-    const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
-    const htmlPath = path.join(snippetsDir, "html.html");
-    const cssPath = path.join(snippetsDir, "style.css");
-    const jsPath = path.join(snippetsDir, "script.js");
-
-    let srcdoc = existsSync(htmlPath) ? readFileSync(htmlPath, "utf-8") : "";
-    const css = existsSync(cssPath) ? readFileSync(cssPath, "utf-8") : null;
-    const js = existsSync(jsPath) ? readFileSync(jsPath, "utf-8") : null;
-
-    if (css && srcdoc) {
-      srcdoc = srcdoc.replace(
-        /<link[^>]*href=["'](?:\.\/)?style\.css["'][^>]*>/i,
-        `<style>${css}</style>`
-      );
-    }
-
-    if (js && srcdoc) {
-      srcdoc = srcdoc.replace(
-        /<script([^>]*)src=["'](?:\.\/)?script\.js["']([^>]*)><\/script>/i,
-        (_match, before, after) => {
-          const attrs = `${before ?? ""} ${after ?? ""}`;
-          const isModule = /\btype\s*=\s*["']module["']/i.test(attrs);
-          return isModule ? `<script type="module">${js}</script>` : `<script>${js}</script>`;
-        }
-      );
-    }
-
-    // Hide scrollbars inside the iframe while keeping scroll functional
-    srcdoc = srcdoc.replace(
-      /<\/head>/i,
-      "<style>::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}</style></head>"
-    );
-
-    return { resource, srcdoc };
+  .filter((resource) => {
+    const cat = resource.data.category;
+    const seen = perCategoryCount.get(cat) ?? 0;
+    if (seen >= PER_CATEGORY_CAP) return false;
+    perCategoryCount.set(cat, seen + 1);
+    return true;
   })
-  .filter((item) => item.srcdoc.length > 0);
+  .map((resource) => ({ resource }));
 
 const categories = [...new Set(showcaseItems.map((item) => item.resource.data.category))].sort();
 const difficultyOrder = ["easy", "med", "hard"] as const;
@@ -256,8 +229,8 @@ const categoryLabels: Record<string, string> = {
         })}
       </div>
       <div class="masonry showcase-grid-content" id="showcase-grid" data-view="masonry" data-size="md">
-        {showcaseItems.map(({ resource, srcdoc }) => (
-          <ShowcaseCard resource={resource} srcdoc={srcdoc} locale={locale} />
+        {showcaseItems.map(({ resource }) => (
+          <ShowcaseCard resource={resource} locale={locale} />
         ))}
       </div>
     </div>
@@ -1091,15 +1064,16 @@ const categoryLabels: Record<string, string> = {
   applyFilters();
 
   // Lazy-load iframes as cards scroll into view — prevents spawning
-  // all WebGL contexts at once (browser limit ~8-16 simultaneous)
+  // all WebGL contexts at once (browser limit ~8-16 simultaneous).
+  // Each iframe loads its demo from the lab via `src` (no inlined HTML).
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         const article = entry.target as HTMLElement;
         const iframe = article.querySelector<HTMLIFrameElement>(".showcase-iframe");
-        if (iframe && !iframe.srcdoc && article.dataset.srcdoc) {
-          iframe.srcdoc = article.dataset.srcdoc;
+        if (iframe && !iframe.src && article.dataset.labSrc) {
+          iframe.src = article.dataset.labSrc;
         }
         observer.unobserve(article); // load once, keep loaded
       });

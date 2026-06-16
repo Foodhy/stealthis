@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Northwind — Usage-Limit Reached Prompt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <!-- Context header to ground the prompt in a product shell -->
+    <header class="appbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m13 2-9 12h7l-2 8 9-12h-7l2-8Z" />
+          </svg>
+        </span>
+        <span class="brand-name">Northwind <em>AI</em></span>
+      </div>
+      <nav class="appbar-meta" aria-label="Workspace">
+        <span class="plan-pill">Starter plan</span>
+        <span class="avatar" aria-hidden="true">RO</span>
+      </nav>
+    </header>
+
+    <main class="stage">
+      <!-- Usage-limit prompt card -->
+      <section class="limit-card" id="limitCard" role="region" aria-labelledby="limitTitle">
+        <span class="limit-flag" id="limitFlag">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 9v4M12 17h.01" />
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+          </svg>
+          <span id="limitFlagText">Limit reached</span>
+        </span>
+
+        <h1 class="limit-title" id="limitTitle">You've used all 1,000 of your monthly credits</h1>
+        <p class="limit-sub" id="limitSub">
+          Generation is paused on the <strong>Starter</strong> plan. Upgrade for a higher allowance,
+          or top up with add-on credits to keep going right now.
+        </p>
+
+        <!-- Usage meter -->
+        <div class="usage">
+          <div class="usage-head">
+            <span class="usage-label">Monthly credits</span>
+            <span class="usage-count">
+              <strong id="usedNum" aria-live="polite" aria-atomic="true">1,000</strong>
+              <span class="usage-sep">/</span>
+              <span id="totalNum">1,000</span>
+            </span>
+          </div>
+          <div class="bar" role="progressbar" id="usageBar" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="1000" aria-label="Monthly credits used">
+            <div class="bar-fill is-full" id="barFill" style="width:100%"></div>
+          </div>
+          <p class="usage-foot">
+            <span class="reset">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" />
+              </svg>
+              Resets <strong>Jul 1, 2026</strong> <span class="reset-rel">(in 18 days)</span>
+            </span>
+            <span class="balance" id="balanceWrap" hidden>
+              <span class="balance-dot" aria-hidden="true"></span>
+              <strong id="balanceNum">0</strong> add-on credits available
+            </span>
+          </p>
+        </div>
+
+        <!-- Primary CTAs -->
+        <div class="cta-row">
+          <button class="btn btn-primary btn-lg" id="upgradeBtn" type="button">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+            Upgrade plan
+          </button>
+          <button class="btn btn-outline btn-lg" id="addonBtn" type="button" aria-expanded="false" aria-controls="addonPanel">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" />
+            </svg>
+            Buy add-on credits
+          </button>
+        </div>
+
+        <!-- Add-on purchase panel (stepper) -->
+        <div class="addon-panel" id="addonPanel" hidden>
+          <div class="addon-grid">
+            <div class="addon-left">
+              <p class="addon-title">Add-on credit packs</p>
+              <p class="addon-note">One-time purchase. Credits roll over until used — no expiry.</p>
+              <div class="stepper" role="group" aria-label="Add-on pack quantity">
+                <button class="step-btn" id="decBtn" type="button" aria-label="Decrease quantity">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /></svg>
+                </button>
+                <div class="step-readout">
+                  <input class="step-input" id="qtyInput" type="text" inputmode="numeric" value="1" aria-label="Number of packs" />
+                  <span class="step-unit"><span id="packCredits">500</span> credits / pack</span>
+                </div>
+                <button class="step-btn" id="incBtn" type="button" aria-label="Increase quantity">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="addon-right">
+              <dl class="summary">
+                <div class="summary-row">
+                  <dt>Credits added</dt>
+                  <dd id="sumCredits">500</dd>
+                </div>
+                <div class="summary-row">
+                  <dt><span id="sumQty">1</span> &times; $9.00</dt>
+                  <dd id="sumSubtotal">$9.00</dd>
+                </div>
+                <div class="summary-row summary-total">
+                  <dt>Total today</dt>
+                  <dd id="sumTotal">$9.00</dd>
+                </div>
+              </dl>
+              <button class="btn btn-primary btn-block" id="purchaseBtn" type="button">
+                Purchase <span id="purchasePrice">$9.00</span>
+              </button>
+              <p class="addon-secure">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="4" y="11" width="16" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </svg>
+                Secure checkout · billed once
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success state (revealed after purchase) -->
+        <div class="success" id="successBox" hidden role="status" aria-live="polite">
+          <span class="success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m4 12 5 5L20 6" />
+            </svg>
+          </span>
+          <p class="success-copy">
+            <strong id="successHead">Credits added</strong>
+            <span id="successSub">Your balance is topped up — pick up right where you left off.</span>
+          </p>
+          <button class="btn btn-ghost btn-sm" id="resumeBtn" type="button">Resume work</button>
+        </div>
+
+        <p class="limit-foot">
+          Need a custom volume?
+          <button class="btn btn-link" id="contactBtn" type="button">Talk to sales</button>
+        </p>
+      </section>
+    </main>
+
+    <!-- Plans modal -->
+    <div class="overlay" id="overlay" hidden></div>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+      <div class="modal-head">
+        <div>
+          <h2 class="modal-title" id="modalTitle">Upgrade for more credits</h2>
+          <p class="modal-sub">Higher monthly allowances, faster models, and team seats.</p>
+        </div>
+        <button class="icon-btn" id="modalClose" type="button" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="cycle" role="group" aria-label="Billing cycle">
+        <button class="cycle-opt is-active" data-cycle="monthly" type="button" aria-pressed="true">Monthly</button>
+        <button class="cycle-opt" data-cycle="annual" type="button" aria-pressed="false">
+          Annual <span class="cycle-save">Save 20%</span>
+        </button>
+      </div>
+
+      <div class="plans">
+        <article class="plan">
+          <h3 class="plan-name">Starter</h3>
+          <p class="plan-desc">Where you are now.</p>
+          <p class="plan-price"><span class="amount" data-price="starter">$0</span><span class="per" data-per>/mo</span></p>
+          <p class="plan-credits">1,000 credits / mo</p>
+          <ul class="features">
+            <li>Standard model</li>
+            <li>1 seat</li>
+            <li>Community support</li>
+          </ul>
+          <button class="btn btn-outline plan-cta" data-plan="Starter" type="button" disabled>Current plan</button>
+        </article>
+
+        <article class="plan plan-popular">
+          <span class="plan-badge">Most popular</span>
+          <h3 class="plan-name">Pro</h3>
+          <p class="plan-desc">For daily, serious work.</p>
+          <p class="plan-price"><span class="amount" data-price="pro">$29</span><span class="per" data-per>/mo</span></p>
+          <p class="plan-credits">25,000 credits / mo</p>
+          <ul class="features">
+            <li>Priority &amp; fast models</li>
+            <li>5 seats</li>
+            <li>Rollover credits</li>
+            <li>Email support</li>
+          </ul>
+          <button class="btn btn-primary plan-cta" data-plan="Pro" type="button">Choose Pro</button>
+        </article>
+
+        <article class="plan">
+          <h3 class="plan-name">Scale</h3>
+          <p class="plan-desc">For teams &amp; pipelines.</p>
+          <p class="plan-price"><span class="amount" data-price="scale">$99</span><span class="per" data-per>/mo</span></p>
+          <p class="plan-credits">120,000 credits / mo</p>
+          <ul class="features">
+            <li>Everything in Pro</li>
+            <li>Up to 25 seats</li>
+            <li>SSO &amp; audit log</li>
+            <li>Priority support</li>
+          </ul>
+          <button class="btn btn-outline plan-cta" data-plan="Scale" type="button">Choose Scale</button>
+        </article>
+      </div>
+
+      <p class="modal-foot">Prices in USD · billed <span id="cycleNote">monthly</span> · cancel anytime.</p>
+    </div>
+
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

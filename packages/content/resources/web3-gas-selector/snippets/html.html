@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Web3 — Gas / Network Fee Selector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="card" aria-labelledby="gas-title">
+      <!-- Header -->
+      <header class="card__head">
+        <div class="head__id">
+          <span class="net-dot" aria-hidden="true"></span>
+          <div>
+            <h1 id="gas-title">Network Fee</h1>
+            <p class="head__sub">Lumen Chain · <span class="mono">EIP-1559</span></p>
+          </div>
+        </div>
+        <div class="ticker" role="status" aria-live="polite" aria-label="Current base fee">
+          <span class="ticker__label">Base fee</span>
+          <span class="ticker__val mono" id="baseFee">21.4</span>
+          <span class="ticker__unit mono">gwei</span>
+          <span class="ticker__trend" id="baseTrend" aria-hidden="true">▲</span>
+        </div>
+      </header>
+
+      <!-- Mode switch -->
+      <div class="modes" role="tablist" aria-label="Fee mode">
+        <button class="mode is-active" role="tab" aria-selected="true" id="tab-presets" aria-controls="panel-presets" data-mode="presets" type="button">Presets</button>
+        <button class="mode" role="tab" aria-selected="false" id="tab-custom" aria-controls="panel-custom" data-mode="custom" type="button">Custom</button>
+        <span class="modes__glow" aria-hidden="true"></span>
+      </div>
+
+      <!-- Presets panel -->
+      <div class="panel" id="panel-presets" role="tabpanel" aria-labelledby="tab-presets">
+        <div class="presets" role="radiogroup" aria-label="Transaction speed">
+          <button class="preset" role="radio" aria-checked="false" data-preset="slow" tabindex="-1" type="button">
+            <span class="preset__top">
+              <span class="preset__name">Slow</span>
+              <span class="preset__time mono">~3 min</span>
+            </span>
+            <span class="preset__gwei mono" data-field="gwei">—</span>
+            <span class="preset__gweiunit">gwei</span>
+            <span class="preset__fiat mono" data-field="fiat">$0.00</span>
+            <span class="preset__check" aria-hidden="true"></span>
+          </button>
+
+          <button class="preset is-active" role="radio" aria-checked="true" data-preset="normal" tabindex="0" type="button">
+            <span class="preset__badge">Recommended</span>
+            <span class="preset__top">
+              <span class="preset__name">Normal</span>
+              <span class="preset__time mono">~45 s</span>
+            </span>
+            <span class="preset__gwei mono" data-field="gwei">—</span>
+            <span class="preset__gweiunit">gwei</span>
+            <span class="preset__fiat mono" data-field="fiat">$0.00</span>
+            <span class="preset__check" aria-hidden="true"></span>
+          </button>
+
+          <button class="preset" role="radio" aria-checked="false" data-preset="fast" tabindex="-1" type="button">
+            <span class="preset__top">
+              <span class="preset__name">Fast</span>
+              <span class="preset__time mono">~15 s</span>
+            </span>
+            <span class="preset__gwei mono" data-field="gwei">—</span>
+            <span class="preset__gweiunit">gwei</span>
+            <span class="preset__fiat mono" data-field="fiat">$0.00</span>
+            <span class="preset__check" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom panel -->
+      <div class="panel is-hidden" id="panel-custom" role="tabpanel" aria-labelledby="tab-custom" hidden>
+        <div class="custom">
+          <label class="field">
+            <span class="field__label">Max base fee <span class="field__hint mono">gwei</span></span>
+            <div class="field__wrap">
+              <input class="field__input mono" id="maxBase" type="number" min="0" step="0.1" value="24.0" inputmode="decimal" />
+              <button class="field__sync" id="syncBase" type="button">Sync</button>
+            </div>
+            <span class="field__note">Live base fee <span class="mono" id="baseHint">21.4</span> gwei</span>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Priority fee <span class="field__hint mono">gwei</span></span>
+            <div class="field__wrap">
+              <input class="field__input mono" id="priority" type="number" min="0" step="0.1" value="1.5" inputmode="decimal" />
+            </div>
+            <div class="prio-presets" aria-label="Priority quick picks">
+              <button class="chip" type="button" data-prio="1">Low · 1.0</button>
+              <button class="chip" type="button" data-prio="1.5">Mid · 1.5</button>
+              <button class="chip" type="button" data-prio="3">High · 3.0</button>
+            </div>
+          </label>
+
+          <p class="custom__warn" id="customWarn" role="alert" hidden>
+            <span class="warn__icon" aria-hidden="true">!</span>
+            <span id="customWarnText">Max base fee is below the live base fee — this transaction may stay pending.</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <section class="summary" aria-label="Fee summary">
+        <div class="summary__row">
+          <span class="summary__k">Gas limit</span>
+          <span class="summary__v mono">21,000</span>
+        </div>
+        <div class="summary__row">
+          <span class="summary__k">Effective fee</span>
+          <span class="summary__v mono"><span id="sumGwei">—</span> gwei</span>
+        </div>
+        <div class="summary__row">
+          <span class="summary__k">Est. confirm</span>
+          <span class="summary__v mono" id="sumTime">~45 s</span>
+        </div>
+        <div class="summary__row summary__row--total">
+          <span class="summary__k">Max network fee</span>
+          <span class="summary__total">
+            <span class="summary__eth mono" id="sumEth">0.0000</span>
+            <span class="summary__sym">LUM</span>
+            <span class="summary__fiat mono" id="sumFiat">≈ $0.00</span>
+          </span>
+        </div>
+      </section>
+
+      <!-- Action -->
+      <footer class="card__foot">
+        <div class="foot__meta">
+          <span class="foot__from mono">0x7a3f…c41d</span>
+          <span class="foot__arrow" aria-hidden="true">→</span>
+          <span class="foot__to mono">0x91b2…8e07</span>
+        </div>
+        <button class="confirm" id="confirmBtn" type="button">
+          <span class="confirm__label">Confirm &amp; sign</span>
+          <span class="confirm__fee mono" id="confirmFee">$0.00</span>
+        </button>
+      </footer>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

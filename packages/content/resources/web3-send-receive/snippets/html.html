@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web3 — Send / Receive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <section class="wallet" aria-label="Send and receive crypto">
+        <header class="wallet__head">
+          <div class="wallet__id">
+            <span class="logo" aria-hidden="true">◈</span>
+            <div>
+              <p class="wallet__name">Lumen Wallet</p>
+              <p class="wallet__net">Nova Chain · Mainnet</p>
+            </div>
+          </div>
+          <div class="wallet__bal">
+            <span class="wallet__bal-label">Total balance</span>
+            <span class="wallet__bal-val" id="totalBal">$12,480.55</span>
+          </div>
+        </header>
+
+        <div class="tabs" role="tablist" aria-label="Send or receive">
+          <button
+            class="tab is-active"
+            role="tab"
+            id="tab-send"
+            aria-selected="true"
+            aria-controls="panel-send"
+            data-tab="send"
+          >
+            <span aria-hidden="true">↗</span> Send
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            id="tab-receive"
+            aria-selected="false"
+            aria-controls="panel-receive"
+            data-tab="receive"
+            tabindex="-1"
+          >
+            <span aria-hidden="true">↙</span> Receive
+          </button>
+          <span class="tab__glow" aria-hidden="true"></span>
+        </div>
+
+        <!-- ============ SEND ============ -->
+        <section
+          class="panel is-active"
+          id="panel-send"
+          role="tabpanel"
+          aria-labelledby="tab-send"
+        >
+          <div class="form" id="sendForm">
+            <label class="field" for="recipient">
+              <span class="field__label">Recipient</span>
+              <div class="field__wrap" id="recipientWrap">
+                <input
+                  type="text"
+                  id="recipient"
+                  class="field__input mono"
+                  placeholder="0x… or name.nova"
+                  autocomplete="off"
+                  spellcheck="false"
+                  aria-describedby="recipientHint"
+                />
+                <button type="button" class="ghost-btn" id="pasteBtn">Paste</button>
+              </div>
+              <p class="field__hint" id="recipientHint">
+                Enter a Nova address or an .nova name.
+              </p>
+            </label>
+
+            <label class="field" for="tokenSel">
+              <span class="field__label">Token</span>
+              <div class="token-select" id="tokenSelect">
+                <button
+                  type="button"
+                  class="token-select__btn"
+                  id="tokenSel"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                >
+                  <span class="token-ic" data-token="NOVA">N</span>
+                  <span class="token-meta">
+                    <span class="token-sym" id="selSym">NOVA</span>
+                    <span class="token-bal mono" id="selBal">842.40</span>
+                  </span>
+                  <span class="caret" aria-hidden="true">▾</span>
+                </button>
+                <ul class="token-menu" id="tokenMenu" role="listbox" aria-label="Choose token" hidden></ul>
+              </div>
+            </label>
+
+            <label class="field" for="amount">
+              <div class="field__row">
+                <span class="field__label">Amount</span>
+                <span class="field__sub mono">
+                  Balance <em id="amtBalance">842.40</em>
+                </span>
+              </div>
+              <div class="amount">
+                <input
+                  type="text"
+                  id="amount"
+                  class="amount__in mono"
+                  inputmode="decimal"
+                  placeholder="0.00"
+                  autocomplete="off"
+                  aria-describedby="fiatOut"
+                />
+                <div class="amount__side">
+                  <button type="button" class="chip-btn" id="maxBtn">MAX</button>
+                  <span class="amount__sym" id="amtSym">NOVA</span>
+                </div>
+              </div>
+              <p class="amount__fiat mono" id="fiatOut">≈ $0.00 USD</p>
+            </label>
+
+            <div class="fee" aria-label="Network fee summary">
+              <div class="fee__row">
+                <span>Network fee</span>
+                <span class="mono" id="feeNet">0.00042 NOVA</span>
+              </div>
+              <div class="fee__row fee__row--muted">
+                <span>Est. time</span>
+                <span class="mono">~ 12s</span>
+              </div>
+              <div class="fee__row fee__row--total">
+                <span>You send</span>
+                <span class="mono" id="feeTotal">0.00 NOVA</span>
+              </div>
+            </div>
+
+            <button type="button" class="primary" id="reviewBtn" disabled>
+              Review transfer
+            </button>
+          </div>
+
+          <!-- confirm overlay -->
+          <div class="confirm" id="confirm" hidden>
+            <div class="confirm__card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+              <div class="confirm__risk" id="confirmRisk">
+                <span aria-hidden="true">⚠</span>
+                Double-check the recipient. Transfers on Nova Chain are irreversible.
+              </div>
+              <h2 class="confirm__title" id="confirmTitle">Confirm transfer</h2>
+              <div class="confirm__amount">
+                <span class="confirm__big mono" id="cAmount">0.00</span>
+                <span class="confirm__sym" id="cSym">NOVA</span>
+                <span class="confirm__fiat mono" id="cFiat">≈ $0.00</span>
+              </div>
+              <dl class="confirm__rows">
+                <div><dt>To</dt><dd class="mono" id="cTo">0x0000…0000</dd></div>
+                <div><dt>Network</dt><dd>Nova Chain · Mainnet</dd></div>
+                <div><dt>Network fee</dt><dd class="mono" id="cFee">0.00042 NOVA</dd></div>
+              </dl>
+              <div class="confirm__actions">
+                <button type="button" class="secondary" id="cancelBtn">Cancel</button>
+                <button type="button" class="primary primary--glow" id="signBtn">
+                  Sign &amp; send
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- success overlay -->
+          <div class="confirm" id="success" hidden>
+            <div class="confirm__card success__card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+              <div class="success__check" aria-hidden="true">✓</div>
+              <h2 class="confirm__title" id="successTitle">Transfer sent</h2>
+              <p class="success__sub mono" id="sAmount">0.00 NOVA sent</p>
+              <div class="hash">
+                <span class="hash__label">Tx hash</span>
+                <code class="mono" id="sHash">0x…</code>
+                <button type="button" class="ghost-btn" id="copyHash">Copy</button>
+              </div>
+              <button type="button" class="secondary block" id="doneBtn">Done</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ RECEIVE ============ -->
+        <section
+          class="panel"
+          id="panel-receive"
+          role="tabpanel"
+          aria-labelledby="tab-receive"
+          hidden
+        >
+          <div class="receive">
+            <div class="qr-card">
+              <div class="qr" id="qr" role="img" aria-label="QR code for your wallet address"></div>
+              <p class="qr__cap" id="qrCap">Scan to send NOVA on Nova Chain</p>
+            </div>
+
+            <div class="addr">
+              <span class="addr__label">Your address</span>
+              <div class="addr__box">
+                <code class="mono" id="myAddr">0x7a3f4e9c1d8b6052aa31fe7740b2a85ef10ac41d</code>
+                <button type="button" class="ghost-btn" id="copyAddr">Copy</button>
+              </div>
+            </div>
+
+            <label class="field" for="netSel">
+              <span class="field__label">Network</span>
+              <div class="seg" id="netSeg" role="radiogroup" aria-label="Receive network">
+                <button type="button" class="seg__btn is-active" role="radio" aria-checked="true" data-net="Nova Chain">Nova</button>
+                <button type="button" class="seg__btn" role="radio" aria-checked="false" data-net="Lumen Chain">Lumen</button>
+                <button type="button" class="seg__btn" role="radio" aria-checked="false" data-net="Aster L2">Aster L2</button>
+              </div>
+            </label>
+
+            <label class="field" for="reqAmt">
+              <span class="field__label">Request amount <span class="opt">(optional)</span></span>
+              <div class="amount">
+                <input
+                  type="text"
+                  id="reqAmt"
+                  class="amount__in mono"
+                  inputmode="decimal"
+                  placeholder="0.00"
+                  autocomplete="off"
+                />
+                <div class="amount__side">
+                  <span class="amount__sym">NOVA</span>
+                </div>
+              </div>
+            </label>
+
+            <button type="button" class="secondary block" id="shareBtn">
+              Share request
+            </button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

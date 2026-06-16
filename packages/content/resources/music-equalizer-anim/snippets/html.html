@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animated Equalizer Bars — Neon Tides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <i></i><i></i><i></i><i></i>
+      </span>
+      <div class="brand-txt">
+        <strong>Pulse</strong>
+        <small>Audio Visualizer Lab</small>
+      </div>
+    </div>
+    <div class="now">
+      <div class="cover" aria-hidden="true"></div>
+      <div class="now-meta">
+        <span class="now-track">Paper Lanterns</span>
+        <span class="now-artist">Neon Tides &middot; Midnight Reservoir</span>
+      </div>
+      <span class="now-time" id="now-time">0:00</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-art" id="heroArt" aria-hidden="true"></div>
+    <div class="hero-body">
+      <span class="kicker">Now Playing</span>
+      <h1>Animated Equalizer Bars</h1>
+      <p>Four visualizer styles bouncing in sync with a simulated stereo signal. Hit play and the bars come alive; pause and they settle flat. Tune the band count, tempo, and accent color in real time.</p>
+
+      <div class="player">
+        <button class="play" id="playBtn" type="button" aria-pressed="false" aria-label="Play visualizer">
+          <span class="ico ico-play" aria-hidden="true"></span>
+          <span class="ico ico-pause" aria-hidden="true"></span>
+        </button>
+        <div class="scrub">
+          <div class="scrub-track"
+               id="scrub"
+               role="slider"
+               tabindex="0"
+               aria-label="Seek position"
+               aria-valuemin="0"
+               aria-valuemax="100"
+               aria-valuenow="0">
+            <div class="scrub-fill" id="scrubFill"></div>
+            <div class="scrub-knob" id="scrubKnob"></div>
+          </div>
+          <div class="scrub-times">
+            <span id="elapsed">0:00</span>
+            <span id="total">3:42</span>
+          </div>
+        </div>
+        <button class="like" id="likeBtn" type="button" aria-pressed="false" aria-label="Like this track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.9-10-9.2C.2 8.6 1.9 5 5.4 5c2 0 3.3 1.1 4.1 2.3l.5.8.5-.8C11.3 6.1 12.6 5 14.6 5 18.1 5 19.8 8.6 22 11.8 19.5 16.1 12 21 12 21z"/></svg>
+        </button>
+      </div>
+
+      <div class="ticker">
+        <span class="dot live" id="liveDot"></span>
+        <span id="statusTxt">Paused</span>
+        <span class="sep">&middot;</span>
+        <span id="plays">128,402</span> plays
+      </div>
+    </div>
+  </section>
+
+  <section class="controls" aria-label="Visualizer controls">
+    <div class="ctl">
+      <label for="bands">Bands <b id="bandsVal">24</b></label>
+      <input type="range" id="bands" min="6" max="48" step="1" value="24" />
+    </div>
+    <div class="ctl">
+      <label for="speed">Tempo <b id="speedVal">1.0&times;</b></label>
+      <input type="range" id="speed" min="40" max="220" step="5" value="100" />
+    </div>
+    <div class="ctl swatches">
+      <label>Accent</label>
+      <div class="swatch-row" id="swatches" role="radiogroup" aria-label="Accent color">
+        <button class="sw" data-c="#1db954" style="--sw:#1db954" role="radio" aria-checked="true" aria-label="Green" type="button"></button>
+        <button class="sw" data-c="#8b5cf6" style="--sw:#8b5cf6" role="radio" aria-checked="false" aria-label="Violet" type="button"></button>
+        <button class="sw" data-c="#ff3d71" style="--sw:#ff3d71" role="radio" aria-checked="false" aria-label="Rose" type="button"></button>
+        <button class="sw" data-c="#22d3ee" style="--sw:#22d3ee" role="radio" aria-checked="false" aria-label="Cyan" type="button"></button>
+        <button class="sw" data-c="#fbbf24" style="--sw:#fbbf24" role="radio" aria-checked="false" aria-label="Amber" type="button"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid" aria-label="Equalizer styles">
+    <article class="viz" data-style="bars">
+      <div class="viz-head">
+        <h2>Classic Bars</h2>
+        <span class="tag">linear</span>
+      </div>
+      <div class="stage stage-bars" id="vizBars" aria-hidden="true"></div>
+    </article>
+
+    <article class="viz" data-style="dots">
+      <div class="viz-head">
+        <h2>Dot Matrix</h2>
+        <span class="tag">stacked</span>
+      </div>
+      <div class="stage stage-dots" id="vizDots" aria-hidden="true"></div>
+    </article>
+
+    <article class="viz" data-style="mirror">
+      <div class="viz-head">
+        <h2>Mirrored</h2>
+        <span class="tag">center-out</span>
+      </div>
+      <div class="stage stage-mirror" id="vizMirror" aria-hidden="true"></div>
+    </article>
+
+    <article class="viz" data-style="radial">
+      <div class="viz-head">
+        <h2>Radial</h2>
+        <span class="tag">circular</span>
+      </div>
+      <div class="stage stage-radial">
+        <div class="radial-hub" id="vizRadial" aria-hidden="true">
+          <span class="radial-core"></span>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="queue" aria-label="Up next">
+    <div class="queue-head">
+      <h2>Up Next</h2>
+      <span class="queue-sub">Midnight Reservoir</span>
+    </div>
+    <ul class="tracks" id="queue"></ul>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

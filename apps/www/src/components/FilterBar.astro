@@ -161,12 +161,179 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     tech: "all",
     author: "all",
     favoritesOnly: false,
+    previewsEnabled: false,
     search: "",
     indexedResults: null as Set<string> | null,
   };
 
   const cards = document.querySelectorAll<HTMLElement>("article[data-slug]");
   const resultsCount = document.getElementById("results-count");
+
+  // Precompute each card's filterable fields ONCE. The title/description live in
+  // the DOM (h2 + 2nd <p>); reading them per-card on every keystroke was the main
+  // synchronous cost. Cache them so applyFilters() never touches the DOM to decide.
+  interface CardMeta {
+    collections: string[];
+    category: string;
+    difficulty: string;
+    tech: string[];
+    slug: string;
+    author: string;
+    title: string;
+    desc: string;
+  }
+  const cardMeta = new Map<HTMLElement, CardMeta>();
+  cards.forEach((card) => {
+    cardMeta.set(card, {
+      collections: (card.dataset.collections ?? "").split(",").filter(Boolean),
+      category: card.dataset.category ?? "",
+      difficulty: card.dataset.difficulty ?? "",
+      tech: (card.dataset.tech ?? "").split(","),
+      slug: card.dataset.slug ?? "",
+      author: card.dataset.author ?? "",
+      title: (card.querySelector("h2")?.textContent ?? "").toLowerCase(),
+      desc: (card.querySelector("p:nth-of-type(2)")?.textContent ?? "").toLowerCase(),
+    });
+  });
+
+  // --- Collection preview mode -------------------------------------------------
+  // When a single collection is selected, matching cards render showcase-style
+  // with a live preview (lab demo, or the resource detail page as fallback).
+  // Iframes load lazily as cards scroll into view so we never fetch all at once.
+  const labBaseUrl = document.querySelector<HTMLElement>("[data-lab-url]")?.dataset.labUrl ?? "";
+
+  const PREVIEW_LOGICAL_WIDTH = 1280;
+
+  function previewSrcFor(card: HTMLElement): string {
+    const labRoute = card.dataset.labRoute ?? "";
+    const slug = card.dataset.slug ?? "";
+    if (labRoute && labBaseUrl) return `${labBaseUrl}${labRoute}`;
+    return `/r/${slug}`;
+  }
+
+  // Scale the desktop-sized lab iframe down so the whole page fits the card width.
+  function sizeCardPreview(card: HTMLElement) {
+    const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
+    const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
+    if (!wrap || !iframe) return;
+    const width = wrap.clientWidth;
+    if (width <= 0) return;
+    iframe.style.transform = `scale(${width / PREVIEW_LOGICAL_WIDTH})`;
+  }
+
+  // Throttled, lazy preview loader. Cards entering the viewport are queued; at
+  // most MAX_CONCURRENT iframes load at a time so we never stampede the network
+  // or the main thread with 50+ full lab pages at once. A status pill reports
+  // progress so the user always knows previews are still loading.
+  const MAX_CONCURRENT_PREVIEWS = 4;
+  const loadQueue: HTMLElement[] = [];
+  let activeLoads = 0;
+
+  // Floating "loading previews" status pill.
+  const loadStatus = document.createElement("div");
+  loadStatus.id = "preview-load-status";
+  loadStatus.setAttribute("aria-live", "polite");
+  loadStatus.hidden = true;
+  loadStatus.innerHTML = `<span class="preview-load-spinner" aria-hidden="true"></span><span class="preview-load-text"></span>`;
+  document.body.appendChild(loadStatus);
+  const loadStatusText = loadStatus.querySelector<HTMLElement>(".preview-load-text");
+
+  function updateLoadStatus() {
+    const remaining = activeLoads + loadQueue.length;
+    if (remaining > 0) {
+      if (loadStatusText) {
+        loadStatusText.textContent = `Loading previews… ${remaining}`;
+      }
+      loadStatus.hidden = false;
+    } else {
+      loadStatus.hidden = true;
+    }
+  }
+
+  const previewObserver =
+    "IntersectionObserver" in window
+      ? new IntersectionObserver(
+          (entries, observer) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              const card = entry.target as HTMLElement;
+              observer.unobserve(card);
+              queuePreview(card);
+            }
+          },
+          { rootMargin: "300px" }
+        )
+      : null;
+
+  function queuePreview(card: HTMLElement) {
+    const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
+    if (!iframe || iframe.src || loadQueue.includes(card)) return;
+    loadQueue.push(card);
+    updateLoadStatus();
+    pumpQueue();
+  }
+
+  function pumpQueue() {
+    while (activeLoads < MAX_CONCURRENT_PREVIEWS && loadQueue.length > 0) {
+      const card = loadQueue.shift();
+      if (card && card.classList.contains("is-preview")) startLoad(card);
+    }
+  }
+
+  function startLoad(card: HTMLElement) {
+    const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
+    if (!iframe || iframe.src) return;
+    activeLoads++;
+    const finish = () => {
+      activeLoads--;
+      const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
+      wrap?.classList.add("is-loaded");
+      sizeCardPreview(card);
+      updateLoadStatus();
+      pumpQueue();
+    };
+    iframe.addEventListener("load", finish, { once: true });
+    iframe.addEventListener("error", finish, { once: true });
+    sizeCardPreview(card);
+    iframe.src = previewSrcFor(card);
+  }
+
+  function clearCardPreview(card: HTMLElement) {
+    card.classList.remove("is-preview");
+    if (previewObserver) previewObserver.unobserve(card);
+    const queueIdx = loadQueue.indexOf(card);
+    if (queueIdx !== -1) loadQueue.splice(queueIdx, 1);
+    const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
+    wrap?.classList.remove("is-loaded");
+    const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
+    if (iframe && iframe.src) iframe.removeAttribute("src");
+    updateLoadStatus();
+  }
+
+  function enableCardPreview(card: HTMLElement) {
+    // Only cards that actually have a preview slot (i.e. a lab route) opt in.
+    if (!card.querySelector("[data-card-preview-iframe]")) return;
+    card.classList.add("is-preview");
+    if (previewObserver) {
+      previewObserver.observe(card);
+    } else {
+      queuePreview(card);
+    }
+  }
+
+  let resizeTimer: number | undefined;
+  window.addEventListener("resize", () => {
+    if (resizeTimer) window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      document
+        .querySelectorAll<HTMLElement>("article.is-preview .card-preview.is-loaded")
+        .forEach((wrap) => {
+          const card = wrap.closest<HTMLElement>("article[data-slug]");
+          if (card) sizeCardPreview(card);
+        });
+    }, 150);
+  });
+
   const searchInput = document.getElementById("search-input") as HTMLInputElement | null;
   let searchTimer: number | undefined;
   let searchIndexPromise: Promise<Map<string, string> | null> | null = null;
@@ -219,27 +386,22 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     return matches;
   }
 
+  let currentFavs: Set<string> = new Set();
+
   function matches(card: HTMLElement): boolean {
-    const cardCollections = (card.dataset.collections ?? "").split(",").filter(Boolean);
-    const cardCategory = card.dataset.category ?? "";
-    const cardDifficulty = card.dataset.difficulty ?? "";
-    const cardTech = (card.dataset.tech ?? "").split(",");
-    const cardSlug = card.dataset.slug ?? "";
-    const cardTitle = card.querySelector("h2")?.textContent?.toLowerCase() ?? "";
-    const cardDesc = card.querySelector("p:nth-of-type(2)")?.textContent?.toLowerCase() ?? "";
+    const meta = cardMeta.get(card);
+    if (!meta) return false;
 
-    const cardAuthor = card.dataset.author ?? "";
-
-    if (state.collection !== "all" && !cardCollections.includes(state.collection)) return false;
-    if (state.category !== "all" && cardCategory !== state.category) return false;
-    if (state.difficulty !== "all" && cardDifficulty !== state.difficulty) return false;
-    if (state.tech !== "all" && !cardTech.includes(state.tech)) return false;
-    if (state.author !== "all" && cardAuthor !== state.author) return false;
-    if (state.favoritesOnly && !getFavoriteSlugs().has(cardSlug)) return false;
+    if (state.collection !== "all" && !meta.collections.includes(state.collection)) return false;
+    if (state.category !== "all" && meta.category !== state.category) return false;
+    if (state.difficulty !== "all" && meta.difficulty !== state.difficulty) return false;
+    if (state.tech !== "all" && !meta.tech.includes(state.tech)) return false;
+    if (state.author !== "all" && meta.author !== state.author) return false;
+    if (state.favoritesOnly && !currentFavs.has(meta.slug)) return false;
     if (state.search) {
       if (state.indexedResults) {
-        if (!state.indexedResults.has(cardSlug)) return false;
-      } else if (!cardTitle.includes(state.search) && !cardDesc.includes(state.search)) {
+        if (!state.indexedResults.has(meta.slug)) return false;
+      } else if (!meta.title.includes(state.search) && !meta.desc.includes(state.search)) {
         return false;
       }
     }
@@ -252,12 +414,22 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   function applyFilters() {
     let visible = 0;
     const visibleSlugs = new Set<string>();
+    const previewMode = state.collection !== "all" && state.previewsEnabled;
+    // Read favorites once per pass instead of once per card.
+    currentFavs = state.favoritesOnly ? getFavoriteSlugs() : currentFavs;
     cards.forEach((card) => {
       const show = matches(card);
       card.style.display = show ? "" : "none";
-      if (show) {
+      if (show && previewMode) {
         visible++;
         visibleSlugs.add(card.dataset.slug ?? "");
+        enableCardPreview(card);
+      } else if (show) {
+        visible++;
+        visibleSlugs.add(card.dataset.slug ?? "");
+        clearCardPreview(card);
+      } else {
+        clearCardPreview(card);
       }
     });
 
@@ -377,6 +549,12 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     if (state.favoritesOnly) applyFilters();
   });
 
+  // Opt-in previews: toolbar toggle (library/index.astro) flips this on/off.
+  window.addEventListener("stealthis:previews-toggle", (event) => {
+    state.previewsEnabled = !!(event as CustomEvent).detail?.enabled;
+    applyFilters();
+  });
+
   // Init count
   const params = new URLSearchParams(window.location.search);
   const collectionParam = params.get("collection");
@@ -407,3 +585,47 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     applyFilters();
   }
 </script>
+
+<style is:global>
+  /* Floating progress pill — injected into <body> by the script above, so it must
+     live in a global style block (scoped styles wouldn't reach it). */
+  #preview-load-status {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgb(203 213 225);
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+  }
+
+  #preview-load-status[hidden] {
+    display: none;
+  }
+
+  .preview-load-spinner {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    border: 2px solid rgba(148, 163, 184, 0.3);
+    border-top-color: rgb(125, 211, 252);
+    animation: preview-load-spin 0.7s linear infinite;
+  }
+
+  @keyframes preview-load-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preview-load-spinner { animation: none; }
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+slug: form-async-validation
+title: "Form — Async availability check"
+description: "A signup form that checks a username and work email for availability the moment you stop typing. Debounced input fires a simulated async lookup against a fictional taken-list, showing a spinner and then a clear result: a green check when the handle is free, or a red cross with a small set of available alternatives like name1 or name_2 when it isn't. Status flows through aria-busy and aria-live, and the submit button stays locked while any check runs or any field is taken."
+category: ui-components
+type: component
+tags: [patterns, validation, async]
+tech: [html, css, vanilla-js]
+difficulty: med
+targets: [html]
+collections: [patterns]
+labRoute: /ui-components/form-async-validation
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-06-13
+updatedAt: 2026-06-13
+---
+
+## Async availability check
+
+Two fields — a `app.dev/` username handle and a work email — each run a remote-style availability check after you pause typing. Local format rules (length, allowed characters, a valid email shape) are validated synchronously first, so the form never wastes a "network" round-trip on input that can't pass. Once a value looks valid locally, a debounced timer kicks off a simulated lookup: the control shows an inline spinner and announces "Checking availability…", then resolves into either a green check with a reassuring message or a red cross.
+
+When a username is taken, a small panel offers up to three available alternatives (`name1`, `name_2`, `the…`) as clickable chips; choosing one drops it into the field and immediately re-checks it. Every result is mirrored to an off-screen `aria-live` region and a toast, the input carries `aria-busy` while checking and `aria-invalid` when taken, and helper text is wired through `aria-describedby`.
+
+The "Create workspace" button stays disabled while any check is in flight or any field is unresolved or taken, and out-of-order async responses are discarded with a per-field request id so a slow earlier check can never overwrite a newer one. A real submit shows a brief loading state and then an animated confirmation panel with a "Claim another handle" action that fully resets state. The layout stacks cleanly down to 360px and respects `prefers-reduced-motion`.

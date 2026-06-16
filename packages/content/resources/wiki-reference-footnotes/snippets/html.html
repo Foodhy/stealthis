@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora DB — Wiki · References &amp; Footnotes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#article">Skip to article</a>
+
+  <header class="topbar">
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="#article" aria-label="Aurora Knowledge Base home">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span class="brand-name">Aurora<span class="brand-kb">KB</span></span>
+    </a>
+    <div class="search" role="search">
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input type="search" id="kbSearch" placeholder="Search the wiki…" aria-label="Search the wiki" />
+      <kbd class="search-kbd">/</kbd>
+    </div>
+    <span class="topbar-tag">v3.4 · Draft</span>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation sections">
+      <div class="sidebar-inner">
+        <p class="nav-group-label">Engine</p>
+        <ul class="nav-list">
+          <li><a href="#article" class="active">Aurora DB</a></li>
+          <li><a href="#architecture">Storage architecture</a></li>
+          <li><a href="#consistency">Consistency model</a></li>
+          <li><a href="#references">References</a></li>
+        </ul>
+        <p class="nav-group-label">Related</p>
+        <ul class="nav-list">
+          <li><a href="#article">Project Nimbus</a></li>
+          <li><a href="#article">Verdant Replication Protocol</a></li>
+          <li><a href="#article">Halcyon Query Planner</a></li>
+        </ul>
+        <p class="nav-group-label">Meta</p>
+        <ul class="nav-list">
+          <li><a href="#references">Citation style guide</a></li>
+          <li><a href="#article">Contributor handbook</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="content" id="article">
+      <article class="article">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="#article">Wiki</a><span aria-hidden="true">/</span>
+          <a href="#article">Databases</a><span aria-hidden="true">/</span>
+          <span aria-current="page">Aurora DB</span>
+        </nav>
+
+        <h1 class="article-title">Aurora DB</h1>
+        <p class="article-sub">A distributed, log-structured database engine developed by the Verdant Foundation</p>
+
+        <div class="article-meta">
+          <span class="meta-pill">Last edited Jun 6, 2026</span>
+          <span class="meta-pill">9 citations</span>
+          <span class="meta-pill">Stable since v2.0</span>
+        </div>
+
+        <p>
+          <strong>Aurora DB</strong> is an open-source, horizontally scalable database engine first
+          released in 2021 by the Verdant Foundation.<sup class="cite" id="cite-1" data-ref="ref-1"><a href="#ref-1" aria-label="Citation 1">[1]</a></sup>
+          It combines a log-structured merge storage layer with a consensus-based replication
+          protocol, targeting workloads that require both strong consistency and predictable tail
+          latency.<sup class="cite" id="cite-2" data-ref="ref-2"><a href="#ref-2" aria-label="Citation 2">[2]</a></sup>
+          The project is governed under the Verdant Empire's open contribution charter and is widely
+          deployed across Project Nimbus infrastructure.<sup class="cite" id="cite-3" data-ref="ref-3"><a href="#ref-3" aria-label="Citation 3">[3]</a></sup>
+        </p>
+
+        <p>
+          Unlike earlier engines that coupled storage to a single host, Aurora DB separates compute
+          from durable storage, allowing read replicas to scale independently of the write
+          primary.<sup class="cite" id="cite-4" data-ref="ref-4"><a href="#ref-4" aria-label="Citation 4">[4]</a></sup>
+          Benchmarks published by the Halcyon Lab report sustained throughput of roughly 1.4 million
+          writes per second on a 12-node cluster, with 99th-percentile latency under
+          <code>8&nbsp;ms</code>.<sup class="cite" id="cite-5" data-ref="ref-5"><a href="#ref-5" aria-label="Citation 5">[5]</a></sup>
+        </p>
+
+        <h2 id="architecture">Storage architecture</h2>
+        <p>
+          Aurora DB persists data in immutable segment files written sequentially to an
+          append-only log. A background compaction process merges overlapping segments, reclaiming
+          space and bounding read amplification.<sup class="cite" id="cite-6" data-ref="ref-6"><a href="#ref-6" aria-label="Citation 6">[6]</a></sup>
+          The design draws directly on the original LSM-tree literature while adding a tiered cache
+          that pins hot segments in memory.<sup class="cite" id="cite-2" data-ref="ref-2"><a href="#ref-2" aria-label="Citation 2 (repeat)">[2]</a></sup>
+        </p>
+
+        <blockquote>
+          “We treat the write-ahead log not as a recovery afterthought but as the canonical source
+          of truth — every other structure is a materialized projection of it.”
+          <cite>— Aurora DB Design Notes, 2021</cite>
+        </blockquote>
+
+        <p>The on-disk layout is summarized below:</p>
+        <pre><code>segment-00042.aur
+├─ header      (magic, version, bloom filter seed)
+├─ index block (sparse key → offset map)
+├─ data blocks (Snappy-compressed key/value runs)
+└─ footer      (CRC32, segment min/max keys)</code></pre>
+
+        <h2 id="consistency">Consistency model</h2>
+        <p>
+          By default Aurora DB offers linearizable reads and writes within a single shard, backed by
+          a Raft-derived consensus protocol the maintainers call <em>Verdant Replication</em>.<sup class="cite" id="cite-7" data-ref="ref-7"><a href="#ref-7" aria-label="Citation 7">[7]</a></sup>
+          Cross-shard transactions use a two-phase commit coordinator, with snapshot isolation
+          available for read-heavy analytical queries.<sup class="cite" id="cite-8" data-ref="ref-8"><a href="#ref-8" aria-label="Citation 8">[8]</a></sup>
+        </p>
+        <p>
+          Operators can relax guarantees per query to trade consistency for latency — a feature the
+          documentation cautions against using without careful auditing.<sup class="cite" id="cite-9" data-ref="ref-9"><a href="#ref-9" aria-label="Citation 9">[9]</a></sup>
+          The table below contrasts the available read levels.
+        </p>
+
+        <table class="data-table">
+          <thead>
+            <tr><th scope="col">Read level</th><th scope="col">Guarantee</th><th scope="col">Typical latency</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>strong</code></td><td>Linearizable</td><td>6–10 ms</td></tr>
+            <tr><td><code>bounded</code></td><td>≤ 200 ms staleness</td><td>2–4 ms</td></tr>
+            <tr><td><code>eventual</code></td><td>Replica-local</td><td>&lt; 1 ms</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="references">References</h2>
+        <ol class="ref-list" id="ref-list">
+          <li id="ref-1" class="ref-item"
+              data-author="Verdant Foundation" data-titletext="Aurora DB: A Log-Structured Distributed Engine" data-source="Verdant Foundation Whitepapers" data-year="2021">
+            <span class="ref-backs" data-for="cite-1"><a href="#cite-1" title="Jump back to citation" aria-label="Back to citation 1">↑</a></span>
+            <span class="ref-body">
+              Verdant Foundation. <span class="ref-title">Aurora DB: A Log-Structured Distributed Engine</span>. <em>Verdant Foundation Whitepapers</em>, 2021.
+              <a class="ref-link" href="#references" target="_self">verdant.example/aurora-wp <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 1">Copy</button>
+          </li>
+          <li id="ref-2" class="ref-item"
+              data-author="O'Marin, L." data-titletext="Tiered Caching for LSM Storage" data-source="Journal of Distributed Systems" data-year="2022">
+            <span class="ref-backs" data-for="cite-2"></span>
+            <span class="ref-body">
+              O'Marin, L. <span class="ref-title">Tiered Caching for LSM Storage</span>. <em>Journal of Distributed Systems</em>, 14(3), 2022.
+              <a class="ref-link" href="#references" target="_self">jds.example/v14-3 <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 2">Copy</button>
+          </li>
+          <li id="ref-3" class="ref-item"
+              data-author="Project Nimbus Team" data-titletext="Operating Aurora at Scale" data-source="Nimbus Engineering Blog" data-year="2023">
+            <span class="ref-backs" data-for="cite-3"></span>
+            <span class="ref-body">
+              Project Nimbus Team. <span class="ref-title">Operating Aurora at Scale</span>. <em>Nimbus Engineering Blog</em>, 2023.
+              <a class="ref-link" href="#references" target="_self">nimbus.example/blog/aurora <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 3">Copy</button>
+          </li>
+          <li id="ref-4" class="ref-item"
+              data-author="Vance, R. &amp; Holt, K." data-titletext="Disaggregated Storage in Modern Databases" data-source="Halcyon Lab Technical Report" data-year="2022">
+            <span class="ref-backs" data-for="cite-4"></span>
+            <span class="ref-body">
+              Vance, R. &amp; Holt, K. <span class="ref-title">Disaggregated Storage in Modern Databases</span>. <em>Halcyon Lab Technical Report</em> HL-2022-09, 2022.
+              <a class="ref-link" href="#references" target="_self">halcyon.example/tr/2022-09 <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 4">Copy</button>
+          </li>
+          <li id="ref-5" class="ref-item"
+              data-author="Halcyon Lab" data-titletext="Aurora DB Throughput Benchmarks" data-source="Halcyon Benchmark Suite" data-year="2024">
+            <span class="ref-backs" data-for="cite-5"></span>
+            <span class="ref-body">
+              Halcyon Lab. <span class="ref-title">Aurora DB Throughput Benchmarks</span>. <em>Halcyon Benchmark Suite</em>, 2024.
+              <a class="ref-link" href="#references" target="_self">halcyon.example/bench/aurora <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 5">Copy</button>
+          </li>
+          <li id="ref-6" class="ref-item"
+              data-author="Söderqvist, M." data-titletext="Compaction Strategies Revisited" data-source="Verdant Engineering Notes" data-year="2023">
+            <span class="ref-backs" data-for="cite-6"></span>
+            <span class="ref-body">
+              Söderqvist, M. <span class="ref-title">Compaction Strategies Revisited</span>. <em>Verdant Engineering Notes</em>, 2023.
+              <a class="ref-link" href="#references" target="_self">verdant.example/notes/compaction <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 6">Copy</button>
+          </li>
+          <li id="ref-7" class="ref-item"
+              data-author="Verdant Foundation" data-titletext="The Verdant Replication Protocol" data-source="Verdant Foundation Whitepapers" data-year="2022">
+            <span class="ref-backs" data-for="cite-7"></span>
+            <span class="ref-body">
+              Verdant Foundation. <span class="ref-title">The Verdant Replication Protocol</span>. <em>Verdant Foundation Whitepapers</em>, 2022.
+              <a class="ref-link" href="#references" target="_self">verdant.example/vrp <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 7">Copy</button>
+          </li>
+          <li id="ref-8" class="ref-item"
+              data-author="Aurora DB Maintainers" data-titletext="Transactions &amp; Isolation Levels" data-source="Aurora DB Official Documentation" data-year="2025">
+            <span class="ref-backs" data-for="cite-8"></span>
+            <span class="ref-body">
+              Aurora DB Maintainers. <span class="ref-title">Transactions &amp; Isolation Levels</span>. <em>Aurora DB Official Documentation</em>, 2025.
+              <a class="ref-link" href="#references" target="_self">docs.aurora.example/txn <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 8">Copy</button>
+          </li>
+          <li id="ref-9" class="ref-item"
+              data-author="Aurora DB Maintainers" data-titletext="Tuning Consistency for Latency" data-source="Aurora DB Official Documentation" data-year="2025">
+            <span class="ref-backs" data-for="cite-9"></span>
+            <span class="ref-body">
+              Aurora DB Maintainers. <span class="ref-title">Tuning Consistency for Latency</span>. <em>Aurora DB Official Documentation</em>, 2025.
+              <a class="ref-link" href="#references" target="_self">docs.aurora.example/tuning <span class="ext" aria-hidden="true">↗</span></a>
+            </span>
+            <button class="ref-copy" type="button" aria-label="Copy citation 9">Copy</button>
+          </li>
+        </ol>
+      </article>
+
+      <aside class="toc" aria-label="On this page">
+        <p class="toc-label">On this page</p>
+        <ul class="toc-list">
+          <li><a href="#article">Aurora DB</a></li>
+          <li><a href="#architecture">Storage architecture</a></li>
+          <li><a href="#consistency">Consistency model</a></li>
+          <li><a href="#references">References</a></li>
+        </ul>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Citation popover (single instance, repositioned) -->
+  <div class="cite-pop" id="citePop" role="dialog" aria-label="Citation preview" hidden>
+    <p class="cite-pop-author" id="popAuthor"></p>
+    <p class="cite-pop-title" id="popTitle"></p>
+    <p class="cite-pop-meta"><span id="popSource"></span> · <span id="popYear"></span></p>
+    <div class="cite-pop-actions">
+      <a class="cite-pop-jump" id="popJump" href="#references">View reference</a>
+      <button class="cite-pop-copy" id="popCopy" type="button">Copy citation</button>
+    </div>
+  </div>
+
+  <div class="backdrop" id="backdrop" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

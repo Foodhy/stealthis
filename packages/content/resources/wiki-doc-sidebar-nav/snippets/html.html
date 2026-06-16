@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aurora DB Docs — Collapsible Doc Tree Nav</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#article">Skip to content</a>
+
+    <header class="topbar">
+      <button
+        class="icon-btn nav-toggle"
+        id="navToggle"
+        aria-label="Open navigation"
+        aria-expanded="false"
+        aria-controls="sidebar"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <a class="brand" href="#" aria-label="Aurora DB documentation home">
+        <span class="brand-mark" aria-hidden="true">◆</span>
+        <span class="brand-name">Aurora DB</span>
+        <span class="brand-tag">Docs</span>
+      </a>
+
+      <div class="topbar-spacer"></div>
+
+      <div class="version-pill" title="Documentation version">
+        <span class="dot" aria-hidden="true"></span>v3.2 · stable
+      </div>
+      <a class="ghost-link" href="#changelog">Changelog</a>
+    </header>
+
+    <div class="shell">
+      <div class="scrim" id="scrim" hidden></div>
+
+      <!-- ───────────────────────── Sidebar ───────────────────────── -->
+      <nav class="sidebar" id="sidebar" aria-label="Documentation">
+        <div class="search-wrap">
+          <div class="search-field">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="search-icon">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" />
+              <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <input
+              type="search"
+              id="treeSearch"
+              class="search-input"
+              placeholder="Filter docs…"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Filter documentation tree"
+              aria-describedby="searchHint"
+            />
+            <kbd class="search-kbd" aria-hidden="true">/</kbd>
+          </div>
+          <p class="search-hint" id="searchHint">
+            <span id="resultCount">42</span> pages · use <kbd>↑</kbd> <kbd>↓</kbd> to move,
+            <kbd>Enter</kbd> to open
+          </p>
+        </div>
+
+        <div class="tree-scroll">
+          <ul class="tree" id="tree" role="tree" aria-label="Documentation pages"></ul>
+          <p class="tree-empty" id="treeEmpty" hidden>
+            No pages match <strong id="emptyTerm"></strong>.
+          </p>
+        </div>
+
+        <footer class="side-foot">
+          <button class="text-btn" id="expandAll" type="button">Expand all</button>
+          <span aria-hidden="true">·</span>
+          <button class="text-btn" id="collapseAll" type="button">Collapse all</button>
+        </footer>
+      </nav>
+
+      <!-- ───────────────────────── Article ───────────────────────── -->
+      <main class="content" id="article" tabindex="-1">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href="#">Docs</a><span aria-hidden="true">/</span>
+          <a href="#">Guides</a><span aria-hidden="true">/</span>
+          <span aria-current="page">Replication &amp; failover</span>
+        </nav>
+
+        <article class="prose">
+          <span class="eyebrow">Guides · Operations</span>
+          <h1 id="top">Replication &amp; failover</h1>
+          <p class="lede">
+            Aurora DB replicates every committed write to a quorum of storage nodes spread across
+            availability zones. This guide explains how the <strong>Helios</strong> consensus layer
+            elects a primary, how read replicas stay current, and what your application observes
+            during a failover event.
+          </p>
+
+          <div class="callout note">
+            <span class="callout-icon" aria-hidden="true">i</span>
+            <div>
+              <strong>Note —</strong> Failover behaviour changed in <code>v3.0</code>. If you are
+              running the legacy <code>Stratus</code> driver, see
+              <a href="#changelog">the migration notes</a> before upgrading a production cluster.
+            </div>
+          </div>
+
+          <h2 id="topology">Cluster topology</h2>
+          <p>
+            A cluster is a single <em>writer</em> endpoint backed by up to fifteen
+            <em>reader</em> endpoints. The writer owns the authoritative log; readers tail that log
+            and serve <code>SELECT</code> traffic with bounded staleness. The <strong>Helios</strong>
+            coordinator continuously health-checks every node and maintains the membership list that
+            clients resolve through DNS.
+          </p>
+
+          <table class="doc-table">
+            <thead>
+              <tr><th>Role</th><th>Endpoint</th><th>Lag target</th><th>Promotable</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Writer</td><td><code>cluster.aurora</code></td><td>—</td><td>—</td></tr>
+              <tr><td>Reader (sync)</td><td><code>ro-1.aurora</code></td><td>&lt; 20 ms</td><td>Yes</td></tr>
+              <tr><td>Reader (async)</td><td><code>ro-2.aurora</code></td><td>&lt; 500 ms</td><td>Yes</td></tr>
+              <tr><td>Archive</td><td><code>cold.aurora</code></td><td>minutes</td><td>No</td></tr>
+            </tbody>
+          </table>
+
+          <h2 id="quorum">Quorum writes</h2>
+          <p>
+            Each write is acknowledged only after it lands on a majority of storage segments. With
+            six segments across three zones, a write needs four acknowledgements to commit — so the
+            cluster survives the loss of an entire zone plus one additional node without data loss.
+          </p>
+          <pre><code><span class="c">// configure the write quorum on connect</span>
+<span class="k">const</span> pool = aurora.<span class="fn">connect</span>({
+  cluster: <span class="s">&quot;cluster.aurora&quot;</span>,
+  quorum:  { write: <span class="n">4</span>, read: <span class="n">3</span> },
+  failover: <span class="s">&quot;auto&quot;</span>,   <span class="c">// promote a reader on writer loss</span>
+});</code></pre>
+
+          <div class="callout warn">
+            <span class="callout-icon" aria-hidden="true">!</span>
+            <div>
+              <strong>Heads up —</strong> Setting <code>read: 1</code> trades consistency for
+              latency. Stale reads become possible during the few seconds a failover is in flight.
+            </div>
+          </div>
+
+          <h2 id="failover">Failover lifecycle</h2>
+          <p>
+            When Helios loses three consecutive heartbeats from the writer it opens an election.
+            The reader with the lowest replication lag wins, replays any outstanding log entries,
+            and re-points the writer DNS record. The whole sequence typically completes in under
+            <strong>thirty seconds</strong>.
+          </p>
+          <ol class="steps">
+            <li><strong>Detect</strong> — heartbeats miss their deadline; the writer is fenced.</li>
+            <li><strong>Elect</strong> — Helios selects the most caught-up promotable reader.</li>
+            <li><strong>Replay</strong> — the candidate applies the tail of the shared log.</li>
+            <li><strong>Promote</strong> — DNS flips; new connections resolve to the new writer.</li>
+          </ol>
+
+          <blockquote>
+            <p>
+              Design your application to retry idempotent writes. A failover surfaces to the client
+              as a single dropped connection — reconnect and the new writer answers.
+            </p>
+            <cite>— Aurora DB reliability handbook</cite>
+          </blockquote>
+
+          <h2 id="checklist">Operator checklist</h2>
+          <p>Before declaring a cluster production-ready, confirm each item below.</p>
+          <ul class="check">
+            <li>At least one <em>synchronous</em> reader in a second zone.</li>
+            <li>Client driver pinned to <code>v3.x</code> with <code>failover: &quot;auto&quot;</code>.</li>
+            <li>Connection retries with jittered back-off enabled.</li>
+            <li>Alerting on replication lag above the role's target.</li>
+          </ul>
+
+          <div class="callout tip">
+            <span class="callout-icon" aria-hidden="true">✓</span>
+            <div>
+              <strong>Tip —</strong> Run a planned failover during a maintenance window with
+              <code>aurora cluster failover --dry-run</code> to rehearse before you depend on it.
+            </div>
+          </div>
+
+          <hr />
+          <p class="page-meta" id="changelog">
+            Last reviewed for <strong>Aurora DB v3.2</strong> · Estimated read time 6 min ·
+            <a href="#top">Back to top ↑</a>
+          </p>
+        </article>
+      </main>
+
+      <!-- ───────────────────────── TOC rail ───────────────────────── -->
+      <aside class="toc" aria-label="On this page">
+        <p class="toc-title">On this page</p>
+        <ul class="toc-list">
+          <li><a href="#topology">Cluster topology</a></li>
+          <li><a href="#quorum">Quorum writes</a></li>
+          <li><a href="#failover">Failover lifecycle</a></li>
+          <li><a href="#checklist">Operator checklist</a></li>
+        </ul>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

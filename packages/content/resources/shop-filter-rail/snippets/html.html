@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop — Faceted Filter Sidebar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#rail">Skip to filters</a>
+
+  <div class="shell">
+    <header class="pagehead" role="banner">
+      <div class="pagehead__row">
+        <div>
+          <p class="eyebrow">New Arrivals · Footwear</p>
+          <h1 class="pagehead__title">Running &amp; Trail Shoes</h1>
+        </div>
+        <button class="drawer-toggle" type="button" id="drawerToggle" aria-expanded="false" aria-controls="rail">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path d="M3 6h18M6 12h12M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Filters
+          <span class="drawer-toggle__count" id="toggleCount" hidden>0</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- ============ THE REUSABLE FILTER RAIL ============ -->
+      <aside class="rail" id="rail" aria-label="Product filters">
+        <div class="rail__overlay" id="railOverlay" hidden></div>
+        <div class="rail__panel" role="region" aria-label="Filter facets">
+          <div class="rail__top">
+            <div class="rail__heading">
+              <h2 class="rail__title">Filters</h2>
+              <span class="applied-badge" id="appliedBadge" hidden>0 applied</span>
+            </div>
+            <button class="clear-all" type="button" id="clearAll" disabled>Clear all</button>
+            <button class="rail__close" type="button" id="railClose" aria-label="Close filters">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Active filter chips -->
+          <div class="active-filters" id="activeFilters" hidden aria-live="polite">
+            <ul class="chips" id="chipRow"></ul>
+          </div>
+
+          <div class="rail__scroll" data-rail-form>
+            <!-- In-stock toggle -->
+            <section class="facet facet--toggle">
+              <label class="switch">
+                <input type="checkbox" id="inStock" data-facet="stock" />
+                <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+                <span class="switch__label">In stock only</span>
+              </label>
+            </section>
+
+            <!-- Category -->
+            <section class="facet" data-group="category">
+              <button class="facet__head" type="button" aria-expanded="true">
+                <span class="facet__name">Category</span>
+                <svg class="facet__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="facet__body">
+                <ul class="checklist" id="catList"></ul>
+              </div>
+            </section>
+
+            <!-- Price -->
+            <section class="facet" data-group="price">
+              <button class="facet__head" type="button" aria-expanded="true">
+                <span class="facet__name">Price</span>
+                <svg class="facet__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="facet__body">
+                <div class="price">
+                  <div class="price__readout">
+                    <span id="priceMinOut">$0</span>
+                    <span class="price__dash" aria-hidden="true">–</span>
+                    <span id="priceMaxOut">$300</span>
+                  </div>
+                  <div class="dualrange" id="dualRange">
+                    <div class="dualrange__track" aria-hidden="true">
+                      <div class="dualrange__fill" id="rangeFill"></div>
+                    </div>
+                    <input type="range" id="priceMin" min="0" max="300" step="5" value="0"
+                           aria-label="Minimum price" />
+                    <input type="range" id="priceMax" min="0" max="300" step="5" value="300"
+                           aria-label="Maximum price" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Color -->
+            <section class="facet" data-group="color">
+              <button class="facet__head" type="button" aria-expanded="true">
+                <span class="facet__name">Color</span>
+                <svg class="facet__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="facet__body">
+                <ul class="swatches" id="colorList" role="group" aria-label="Color"></ul>
+              </div>
+            </section>
+
+            <!-- Size -->
+            <section class="facet" data-group="size">
+              <button class="facet__head" type="button" aria-expanded="true">
+                <span class="facet__name">Size (US)</span>
+                <svg class="facet__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="facet__body">
+                <ul class="sizechips" id="sizeList" role="group" aria-label="Size"></ul>
+              </div>
+            </section>
+
+            <!-- Rating -->
+            <section class="facet" data-group="rating">
+              <button class="facet__head" type="button" aria-expanded="true">
+                <span class="facet__name">Rating</span>
+                <svg class="facet__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="facet__body">
+                <ul class="ratinglist" id="ratingList" role="radiogroup" aria-label="Minimum rating"></ul>
+              </div>
+            </section>
+
+            <!-- Brand -->
+            <section class="facet" data-group="brand">
+              <button class="facet__head" type="button" aria-expanded="true">
+                <span class="facet__name">Brand</span>
+                <svg class="facet__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="facet__body">
+                <div class="brandsearch">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M21 21l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  <input type="search" id="brandSearch" placeholder="Search brands" aria-label="Search brands" autocomplete="off" />
+                </div>
+                <ul class="checklist checklist--scroll" id="brandList"></ul>
+                <p class="brandsearch__empty" id="brandEmpty" hidden>No brands match.</p>
+              </div>
+            </section>
+          </div>
+
+          <div class="rail__apply">
+            <button class="apply-btn" type="button" id="applyBtn">
+              Show <span id="applyCount">0</span> results
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============ RESULTS PREVIEW (driven by the rail) ============ -->
+      <main class="results" id="results" aria-live="polite">
+        <div class="results__bar">
+          <p class="results__count"><strong id="resultCount">0</strong> results</p>
+          <label class="sort">
+            <span class="sort__label">Sort</span>
+            <select id="sortBy" aria-label="Sort products">
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="rating">Top rated</option>
+            </select>
+          </label>
+        </div>
+
+        <ul class="grid" id="grid"></ul>
+
+        <div class="empty" id="empty" hidden>
+          <div class="empty__art" aria-hidden="true">🔍</div>
+          <p class="empty__title">No products match your filters</p>
+          <button class="ghost-btn" type="button" id="emptyClear">Clear all filters</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

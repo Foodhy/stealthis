@@ -362,8 +362,22 @@ const lowCountEl = document.getElementById("lowCount");
 const outCountEl = document.getElementById("outCount");
 const toast = document.getElementById("toast");
 
+const drawerOverlay = document.getElementById("drawerOverlay");
+const adjustDrawer = document.getElementById("adjustDrawer");
+const drawerTitle = document.getElementById("drawerTitle");
+const drawerMeta = document.getElementById("drawerMeta");
+const drawerUnit = document.getElementById("drawerUnit");
+const drawerQty = document.getElementById("drawerQty");
+const drawerPar = document.getElementById("drawerPar");
+const drawerClose = document.getElementById("drawerClose");
+const drawerCancel = document.getElementById("drawerCancel");
+const drawerSave = document.getElementById("drawerSave");
+const drawerDec = document.getElementById("drawerDec");
+const drawerInc = document.getElementById("drawerInc");
+
 let cat = "all";
 let q = "";
+let adjustingId = null;
 
 function relDate(dDays) {
   const d = new Date();
@@ -433,7 +447,7 @@ function render() {
           item.oos
             ? `<span class="tag-86">86'd</span>`
             : t === ""
-              ? `<button class="btn-quiet" data-action="adjust">Adjust</button>`
+              ? `<button class="btn-quiet" data-action="adjust" data-id="${item.id}">Adjust</button>`
               : `<button class="btn-reorder" data-action="reorder" data-id="${item.id}">Reorder</button>`
         }
       </td>
@@ -444,6 +458,49 @@ function render() {
   outCountEl.firstChild.textContent = String(out) + " ";
   emptyEl.hidden = visibleCount > 0;
 }
+
+function openAdjust(id) {
+  const item = ITEMS.find((i) => i.id === id);
+  if (!item) return;
+  adjustingId = id;
+  drawerTitle.textContent = item.name;
+  drawerMeta.textContent = `${CAT_LABEL[item.cat]} · ${item.stock === 0 ? "Out of stock" : item.stock <= item.par * 0.4 ? "Low stock" : "In stock"}`;
+  drawerUnit.textContent = item.unit || "units";
+  drawerQty.value = item.stock;
+  drawerPar.textContent = `Par level: ${item.par}`;
+  drawerOverlay.hidden = false;
+  adjustDrawer.hidden = false;
+  drawerQty.focus();
+}
+
+function closeDrawer() {
+  drawerOverlay.hidden = true;
+  adjustDrawer.hidden = true;
+  adjustingId = null;
+}
+
+drawerClose.addEventListener("click", closeDrawer);
+drawerCancel.addEventListener("click", closeDrawer);
+drawerOverlay.addEventListener("click", closeDrawer);
+
+drawerDec.addEventListener("click", () => {
+  const val = Number(drawerQty.value);
+  if (val > 0) drawerQty.value = val - 1;
+});
+drawerInc.addEventListener("click", () => {
+  drawerQty.value = Number(drawerQty.value) + 1;
+});
+
+drawerSave.addEventListener("click", () => {
+  const item = ITEMS.find((i) => i.id === adjustingId);
+  if (!item) return;
+  item.stock = Number(drawerQty.value);
+  item.oos = item.stock === 0;
+  item.lastIso = 0;
+  closeDrawer();
+  render();
+  showToast(`${item.name} adjusted to ${item.stock}`);
+});
 
 chips.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-cat]");
@@ -471,8 +528,8 @@ rowsEl.addEventListener("click", (e) => {
       render();
       showToast(`Reordered · ${item.name} to par`);
     }
-  } else {
-    showToast("Adjust panel would open here.");
+  } else if (action === "adjust") {
+    openAdjust(id);
   }
 });
 

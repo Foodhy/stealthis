@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Northwind Pulse — Global filter + date-range bar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar nav -->
+    <nav class="sidebar" aria-label="Primary">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">◈</span>
+        <span class="brand__name">Northwind Pulse</span>
+      </div>
+      <ul class="navlist">
+        <li><a href="#" class="navlink"><span class="navlink__ico" aria-hidden="true">▤</span> Overview</a></li>
+        <li><a href="#" class="navlink is-active" aria-current="page"><span class="navlink__ico" aria-hidden="true">⛶</span> Orders</a></li>
+        <li><a href="#" class="navlink"><span class="navlink__ico" aria-hidden="true">◷</span> Channels</a></li>
+        <li><a href="#" class="navlink"><span class="navlink__ico" aria-hidden="true">◍</span> Regions</a></li>
+        <li><a href="#" class="navlink"><span class="navlink__ico" aria-hidden="true">⚙</span> Settings</a></li>
+      </ul>
+      <div class="side-foot">
+        <div class="avatar" aria-hidden="true">MA</div>
+        <div class="side-foot__id">
+          <strong>Maya Alvarez</strong>
+          <span>Ops analyst</span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-col">
+      <main class="page" role="main">
+        <header class="page-head">
+          <div>
+            <p class="eyebrow">Northwind Pulse · Commerce analytics</p>
+            <h1>Orders explorer</h1>
+          </div>
+          <button class="ghost-btn" id="exportBtn" type="button">⤓ Export</button>
+        </header>
+
+        <!-- ===== Sticky global filter bar ===== -->
+        <section class="filterbar" id="filterbar" aria-label="Global filters and date range">
+          <div class="filterbar__row">
+            <!-- Date range -->
+            <div class="ctrl ctrl--range">
+              <span class="ctrl__label" id="rangeLabel">Date range</span>
+              <div class="range" role="group" aria-labelledby="rangeLabel">
+                <div class="presets" role="tablist" aria-label="Date presets">
+                  <button class="preset" role="tab" aria-selected="false" data-range="today" type="button">Today</button>
+                  <button class="preset is-active" role="tab" aria-selected="true" data-range="7d" type="button">7d</button>
+                  <button class="preset" role="tab" aria-selected="false" data-range="30d" type="button">30d</button>
+                  <button class="preset" role="tab" aria-selected="false" data-range="custom" type="button">Custom</button>
+                </div>
+                <div class="custom-dates" id="customDates" hidden>
+                  <label class="datefield">
+                    <span class="vh">Start date</span>
+                    <input type="date" id="dateStart" />
+                  </label>
+                  <span class="custom-dates__sep" aria-hidden="true">→</span>
+                  <label class="datefield">
+                    <span class="vh">End date</span>
+                    <input type="date" id="dateEnd" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search -->
+            <div class="ctrl ctrl--search">
+              <span class="ctrl__label" id="searchLabel">Search</span>
+              <div class="searchbox">
+                <span class="searchbox__ico" aria-hidden="true">⌕</span>
+                <input type="search" id="searchInput" placeholder="Order ID, SKU, customer…" aria-labelledby="searchLabel" />
+              </div>
+            </div>
+          </div>
+
+          <div class="filterbar__row filterbar__row--filters">
+            <!-- Multi-select dropdowns -->
+            <div class="ctrl ctrl--facets">
+              <span class="ctrl__label">Filters</span>
+              <div class="facets">
+                <div class="facet" data-facet="channel">
+                  <button class="facet__btn" type="button" aria-haspopup="true" aria-expanded="false">
+                    Channel <span class="facet__count" hidden>0</span> <span class="caret" aria-hidden="true">▾</span>
+                  </button>
+                  <div class="facet__menu" role="menu" hidden>
+                    <label class="opt"><input type="checkbox" value="Web" /> Web store</label>
+                    <label class="opt"><input type="checkbox" value="Mobile" /> Mobile app</label>
+                    <label class="opt"><input type="checkbox" value="Marketplace" /> Marketplace</label>
+                    <label class="opt"><input type="checkbox" value="Retail" /> Retail POS</label>
+                    <label class="opt"><input type="checkbox" value="Partner" /> Partner API</label>
+                  </div>
+                </div>
+
+                <div class="facet" data-facet="region">
+                  <button class="facet__btn" type="button" aria-haspopup="true" aria-expanded="false">
+                    Region <span class="facet__count" hidden>0</span> <span class="caret" aria-hidden="true">▾</span>
+                  </button>
+                  <div class="facet__menu" role="menu" hidden>
+                    <label class="opt"><input type="checkbox" value="North America" /> North America</label>
+                    <label class="opt"><input type="checkbox" value="EMEA" /> EMEA</label>
+                    <label class="opt"><input type="checkbox" value="APAC" /> APAC</label>
+                    <label class="opt"><input type="checkbox" value="LATAM" /> LATAM</label>
+                  </div>
+                </div>
+
+                <div class="facet" data-facet="status">
+                  <button class="facet__btn" type="button" aria-haspopup="true" aria-expanded="false">
+                    Status <span class="facet__count" hidden>0</span> <span class="caret" aria-hidden="true">▾</span>
+                  </button>
+                  <div class="facet__menu" role="menu" hidden>
+                    <label class="opt"><input type="checkbox" value="Paid" /> Paid</label>
+                    <label class="opt"><input type="checkbox" value="Processing" /> Processing</label>
+                    <label class="opt"><input type="checkbox" value="Shipped" /> Shipped</label>
+                    <label class="opt"><input type="checkbox" value="Refunded" /> Refunded</label>
+                    <label class="opt"><input type="checkbox" value="Cancelled" /> Cancelled</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button class="clear-all" id="clearAll" type="button" hidden>Clear all</button>
+          </div>
+
+          <!-- Active filter chips -->
+          <div class="chips-row" id="chipsRow" aria-live="polite" aria-label="Active filters" hidden>
+            <span class="chips-row__label">
+              Active filters <span class="chips-count" id="chipsCount">0</span>
+            </span>
+            <ul class="chips" id="chips"></ul>
+          </div>
+        </section>
+
+        <!-- ===== Results summary ===== -->
+        <p class="summary" id="summary" aria-live="polite"></p>
+
+        <!-- ===== KPI cards ===== -->
+        <section class="kpis" aria-label="Key metrics">
+          <article class="kpi" data-kpi="orders">
+            <header class="kpi__head"><span class="kpi__label">Orders</span></header>
+            <div class="kpi__value" data-val>0</div>
+            <div class="kpi__foot">
+              <span class="delta up" data-delta>▲ 0%</span>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true" data-spark></svg>
+            </div>
+          </article>
+          <article class="kpi" data-kpi="revenue">
+            <header class="kpi__head"><span class="kpi__label">Revenue</span></header>
+            <div class="kpi__value" data-val>0</div>
+            <div class="kpi__foot">
+              <span class="delta up" data-delta>▲ 0%</span>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true" data-spark></svg>
+            </div>
+          </article>
+          <article class="kpi" data-kpi="aov">
+            <header class="kpi__head"><span class="kpi__label">Avg order value</span></header>
+            <div class="kpi__value" data-val>0</div>
+            <div class="kpi__foot">
+              <span class="delta down" data-delta>▼ 0%</span>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true" data-spark></svg>
+            </div>
+          </article>
+          <article class="kpi" data-kpi="refund">
+            <header class="kpi__head"><span class="kpi__label">Refund rate</span></header>
+            <div class="kpi__value" data-val>0</div>
+            <div class="kpi__foot">
+              <span class="delta down" data-delta>▼ 0%</span>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true" data-spark></svg>
+            </div>
+          </article>
+        </section>
+
+        <!-- ===== Widgets ===== -->
+        <section class="widgets">
+          <article class="card card--chart">
+            <header class="card__head">
+              <h2 class="card__title">Orders by day</h2>
+              <button class="menu-btn" type="button" aria-label="Widget menu">⋯</button>
+            </header>
+            <div class="chart" id="chart" role="img" aria-label="Bar chart of orders per day for the selected range"></div>
+            <div class="chart-x" id="chartX" aria-hidden="true"></div>
+          </article>
+
+          <article class="card card--table">
+            <header class="card__head">
+              <h2 class="card__title">Recent orders</h2>
+              <span class="rowcount" id="rowCount">0 rows</span>
+            </header>
+            <div class="table-wrap">
+              <table class="dtable">
+                <thead>
+                  <tr>
+                    <th scope="col">Order</th>
+                    <th scope="col">Channel</th>
+                    <th scope="col">Region</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="num">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+              <p class="empty" id="empty" hidden>No orders match the current filters.</p>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

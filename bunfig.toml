@@ -1,0 +1,20 @@
+# Supply-chain hardening for `bun install`. See SUPPLY_CHAIN_SECURITY.md.
+# Requires bun >= 1.3 (older bun silently ignores these keys).
+
+[install]
+# Delay newly-published versions by 3 days. VALUE IS IN SECONDS (3 * 24 * 3600).
+# Malware in a compromised release is usually caught within hours; this cooldown
+# keeps us out of that danger window while staying reasonably current.
+minimumReleaseAge = 259200
+
+# Escape hatch: packages exempt from the cooldown. Use for genuine emergency
+# security fixes you must pull immediately, or internal packages you trust.
+# Example: minimumReleaseAgeExclude = ["@stealthis/schema", "left-pad"]
+minimumReleaseAgeExclude = []
+
+[install.security]
+# Scan every package against Socket before it installs.
+# Fatal advisory  -> install is aborted.
+# Warn advisory   -> prompts in a TTY; auto-cancels in CI / non-interactive.
+# Optional: set SOCKET_API_KEY to inherit your Socket org's policies.
+scanner = "@socketsecurity/bun-security-scanner"

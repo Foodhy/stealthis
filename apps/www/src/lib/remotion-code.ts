@@ -41,6 +41,19 @@ import remotionQuoteCardCode from "@remotion-app/animations/remotion-quote-card.
 import remotionStepProcessCode from "@remotion-app/animations/remotion-step-process.tsx?raw";
 import remotionGradientWaveCode from "@remotion-app/animations/remotion-gradient-wave.tsx?raw";
 
+import remotionProductAdCode from "@remotion-app/animations/remotion-product-ad.tsx?raw";
+import remotionAppPromoCode from "@remotion-app/animations/remotion-app-promo.tsx?raw";
+import remotionSaleSpotCode from "@remotion-app/animations/remotion-sale-spot.tsx?raw";
+import remotionFlashSaleCode from "@remotion-app/animations/remotion-flash-sale.tsx?raw";
+import remotionHolidayPromoCode from "@remotion-app/animations/remotion-holiday-promo.tsx?raw";
+import remotionBlackFridayCode from "@remotion-app/animations/remotion-black-friday.tsx?raw";
+import remotionEventPromoCode from "@remotion-app/animations/remotion-event-promo.tsx?raw";
+import remotionWebinarPromoCode from "@remotion-app/animations/remotion-webinar-promo.tsx?raw";
+import remotionCouponRevealCode from "@remotion-app/animations/remotion-coupon-reveal.tsx?raw";
+import remotionDiscountBannerCode from "@remotion-app/animations/remotion-discount-banner.tsx?raw";
+import remotionLimitedOfferCode from "@remotion-app/animations/remotion-limited-offer.tsx?raw";
+import remotionGiveawayCode from "@remotion-app/animations/remotion-giveaway.tsx?raw";
+
 export const remotionCodeById = {
   "01-Typewriter": { file: "01-Typewriter.tsx", code: typewriterCode },
   "02-SpringBounce": { file: "02-SpringBounce.tsx", code: springBounceCode },
@@ -90,4 +103,16 @@ export const remotionCodeById = {
   "remotion-quote-card": { file: "remotion-quote-card.tsx", code: remotionQuoteCardCode },
   "remotion-step-process": { file: "remotion-step-process.tsx", code: remotionStepProcessCode },
   "remotion-gradient-wave": { file: "remotion-gradient-wave.tsx", code: remotionGradientWaveCode },
+  "remotion-product-ad": { file: "remotion-product-ad.tsx", code: remotionProductAdCode },
+  "remotion-app-promo": { file: "remotion-app-promo.tsx", code: remotionAppPromoCode },
+  "remotion-sale-spot": { file: "remotion-sale-spot.tsx", code: remotionSaleSpotCode },
+  "remotion-flash-sale": { file: "remotion-flash-sale.tsx", code: remotionFlashSaleCode },
+  "remotion-holiday-promo": { file: "remotion-holiday-promo.tsx", code: remotionHolidayPromoCode },
+  "remotion-black-friday": { file: "remotion-black-friday.tsx", code: remotionBlackFridayCode },
+  "remotion-event-promo": { file: "remotion-event-promo.tsx", code: remotionEventPromoCode },
+  "remotion-webinar-promo": { file: "remotion-webinar-promo.tsx", code: remotionWebinarPromoCode },
+  "remotion-coupon-reveal": { file: "remotion-coupon-reveal.tsx", code: remotionCouponRevealCode },
+  "remotion-discount-banner": { file: "remotion-discount-banner.tsx", code: remotionDiscountBannerCode },
+  "remotion-limited-offer": { file: "remotion-limited-offer.tsx", code: remotionLimitedOfferCode },
+  "remotion-giveaway": { file: "remotion-giveaway.tsx", code: remotionGiveawayCode },
 } as const;

@@ -1,0 +1,48 @@
+---
+slug: remotion-line-chart
+title: "Remotion — Animated Line Chart"
+description: "A 6-second Remotion composition rendering two data series as animated SVG line charts. The polylines draw themselves left-to-right via stroke-dashoffset, data-point dots pop in with spring physics as the line reaches each node, and a semi-transparent area fill layers beneath each series for depth."
+category: remotion
+type: animation
+tags: [remotion, line-chart, trend, data-visualization, svg]
+tech: [remotion, react, typescript]
+difficulty: med
+targets: [react]
+collections: [remotion]
+license: MIT
+createdAt: 2026-06-12
+updatedAt: 2026-06-12
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## Animated Line Chart
+
+Two data series — monthly revenue and user growth for a fictional SaaS product — animate across a shared Y-axis over 6 seconds. Axis lines and horizontal gridlines fade in first, establishing the grid. Then each polyline draws itself from left to right using a `stroke-dashoffset` animation driven by `interpolate()` with a cubic ease-in-out, staggered 8 frames apart so the lines feel like they chase each other across the chart.
+
+Each data-point dot is revealed independently the moment the drawing line passes its X position, using a spring with a back-overshoot so dots feel like they snap into place. The final data point on the revenue series shows a callout label that fades up from below. A legend with color swatches and series names slides in from the right at the opening frames. The entire composition closes with a subtle brand tagline that fades in at frame 150.
+
+Color and glow are intentional: indigo (`#6366f1`) for revenue and cyan (`#06b6d4`) for users give the two series maximum visual contrast on a near-black background. Radial background glows centered on each series' home quadrant reinforce this spatial separation without adding visual noise.
+
+### Composition specs
+
+| Property | Value |
+|---|---|
+| Resolution | 1280 × 720 |
+| FPS | 30 |
+| Duration | 6 s (180 frames) |
+
+### Data format
+
+All data lives in the `DATA` constant at the top of the file — an array of `DataPoint` objects:
+
+```ts
+interface DataPoint {
+  month: string;  // X-axis label
+  revenue: number; // first series value (rendered in $K)
+  users: number;   // second series value (rendered ×100)
+}
+```
+
+Both series share the same Y-axis scale (derived from `Math.max(...revenue, ...users)`), so they are directly comparable. To swap in different metrics, update the `DATA` array and adjust `CHART_TITLE`, `CHART_SUBTITLE`, and the `SERIES` config objects (label, unit, color) near the top of the file.

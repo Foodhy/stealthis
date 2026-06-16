@@ -1,0 +1,51 @@
+---
+slug: remotion-survey-results
+title: "Remotion — Survey Results Video"
+description: "An animated 7-second Remotion composition presenting six product-satisfaction survey questions as staggered horizontal bars on a dark background, each row revealing a spring-driven fill, a live count-up percentage badge at the bar tip, and a respondent tally — finishing with a gold highlight pulse on the top-scoring question."
+category: remotion
+type: animation
+tags: [remotion, survey, results, poll, horizontal-bars]
+tech: [remotion, react, typescript]
+difficulty: med
+targets: [react]
+collections: [remotion]
+license: MIT
+createdAt: 2026-06-12
+updatedAt: 2026-06-12
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## Survey Results Video
+
+Six product-satisfaction questions — spanning Overall, Performance, Design, Support, Value, and Loyalty categories — are laid out as a vertically stacked dashboard on a deep `#0a0a0f` background. Each row contains a category icon and label on the left, a question and winning answer in the center, a horizontally filling bar driven by `spring()` physics, and an `n =` respondent count on the right. Rows reveal sequentially with a 25-frame stagger: the row fades and slides in from the left, then the bar fill begins a few frames later so the two motions layer visually without competing.
+
+The percentage label sits just beyond the advancing bar tip and counts up as an integer derived from the spring progress value, giving the impression that the number is "following" the bar across the screen. A header line — survey title, subtitle, a badge chip, and a gradient divider that sweeps in left-to-right — sets context before the data appears. After all six bars have settled, the highest-scoring row (Support, 91 %) receives a gold highlight pulse: background tint, border glow, bar gradient, icon color, and percentage label all shift to amber and oscillate with a sinusoidal alpha so the pulse breathes rather than snapping.
+
+The color palette assigns one of six distinct hues (indigo, cyan, emerald, amber, violet, rose) to each row, with individual colored glow shadows on bar fills. A subtle radial indigo glow at the top center and a secondary cyan glow at bottom-right give the composition spatial depth without competing with the data. Typography is system-ui at three weight levels: 700 for values, 600/500 for labels, and muted `rgba(255,255,255,0.55)` for secondary copy.
+
+### Composition specs
+
+| Property | Value |
+|---|---|
+| Resolution | 1280 × 720 |
+| FPS | 30 |
+| Duration | 7 s (210 frames) |
+
+### Data format
+
+All survey data is hardcoded in the `QUESTIONS` constant at the top of the file. Each entry implements the `SurveyQuestion` interface:
+
+```ts
+interface SurveyQuestion {
+  icon: string;        // unicode glyph shown before the category label
+  category: string;    // short label (e.g. "Support")
+  question: string;    // full question text
+  answer: string;      // winning answer option
+  pct: number;         // percentage of respondents who chose this answer (0–100)
+  respondents: number; // absolute count of respondents who chose this answer
+}
+```
+
+To customize the composition, replace the entries in `QUESTIONS`, adjust `SURVEY_TITLE` and `SURVEY_SUBTITLE`, and tweak `STAGGER` (frames between row entrances) or the `spring()` config inside `SurveyRow` for faster or slower bar fills. `BEST_IDX` is computed automatically as the index of the entry with the highest `pct`, so the gold highlight always targets the correct row.

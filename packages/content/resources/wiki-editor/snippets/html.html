@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wiki — Article Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#editor-main">Skip to editor</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">V</span>
+      <div class="brand-text">
+        <strong>Verdant Wiki</strong>
+        <span class="brand-sub">Article editor</span>
+      </div>
+    </div>
+
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="#">Articles</a>
+      <span aria-hidden="true">/</span>
+      <a href="#">Databases</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Editing</span>
+    </nav>
+
+    <div class="topbar-status">
+      <span id="dirty-badge" class="dirty-badge is-clean" role="status" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="dirty-label">Saved</span>
+      </span>
+    </div>
+  </header>
+
+  <section class="metabar" aria-label="Article metadata">
+    <label class="field field-title">
+      <span class="field-label">Title</span>
+      <input
+        id="meta-title"
+        type="text"
+        value="Aurora DB"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </label>
+    <label class="field field-summary">
+      <span class="field-label">Edit summary</span>
+      <input
+        id="meta-summary"
+        type="text"
+        placeholder="Briefly describe your change…"
+        value="Expand consistency section, add CLI example"
+        autocomplete="off"
+      />
+    </label>
+    <label class="field field-tags">
+      <span class="field-label">Tags</span>
+      <input
+        id="meta-tags"
+        type="text"
+        value="database, distributed-systems, raft"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </label>
+  </section>
+
+  <div class="toolbar" role="toolbar" aria-label="Formatting">
+    <div class="tool-group">
+      <button class="tool" type="button" data-cmd="bold" title="Bold (Ctrl+B)" aria-keyshortcuts="Control+B">
+        <span class="tool-glyph" style="font-weight:800">B</span>
+      </button>
+      <button class="tool" type="button" data-cmd="italic" title="Italic (Ctrl+I)" aria-keyshortcuts="Control+I">
+        <span class="tool-glyph" style="font-style:italic;font-family:'Source Serif 4',serif">I</span>
+      </button>
+      <button class="tool" type="button" data-cmd="code" title="Inline code (Ctrl+E)" aria-keyshortcuts="Control+E">
+        <span class="tool-glyph mono">&lt;/&gt;</span>
+      </button>
+    </div>
+
+    <span class="tool-sep" aria-hidden="true"></span>
+
+    <div class="tool-group">
+      <button class="tool" type="button" data-cmd="h2" title="Heading 2">
+        <span class="tool-glyph">H2</span>
+      </button>
+      <button class="tool" type="button" data-cmd="h3" title="Heading 3">
+        <span class="tool-glyph">H3</span>
+      </button>
+      <button class="tool" type="button" data-cmd="quote" title="Blockquote">
+        <span class="tool-glyph">&rdquo;</span>
+      </button>
+    </div>
+
+    <span class="tool-sep" aria-hidden="true"></span>
+
+    <div class="tool-group">
+      <button class="tool" type="button" data-cmd="ul" title="Bulleted list">
+        <span class="tool-glyph">&bull;&#8202;&equiv;</span>
+      </button>
+      <button class="tool" type="button" data-cmd="ol" title="Numbered list">
+        <span class="tool-glyph mono">1.</span>
+      </button>
+      <button class="tool" type="button" data-cmd="link" title="Link (Ctrl+K)" aria-keyshortcuts="Control+K">
+        <span class="tool-glyph">&#128279;</span>
+      </button>
+      <button class="tool" type="button" data-cmd="image" title="Image">
+        <span class="tool-glyph">&#128247;</span>
+      </button>
+      <button class="tool" type="button" data-cmd="codeblock" title="Code block">
+        <span class="tool-glyph mono">{ }</span>
+      </button>
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <div class="mode-switch" role="group" aria-label="View mode">
+      <button class="mode-btn" type="button" data-mode="write">Write</button>
+      <button class="mode-btn is-active" type="button" data-mode="split" aria-pressed="true">Split</button>
+      <button class="mode-btn" type="button" data-mode="preview">Preview</button>
+    </div>
+  </div>
+
+  <main id="editor-main" class="panes" data-mode="split">
+    <section class="pane pane-write" aria-label="Markdown source">
+      <div class="pane-head">
+        <span class="pane-title">Markdown</span>
+        <span class="pane-hint mono">⌘/Ctrl + B · I · K · E</span>
+      </div>
+      <textarea
+        id="source"
+        class="source"
+        spellcheck="true"
+        aria-label="Markdown source"
+      ></textarea>
+    </section>
+
+    <div class="pane-divider" aria-hidden="true"></div>
+
+    <section class="pane pane-preview" aria-label="Rendered preview">
+      <div class="pane-head">
+        <span class="pane-title">Preview</span>
+        <span class="pane-hint">Live rendered</span>
+      </div>
+      <article id="preview" class="preview" tabindex="0"></article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-stats" aria-live="polite">
+      <span class="stat"><strong id="stat-words">0</strong> words</span>
+      <span class="stat-sep" aria-hidden="true">·</span>
+      <span class="stat"><strong id="stat-chars">0</strong> chars</span>
+      <span class="stat-sep" aria-hidden="true">·</span>
+      <span class="stat"><strong id="stat-read">0</strong> min read</span>
+      <span class="stat-sep" aria-hidden="true">·</span>
+      <span class="stat" id="stat-saved">Draft autosaved just now</span>
+    </div>
+    <div class="footer-actions">
+      <button id="btn-draft" class="btn btn-ghost" type="button">Save draft</button>
+      <button id="btn-publish" class="btn btn-primary" type="button">Publish changes</button>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

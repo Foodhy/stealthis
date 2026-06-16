@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web3 — Portfolio Value Chart (PnL)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="chart-card" aria-label="Portfolio value chart">
+      <div class="card-glow" aria-hidden="true"></div>
+
+      <header class="card-head">
+        <div class="head-left">
+          <div class="wallet-row">
+            <span class="wallet-dot" aria-hidden="true"></span>
+            <span class="wallet-addr mono" title="Connected wallet (simulated)">0x7a3f…c41d</span>
+            <span class="chain-pill">Lumen Chain</span>
+          </div>
+          <h1 class="card-title">Portfolio value</h1>
+        </div>
+        <button class="btn-ghost" id="refreshBtn" type="button" aria-label="Refresh portfolio data">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" />
+          </svg>
+          Refresh
+        </button>
+      </header>
+
+      <div class="value-block">
+        <p class="big-value mono" id="bigValue" aria-live="polite">$128,440.92</p>
+        <div class="pnl-row" id="pnlRow">
+          <span class="pnl-abs mono" id="pnlAbs">+$6,214.18</span>
+          <span class="pnl-pct mono" id="pnlPct">
+            <svg class="pnl-arrow" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4l8 10h-5v6h-6v-6H4z"/></svg>
+            <span id="pnlPctText">+5.08%</span>
+          </span>
+          <span class="pnl-range muted" id="pnlRangeLabel">past week</span>
+        </div>
+      </div>
+
+      <div class="range-tabs" role="tablist" aria-label="Time range">
+        <button class="range-tab" role="tab" aria-selected="false" data-range="1H" type="button">1H</button>
+        <button class="range-tab" role="tab" aria-selected="false" data-range="1D" type="button">1D</button>
+        <button class="range-tab is-active" role="tab" aria-selected="true" data-range="1W" type="button">1W</button>
+        <button class="range-tab" role="tab" aria-selected="false" data-range="1M" type="button">1M</button>
+        <button class="range-tab" role="tab" aria-selected="false" data-range="1Y" type="button">1Y</button>
+        <button class="range-tab" role="tab" aria-selected="false" data-range="ALL" type="button">ALL</button>
+      </div>
+
+      <div class="chart-wrap" id="chartWrap">
+        <svg id="chart" viewBox="0 0 720 260" preserveAspectRatio="none" role="img" aria-label="Portfolio value over the selected range">
+          <defs>
+            <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7c5cff" stop-opacity="0.35" />
+              <stop offset="55%" stop-color="#7c5cff" stop-opacity="0.10" />
+              <stop offset="100%" stop-color="#7c5cff" stop-opacity="0" />
+            </linearGradient>
+            <linearGradient id="strokeGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#7c5cff" />
+              <stop offset="100%" stop-color="#00e0c6" />
+            </linearGradient>
+            <filter id="glow" x="-20%" y="-60%" width="140%" height="220%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" /><feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <g id="gridLines" aria-hidden="true"></g>
+          <path id="areaPath" fill="url(#areaFill)" d="" />
+          <path id="linePath" fill="none" stroke="url(#strokeGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" filter="url(#glow)" d="" />
+          <g id="crosshair" class="crosshair" aria-hidden="true" style="opacity:0">
+            <line id="crossLine" x1="0" y1="0" x2="0" y2="260" vector-effect="non-scaling-stroke" />
+            <circle id="crossDotHalo" r="9" />
+            <circle id="crossDot" r="4" />
+          </g>
+        </svg>
+        <div class="chart-tooltip mono" id="tooltip" role="status" hidden>
+          <span class="tip-value" id="tipValue">$0.00</span>
+          <span class="tip-date" id="tipDate">—</span>
+        </div>
+        <div class="chart-labels" id="chartLabels" aria-hidden="true"></div>
+      </div>
+
+      <footer class="alloc-block" aria-label="Asset allocation">
+        <div class="alloc-bar" role="img" aria-label="Allocation: NOVA 42%, LUM 27%, stUSD 18%, AETH 9%, Other 4%">
+          <span class="seg seg-nova" style="width:42%"></span>
+          <span class="seg seg-lum" style="width:27%"></span>
+          <span class="seg seg-stusd" style="width:18%"></span>
+          <span class="seg seg-aeth" style="width:9%"></span>
+          <span class="seg seg-other" style="width:4%"></span>
+        </div>
+        <ul class="alloc-legend">
+          <li><span class="dot dot-nova" aria-hidden="true"></span>NOVA <span class="mono muted">42%</span></li>
+          <li><span class="dot dot-lum" aria-hidden="true"></span>LUM <span class="mono muted">27%</span></li>
+          <li><span class="dot dot-stusd" aria-hidden="true"></span>stUSD <span class="mono muted">18%</span></li>
+          <li><span class="dot dot-aeth" aria-hidden="true"></span>AETH <span class="mono muted">9%</span></li>
+          <li><span class="dot dot-other" aria-hidden="true"></span>Other <span class="mono muted">4%</span></li>
+        </ul>
+      </footer>
+    </section>
+
+    <p class="sim-note">UI simulation — fictional tokens on Lumen Chain. No real wallet or RPC calls.</p>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

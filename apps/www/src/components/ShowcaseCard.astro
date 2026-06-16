@@ -5,11 +5,10 @@ import { SITE_URLS } from "@lib/urls";
 
 interface Props {
   resource: CollectionEntry<"resources">;
-  srcdoc: string;
   locale?: Locale;
 }
 
-const { resource, srcdoc, locale = "en" } = Astro.props;
+const { resource, locale = "en" } = Astro.props;
 const t = useTranslations(locale);
 const {
   slug,
@@ -26,6 +25,7 @@ const sortDate =
   typeof createdAt === "string" ? createdAt : typeof updatedAt === "string" ? updatedAt : "";
 
 const prefix = getLocalePrefix(locale);
+const labSrc = labRoute ? `${SITE_URLS.lab}${labRoute}` : "";
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
 const difficultyKey = `resource.difficulty.${difficulty}` as
   | "resource.difficulty.easy"
@@ -59,7 +59,7 @@ const categoryLabel = t(categoryKey);
   data-title={(title ?? "").toLowerCase()}
   data-created-at={sortDate}
   data-collections={resourceCollections.length > 0 ? resourceCollections.join(",") : ""}
-  data-srcdoc={srcdoc}
+  data-lab-src={labSrc}
 >
   <div class="showcase-preview">
     <iframe

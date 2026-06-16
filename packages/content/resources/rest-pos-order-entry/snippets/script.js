@@ -63,6 +63,8 @@ const COURSE_NAMES = ["1st course", "2nd course", "3rd course", "4th course"];
 
 const catsEl = document.getElementById("cats");
 const tablesEl = document.getElementById("tables");
+const tablesSectionEl = document.getElementById("tablesSection");
+const tablesLabelEl = document.getElementById("tablesLabel");
 const gridEl = document.getElementById("grid");
 const catName = document.getElementById("catName");
 const catCount = document.getElementById("catCount");
@@ -85,6 +87,8 @@ const toast = document.getElementById("toast");
 
 let activeCat = "entradas";
 let activeTable = 7;
+let serviceMode = "dine";
+let takeCounter = 1;
 let courses = [{ id: 1, name: COURSE_NAMES[0], sent: false, lines: [] }];
 
 function money(v) {
@@ -92,12 +96,38 @@ function money(v) {
 }
 
 function renderTables() {
-  tablesEl.innerHTML = Array.from({ length: 12 }, (_, i) => i + 1)
-    .map(
-      (n) =>
-        `<button class="table-btn ${n === activeTable ? "is-active" : ""}" data-table="${n}">${n}</button>`
-    )
-    .join("");
+  if (serviceMode === "bar") {
+    tablesEl.innerHTML = Array.from({ length: 6 }, (_, i) => i + 1)
+      .map(
+        (n) =>
+          `<button class="table-btn ${n === activeTable ? "is-active" : ""}" data-table="${n}">B${n}</button>`
+      )
+      .join("");
+  } else {
+    tablesEl.innerHTML = Array.from({ length: 12 }, (_, i) => i + 1)
+      .map(
+        (n) =>
+          `<button class="table-btn ${n === activeTable ? "is-active" : ""}" data-table="${n}">${n}</button>`
+      )
+      .join("");
+  }
+}
+
+function applyServiceMode() {
+  if (serviceMode === "take") {
+    tablesSectionEl.hidden = true;
+  } else {
+    tablesSectionEl.hidden = false;
+    tablesLabelEl.textContent = serviceMode === "bar" ? "Bar stool" : "Table";
+    if (serviceMode === "bar") {
+      // Clamp activeTable to bar stool range (1–6)
+      if (activeTable > 6) activeTable = 1;
+    } else {
+      // Restore a valid dine table if coming back from bar
+      if (activeTable > 12) activeTable = 1;
+    }
+    renderTables();
+  }
 }
 
 function renderCats() {
@@ -138,7 +168,13 @@ function activeCourse() {
 }
 
 function renderTicket() {
-  ticketTable.textContent = `Table ${activeTable}`;
+  if (serviceMode === "dine") {
+    ticketTable.textContent = `Table ${activeTable}`;
+  } else if (serviceMode === "take") {
+    ticketTable.textContent = `Take-out #${takeCounter}`;
+  } else {
+    ticketTable.textContent = `Bar ${activeTable}`;
+  }
   const totalItems = courses.reduce((n, c) => n + c.lines.reduce((m, l) => m + l.qty, 0), 0);
   ticketMeta.textContent = `${totalItems} ${totalItems === 1 ? "item" : "items"} · 2 guests`;
 
@@ -227,6 +263,17 @@ function showToast(message) {
   showToast._t = setTimeout(() => (toast.hidden = true), 2200);
 }
 
+document.querySelectorAll(".seg-btn[data-service]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    serviceMode = btn.dataset.service;
+    document.querySelectorAll(".seg-btn[data-service]").forEach((b) => {
+      b.classList.toggle("is-active", b === btn);
+    });
+    applyServiceMode();
+    renderTicket();
+  });
+});
+
 catsEl.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-cat]");
   if (!btn) return;
@@ -301,9 +348,16 @@ sendBtn.addEventListener("click", () => {
 holdBtn.addEventListener("click", () => showToast("Order held"));
 printBtn.addEventListener("click", () => showToast("Printing pre-bill…"));
 payBtn.addEventListener("click", () => {
-  showToast(`Closing table ${activeTable}`);
+  if (serviceMode === "dine") {
+    showToast(`Closing table ${activeTable}`);
+  } else if (serviceMode === "take") {
+    showToast(`Take-out #${takeCounter} paid`);
+  } else {
+    showToast(`Closing bar stool B${activeTable}`);
+  }
   setTimeout(() => {
     courses = [{ id: 1, name: COURSE_NAMES[0], sent: false, lines: [] }];
+    if (serviceMode === "take") takeCounter += 1;
     renderTicket();
   }, 800);
 });
@@ -315,7 +369,7 @@ function tick() {
 tick();
 setInterval(tick, 30000);
 
-renderTables();
+applyServiceMode();
 renderCats();
 renderGrid();
 renderTicket();

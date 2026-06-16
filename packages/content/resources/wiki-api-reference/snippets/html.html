@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora DB API Reference — Stealthis Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="icon-btn nav-toggle" id="navToggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">
+        <span class="burger"></span>
+      </button>
+      <a class="brand" href="#overview">
+        <span class="brand-mark" aria-hidden="true">⛁</span>
+        <span class="brand-name">Aurora DB</span>
+        <span class="brand-tag">API v3</span>
+      </a>
+      <div class="topbar-search">
+        <input id="navSearch" type="search" placeholder="Filter endpoints…  /" aria-label="Filter endpoints" />
+      </div>
+      <div class="topbar-actions">
+        <span class="env-pill"><span class="dot"></span> api.auroradb.dev</span>
+        <a class="btn ghost" href="#authentication">Get keys</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- LEFT NAV -->
+    <nav class="sidebar" id="sidebar" aria-label="API resources">
+      <div class="sidebar-scroll">
+        <div class="nav-group">
+          <p class="nav-title">Getting started</p>
+          <a class="nav-link" href="#overview">Overview</a>
+          <a class="nav-link" href="#authentication">Authentication</a>
+          <a class="nav-link" href="#errors">Errors &amp; status codes</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-title">Clusters</p>
+          <a class="nav-link" href="#list-clusters"><span class="m m-get">GET</span> List clusters</a>
+          <a class="nav-link" href="#create-cluster"><span class="m m-post">POST</span> Create cluster</a>
+          <a class="nav-link" href="#get-cluster"><span class="m m-get">GET</span> Retrieve cluster</a>
+          <a class="nav-link" href="#delete-cluster"><span class="m m-del">DEL</span> Delete cluster</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-title">Snapshots</p>
+          <a class="nav-link" href="#create-snapshot"><span class="m m-post">POST</span> Create snapshot</a>
+          <a class="nav-link" href="#list-snapshots"><span class="m m-get">GET</span> List snapshots</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-title">Reference</p>
+          <a class="nav-link" href="#pagination">Pagination</a>
+          <a class="nav-link" href="#rate-limits">Rate limits</a>
+        </div>
+      </div>
+    </nav>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <!-- MAIN -->
+    <main class="main" id="main">
+      <div class="doc-col">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href="#overview">Docs</a><span aria-hidden="true">/</span>
+          <a href="#overview">API Reference</a><span aria-hidden="true">/</span>
+          <span aria-current="page">Clusters</span>
+        </nav>
+
+        <section id="overview" class="block" tabindex="-1">
+          <h1>Aurora DB REST API</h1>
+          <p class="lead">The Aurora DB API lets you provision distributed clusters, manage point-in-time
+            snapshots, and inspect replica health over plain HTTPS. Every response is JSON, every request is
+            authenticated with a secret key, and all timestamps are RFC&nbsp;3339 UTC.</p>
+          <p>The API is organized around resources. Predictable, resource-oriented URLs accept
+            form-encoded request bodies, return JSON-encoded responses, and use standard HTTP verbs,
+            authentication, and status codes. The current stable version is <code>v3</code>; the base URL is:</p>
+          <div class="callout note">
+            <span class="callout-ic" aria-hidden="true">i</span>
+            <div><strong>Base URL.</strong> <code>https://api.auroradb.dev/v3</code> — all requests must
+              be made over HTTPS. Calls over plain HTTP will fail.</div>
+          </div>
+        </section>
+
+        <section id="authentication" class="block" tabindex="-1">
+          <h2>Authentication</h2>
+          <p>Authenticate by passing your secret key in the <code>Authorization</code> header as a bearer
+            token. Keys are scoped to a single project and carry the <code>live</code> or <code>test</code>
+            prefix. Never embed a secret key in client-side code.</p>
+          <pre class="code"><code>Authorization: Bearer ak_live_7Qm3…f2Vd</code></pre>
+        </section>
+
+        <!-- ENDPOINT: list clusters -->
+        <section id="list-clusters" class="block endpoint" tabindex="-1">
+          <div class="ep-head">
+            <span class="method m-get">GET</span>
+            <code class="path">/v3/clusters</code>
+            <a class="anchor" href="#list-clusters" aria-label="Link to this endpoint">#</a>
+          </div>
+          <h2 class="ep-title">List clusters</h2>
+          <p>Returns a paginated list of clusters owned by the authenticated project, most recently created
+            first. Use the <code>region</code> and <code>status</code> query parameters to narrow results.</p>
+
+          <div class="params-bar">
+            <h3 class="params-title">Query parameters</h3>
+            <label class="filter-toggle">
+              <input type="checkbox" class="req-filter" />
+              <span>Required only</span>
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table class="params">
+              <thead><tr><th>Name</th><th>Type</th><th>Req.</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>region</code></td><td class="ty">string</td><td><span class="req-no">optional</span></td><td>Filter by deployment region, e.g. <code>us-east-1</code> or <code>eu-west-3</code>.</td></tr>
+                <tr><td><code>status</code></td><td class="ty">enum</td><td><span class="req-no">optional</span></td><td>One of <code>provisioning</code>, <code>active</code>, <code>degraded</code>, <code>archived</code>.</td></tr>
+                <tr data-required="true"><td><code>limit</code></td><td class="ty">integer</td><td><span class="req-yes">required</span></td><td>Page size between 1 and 100. Defaults to 20 when omitted on the first page.</td></tr>
+                <tr><td><code>starting_after</code></td><td class="ty">string</td><td><span class="req-no">optional</span></td><td>Cursor for pagination — the object ID that defines your place in the list.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="resp-title">Responses</h3>
+          <ul class="resp-list">
+            <li><span class="status s-2xx">200</span> A paged list object with a <code>data</code> array of clusters.</li>
+            <li><span class="status s-4xx">401</span> Missing or invalid API key.</li>
+            <li><span class="status s-4xx">422</span> The <code>limit</code> parameter is out of range.</li>
+          </ul>
+        </section>
+
+        <!-- ENDPOINT: create cluster -->
+        <section id="create-cluster" class="block endpoint" tabindex="-1">
+          <div class="ep-head">
+            <span class="method m-post">POST</span>
+            <code class="path">/v3/clusters</code>
+            <a class="anchor" href="#create-cluster" aria-label="Link to this endpoint">#</a>
+          </div>
+          <h2 class="ep-title">Create cluster</h2>
+          <p>Provisions a new Aurora DB cluster in the requested region. The call returns immediately with a
+            cluster in the <code>provisioning</code> state; poll <a href="#get-cluster">Retrieve cluster</a>
+            until <code>status</code> becomes <code>active</code>.</p>
+
+          <div class="params-bar">
+            <h3 class="params-title">Body parameters</h3>
+            <label class="filter-toggle">
+              <input type="checkbox" class="req-filter" />
+              <span>Required only</span>
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table class="params">
+              <thead><tr><th>Name</th><th>Type</th><th>Req.</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr data-required="true"><td><code>name</code></td><td class="ty">string</td><td><span class="req-yes">required</span></td><td>Human-readable name, 1–48 characters. Must be unique within the project.</td></tr>
+                <tr data-required="true"><td><code>region</code></td><td class="ty">string</td><td><span class="req-yes">required</span></td><td>Target region. See <a href="#overview">supported regions</a>.</td></tr>
+                <tr><td><code>tier</code></td><td class="ty">enum</td><td><span class="req-no">optional</span></td><td>Compute tier: <code>nimbus</code>, <code>verdant</code>, or <code>aurora</code>. Defaults to <code>nimbus</code>.</td></tr>
+                <tr><td><code>replicas</code></td><td class="ty">integer</td><td><span class="req-no">optional</span></td><td>Number of read replicas, 0–8. Defaults to <code>2</code>.</td></tr>
+                <tr><td><code>encryption</code></td><td class="ty">boolean</td><td><span class="req-no">optional</span></td><td>Enable at-rest encryption with a managed key. Defaults to <code>true</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="resp-title">Responses</h3>
+          <ul class="resp-list">
+            <li><span class="status s-2xx">201</span> The newly created <code>cluster</code> object.</li>
+            <li><span class="status s-4xx">409</span> A cluster with that <code>name</code> already exists.</li>
+            <li><span class="status s-4xx">422</span> Validation failed on one or more fields.</li>
+            <li><span class="status s-5xx">503</span> The region is at capacity; retry with backoff.</li>
+          </ul>
+        </section>
+
+        <!-- ENDPOINT: get cluster -->
+        <section id="get-cluster" class="block endpoint" tabindex="-1">
+          <div class="ep-head">
+            <span class="method m-get">GET</span>
+            <code class="path">/v3/clusters/<span class="path-var">{id}</span></code>
+            <a class="anchor" href="#get-cluster" aria-label="Link to this endpoint">#</a>
+          </div>
+          <h2 class="ep-title">Retrieve cluster</h2>
+          <p>Fetches the details of an existing cluster, including live replica health and the most recent
+            snapshot. You only need to supply the unique cluster ID returned on creation.</p>
+
+          <div class="params-bar">
+            <h3 class="params-title">Path parameters</h3>
+            <label class="filter-toggle">
+              <input type="checkbox" class="req-filter" />
+              <span>Required only</span>
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table class="params">
+              <thead><tr><th>Name</th><th>Type</th><th>Req.</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr data-required="true"><td><code>id</code></td><td class="ty">string</td><td><span class="req-yes">required</span></td><td>The cluster ID, e.g. <code>clu_8Kdb20fA</code>.</td></tr>
+                <tr><td><code>expand</code></td><td class="ty">array</td><td><span class="req-no">optional</span></td><td>Expand nested objects, e.g. <code>replicas</code>, <code>latest_snapshot</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="resp-title">Responses</h3>
+          <ul class="resp-list">
+            <li><span class="status s-2xx">200</span> The requested <code>cluster</code> object.</li>
+            <li><span class="status s-4xx">404</span> No cluster matches that ID for this project.</li>
+          </ul>
+        </section>
+
+        <!-- ENDPOINT: delete cluster -->
+        <section id="delete-cluster" class="block endpoint" tabindex="-1">
+          <div class="ep-head">
+            <span class="method m-del">DELETE</span>
+            <code class="path">/v3/clusters/<span class="path-var">{id}</span></code>
+            <a class="anchor" href="#delete-cluster" aria-label="Link to this endpoint">#</a>
+          </div>
+          <h2 class="ep-title">Delete cluster</h2>
+          <p>Permanently deletes a cluster and all of its read replicas. Snapshots are retained according to
+            your project's retention policy. This action cannot be undone.</p>
+
+          <div class="callout warn">
+            <span class="callout-ic" aria-hidden="true">!</span>
+            <div><strong>Destructive.</strong> Deletion is irreversible. Take a final snapshot first if you
+              may need the data later.</div>
+          </div>
+
+          <div class="params-bar">
+            <h3 class="params-title">Path parameters</h3>
+            <label class="filter-toggle">
+              <input type="checkbox" class="req-filter" />
+              <span>Required only</span>
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table class="params">
+              <thead><tr><th>Name</th><th>Type</th><th>Req.</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr data-required="true"><td><code>id</code></td><td class="ty">string</td><td><span class="req-yes">required</span></td><td>The ID of the cluster to delete.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="resp-title">Responses</h3>
+          <ul class="resp-list">
+            <li><span class="status s-2xx">200</span> A <code>deleted</code> confirmation object.</li>
+            <li><span class="status s-4xx">404</span> The cluster does not exist.</li>
+            <li><span class="status s-4xx">409</span> The cluster has an in-flight snapshot; retry shortly.</li>
+          </ul>
+        </section>
+
+        <section id="errors" class="block" tabindex="-1">
+          <h2>Errors &amp; status codes</h2>
+          <p>Aurora DB uses conventional HTTP response codes. Codes in the <code>2xx</code> range indicate
+            success; <code>4xx</code> codes indicate a problem with the supplied information; and
+            <code>5xx</code> codes indicate a server-side error.</p>
+          <div class="table-wrap">
+            <table class="params">
+              <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td><span class="status s-4xx">400</span></td><td>Bad request — often a malformed body.</td></tr>
+                <tr><td><span class="status s-4xx">401</span></td><td>Unauthorized — no valid API key provided.</td></tr>
+                <tr><td><span class="status s-4xx">429</span></td><td>Too many requests — see <a href="#rate-limits">rate limits</a>.</td></tr>
+                <tr><td><span class="status s-5xx">500</span></td><td>Something went wrong on Aurora DB's end.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="pagination" class="block" tabindex="-1">
+          <h2>Pagination</h2>
+          <p>All list endpoints support cursor-based pagination via <code>limit</code> and
+            <code>starting_after</code>. Each list response includes a <code>has_more</code> boolean and the
+            ID of the last object, which you pass back as the next cursor.</p>
+        </section>
+
+        <section id="rate-limits" class="block" tabindex="-1">
+          <h2>Rate limits</h2>
+          <p>The API allows up to <strong>100 requests per second</strong> per project in live mode. Responses
+            include <code>X-RateLimit-Remaining</code> and <code>X-RateLimit-Reset</code> headers. Exceeding
+            the limit returns <span class="status s-4xx">429</span>; back off using the reset header.</p>
+          <p class="foot-note">Illustrative UI only — fictional articles, products, and data.</p>
+        </section>
+      </div>
+
+      <!-- RIGHT: sticky code panel -->
+      <aside class="code-panel" aria-label="Code examples">
+        <div class="cp-card">
+          <div class="cp-head">
+            <div class="lang-tabs" role="tablist" aria-label="Language">
+              <button class="lang-tab is-active" role="tab" aria-selected="true" data-lang="curl">cURL</button>
+              <button class="lang-tab" role="tab" aria-selected="false" data-lang="js">JavaScript</button>
+              <button class="lang-tab" role="tab" aria-selected="false" data-lang="py">Python</button>
+            </div>
+          </div>
+
+          <div class="cp-section">
+            <div class="cp-label">
+              <span>Request</span>
+              <button class="copy-btn" data-copy="req" aria-label="Copy request">Copy</button>
+            </div>
+            <pre class="code dark" data-lang-pane="curl"><code>curl https://api.auroradb.dev/v3/clusters \
+  -H "Authorization: Bearer ak_live_7Qm3…f2Vd" \
+  -d name="prod-eu" \
+  -d region="eu-west-3" \
+  -d tier="verdant" \
+  -d replicas=3</code></pre>
+            <pre class="code dark" data-lang-pane="js" hidden><code>const res = await fetch(
+  "https://api.auroradb.dev/v3/clusters",
+  {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer ak_live_7Qm3…f2Vd",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "prod-eu",
+      region: "eu-west-3",
+      tier: "verdant",
+      replicas: 3,
+    }),
+  }
+);
+const cluster = await res.json();</code></pre>
+            <pre class="code dark" data-lang-pane="py" hidden><code>import requests
+
+res = requests.post(
+    "https://api.auroradb.dev/v3/clusters",
+    headers={"Authorization": "Bearer ak_live_7Qm3…f2Vd"},
+    json={
+        "name": "prod-eu",
+        "region": "eu-west-3",
+        "tier": "verdant",
+        "replicas": 3,
+    },
+)
+cluster = res.json()</code></pre>
+          </div>
+
+          <div class="cp-section">
+            <div class="cp-label">
+              <span>Response <span class="status s-2xx inline">201</span></span>
+              <button class="copy-btn" data-copy="res" aria-label="Copy response">Copy</button>
+            </div>
+            <div class="json-tree" id="jsonTree" aria-label="Sample JSON response"></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

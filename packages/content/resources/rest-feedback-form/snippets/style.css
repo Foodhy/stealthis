@@ -1,0 +1,648 @@
+/* ===================================================
+   Post-Meal Feedback Form — Phase 27 Restaurant Theme
+   =================================================== */
+
+:root {
+  --cream: #FAF7F1;
+  --ink: #2C1A0E;
+  --forest: #345F40;
+  --forest-d: #213D29;
+  --terracotta: #C4622D;
+  --gold: #D4A853;
+  --warm-gray: #8A7D72;
+  --bone: #F0EBE0;
+
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --shadow-card: 0 8px 32px rgba(44, 26, 14, 0.12), 0 2px 8px rgba(44, 26, 14, 0.06);
+  --shadow-btn: 0 2px 8px rgba(52, 95, 64, 0.25);
+
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bone);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(212, 168, 83, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(52, 95, 64, 0.12) 0%, transparent 55%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  color: var(--ink);
+}
+
+/* ---- Page Wrapper ---- */
+.page-wrapper {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ---- Card ---- */
+.card {
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ---- Progress Bar ---- */
+.progress-bar {
+  padding: 28px 32px 0;
+}
+
+.progress-track {
+  position: relative;
+}
+
+.progress-line {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: var(--bone);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  z-index: 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--forest);
+  border-radius: var(--radius-full);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+.progress-dots {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.progress-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+
+.dot-circle {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bone);
+  border: 2px solid var(--bone);
+  transition: background var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
+  box-shadow: 0 0 0 0 transparent;
+}
+
+.progress-dot.active .dot-circle {
+  background: var(--forest);
+  border-color: var(--forest);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px rgba(52, 95, 64, 0.18);
+}
+
+.progress-dot.completed .dot-circle {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.dot-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--warm-gray);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color var(--transition-base);
+}
+
+.progress-dot.active .dot-label,
+.progress-dot.completed .dot-label {
+  color: var(--forest);
+}
+
+/* ---- Step Layout ---- */
+.step {
+  padding: 28px 32px 32px;
+  animation: step-in 0.3s ease both;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step.hidden {
+  display: none;
+}
+
+/* ---- Step Header ---- */
+.step-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warm-gray);
+  margin-bottom: 8px;
+}
+
+.step-title {
+  font-family: var(--font-heading);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.step-subtitle {
+  font-size: 0.875rem;
+  color: var(--warm-gray);
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+/* ---- Emoji Row ---- */
+.emoji-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.emoji-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--bone);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 14px 6px 12px;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.emoji-btn:hover {
+  background: #E8E0D2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 26, 14, 0.08);
+}
+
+.emoji-btn:active {
+  transform: translateY(0);
+}
+
+.emoji-btn.selected {
+  background: var(--cream);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.2), 0 4px 16px rgba(44, 26, 14, 0.1);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.emoji-icon {
+  font-size: 2rem;
+  line-height: 1;
+  display: block;
+}
+
+.emoji-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--warm-gray);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.emoji-btn.selected .emoji-label {
+  color: var(--ink);
+}
+
+/* ---- Star Rating Rows ---- */
+.rating-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 24px;
+  border: 1px solid var(--bone);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--bone);
+  transition: background var(--transition-fast);
+}
+
+.rating-row:last-child {
+  border-bottom: none;
+}
+
+.rating-row:hover {
+  background: #F5F1EA;
+}
+
+.rating-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  flex: 1;
+}
+
+.stars {
+  display: flex;
+  gap: 4px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: var(--warm-gray);
+  line-height: 1;
+  padding: 2px 3px;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.star-btn:hover,
+.star-btn.hover-active {
+  color: var(--gold);
+  transform: scale(1.1);
+}
+
+.star-btn.selected {
+  color: var(--gold);
+}
+
+/* ---- Validation ---- */
+.validation-msg {
+  font-size: 0.8rem;
+  color: var(--terracotta);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.validation-msg.hidden {
+  display: none;
+}
+
+/* ---- Text Fields ---- */
+.field-group {
+  margin-bottom: 20px;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.field-optional {
+  font-weight: 400;
+  color: var(--warm-gray);
+}
+
+.textarea,
+.input {
+  width: 100%;
+  background: var(--bone);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ink);
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+  line-height: 1.5;
+}
+
+.textarea::placeholder,
+.input::placeholder {
+  color: var(--warm-gray);
+}
+
+.textarea:focus,
+.input:focus {
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgba(52, 95, 64, 0.12);
+  background: var(--cream);
+}
+
+.char-count {
+  font-size: 11px;
+  color: var(--warm-gray);
+  text-align: right;
+  margin-top: 6px;
+}
+
+/* ---- Checkbox ---- */
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-row input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox-custom {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--warm-gray);
+  border-radius: 5px;
+  background: var(--bone);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.checkbox-row input[type="checkbox"]:checked + .checkbox-custom {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.checkbox-row input[type="checkbox"]:checked + .checkbox-custom::after {
+  content: '✓';
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.checkbox-text {
+  font-size: 0.875rem;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.email-field {
+  margin-top: 14px;
+}
+
+.email-field.hidden {
+  display: none;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--warm-gray);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* ---- Buttons ---- */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn {
+  flex: 1;
+  padding: 13px 20px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: none;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-primary {
+  background: var(--forest);
+  color: var(--cream);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-primary:hover {
+  background: var(--forest-d);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(52, 95, 64, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--warm-gray);
+  border: 1.5px solid var(--bone);
+  flex: 0 0 90px;
+}
+
+.btn-ghost:hover {
+  background: var(--bone);
+  color: var(--ink);
+  border-color: #D8D0C4;
+}
+
+.btn-full {
+  width: 100%;
+  flex: none;
+}
+
+/* ---- Thank You Screen ---- */
+.thankyou-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 8px;
+}
+
+.checkmark-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  animation: scale-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.checkmark-icon {
+  font-size: 2rem;
+  color: var(--bone);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.thankyou-title {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.thankyou-subtitle {
+  font-size: 0.9rem;
+  color: var(--warm-gray);
+  line-height: 1.5;
+  margin-bottom: 28px;
+  max-width: 300px;
+}
+
+.summary-block {
+  width: 100%;
+  background: var(--bone);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.summary-mood {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(44, 26, 14, 0.08);
+}
+
+.summary-mood-emoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.summary-mood-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.summary-mood-sub {
+  font-size: 0.8rem;
+  color: var(--warm-gray);
+}
+
+.summary-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chip-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--warm-gray);
+  min-width: 90px;
+}
+
+.chip-stars {
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+.chip-stars .empty {
+  color: #D8D0C4;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 380px) {
+  .step {
+    padding: 22px 20px 26px;
+  }
+
+  .progress-bar {
+    padding: 22px 20px 0;
+  }
+
+  .step-title {
+    font-size: 1.4rem;
+  }
+
+  .emoji-icon {
+    font-size: 1.6rem;
+  }
+
+  .emoji-label {
+    font-size: 9px;
+  }
+}

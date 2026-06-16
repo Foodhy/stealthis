@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Release Upload — Distribution Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app" id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div class="brand-text">
+          <strong>Distribution Studio</strong>
+          <span>New release · draft</span>
+        </div>
+      </div>
+      <nav class="stepper" aria-label="Release steps">
+        <button class="step is-active" data-step="0" type="button" aria-current="step">
+          <span class="step-num">1</span> Details
+        </button>
+        <span class="step-line" aria-hidden="true"></span>
+        <button class="step" data-step="1" type="button">
+          <span class="step-num">2</span> Tracks
+        </button>
+        <span class="step-line" aria-hidden="true"></span>
+        <button class="step" data-step="2" type="button">
+          <span class="step-num">3</span> Review
+        </button>
+      </nav>
+    </header>
+
+    <div class="layout">
+      <!-- ============ FORM SIDE ============ -->
+      <section class="form" aria-label="Release form">
+
+        <!-- STEP 1 — DETAILS -->
+        <div class="panel is-active" data-panel="0">
+          <h2 class="panel-title">Release details</h2>
+          <p class="panel-sub">Tell us about the release. The preview updates as you type.</p>
+
+          <div class="art-row">
+            <button id="dropzone" class="dropzone" type="button" aria-label="Choose cover artwork">
+              <div class="dz-cover" id="dzCover" aria-hidden="true"></div>
+              <div class="dz-overlay">
+                <span class="dz-icon" aria-hidden="true">＋</span>
+                <span class="dz-hint">Click to pick a cover</span>
+                <span class="dz-sub">3000×3000 · simulated</span>
+              </div>
+            </button>
+            <div class="art-side">
+              <span class="field-label">Cover artwork</span>
+              <p class="muted small">Tap the tile to cycle through generated gradient covers. The release accent is pulled from the art.</p>
+              <button id="shuffleCover" class="btn ghost" type="button">Shuffle artwork</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <label class="field">
+              <span class="field-label">Release title</span>
+              <input id="fTitle" type="text" value="Midnight Reservoir" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field-label">Primary artist</span>
+              <input id="fArtist" type="text" value="Neon Tides" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field-label">Label</span>
+              <input id="fLabel" type="text" value="Velvet Static Records" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field-label">Genre</span>
+              <select id="fGenre">
+                <option>Synthwave</option>
+                <option>Indie Pop</option>
+                <option>Electronic</option>
+                <option>Alt R&amp;B</option>
+                <option>Dream Pop</option>
+                <option>Lo-fi</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Release date</span>
+              <input id="fDate" type="date" value="2026-09-18" />
+            </label>
+            <div class="field">
+              <span class="field-label">Content</span>
+              <button id="fExplicit" class="toggle" type="button" role="switch" aria-checked="false">
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                <span class="toggle-text">Explicit lyrics</span>
+                <span class="explicit-badge" aria-hidden="true">E</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 — TRACKS -->
+        <div class="panel" data-panel="1">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Tracklist</h2>
+              <p class="panel-sub">Drag the handle to reorder. Each track simulates an uploaded audio file.</p>
+            </div>
+            <button id="addTrack" class="btn" type="button">＋ Add track</button>
+          </div>
+          <ol class="tracklist" id="tracklist" aria-label="Tracks"></ol>
+          <p class="muted small track-count" id="trackCount"></p>
+        </div>
+
+        <!-- STEP 3 — REVIEW -->
+        <div class="panel" data-panel="2">
+          <h2 class="panel-title">Review &amp; publish</h2>
+          <p class="panel-sub">Confirm everything looks right before you distribute.</p>
+          <ul class="checklist" id="checklist"></ul>
+          <div class="rights">
+            <label class="check">
+              <input type="checkbox" id="fRights" checked />
+              <span>I own or control all rights to this audio and artwork.</span>
+            </label>
+          </div>
+          <button id="publish" class="btn publish" type="button">Publish release</button>
+        </div>
+
+        <!-- FOOTER NAV -->
+        <div class="form-nav">
+          <button id="prevBtn" class="btn ghost" type="button" disabled>Back</button>
+          <button id="nextBtn" class="btn" type="button">Next: Tracks</button>
+        </div>
+      </section>
+
+      <!-- ============ PREVIEW SIDE ============ -->
+      <aside class="preview" aria-label="Release preview">
+        <span class="preview-tag">Live preview</span>
+        <article class="release-card" id="releaseCard">
+          <div class="rc-cover" id="rcCover">
+            <div class="rc-eq" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <button class="rc-play" id="rcPlay" type="button" aria-pressed="false" aria-label="Play preview">
+              <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+              <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+            </button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-head">
+              <h3 class="rc-title" id="rcTitle">Midnight Reservoir</h3>
+              <span class="rc-explicit" id="rcExplicit" hidden aria-label="Explicit">E</span>
+            </div>
+            <p class="rc-artist" id="rcArtist">Neon Tides</p>
+            <p class="rc-meta" id="rcMeta">Synthwave · 2026</p>
+
+            <div class="rc-scrub">
+              <span class="rc-time" id="rcCur">0:00</span>
+              <div class="scrubber" id="scrubber" role="slider" tabindex="0"
+                   aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="scrub-fill" id="scrubFill"></div>
+                <div class="scrub-knob" id="scrubKnob"></div>
+              </div>
+              <span class="rc-time" id="rcDur">0:00</span>
+            </div>
+
+            <p class="rc-now muted small" id="rcNow">Now playing: track 1</p>
+            <ul class="rc-list" id="rcList"></ul>
+            <div class="rc-foot">
+              <span id="rcLabel">Velvet Static Records</span>
+              <span id="rcCount">12,480 monthly listeners</span>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

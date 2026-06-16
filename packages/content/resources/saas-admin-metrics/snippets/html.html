@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meridian — SaaS Metrics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar" role="banner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 17l5-6 4 4 5-8 4 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div class="brand-text">
+          <strong>Meridian</strong>
+          <span>Revenue analytics</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="seg" role="tablist" aria-label="Reporting period">
+          <button class="seg-btn is-active" role="tab" aria-selected="true" data-period="30d">30d</button>
+          <button class="seg-btn" role="tab" aria-selected="false" data-period="90d">90d</button>
+          <button class="seg-btn" role="tab" aria-selected="false" data-period="12m">12m</button>
+        </div>
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme">
+          <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="content" role="main">
+      <div class="page-head">
+        <div>
+          <h1>SaaS metrics</h1>
+          <p class="muted" id="rangeLabel">Trailing 30 days · vs previous 30 days</p>
+        </div>
+        <span class="live-pill"><span class="dot" aria-hidden="true"></span> Live · fictional data</span>
+      </div>
+
+      <!-- Headline cards -->
+      <section class="cards" aria-label="Headline metrics">
+        <article class="kpi" id="kpi-mrr">
+          <header><span class="kpi-name">MRR</span><span class="delta" data-delta></span></header>
+          <strong class="kpi-value" data-value></strong>
+          <span class="kpi-sub" data-sub></span>
+        </article>
+        <article class="kpi" id="kpi-arr">
+          <header><span class="kpi-name">ARR</span><span class="delta" data-delta></span></header>
+          <strong class="kpi-value" data-value></strong>
+          <span class="kpi-sub" data-sub></span>
+        </article>
+        <article class="kpi" id="kpi-churn">
+          <header><span class="kpi-name">Gross churn</span><span class="delta" data-delta></span></header>
+          <strong class="kpi-value" data-value></strong>
+          <span class="kpi-sub" data-sub></span>
+        </article>
+        <article class="kpi" id="kpi-ltv">
+          <header><span class="kpi-name">LTV</span><span class="delta" data-delta></span></header>
+          <strong class="kpi-value" data-value></strong>
+          <span class="kpi-sub" data-sub></span>
+        </article>
+        <article class="kpi" id="kpi-nrr">
+          <header><span class="kpi-name">Net revenue retention</span><span class="delta" data-delta></span></header>
+          <strong class="kpi-value" data-value></strong>
+          <span class="kpi-sub" data-sub></span>
+        </article>
+      </section>
+
+      <div class="grid">
+        <!-- MRR movement -->
+        <section class="panel span-2" aria-label="MRR movement">
+          <div class="panel-head">
+            <div>
+              <h2>MRR movement</h2>
+              <p class="muted">New &amp; expansion against churned, by month</p>
+            </div>
+            <ul class="legend" aria-hidden="true">
+              <li><span class="sw sw-new"></span>New</li>
+              <li><span class="sw sw-exp"></span>Expansion</li>
+              <li><span class="sw sw-churn"></span>Churned</li>
+            </ul>
+          </div>
+          <div class="chart-wrap">
+            <svg id="movementChart" viewBox="0 0 720 280" preserveAspectRatio="none" role="img" aria-label="Stacked bar chart of MRR movement"></svg>
+            <div class="tooltip" id="movementTip" role="status" aria-live="polite" hidden></div>
+          </div>
+        </section>
+
+        <!-- Plan mix donut -->
+        <section class="panel" aria-label="Plan mix">
+          <div class="panel-head">
+            <div><h2>Plan mix</h2><p class="muted">Share of MRR by tier</p></div>
+          </div>
+          <div class="donut-wrap">
+            <svg id="donutChart" viewBox="0 0 200 200" role="img" aria-label="Donut chart of revenue by plan"></svg>
+            <div class="donut-center">
+              <strong id="donutTotal">—</strong>
+              <span>total MRR</span>
+            </div>
+          </div>
+          <ul class="donut-legend" id="donutLegend"></ul>
+        </section>
+
+        <!-- Growth area -->
+        <section class="panel span-2" aria-label="Recurring revenue growth">
+          <div class="panel-head">
+            <div><h2>Recurring revenue</h2><p class="muted">Cumulative MRR over the period</p></div>
+            <span class="growth-badge" id="growthBadge">—</span>
+          </div>
+          <div class="chart-wrap">
+            <svg id="growthChart" viewBox="0 0 720 240" preserveAspectRatio="none" role="img" aria-label="Area chart of recurring revenue"></svg>
+            <div class="tooltip" id="growthTip" role="status" aria-live="polite" hidden></div>
+          </div>
+        </section>
+
+        <!-- Cohort heatmap -->
+        <section class="panel" aria-label="Cohort retention">
+          <div class="panel-head">
+            <div><h2>Cohort retention</h2><p class="muted">% active by months since signup</p></div>
+          </div>
+          <div class="heatmap" id="heatmap" aria-hidden="false"></div>
+          <div class="heat-scale" aria-hidden="true">
+            <span>low</span>
+            <span class="heat-bar"></span>
+            <span>high</span>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

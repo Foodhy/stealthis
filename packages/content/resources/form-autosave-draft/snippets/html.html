@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Form — Autosave + saved indicator + restore</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="editor-card" role="region" aria-label="Note editor with autosave">
+        <!-- Restore banner (hidden until a draft is detected on load) -->
+        <div
+          class="restore"
+          id="restoreBanner"
+          role="alertdialog"
+          aria-labelledby="restoreTitle"
+          aria-describedby="restoreDesc"
+          hidden
+        >
+          <span class="restore__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+              <path d="M3 4v4h4" />
+            </svg>
+          </span>
+          <div class="restore__body">
+            <p class="restore__title" id="restoreTitle">Restore unsaved draft?</p>
+            <p class="restore__desc" id="restoreDesc">
+              We found a draft you didn't finish <span id="restoreAgo">a while ago</span>.
+            </p>
+          </div>
+          <div class="restore__actions">
+            <button type="button" class="btn btn--ghost" id="discardBtn">Discard</button>
+            <button type="button" class="btn btn--solid" id="restoreBtn">Restore draft</button>
+          </div>
+        </div>
+
+        <header class="editor-head">
+          <div class="editor-head__meta">
+            <h1 class="editor-head__title">Untitled note</h1>
+            <!-- Save status pill — politely announced -->
+            <div
+              class="status"
+              id="statusPill"
+              data-state="idle"
+              aria-live="polite"
+            >
+              <span class="status__dot" aria-hidden="true"></span>
+              <span class="status__text" id="statusText">All changes saved</span>
+            </div>
+          </div>
+          <div class="editor-head__actions">
+            <button type="button" class="btn btn--ghost btn--icon" id="saveNowBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <path d="M17 21v-8H7v8" />
+                <path d="M7 3v5h8" />
+              </svg>
+              Save now
+            </button>
+          </div>
+        </header>
+
+        <form class="editor-form" id="editorForm" novalidate>
+          <div class="field">
+            <label class="field__label" for="title">
+              Title <span class="field__req" aria-hidden="true">*</span>
+              <span class="sr-only">(required)</span>
+            </label>
+            <input
+              class="input"
+              type="text"
+              id="title"
+              name="title"
+              placeholder="Give your note a title"
+              autocomplete="off"
+              aria-describedby="titleHelp"
+              required
+            />
+            <p class="field__help" id="titleHelp">A short title helps you find it later.</p>
+          </div>
+
+          <div class="field">
+            <div class="field__row">
+              <label class="field__label" for="body">
+                Note <span class="field__req" aria-hidden="true">*</span>
+                <span class="sr-only">(required)</span>
+              </label>
+              <span class="counter" id="counter" aria-live="off">0 words · 0 characters</span>
+            </div>
+            <textarea
+              class="input input--area"
+              id="body"
+              name="body"
+              rows="12"
+              placeholder="Start writing… your work is saved automatically as you type."
+              aria-describedby="bodyHelp"
+              required
+            ></textarea>
+            <p class="field__help" id="bodyHelp">
+              Drafts are kept on this device until you publish.
+            </p>
+          </div>
+
+          <footer class="editor-foot">
+            <p class="editor-foot__hint" id="lastSavedHint">Not saved yet.</p>
+            <button type="submit" class="btn btn--solid" id="publishBtn">
+              Publish note
+            </button>
+          </footer>
+        </form>
+      </div>
+    </main>
+
+    <!-- Toast region -->
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

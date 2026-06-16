@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Clock-In Terminal</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SCREEN 1: Home -->
+  <div data-screen="home" class="screen active">
+    <header class="terminal-header">
+      <div class="header-brand">
+        <span class="brand-icon">🍽️</span>
+        <span class="brand-name">La Mesa</span>
+      </div>
+      <div class="header-clock" id="header-clock">20:46</div>
+    </header>
+
+    <div class="home-welcome">
+      <h1 class="welcome-heading">Welcome</h1>
+      <p class="welcome-sub">Tap your name to clock in or out</p>
+    </div>
+
+    <div class="staff-grid" id="staff-grid">
+      <!-- Staff chips rendered by JS -->
+    </div>
+  </div>
+
+  <!-- SCREEN 2: PIN Entry -->
+  <div data-screen="pin" class="screen">
+    <div class="pin-screen-inner">
+      <div class="pin-staff-avatar" id="pin-avatar">MR</div>
+      <div class="pin-staff-name" id="pin-name">Marco Reyes</div>
+      <div class="pin-staff-role" id="pin-role">Floor Manager</div>
+      <p class="pin-label">Enter your PIN</p>
+      <div class="pin-dots" id="pin-dots">
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+      </div>
+      <div class="pin-error" id="pin-error">Incorrect PIN. Try again.</div>
+
+      <div class="numpad" id="numpad">
+        <button class="numpad-key" data-key="1">1</button>
+        <button class="numpad-key" data-key="2">2</button>
+        <button class="numpad-key" data-key="3">3</button>
+        <button class="numpad-key" data-key="4">4</button>
+        <button class="numpad-key" data-key="5">5</button>
+        <button class="numpad-key" data-key="6">6</button>
+        <button class="numpad-key" data-key="7">7</button>
+        <button class="numpad-key" data-key="8">8</button>
+        <button class="numpad-key" data-key="9">9</button>
+        <button class="numpad-key numpad-key--symbol" data-key="*">✱</button>
+        <button class="numpad-key" data-key="0">0</button>
+        <button class="numpad-key numpad-key--back" data-key="back">⌫</button>
+      </div>
+
+      <button class="btn-cancel" id="btn-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Action (clocked-out state — clock in) -->
+  <div data-screen="action-out" class="screen">
+    <div class="action-screen-inner">
+      <div class="action-avatar" id="action-out-avatar">MR</div>
+      <h2 class="action-greeting" id="action-out-greeting">Good evening, Marco</h2>
+      <div class="action-time" id="action-out-time">20:46</div>
+      <div class="role-badge" id="action-out-role">Floor Manager</div>
+      <p class="action-hint">Ready to start your shift?</p>
+      <button class="btn-action btn-clockin" id="btn-clockin">
+        <span>Clock In</span>
+        <span class="btn-icon">→</span>
+      </button>
+      <button class="btn-cancel btn-cancel--light" id="btn-action-out-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: Action (clocked-in state) -->
+  <div data-screen="action-in" class="screen">
+    <div class="action-screen-inner">
+      <div class="action-avatar action-avatar--active" id="action-in-avatar">MR</div>
+      <div class="status-badge status-badge--active">On Shift</div>
+      <h2 class="action-greeting" id="action-in-greeting">Marco Reyes</h2>
+      <div class="role-badge" id="action-in-role">Floor Manager</div>
+      <div class="shift-info">
+        <div class="shift-info-row">
+          <span class="shift-label">Clocked in</span>
+          <span class="shift-val" id="action-in-clockedat">19:02</span>
+        </div>
+        <div class="shift-info-row">
+          <span class="shift-label">Time on shift</span>
+          <span class="shift-val" id="action-in-duration">1h 44m</span>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="btn-action btn-clockout" id="btn-clockout">Clock Out</button>
+        <button class="btn-action btn-break" id="btn-startbreak">Start Break</button>
+      </div>
+      <button class="btn-cancel btn-cancel--light" id="btn-action-in-cancel">Back</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: Break screen -->
+  <div data-screen="break" class="screen">
+    <div class="action-screen-inner">
+      <div class="action-avatar action-avatar--break" id="break-avatar">JO</div>
+      <div class="status-badge status-badge--break">On Break</div>
+      <h2 class="action-greeting" id="break-name">Julián Ortiz</h2>
+      <div class="break-timer-label">Break duration</div>
+      <div class="break-timer" id="break-timer">00:00</div>
+      <button class="btn-action btn-endbreak" id="btn-endbreak">End Break</button>
+      <button class="btn-cancel btn-cancel--light" id="btn-break-cancel">Back</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: Confirmation -->
+  <div data-screen="confirm" class="screen">
+    <div class="action-screen-inner">
+      <div class="confirm-icon" id="confirm-icon">✓</div>
+      <h2 class="confirm-title" id="confirm-title">Clocked In!</h2>
+      <p class="confirm-sub" id="confirm-sub">Your shift has started.</p>
+      <div class="confirm-summary" id="confirm-summary">
+        <!-- Summary rows injected by JS -->
+      </div>
+      <button class="btn-action btn-done" id="btn-done">Done</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

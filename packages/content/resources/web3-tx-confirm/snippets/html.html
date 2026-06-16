@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Web3 — Transaction Confirm / Signing Sheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <div class="page__hero">
+      <span class="brand">
+        <span class="brand__dot" aria-hidden="true"></span>
+        Lumen Wallet
+      </span>
+      <h1>Transaction Confirm</h1>
+      <p>A wallet-style signing request sheet. Tap a request below to review and sign.</p>
+
+      <div class="actions">
+        <button class="launch launch--swap" type="button" data-open="swap">
+          <span class="launch__icon" aria-hidden="true">⇄</span>
+          <span class="launch__body">
+            <strong>Swap request</strong>
+            <small>1.5 ETH → 4,210 USDC</small>
+          </span>
+        </button>
+        <button class="launch launch--send" type="button" data-open="send">
+          <span class="launch__icon" aria-hidden="true">↑</span>
+          <span class="launch__body">
+            <strong>Send request</strong>
+            <small>250 NOVA → 0x7a3f…c41d</small>
+          </span>
+        </button>
+        <button class="launch launch--approve" type="button" data-open="approve">
+          <span class="launch__icon" aria-hidden="true">!</span>
+          <span class="launch__body">
+            <strong>Token approval</strong>
+            <small>Unlimited USDC spend · flagged</small>
+          </span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ====== Signing sheet ====== -->
+  <div class="overlay" id="overlay" hidden>
+    <div
+      class="sheet"
+      id="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sheetTitle"
+      aria-describedby="sheetSummary"
+    >
+      <div class="sheet__grab" aria-hidden="true"></div>
+
+      <header class="sheet__head">
+        <div class="origin">
+          <span class="origin__avatar" aria-hidden="true">◎</span>
+          <div class="origin__meta">
+            <strong id="sheetTitle">Signature request</strong>
+            <span class="origin__url">app.novaswap.fi</span>
+          </div>
+          <span class="badge badge--net" id="netBadge">
+            <span class="badge__dot" aria-hidden="true"></span>
+            <span data-net>Lumen Chain</span>
+          </span>
+        </div>
+        <button class="iconbtn" id="closeBtn" type="button" aria-label="Close request">✕</button>
+      </header>
+
+      <!-- DEFAULT (review) state -->
+      <section class="state" id="stateReview" data-state="review">
+        <div class="hero-card" id="heroCard">
+          <p class="hero-card__label" id="sheetSummary">You are about to</p>
+          <div class="swap-visual" data-action-visual>
+            <div class="tokleg tokleg--from">
+              <span class="tok tok--eth" data-from-icon aria-hidden="true">Ξ</span>
+              <span class="tokleg__amt mono" data-from-amt>1.5 ETH</span>
+              <span class="tokleg__sub mono" data-from-fiat>$4,218.00</span>
+            </div>
+            <span class="swap-visual__arrow" aria-hidden="true">→</span>
+            <div class="tokleg tokleg--to">
+              <span class="tok tok--usdc" data-to-icon aria-hidden="true">$</span>
+              <span class="tokleg__amt mono" data-to-amt>4,210 USDC</span>
+              <span class="tokleg__sub mono" data-to-fiat>$4,210.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- risk banner (toggled per request) -->
+        <div class="risk" id="riskBanner" hidden>
+          <span class="risk__icon" aria-hidden="true">⚠</span>
+          <div class="risk__body">
+            <strong data-risk-title>Unlimited approval</strong>
+            <span data-risk-text>This contract can spend any amount of USDC until revoked.</span>
+          </div>
+        </div>
+
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="row__k">From</span>
+            <span class="row__v mono" data-from-addr>0x4e9a…1b07</span>
+          </li>
+          <li class="row">
+            <span class="row__k">Interacting with</span>
+            <span class="row__v mono" data-to-addr>0x7a3f…c41d</span>
+          </li>
+          <li class="row">
+            <span class="row__k">Network fee</span>
+            <span class="row__v mono" data-fee>0.00214 ETH · $6.02</span>
+          </li>
+          <li class="row row--total">
+            <span class="row__k">Estimated total</span>
+            <span class="row__v mono" data-total>$4,224.02</span>
+          </li>
+        </ul>
+
+        <!-- details expander -->
+        <div class="details">
+          <button
+            class="details__toggle"
+            id="detailsToggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="detailsPanel"
+          >
+            <span>Advanced details &amp; raw data</span>
+            <span class="details__chev" aria-hidden="true">⌄</span>
+          </button>
+          <div class="details__panel" id="detailsPanel" hidden>
+            <dl class="data-grid">
+              <div><dt>Nonce</dt><dd class="mono">142</dd></div>
+              <div><dt>Gas limit</dt><dd class="mono">210,000</dd></div>
+              <div><dt>Max fee</dt><dd class="mono">18.4 gwei</dd></div>
+              <div><dt>Priority</dt><dd class="mono">1.5 gwei</dd></div>
+            </dl>
+            <p class="data-grid__label">Calldata</p>
+            <pre class="calldata mono" id="calldata">0x38ed1739000000000000000000000000000000000000000000000000014d1120d7b16000
+0000000000000000000000000000000000000000000000000000000fa3e5a6a0
+0000000000000000000000000000000000000000000000000000000000000080
+0000000000000000000000004e9a3c0f8d2b71a5e6c9f10d3a82b41c7e0f51b07</pre>
+            <button class="copybtn" type="button" id="copyData" data-copy="calldata">Copy calldata</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SIGNING state -->
+      <section class="state state--center" id="stateSigning" data-state="signing" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <strong>Awaiting signature…</strong>
+        <span class="muted">Broadcasting to <span data-net2>Lumen Chain</span></span>
+      </section>
+
+      <!-- SUCCESS state -->
+      <section class="state state--center" id="stateSuccess" data-state="success" hidden>
+        <div class="check" aria-hidden="true">
+          <svg viewBox="0 0 52 52"><path d="M14 27 l8 8 l16 -18" /></svg>
+        </div>
+        <strong>Transaction submitted</strong>
+        <span class="muted">It may take a moment to confirm on-chain.</span>
+        <a class="hash" id="explorerLink" href="#" data-noop>
+          <span class="mono" id="txHash">0x9c41…7e02</span>
+          <span class="hash__ext" aria-hidden="true">↗</span>
+        </a>
+      </section>
+
+      <!-- footer / actions -->
+      <footer class="sheet__foot" id="sheetFoot">
+        <button class="btn btn--ghost" id="rejectBtn" type="button">Reject</button>
+        <button class="btn btn--primary" id="confirmBtn" type="button">Confirm</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

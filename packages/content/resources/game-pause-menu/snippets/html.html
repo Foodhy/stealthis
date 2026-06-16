@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game — Pause / Settings Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Frozen game scene behind the overlay -->
+  <div class="scene" aria-hidden="true">
+    <div class="scene-sky"></div>
+    <div class="scene-grid"></div>
+    <div class="scene-ridge"></div>
+    <div class="scene-runner"></div>
+    <div class="scene-hud">
+      <div class="hud-corner tl">ASHEN VANGUARD</div>
+      <div class="hud-corner tr">SECTOR 7 — NEON DRIFT</div>
+      <div class="hud-corner bl">HP <span class="hud-bar"><i style="width:62%"></i></span></div>
+      <div class="hud-corner br">CHK 04 · 18:42</div>
+    </div>
+  </div>
+
+  <!-- Pause overlay -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="panel" role="document">
+      <div class="panel-glow" aria-hidden="true"></div>
+
+      <header class="panel-head">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <p class="kicker">NULLFORGE STUDIOS</p>
+            <h1 id="pauseTitle">PAUSED</h1>
+          </div>
+        </div>
+        <div class="status" aria-live="polite">
+          <span class="dot"></span><span id="statusText">Game Suspended</span>
+        </div>
+      </header>
+
+      <div class="panel-body">
+        <!-- Left: primary actions -->
+        <nav class="actions" aria-label="Pause actions">
+          <button class="act act-primary" data-action="resume">
+            <span class="act-ico">▶</span>
+            <span class="act-txt"><b>Resume</b><small>Return to combat</small></span>
+            <span class="act-key">ESC</span>
+          </button>
+          <button class="act" data-action="settings" aria-expanded="true" aria-controls="settingsPane">
+            <span class="act-ico">⚙</span>
+            <span class="act-txt"><b>Settings</b><small>Graphics · Audio · Controls</small></span>
+          </button>
+          <button class="act" data-action="restart">
+            <span class="act-ico">⟲</span>
+            <span class="act-txt"><b>Restart Checkpoint</b><small>Checkpoint 04 — The Ash Gate</small></span>
+          </button>
+          <button class="act act-danger" data-action="quit">
+            <span class="act-ico">⏻</span>
+            <span class="act-txt"><b>Quit to Menu</b><small>Progress auto-saved</small></span>
+          </button>
+
+          <div class="save-strip">
+            <span class="save-ico" aria-hidden="true">✓</span>
+            <div>
+              <b>Auto-save complete</b>
+              <small id="saveStamp">Slot 3 · Hollow Reign</small>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Right: settings -->
+        <section class="settings" id="settingsPane" aria-label="Settings">
+          <div class="tabs" role="tablist" aria-label="Settings categories">
+            <button class="tab is-active" role="tab" id="tab-graphics" aria-selected="true" aria-controls="tp-graphics" data-tab="graphics">Graphics</button>
+            <button class="tab" role="tab" id="tab-audio" aria-selected="false" aria-controls="tp-audio" data-tab="audio" tabindex="-1">Audio</button>
+            <button class="tab" role="tab" id="tab-controls" aria-selected="false" aria-controls="tp-controls" data-tab="controls" tabindex="-1">Controls</button>
+            <span class="tab-ink" aria-hidden="true"></span>
+          </div>
+
+          <!-- Graphics -->
+          <div class="tabpanel is-active" id="tp-graphics" role="tabpanel" aria-labelledby="tab-graphics" tabindex="0">
+            <div class="row">
+              <label for="preset">Quality Preset</label>
+              <div class="ctrl">
+                <select id="preset" class="select">
+                  <option>Performance</option>
+                  <option>Balanced</option>
+                  <option selected>High</option>
+                  <option>Ultra (Ray-Traced)</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <label for="resScale">Resolution Scale <output id="resScaleVal">100%</output></label>
+              <div class="ctrl">
+                <input id="resScale" class="slider" type="range" min="50" max="150" step="5" value="100" data-suffix="%" />
+              </div>
+            </div>
+            <div class="row">
+              <label for="shadows">Shadow Detail</label>
+              <div class="ctrl">
+                <select id="shadows" class="select">
+                  <option>Low</option>
+                  <option selected>Medium</option>
+                  <option>High</option>
+                  <option>Volumetric</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <label for="gamma">Gamma <output id="gammaVal">1.0</output></label>
+              <div class="ctrl">
+                <input id="gamma" class="slider" type="range" min="0.6" max="1.6" step="0.05" value="1" />
+              </div>
+            </div>
+            <div class="row toggle-row">
+              <label for="motionBlur">Motion Blur</label>
+              <div class="ctrl">
+                <button class="toggle" id="motionBlur" role="switch" aria-checked="false"><span class="knob"></span></button>
+              </div>
+            </div>
+            <div class="row toggle-row">
+              <label for="vsync">V-Sync</label>
+              <div class="ctrl">
+                <button class="toggle is-on" id="vsync" role="switch" aria-checked="true"><span class="knob"></span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio -->
+          <div class="tabpanel" id="tp-audio" role="tabpanel" aria-labelledby="tab-audio" tabindex="0" hidden>
+            <div class="row">
+              <label for="master">Master Volume <output id="masterVal">80%</output></label>
+              <div class="ctrl"><input id="master" class="slider" type="range" min="0" max="100" value="80" data-suffix="%" /></div>
+            </div>
+            <div class="row">
+              <label for="music">Music <output id="musicVal">55%</output></label>
+              <div class="ctrl"><input id="music" class="slider" type="range" min="0" max="100" value="55" data-suffix="%" /></div>
+            </div>
+            <div class="row">
+              <label for="sfx">SFX <output id="sfxVal">90%</output></label>
+              <div class="ctrl"><input id="sfx" class="slider" type="range" min="0" max="100" value="90" data-suffix="%" /></div>
+            </div>
+            <div class="row">
+              <label for="voice">Voice / Dialogue <output id="voiceVal">75%</output></label>
+              <div class="ctrl"><input id="voice" class="slider" type="range" min="0" max="100" value="75" data-suffix="%" /></div>
+            </div>
+            <div class="row">
+              <label for="output">Output Mode</label>
+              <div class="ctrl">
+                <select id="output" class="select">
+                  <option selected>Stereo</option>
+                  <option>Headphones (HRTF)</option>
+                  <option>7.1 Surround</option>
+                </select>
+              </div>
+            </div>
+            <div class="row toggle-row">
+              <label for="subtitles">Subtitles</label>
+              <div class="ctrl">
+                <button class="toggle is-on" id="subtitles" role="switch" aria-checked="true"><span class="knob"></span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="tabpanel" id="tp-controls" role="tabpanel" aria-labelledby="tab-controls" tabindex="0" hidden>
+            <div class="row">
+              <label for="sens">Look Sensitivity <output id="sensVal">5.0</output></label>
+              <div class="ctrl"><input id="sens" class="slider" type="range" min="1" max="10" step="0.1" value="5" /></div>
+            </div>
+            <div class="row toggle-row">
+              <label for="invertY">Invert Y-Axis</label>
+              <div class="ctrl">
+                <button class="toggle" id="invertY" role="switch" aria-checked="false"><span class="knob"></span></button>
+              </div>
+            </div>
+
+            <p class="rebind-head">Key Bindings</p>
+            <div class="rebind" data-binding="Sprint" data-key="Shift">
+              <span class="rb-name">Sprint</span>
+              <button class="keycap" data-rebind>Shift</button>
+            </div>
+            <div class="rebind" data-binding="Dash" data-key="Space">
+              <span class="rb-name">Dash / Dodge</span>
+              <button class="keycap" data-rebind>Space</button>
+            </div>
+            <div class="rebind" data-binding="Interact" data-key="E">
+              <span class="rb-name">Interact</span>
+              <button class="keycap" data-rebind>E</button>
+            </div>
+            <div class="rebind" data-binding="Ability" data-key="Q">
+              <span class="rb-name">Vanguard Ability</span>
+              <button class="keycap" data-rebind>Q</button>
+            </div>
+            <div class="rebind" data-binding="Map" data-key="M">
+              <span class="rb-name">Tactical Map</span>
+              <button class="keycap" data-rebind>M</button>
+            </div>
+            <p class="rebind-hint">Select a key, then press any key to rebind. <kbd>Esc</kbd> cancels.</p>
+          </div>
+
+          <footer class="settings-foot">
+            <button class="ghost" id="resetBtn">Reset to Defaults</button>
+            <button class="apply" id="applyBtn">Apply Changes</button>
+          </footer>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

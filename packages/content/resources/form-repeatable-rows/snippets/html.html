@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Form — Repeatable field rows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <form class="card" id="teamForm" novalidate>
+        <header class="card__head">
+          <div class="card__eyebrow">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm14 10v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11"
+              />
+            </svg>
+            Project invite
+          </div>
+          <h1 class="card__title">Invite your team</h1>
+          <p class="card__sub">
+            Add the people who should get access to <strong>Northwind Studio</strong>. You can edit
+            roles later from project settings.
+          </p>
+        </header>
+
+        <fieldset class="rows" id="rowsFieldset">
+          <legend class="rows__legend">
+            Team members
+            <span class="rows__count" id="rowCount" aria-live="polite">1 member</span>
+          </legend>
+
+          <!-- Repeatable rows injected here by script.js -->
+          <div class="rows__list" id="rowsList" role="group" aria-label="Team member rows"></div>
+
+          <!-- Empty state placeholder (shown only when list is emptied to zero) -->
+          <div class="rows__empty" id="rowsEmpty" hidden>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6"
+              />
+            </svg>
+            <p>No members yet. Add the first teammate to invite.</p>
+          </div>
+
+          <button type="button" class="btn-add" id="addRow">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 5v14M5 12h14"
+              />
+            </svg>
+            Add member
+          </button>
+        </fieldset>
+
+        <footer class="card__foot">
+          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+          <div class="card__actions">
+            <span class="seat-meter" aria-live="polite">
+              <strong id="seatTotal">1</strong> of 10 seats used
+            </span>
+            <button type="submit" class="btn-submit" id="submitBtn">
+              Send invites
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 12h14M13 6l6 6-6 6"
+                />
+              </svg>
+            </button>
+          </div>
+        </footer>
+
+        <!-- Success confirmation, revealed after a valid submit -->
+        <div class="success" id="successState" hidden role="alert">
+          <span class="success__badge">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M20 6 9 17l-5-5"
+              />
+            </svg>
+          </span>
+          <div>
+            <h2 class="success__title">Invites sent</h2>
+            <p class="success__text" id="successText">Your invitations are on the way.</p>
+          </div>
+          <button type="button" class="btn-reset" id="resetBtn">Invite more</button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Row template -->
+    <template id="rowTemplate">
+      <div class="row" data-row>
+        <span class="row__index" data-index aria-hidden="true">1</span>
+
+        <div class="row__grid">
+          <div class="field" data-field="name">
+            <label class="field__label">
+              Full name <span class="req" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="text"
+              class="field__input"
+              data-input="name"
+              placeholder="e.g. Priya Raman"
+              autocomplete="off"
+              required
+            />
+            <p class="field__help" data-help>First and last name.</p>
+          </div>
+
+          <div class="field" data-field="email">
+            <label class="field__label">
+              Work email <span class="req" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="email"
+              class="field__input"
+              data-input="email"
+              placeholder="name@company.com"
+              autocomplete="off"
+              required
+            />
+            <p class="field__help" data-help>We send the invite here.</p>
+          </div>
+
+          <div class="field field--role" data-field="role">
+            <label class="field__label">Role</label>
+            <div class="select-wrap">
+              <select class="field__input field__select" data-input="role">
+                <option value="viewer">Viewer</option>
+                <option value="editor" selected>Editor</option>
+                <option value="admin">Admin</option>
+                <option value="owner">Owner</option>
+              </select>
+              <svg class="select-wrap__chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m6 9 6 6 6-6"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="row__remove" data-remove aria-label="Remove this member">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+            />
+          </svg>
+        </button>
+      </div>
+    </template>
+
+    <!-- Toast region -->
+    <div class="toast-region" id="toastRegion" aria-live="assertive" aria-atomic="true"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

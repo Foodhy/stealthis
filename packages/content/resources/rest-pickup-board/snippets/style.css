@@ -1,0 +1,412 @@
+/* ======================================================
+   Takeout Pickup Board — Phase 27 Restaurant Theme
+   ====================================================== */
+
+:root {
+  --cream: #FAF7F1;
+  --ink: #2C1A0E;
+  --forest: #345F40;
+  --forest-d: #213D29;
+  --terracotta: #C4622D;
+  --gold: #D4A853;
+  --warm-gray: #8A7D72;
+  --bone: #F0EBE0;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --shadow-card: 0 2px 8px rgba(44, 26, 14, 0.10), 0 1px 2px rgba(44, 26, 14, 0.06);
+  --shadow-card-ready: 0 0 0 2px var(--forest), 0 4px 16px rgba(52, 95, 64, 0.30);
+  --radius-card: 10px;
+  --radius-col: 10px;
+  --transition-base: 0.22s ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===================== HEADER ===================== */
+
+.board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--forest-d);
+  padding: 16px 24px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.board-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--bone);
+  letter-spacing: -0.01em;
+}
+
+.board-clock {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--terracotta);
+  color: var(--bone);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-base), transform 0.1s;
+}
+
+.btn-new:hover {
+  background: #a84e24;
+}
+
+.btn-new:active {
+  transform: scale(0.97);
+}
+
+.btn-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--bone);
+  border: 1.5px solid rgba(240, 235, 224, 0.35);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-family: var(--font-body);
+  font-size: 0.813rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+.btn-demo:hover,
+.btn-demo.is-active {
+  background: rgba(240, 235, 224, 0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.btn-demo.is-active .demo-icon {
+  animation: spin 1.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===================== BOARD GRID ===================== */
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .board-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================== COLUMNS ===================== */
+
+.board-column {
+  border-radius: var(--radius-col);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--forest);
+  color: var(--bone);
+  padding: 14px 16px;
+  border-radius: var(--radius-col) var(--radius-col) 0 0;
+}
+
+.column-header--ready {
+  background: var(--forest-d);
+}
+
+.column-header--done {
+  background: var(--warm-gray);
+}
+
+.column-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.column-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(240, 235, 224, 0.22);
+  color: var(--bone);
+  border-radius: 999px;
+  min-width: 26px;
+  height: 26px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0 7px;
+  transition: background var(--transition-base);
+}
+
+.column-body {
+  background: var(--bone);
+  border-radius: 0 0 var(--radius-col) var(--radius-col);
+  padding: 12px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===================== ORDER CARDS ===================== */
+
+.order-card {
+  background: var(--cream);
+  border-radius: var(--radius-card);
+  padding: 14px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base), opacity var(--transition-base), transform var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.order-card:hover {
+  box-shadow: 0 4px 14px rgba(44, 26, 14, 0.14);
+  transform: translateY(-1px);
+}
+
+/* READY state */
+.order-card.is-ready {
+  box-shadow: var(--shadow-card-ready);
+  animation: pulse-green 1.8s ease-in-out 3;
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: var(--shadow-card-ready); }
+  50% { box-shadow: 0 0 0 3px var(--forest), 0 6px 24px rgba(52, 95, 64, 0.45); }
+}
+
+/* PICKED UP state */
+.order-card.is-done .order-customer {
+  text-decoration: line-through;
+  color: var(--warm-gray);
+}
+
+.order-card.is-done {
+  opacity: 0.52;
+}
+
+/* COLLAPSING state */
+.order-card.is-collapsing {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease, transform 0.4s ease;
+  overflow: hidden;
+}
+
+/* Card layout */
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.order-number {
+  background: var(--terracotta);
+  color: var(--bone);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ready-badge {
+  display: none;
+  background: var(--forest);
+  color: var(--bone);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  animation: badge-pop 0.3s ease;
+}
+
+@keyframes badge-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.order-card.is-ready .ready-badge {
+  display: inline-block;
+}
+
+.order-customer {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+  transition: color var(--transition-base), text-decoration var(--transition-base);
+}
+
+.order-items {
+  list-style: none;
+  margin-bottom: 10px;
+}
+
+.order-items li {
+  font-size: 0.82rem;
+  color: var(--warm-gray);
+  padding: 1px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.order-items li::before {
+  content: '·';
+  color: var(--gold);
+  font-size: 1.1em;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.order-time {
+  font-size: 0.78rem;
+  color: var(--warm-gray);
+  font-variant-numeric: tabular-nums;
+}
+
+.order-timer {
+  font-size: 0.78rem;
+  color: var(--warm-gray);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.order-timer.is-urgent {
+  color: var(--terracotta);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.btn-advance {
+  background: rgba(52, 95, 64, 0.10);
+  color: var(--forest);
+  border: 1.5px solid rgba(52, 95, 64, 0.20);
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base);
+  white-space: nowrap;
+}
+
+.btn-advance:hover {
+  background: rgba(52, 95, 64, 0.18);
+  border-color: var(--forest);
+}
+
+/* ===================== ALERT TOAST ===================== */
+
+.alert-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--forest-d);
+  color: var(--bone);
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(33, 61, 41, 0.35);
+  opacity: 0;
+  transform: translateY(14px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 999;
+}
+
+.alert-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}

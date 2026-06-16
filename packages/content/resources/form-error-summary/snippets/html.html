@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Form — Top error summary + jump-to-field</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="card" aria-labelledby="form-title">
+        <header class="card__head">
+          <span class="eyebrow">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12.5l2 2 4-4M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"
+              />
+            </svg>
+            Membership application
+          </span>
+          <h1 id="form-title" class="card__title">Open your Northwind account</h1>
+          <p class="card__lede">
+            Submit the form with mistakes and an error summary appears at the top.
+            Each entry links straight to the field that needs fixing, GOV.UK style.
+          </p>
+        </header>
+
+        <!-- Error summary: injected/toggled by JS, gets focus on submit-fail -->
+        <div
+          id="error-summary"
+          class="summary"
+          role="alert"
+          tabindex="-1"
+          hidden
+        >
+          <h2 class="summary__title">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                d="M12 7.5v5.5M12 16.2v.2"
+              />
+            </svg>
+            <span id="summary-heading">There is a problem</span>
+          </h2>
+          <ul class="summary__list" id="summary-list"></ul>
+        </div>
+
+        <form id="signup-form" class="form" novalidate>
+          <div class="field" data-field="fullName">
+            <label class="field__label" for="fullName">
+              Full name <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p class="field__hint" id="fullName-hint">As it appears on your ID, e.g. Marisol Quintero.</p>
+            <p class="field__error" id="fullName-error" hidden></p>
+            <input
+              class="input"
+              id="fullName"
+              name="fullName"
+              type="text"
+              autocomplete="name"
+              placeholder="Marisol Quintero"
+              aria-describedby="fullName-hint"
+              required
+            />
+          </div>
+
+          <div class="field" data-field="email">
+            <label class="field__label" for="email">
+              Email address <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p class="field__hint" id="email-hint">We send your confirmation here. No spam, ever.</p>
+            <p class="field__error" id="email-error" hidden></p>
+            <input
+              class="input"
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="marisol@example.com"
+              aria-describedby="email-hint"
+              required
+            />
+          </div>
+
+          <div class="field field--half" data-field="memberId">
+            <label class="field__label" for="memberId">
+              Member ID <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p class="field__hint" id="memberId-hint">Six digits from your welcome letter, e.g. 480293.</p>
+            <p class="field__error" id="memberId-error" hidden></p>
+            <input
+              class="input"
+              id="memberId"
+              name="memberId"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="480293"
+              maxlength="6"
+              aria-describedby="memberId-hint"
+              required
+            />
+          </div>
+
+          <div class="field field--half" data-field="age">
+            <label class="field__label" for="age">
+              Age <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p class="field__hint" id="age-hint">You must be 18 or older to apply.</p>
+            <p class="field__error" id="age-error" hidden></p>
+            <input
+              class="input"
+              id="age"
+              name="age"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="29"
+              maxlength="3"
+              aria-describedby="age-hint"
+              required
+            />
+          </div>
+
+          <fieldset class="field field--group" data-field="plan">
+            <legend class="field__label">
+              Membership plan <span class="req" aria-hidden="true">*</span>
+            </legend>
+            <p class="field__hint" id="plan-hint">Pick the tier that fits — you can change later.</p>
+            <p class="field__error" id="plan-error" hidden></p>
+            <div class="radios" role="radiogroup" aria-describedby="plan-hint">
+              <label class="radio">
+                <input type="radio" name="plan" value="basic" aria-describedby="plan-hint" />
+                <span class="radio__box" aria-hidden="true"></span>
+                <span class="radio__text">
+                  <strong>Basic</strong>
+                  <small>Core access, monthly billing</small>
+                </span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="plan" value="plus" aria-describedby="plan-hint" />
+                <span class="radio__box" aria-hidden="true"></span>
+                <span class="radio__text">
+                  <strong>Plus</strong>
+                  <small>Priority support + perks</small>
+                </span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="plan" value="founder" aria-describedby="plan-hint" />
+                <span class="radio__box" aria-hidden="true"></span>
+                <span class="radio__text">
+                  <strong>Founder</strong>
+                  <small>Everything, billed yearly</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="field" data-field="password">
+            <label class="field__label" for="password">
+              Create a password <span class="req" aria-hidden="true">*</span>
+            </label>
+            <p class="field__hint" id="password-hint">At least 8 characters with a number.</p>
+            <p class="field__error" id="password-error" hidden></p>
+            <input
+              class="input"
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              placeholder="••••••••"
+              aria-describedby="password-hint"
+              required
+            />
+          </div>
+
+          <div class="field field--check" data-field="terms">
+            <label class="check">
+              <input type="checkbox" id="terms" name="terms" aria-describedby="terms-error" />
+              <span class="check__box" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M5 12.5l4.5 4.5L19 7"
+                  />
+                </svg>
+              </span>
+              <span class="check__text">
+                I accept the membership terms and privacy policy
+                <span class="req" aria-hidden="true">*</span>
+              </span>
+            </label>
+            <p class="field__error field__error--check" id="terms-error" hidden></p>
+          </div>
+
+          <div class="form__actions">
+            <button type="submit" class="btn btn--primary">
+              Create account
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 12h14M13 6l6 6-6 6"
+                />
+              </svg>
+            </button>
+            <button type="reset" class="btn btn--ghost">Reset</button>
+            <p class="form__status" id="form-status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+
+        <!-- Success confirmation, swapped in after a valid submit -->
+        <div class="success" id="success-panel" hidden tabindex="-1">
+          <span class="success__badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="30" height="30">
+              <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2" />
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7 12.5l3.2 3.2L17 9"
+              />
+            </svg>
+          </span>
+          <h2 class="success__title">Application received</h2>
+          <p class="success__text" id="success-text">
+            Thanks. We have emailed your confirmation and your account is being set up.
+          </p>
+          <button type="button" class="btn btn--ghost" id="restart">Start another application</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast region -->
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NovaYield — Staking / Yield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-orb" aria-hidden="true"></span>
+        <span class="brand-name">NovaYield</span>
+        <span class="brand-tag">Staking</span>
+      </div>
+      <div class="topbar-right">
+        <button class="chain-pill" type="button" aria-label="Network: Lumen Chain">
+          <span class="chain-dot" aria-hidden="true"></span>
+          Lumen Chain
+        </button>
+        <button class="wallet-pill" type="button" id="walletBtn" aria-label="Connected wallet 0x7a3f…c41d">
+          <span class="wallet-avatar" aria-hidden="true"></span>
+          <span class="mono">0x7a3f…c41d</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero: featured pool -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-card">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="hero-main">
+          <div class="hero-token">
+            <div class="token-logo nova" aria-hidden="true">N</div>
+            <div>
+              <h1 id="heroTitle">NOVA Staking Pool</h1>
+              <p class="hero-sub">Single-sided staking · Audited · Rewards stream every block</p>
+            </div>
+            <span class="badge badge-live"><span class="pulse" aria-hidden="true"></span> Live</span>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat">
+              <span class="stat-label">Current APR</span>
+              <span class="stat-value apr mono" id="heroApr">12.40%</span>
+              <span class="stat-note" id="heroAprNote">Flexible · 1.00× boost</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">TVL</span>
+              <span class="stat-value mono" id="heroTvl">$48.2M</span>
+              <span class="stat-note pos">▲ 3.1% · 24h</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Stakers</span>
+              <span class="stat-value mono">21,408</span>
+              <span class="stat-note">across 4 lock tiers</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Reward token</span>
+              <span class="stat-value">NOVA</span>
+              <span class="stat-note mono">0x9bd2…77e1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your position -->
+        <aside class="position" aria-label="Your position">
+          <h2 class="position-title">Your position</h2>
+          <div class="position-row">
+            <span>Staked</span>
+            <span class="mono" id="stakedBalance">1,250.0000 NOVA</span>
+          </div>
+          <div class="position-row">
+            <span>Wallet</span>
+            <span class="mono" id="walletBalance">3,418.5200 NOVA</span>
+          </div>
+          <div class="position-row rewards">
+            <span>Pending rewards</span>
+            <span class="mono reward-ticker" id="pendingRewards" aria-live="off">0.000000</span>
+          </div>
+          <div class="position-row sub">
+            <span>≈ value</span>
+            <span class="mono" id="pendingUsd">$0.00</span>
+          </div>
+          <button class="btn btn-claim" type="button" id="claimBtn">
+            <span class="btn-claim-label">Claim rewards</span>
+          </button>
+          <p class="position-foot mono">Last claim · 6h 12m ago · tx 0x41be…09af</p>
+        </aside>
+      </div>
+    </section>
+
+    <main class="grid">
+      <!-- Stake / Unstake card -->
+      <section class="card stake-card" aria-labelledby="stakeTitle">
+        <div class="tabs" role="tablist" aria-label="Stake or unstake">
+          <button class="tab is-active" role="tab" aria-selected="true" id="tabStake" type="button">Stake</button>
+          <button class="tab" role="tab" aria-selected="false" id="tabUnstake" type="button">Unstake</button>
+        </div>
+
+        <h2 id="stakeTitle" class="sr-only">Stake NOVA</h2>
+
+        <label class="field-label" for="amountInput">
+          <span id="amountLabel">Amount to stake</span>
+          <span class="field-balance">Available: <span class="mono" id="availLabel">3,418.52 NOVA</span></span>
+        </label>
+        <div class="amount-box">
+          <div class="token-logo nova sm" aria-hidden="true">N</div>
+          <input type="text" inputmode="decimal" id="amountInput" placeholder="0.00" autocomplete="off" aria-describedby="amountUsd" />
+          <span class="amount-usd mono" id="amountUsd">$0.00</span>
+          <button class="btn-max" type="button" id="maxBtn">MAX</button>
+        </div>
+
+        <fieldset class="lock-select" id="lockSelect">
+          <legend class="field-label">Lock period</legend>
+          <div class="lock-grid" role="radiogroup" aria-label="Lock period">
+            <button class="lock-opt is-active" type="button" data-lock="flex" role="radio" aria-checked="true">
+              <span class="lock-name">Flexible</span>
+              <span class="lock-mult mono">1.00×</span>
+            </button>
+            <button class="lock-opt" type="button" data-lock="30" role="radio" aria-checked="false">
+              <span class="lock-name">30 days</span>
+              <span class="lock-mult mono">1.25×</span>
+            </button>
+            <button class="lock-opt" type="button" data-lock="90" role="radio" aria-checked="false">
+              <span class="lock-name">90 days</span>
+              <span class="lock-mult mono">1.60×</span>
+            </button>
+            <button class="lock-opt" type="button" data-lock="365" role="radio" aria-checked="false">
+              <span class="lock-name">1 year</span>
+              <span class="lock-mult mono">2.20×</span>
+            </button>
+          </div>
+        </fieldset>
+
+        <div class="projection" aria-live="polite">
+          <div class="proj-row">
+            <span>Effective APR</span>
+            <span class="mono pos" id="projApr">12.40%</span>
+          </div>
+          <div class="proj-row">
+            <span>Daily earnings</span>
+            <span class="mono" id="projDaily">0.0000 NOVA</span>
+          </div>
+          <div class="proj-row">
+            <span id="projHorizonLabel">Projected · 1 year</span>
+            <span class="mono" id="projTotal">0.0000 NOVA <em class="proj-usd" id="projTotalUsd">($0.00)</em></span>
+          </div>
+          <div class="proj-row sub">
+            <span>Unlock date</span>
+            <span class="mono" id="projUnlock">Anytime</span>
+          </div>
+        </div>
+
+        <p class="lock-warning" id="lockWarning" hidden>
+          <strong>Lock-up applies.</strong> Tokens cannot be unstaked before the unlock date. Early exit forfeits all rewards.
+        </p>
+
+        <button class="btn btn-primary" type="button" id="actionBtn" disabled>Enter an amount</button>
+        <p class="fee-note mono">Network fee ≈ 0.0012 LUM · slippage n/a · pool 0x9bd2…77e1</p>
+      </section>
+
+      <!-- Other pools -->
+      <section class="card pools-card" aria-labelledby="poolsTitle">
+        <div class="pools-head">
+          <h2 id="poolsTitle">All pools</h2>
+          <span class="pools-count mono">6 pools</span>
+        </div>
+        <ul class="pool-list" id="poolList">
+          <li>
+            <button class="pool-row is-active" type="button" data-pool="nova" aria-pressed="true">
+              <div class="token-logo nova sm" aria-hidden="true">N</div>
+              <div class="pool-info">
+                <span class="pool-name">NOVA</span>
+                <span class="pool-sub">Single stake · Lumen Chain</span>
+              </div>
+              <div class="pool-stats">
+                <span class="pool-apr mono pos">12.40%</span>
+                <span class="pool-tvl mono">$48.2M TVL</span>
+              </div>
+            </button>
+          </li>
+          <li>
+            <button class="pool-row" type="button" data-pool="lum" aria-pressed="false">
+              <div class="token-logo lum sm" aria-hidden="true">L</div>
+              <div class="pool-info">
+                <span class="pool-name">LUM</span>
+                <span class="pool-sub">Native gas token · Lumen Chain</span>
+              </div>
+              <div class="pool-stats">
+                <span class="pool-apr mono pos">8.92%</span>
+                <span class="pool-tvl mono">$112.7M TVL</span>
+              </div>
+            </button>
+          </li>
+          <li>
+            <button class="pool-row" type="button" data-pool="aur" aria-pressed="false">
+              <div class="token-logo aur sm" aria-hidden="true">A</div>
+              <div class="pool-info">
+                <span class="pool-name">AURUM <span class="badge badge-boost">Boosted</span></span>
+                <span class="pool-sub">LST yield · Aurora Vaults</span>
+              </div>
+              <div class="pool-stats">
+                <span class="pool-apr mono pos">19.75%</span>
+                <span class="pool-tvl mono">$9.4M TVL</span>
+              </div>
+            </button>
+          </li>
+          <li>
+            <button class="pool-row" type="button" data-pool="zphr" aria-pressed="false">
+              <div class="token-logo zphr sm" aria-hidden="true">Z</div>
+              <div class="pool-info">
+                <span class="pool-name">ZPHR</span>
+                <span class="pool-sub">Governance · Zephyr DAO</span>
+              </div>
+              <div class="pool-stats">
+                <span class="pool-apr mono pos">6.30%</span>
+                <span class="pool-tvl mono">$27.1M TVL</span>
+              </div>
+            </button>
+          </li>
+          <li>
+            <button class="pool-row" type="button" data-pool="oblk" aria-pressed="false">
+              <div class="token-logo oblk sm" aria-hidden="true">O</div>
+              <div class="pool-info">
+                <span class="pool-name">OBSIDIAN <span class="badge badge-risk">High risk</span></span>
+                <span class="pool-sub">Perps insurance fund</span>
+              </div>
+              <div class="pool-stats">
+                <span class="pool-apr mono pos">34.10%</span>
+                <span class="pool-tvl mono">$2.8M TVL</span>
+              </div>
+            </button>
+          </li>
+          <li>
+            <button class="pool-row is-disabled" type="button" data-pool="hlx" disabled>
+              <div class="token-logo hlx sm" aria-hidden="true">H</div>
+              <div class="pool-info">
+                <span class="pool-name">HELIX</span>
+                <span class="pool-sub">Coming soon · epoch 14</span>
+              </div>
+              <div class="pool-stats">
+                <span class="pool-apr mono muted">—</span>
+                <span class="pool-tvl mono">Opens Jun 21</span>
+              </div>
+            </button>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span class="mono">epoch 9,412 · block 18,204,557</span>
+      <span>UI simulation — no real funds, fictional tokens.</span>
+    </footer>
+  </div>
+
+  <!-- Confirm modal -->
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <!-- Confirm step -->
+      <div class="modal-step" id="modalConfirm">
+        <h3 id="modalTitle">Confirm stake</h3>
+        <div class="modal-summary">
+          <div class="msum-row"><span>Action</span><span id="mAction">Stake</span></div>
+          <div class="msum-row"><span>Amount</span><span class="mono" id="mAmount">0 NOVA</span></div>
+          <div class="msum-row"><span>Lock period</span><span id="mLock">Flexible</span></div>
+          <div class="msum-row"><span>Effective APR</span><span class="mono pos" id="mApr">12.40%</span></div>
+          <div class="msum-row"><span>Unlock</span><span class="mono" id="mUnlock">Anytime</span></div>
+          <div class="msum-row sub"><span>Network fee</span><span class="mono">≈ 0.0012 LUM</span></div>
+          <div class="msum-row sub"><span>Contract</span><span class="mono">0x9bd2…77e1</span></div>
+        </div>
+        <p class="modal-risk" id="mRisk">
+          You are signing a simulated transaction. Locked positions cannot be withdrawn early; rewards are forfeited on emergency exit.
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" type="button" id="modalCancel">Cancel</button>
+          <button class="btn btn-primary" type="button" id="modalSign">Sign &amp; confirm</button>
+        </div>
+      </div>
+      <!-- Pending step -->
+      <div class="modal-step center" id="modalPending" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <h3>Broadcasting transaction…</h3>
+        <p class="mono modal-hash">tx 0x3c8a…f02b</p>
+      </div>
+      <!-- Success step -->
+      <div class="modal-step center" id="modalSuccess" hidden>
+        <div class="success-check" aria-hidden="true">
+          <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-17"/></svg>
+        </div>
+        <h3 id="successTitle">Staked successfully</h3>
+        <p class="mono modal-hash" id="successHash">tx 0x3c8a…f02b · block 18,204,560</p>
+        <button class="btn btn-primary" type="button" id="modalDone">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

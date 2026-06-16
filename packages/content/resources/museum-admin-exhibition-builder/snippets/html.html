@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Museum — Exhibition Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">◷</span>
+      <div class="brand__txt">
+        <span class="brand__eyebrow">Atherton Museum of Art · Curatorial Studio</span>
+        <h1 class="brand__title">Exhibition Builder</h1>
+      </div>
+    </div>
+    <div class="topbar__actions">
+      <span class="draft-stamp" id="draftStamp">Draft · unsaved</span>
+      <button class="btn btn--ghost" id="previewBtn" type="button">Preview walkthrough</button>
+      <button class="btn btn--solid" id="saveBtn" type="button">Save draft</button>
+    </div>
+  </header>
+
+  <main class="studio">
+    <!-- POOL -->
+    <section class="panel pool" aria-labelledby="poolHeading">
+      <div class="panel__head">
+        <div>
+          <h2 class="panel__title" id="poolHeading">Available objects</h2>
+          <p class="panel__sub" id="poolCount">— objects in store</p>
+        </div>
+      </div>
+      <div class="pool__search">
+        <input type="search" id="poolSearch" class="field" placeholder="Search by title, artist, catalog no.…" aria-label="Search available objects" />
+        <div class="chips" id="poolFilters" role="group" aria-label="Filter by medium">
+          <button class="chip is-active" data-medium="all" type="button">All</button>
+          <button class="chip" data-medium="Painting" type="button">Painting</button>
+          <button class="chip" data-medium="Sculpture" type="button">Sculpture</button>
+          <button class="chip" data-medium="Photograph" type="button">Photograph</button>
+          <button class="chip" data-medium="Textile" type="button">Textile</button>
+        </div>
+      </div>
+      <ul class="pool__list" id="poolList" aria-label="Objects available to add"></ul>
+    </section>
+
+    <!-- SEQUENCE -->
+    <section class="panel seq" aria-labelledby="seqHeading">
+      <div class="panel__head">
+        <div>
+          <h2 class="panel__title" id="seqHeading">Exhibition sequence</h2>
+          <p class="panel__sub"><span id="seqTitleEcho">Quiet Geometries: Form &amp; Restraint, 1920–1975</span></p>
+        </div>
+        <button class="btn btn--ghost btn--sm" id="addSectionBtn" type="button">+ Add room</button>
+      </div>
+
+      <div class="meters" aria-live="polite">
+        <div class="meter">
+          <div class="meter__row">
+            <span class="meter__label">Objects placed</span>
+            <span class="meter__val" id="objCount">0</span>
+          </div>
+        </div>
+        <div class="meter">
+          <div class="meter__row">
+            <span class="meter__label">Estimated wall space</span>
+            <span class="meter__val"><span id="wallUsed">0.0</span> / <span id="wallTotal">62.0</span> m</span>
+          </div>
+          <div class="bar" role="progressbar" aria-label="Wall space used" aria-valuemin="0" aria-valuemax="62" aria-valuenow="0" id="wallBar">
+            <span class="bar__fill" id="wallFill"></span>
+          </div>
+          <p class="meter__hint" id="wallHint">Plenty of wall space remaining.</p>
+        </div>
+      </div>
+
+      <div class="rooms" id="rooms"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- object pool card template -->
+  <template id="poolCardTpl">
+    <li class="pcard" tabindex="0">
+      <span class="pcard__thumb" data-thumb aria-hidden="true"></span>
+      <span class="pcard__body">
+        <span class="pcard__title" data-title></span>
+        <span class="pcard__meta"><span data-artist></span> · <span data-date></span></span>
+        <span class="pcard__foot">
+          <span class="badge" data-medium></span>
+          <span class="pcard__cat" data-cat></span>
+        </span>
+      </span>
+      <button class="pcard__add" data-add type="button" aria-label="Add to sequence">Add →</button>
+    </li>
+  </template>
+
+  <!-- room/section template -->
+  <template id="roomTpl">
+    <article class="room">
+      <header class="room__head">
+        <span class="room__no" data-roomno></span>
+        <input class="room__name field field--inline" data-name aria-label="Room name" />
+        <span class="room__stat" data-stat></span>
+        <button class="iconbtn iconbtn--del" data-delroom type="button" aria-label="Remove room">✕</button>
+      </header>
+      <textarea class="room__walltext field" data-walltext rows="2" aria-label="Wall text for this room" placeholder="Wall text — a short curatorial note shown at the room entrance…"></textarea>
+      <ul class="room__objs" data-objs aria-label="Objects in this room"></ul>
+      <p class="room__empty" data-empty>No objects yet — add from the pool on the left.</p>
+    </article>
+  </template>
+
+  <!-- sequence object row template -->
+  <template id="seqRowTpl">
+    <li class="srow" tabindex="0">
+      <span class="srow__thumb" data-thumb aria-hidden="true"></span>
+      <span class="srow__body">
+        <span class="srow__title" data-title></span>
+        <span class="srow__meta"><span data-artist></span> · <span data-date></span> · <span data-cat></span></span>
+      </span>
+      <span class="srow__ctrls">
+        <button class="iconbtn" data-up type="button" aria-label="Move up">↑</button>
+        <button class="iconbtn" data-down type="button" aria-label="Move down">↓</button>
+        <button class="iconbtn iconbtn--del" data-remove type="button" aria-label="Remove from sequence">✕</button>
+      </span>
+    </li>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>

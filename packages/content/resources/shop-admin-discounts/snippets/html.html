@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop — Discounts / Promo Codes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Admin navigation">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◈</span>
+        <span class="brand-name">Northwind</span>
+      </div>
+      <nav class="nav" aria-label="Sections">
+        <a href="#" class="nav-item"><span aria-hidden="true">▦</span> Dashboard</a>
+        <a href="#" class="nav-item"><span aria-hidden="true">▤</span> Products</a>
+        <a href="#" class="nav-item"><span aria-hidden="true">▥</span> Orders</a>
+        <a href="#" class="nav-item is-active" aria-current="page"><span aria-hidden="true">⛯</span> Discounts</a>
+        <a href="#" class="nav-item"><span aria-hidden="true">▧</span> Customers</a>
+        <a href="#" class="nav-item"><span aria-hidden="true">▨</span> Analytics</a>
+      </nav>
+      <div class="side-foot">
+        <div class="avatar" aria-hidden="true">RK</div>
+        <div class="side-foot-meta">
+          <strong>Rosa Kline</strong>
+          <span>Store manager</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" aria-labelledby="page-title">
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">Discounts &amp; promo codes</h1>
+          <p class="sub">Create, schedule and track storefront promotions.</p>
+        </div>
+        <button class="btn btn-primary" id="newCodeBtn" type="button">
+          <span aria-hidden="true">＋</span> New code
+        </button>
+      </header>
+
+      <!-- Stat strip -->
+      <section class="stats" aria-label="Promotion summary">
+        <div class="stat">
+          <span class="stat-label">Active codes</span>
+          <strong class="stat-value" id="statActive">0</strong>
+          <span class="stat-trend up">running now</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Total redemptions</span>
+          <strong class="stat-value" id="statRedeem">0</strong>
+          <span class="stat-trend">across all codes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Est. discount given</span>
+          <strong class="stat-value" id="statSpend">$0</strong>
+          <span class="stat-trend">this period</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Avg. usage rate</span>
+          <strong class="stat-value" id="statRate">0%</strong>
+          <span class="stat-trend">of set limits</span>
+        </div>
+      </section>
+
+      <!-- Toolbar -->
+      <section class="toolbar" aria-label="Filter codes">
+        <div class="tabs" role="tablist" aria-label="Status filter">
+          <button class="tab is-active" role="tab" aria-selected="true" data-filter="all" type="button">All <span class="tab-count" data-count="all">0</span></button>
+          <button class="tab" role="tab" aria-selected="false" data-filter="active" type="button">Active <span class="tab-count" data-count="active">0</span></button>
+          <button class="tab" role="tab" aria-selected="false" data-filter="scheduled" type="button">Scheduled <span class="tab-count" data-count="scheduled">0</span></button>
+          <button class="tab" role="tab" aria-selected="false" data-filter="expired" type="button">Expired <span class="tab-count" data-count="expired">0</span></button>
+          <button class="tab" role="tab" aria-selected="false" data-filter="paused" type="button">Paused <span class="tab-count" data-count="paused">0</span></button>
+        </div>
+        <div class="search">
+          <span class="search-ico" aria-hidden="true">⌕</span>
+          <input id="search" type="search" placeholder="Search codes…" aria-label="Search promo codes" autocomplete="off" />
+        </div>
+      </section>
+
+      <!-- Table -->
+      <section class="card table-card" aria-label="Promo codes">
+        <table class="codes">
+          <thead>
+            <tr>
+              <th scope="col">Code</th>
+              <th scope="col">Type</th>
+              <th scope="col" class="num">Value</th>
+              <th scope="col" class="usage-col">Usage</th>
+              <th scope="col">Schedule</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="actions-col"><span class="vh">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="rows"><!-- rows injected by script.js --></tbody>
+        </table>
+        <p class="empty" id="empty" hidden>No codes match this view. <button class="link" id="clearFilters" type="button">Reset filters</button></p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Editor drawer -->
+  <div class="drawer-scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1">
+    <header class="drawer-head">
+      <h2 id="drawer-title">New promo code</h2>
+      <button class="icon-btn" id="closeDrawer" type="button" aria-label="Close editor">✕</button>
+    </header>
+
+    <form class="drawer-body" id="codeForm" novalidate>
+      <input type="hidden" id="editId" value="" />
+
+      <div class="field">
+        <label for="fCode">Code</label>
+        <div class="code-row">
+          <input id="fCode" name="code" type="text" inputmode="latin" autocomplete="off"
+                 placeholder="e.g. SUMMER20" maxlength="24" aria-describedby="codeErr" />
+          <button class="btn btn-ghost" id="genCode" type="button">Generate</button>
+        </div>
+        <p class="hint">Letters and numbers only — shown to shoppers at checkout.</p>
+        <p class="err" id="codeErr" role="alert" hidden></p>
+      </div>
+
+      <fieldset class="field">
+        <legend>Discount type</legend>
+        <div class="seg" role="radiogroup" aria-label="Discount type">
+          <label class="seg-opt">
+            <input type="radio" name="type" value="percent" checked />
+            <span>% off</span>
+          </label>
+          <label class="seg-opt">
+            <input type="radio" name="type" value="fixed" />
+            <span>$ off</span>
+          </label>
+          <label class="seg-opt">
+            <input type="radio" name="type" value="shipping" />
+            <span>Free ship</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="grid-2">
+        <div class="field" id="valueField">
+          <label for="fValue" id="valueLabel">Percentage off</label>
+          <div class="prefixed" data-prefix="%">
+            <input id="fValue" name="value" type="number" min="0" max="100" step="1" value="20" aria-describedby="valueErr" />
+          </div>
+          <p class="err" id="valueErr" role="alert" hidden></p>
+        </div>
+        <div class="field">
+          <label for="fMin">Minimum spend</label>
+          <div class="prefixed money" data-prefix="$">
+            <input id="fMin" name="min" type="number" min="0" step="1" value="0" />
+          </div>
+          <p class="hint">0 = no minimum.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="fLimit">Usage limit</label>
+          <input id="fLimit" name="limit" type="number" min="0" step="1" value="500" aria-describedby="limitHint" />
+          <p class="hint" id="limitHint">Total redemptions allowed. 0 = unlimited.</p>
+        </div>
+        <div class="field">
+          <label for="fStart">Starts</label>
+          <input id="fStart" name="start" type="date" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="fEnd">Ends</label>
+          <input id="fEnd" name="end" type="date" aria-describedby="endErr" />
+          <p class="err" id="endErr" role="alert" hidden></p>
+        </div>
+        <div class="field switch-field">
+          <span class="switch-label">Active on save</span>
+          <label class="switch">
+            <input type="checkbox" id="fActive" checked />
+            <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+            <span class="vh">Activate this code</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="preview" aria-live="polite">
+        <span class="preview-tag" aria-hidden="true">PREVIEW</span>
+        <code class="preview-code" id="previewCode">SUMMER20</code>
+        <span class="preview-desc" id="previewDesc">20% off orders</span>
+      </div>
+
+      <footer class="drawer-foot">
+        <button class="btn btn-ghost" type="button" id="cancelBtn">Cancel</button>
+        <button class="btn btn-primary" type="submit" id="saveBtn">Create code</button>
+      </footer>
+    </form>
+  </aside>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

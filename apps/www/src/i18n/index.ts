@@ -390,6 +390,45 @@ const en = {
   "collection.editorial.title": "Newspaper & Magazine",
   "collection.editorial.desc":
     "Front pages, article layouts, long-form features, photo essays, editorial primitives, magazine spreads, a newsroom CMS, and themed mastheads.",
+  "collection.comics.title": "Comics & Manga",
+  "collection.comics.desc":
+    "Paged and vertical-scroll readers, panel grids, speech balloons, halftone primitives, series and chapter indexes, a creator portal, and themed comic/manga/webtoon landings.",
+  "collection.music.title": "Music & Audio",
+  "collection.music.desc":
+    "Artist and album pages, synced lyrics, tour dates, a reusable playback toolkit (player bar, full-screen now-playing, waveform, equalizer, queue), discovery and profile views, an artist dashboard, and themed vinyl/streaming/festival/classical/hip-hop landings.",
+  "collection.wiki.title": "Wiki & Knowledge Base",
+  "collection.wiki.desc":
+    "Wiki articles, doc pages, API references and tutorials, reusable knowledge primitives (infobox, sticky TOC, doc tree nav, callouts, version switcher, revision history, footnotes), faceted search and command-K, an article editor and KB dashboard, plus themed encyclopedia/dev-docs/fandom/handbook/support landings.",
+  "collection.patterns.title": "Product UI Patterns",
+  "collection.patterns.desc":
+    "Cross-product UX surfaces: onboarding flows and empty/error states, pricing tables and paywalls, form patterns, and dashboard layouts. The moments that decide activation, conversion, and retention.",
+  "collection.web3.title": "Crypto & Web3",
+  "collection.web3.desc":
+    "Wallet dashboards, token swaps, send/receive and transaction history, reusable web3 primitives (connect-wallet, address chip, tx confirm, gas selector, network switch), NFT marketplace and detail, staking and liquidity pools, DAO governance, and themed exchange/DeFi/NFT/chain/wallet landings. UI-only simulations — no real wallet or on-chain calls.",
+  "collection.gamedev.title": "Game Dev & Gaming",
+  "collection.gamedev.desc":
+    "Game marketing and store pages, devlogs, press kits, character rosters and world maps, reusable in-game UI primitives (HUD, menus, inventory, dialogue, skill trees, quest logs, health bars, loading screens), leaderboards, and themed landings across AAA cinematic, indie pixel, mobile casual, retro arcade, and fantasy RPG styles. UI-only simulations — not engine integrations.",
+  "collection.storybook.title": "Children's & Storybook",
+  "collection.storybook.desc":
+    "Kids' and picture-book interfaces — page-turn story readers, read-along highlighting, interactive scenes, plus an activity toolkit (alphabet cards, drag-to-match, coloring canvas, star-reward quizzes, sticker boards, animated mascots), bookshelf browse, parent dashboards, kid profiles, and themed landings (fairytale, modern flat, pop-up, educational, nursery). Soft bright palettes, rounded shapes, large touch targets, dyslexia-friendly options.",
+  "collection.travel.title": "Travel Guide & Magazine",
+  "collection.travel.desc":
+    "Destination and travel editorial — destination/city guides, photo-essay stories, day-by-day itineraries, listicles, reusable primitives (POI cards, map+content split, itinerary timelines, photo galleries, weather and budget widgets), explore/trip-planner, guide editor and site dashboard, plus themed landings (classic guidebook, luxury, backpacker, National-Geographic-style, travel agency). Warm neutrals, serif display, full-bleed photography.",
+  "collection.portfolio.title": "Portfolio & Résumé",
+  "collection.portfolio.desc":
+    "Personal-site building blocks and full one-page portfolios — hero intros, project/case-study cards, work grids, bio blocks, experience timelines, skills displays, contact CTAs, testimonials, print-ready résumé layouts, and eight themed styles (minimal/Swiss, editorial, brutalist, terminal, motion-heavy, 3D interactive, glass, playful). A style collection: the same content re-skinned across divergent aesthetics, fast to copy-paste.",
+  "collection.ecommerce.title": "E-commerce & Retail",
+  "collection.ecommerce.desc":
+    "Full storefront stack — home, category/PLP, product detail, cart, checkout, order confirmation, account, wishlist and search, reusable commerce primitives (product cards, variant pickers, mini-cart, price/discount, filter rail, reviews, promo banners), marketing pages, seller/merchant admin (dashboard, products, orders, discounts), and themed store landings (fashion, electronics, grocery, marketplace, luxury). Clean surfaces, large product photography, prominent price/CTA, trust signals.",
+  "collection.science.title": "Science & Research",
+  "collection.science.desc":
+    "Scientific publishing and data communication — academic paper layouts, preprint/arXiv articles, review articles, conference posters, popular-science explainers, reusable science primitives (figure captions, equation blocks, citation lists, data tables, abstract cards, author/affiliation/ORCID, peer-review badges), data & interactive pieces (dataset explorer, interactive charts, experiment timelines, periodic table, molecule viewer), lab/group/journal sites, and five themed science landings (academic journal, popular-science magazine, university lab, open-data portal, scientific conference). Clean white + ink + institutional accent, readable serif prose, LaTeX-like equations, figure-caption discipline, WCAG AA.",
+  "collection.cookbook.title": "Cookbook & Recipes",
+  "collection.cookbook.desc":
+    "Recipe publishing and food content — recipe detail pages, full-screen cook mode with timers, printable recipe cards, long-form food stories, video recipes, reusable recipe primitives (ingredient check-off, serving scaler, step timeline, nutrition facts, meta badges, ratings & reviews), discovery and planning (browse/search, cookbook index, weekly meal planner, auto shopping list), a recipe editor and food-blog dashboard, and five themed landings (rustic farmhouse, food magazine, vintage/retro, modern wellness, restaurant chef). Warm cream + charcoal + appetite accent, editorial serif headings, large food photography, print-friendly cards.",
+  "collection.museum.title": "Museum & Gallery",
+  "collection.museum.desc":
+    "Cultural-institution interfaces — exhibition pages, collection browsing, artifact/artwork detail with deep zoom, virtual gallery tours, plan-your-visit and events calendars, reusable cultural primitives (artifact card, gallery wall, historical timeline, object label/plaque, audio-guide player, floor map/wayfinding), ticketing and membership (booking, patron tiers, donation, gift-shop card), curator/admin tools (catalog manager, exhibition builder, attendance dashboard), and five themed landings (fine art, natural history, science center, modern/contemporary, history/heritage). Gallery white + deep charcoal + curatorial accent, refined serif display, generous wall-space whitespace, large imagery.",
   "resource.copy": "Copy",
   "resource.copied": "Copied!",
   "resource.copiedPasteGemini": "Copied! Opening Gemini in 3s — paste when ready.",
@@ -800,6 +839,45 @@ const es = {
   "collection.editorial.title": "Periódico y Revista",
   "collection.editorial.desc":
     "Portadas, layouts de artículos, reportajes largos, fotoensayos, primitivos editoriales, dobles páginas de revista, un CMS de redacción y cabeceras temáticas.",
+  "collection.comics.title": "Cómics y Manga",
+  "collection.comics.desc":
+    "Lectores paginados y de scroll vertical, rejillas de viñetas, bocadillos de diálogo, primitivos de semitono, índices de series y capítulos, portal de creadores y landings temáticas de cómic/manga/webtoon.",
+  "collection.music.title": "Música y Audio",
+  "collection.music.desc":
+    "Páginas de artista y álbum, letras sincronizadas, fechas de gira, un kit de reproducción reutilizable (barra de player, pantalla completa, waveform, ecualizador, cola), vistas de descubrimiento y perfil, un panel de artista y landings temáticas de vinilo/streaming/festival/clásica/hip-hop.",
+  "collection.cookbook.title": "Recetario y Recetas",
+  "collection.cookbook.desc":
+    "Publicación de recetas y contenido gastronómico — páginas de receta, modo cocina a pantalla completa con temporizadores, tarjetas imprimibles, historias de comida, video-recetas, primitivos reutilizables (lista de ingredientes, escalador de porciones, línea de pasos, datos nutricionales, badges, valoraciones), descubrimiento y planificación (búsqueda, índice de recetario, planificador semanal, lista de compras automática), un editor de recetas y panel de blog gastronómico, y cinco landings temáticas (rústica, revista de cocina, vintage, bienestar moderno, chef de restaurante).",
+  "collection.museum.title": "Museo y Galería",
+  "collection.museum.desc":
+    "Interfaces de instituciones culturales — páginas de exposición, exploración de colección, detalle de artefacto/obra con zoom profundo, tours virtuales de galería, planificación de visita y calendarios de eventos, primitivos culturales reutilizables (tarjeta de artefacto, muro de galería, línea de tiempo histórica, cartela/placa, audioguía, mapa de planta), boletería y membresía (reserva, niveles de patrocinio, donación, tienda), herramientas de curaduría/admin (gestor de catálogo, constructor de exposiciones, panel de asistencia), y cinco landings temáticas (bellas artes, historia natural, centro de ciencias, arte moderno/contemporáneo, historia/patrimonio). Blanco galería + carbón profundo + acento curatorial, tipografía serif refinada, amplio espacio en blanco, imágenes grandes.",
+  "collection.wiki.title": "Wiki y Base de Conocimiento",
+  "collection.wiki.desc":
+    "Artículos de wiki, páginas de documentación, referencias de API y tutoriales, primitivos de conocimiento reutilizables (infobox, TOC fijo, árbol de navegación, callouts, selector de versión, historial de revisiones, notas al pie), búsqueda facetada y command-K, un editor de artículos y panel de KB, más landings temáticas de enciclopedia/dev-docs/fandom/manual/soporte.",
+  "collection.patterns.title": "Patrones de UI de Producto",
+  "collection.patterns.desc":
+    "Superficies de UX transversales: flujos de onboarding y estados vacíos/de error, tablas de precios y paywalls, patrones de formularios y layouts de dashboard. Los momentos que deciden activación, conversión y retención.",
+  "collection.web3.title": "Cripto y Web3",
+  "collection.web3.desc":
+    "Paneles de wallet, swaps de tokens, enviar/recibir e historial de transacciones, primitivos web3 reutilizables (conectar wallet, chip de dirección, confirmación de tx, selector de gas, cambio de red), marketplace y detalle de NFT, staking y pools de liquidez, gobernanza DAO y landings temáticas de exchange/DeFi/NFT/cadena/wallet. Simulaciones solo de UI — sin wallet real ni llamadas on-chain.",
+  "collection.gamedev.title": "Desarrollo de Videojuegos",
+  "collection.gamedev.desc":
+    "Páginas de marketing y tienda de juegos, devlogs, press kits, rosters de personajes y mapas del mundo, primitivos de UI in-game reutilizables (HUD, menús, inventario, diálogos, árboles de habilidades, registros de misiones, barras de vida, pantallas de carga), leaderboards y landings temáticas en estilos AAA cinematográfico, pixel indie, casual móvil, arcade retro y RPG de fantasía. Simulaciones solo de UI — sin integraciones de motor.",
+  "collection.storybook.title": "Infantil y Cuentos",
+  "collection.storybook.desc":
+    "Interfaces infantiles y de libro ilustrado — lectores de cuentos con paso de página, lectura guiada resaltada, escenas interactivas, kit de actividades (tarjetas de abecedario, arrastrar para emparejar, lienzo para colorear, quizzes con estrellas, tableros de stickers, mascotas animadas), estantería de libros, panel para padres, perfiles de niño y landings temáticas (cuento de hadas, plano moderno, pop-up, educativo, bebé). Paletas suaves y brillantes, formas redondeadas, objetivos táctiles grandes, opciones dyslexia-friendly.",
+  "collection.travel.title": "Guía de Viajes y Revista",
+  "collection.travel.desc":
+    "Editorial de viajes y destinos — guías de destino/ciudad, reportajes fotográficos, itinerarios día a día, listicles, primitivos reutilizables (tarjetas POI, mapa+contenido, líneas de tiempo de itinerario, galerías, widgets de clima y presupuesto), explorar/planificador de viaje, editor de guías y dashboard del sitio, y landings temáticas (guía clásica, lujo, mochilero, estilo National-Geographic, agencia de viajes). Neutros cálidos, serif de display, fotografía a sangre.",
+  "collection.portfolio.title": "Portafolio y Currículum",
+  "collection.portfolio.desc":
+    "Bloques para sitios personales y portafolios de una página — hero/intro, tarjetas de proyecto, grids de trabajo, bio, líneas de tiempo de experiencia, skills, CTAs de contacto, testimonios, currículums listos para imprimir y ocho estilos temáticos (minimal/suizo, editorial, brutalista, terminal, motion, 3D interactivo, glass, playful). Colección de estilos: el mismo contenido reinterpretado en estéticas divergentes, listo para copiar y pegar.",
+  "collection.ecommerce.title": "E-commerce y Retail",
+  "collection.ecommerce.desc":
+    "Stack completo de tienda — home, categoría/PLP, detalle de producto, carrito, checkout, confirmación de pedido, cuenta, wishlist y búsqueda, primitivos de comercio (tarjetas de producto, selector de variantes, mini-carrito, precio/descuento, panel de filtros, reseñas, banners promo), páginas de marketing, admin de vendedor (dashboard, productos, pedidos, descuentos) y landings temáticas (moda, electrónica, supermercado, marketplace, lujo). Superficies limpias, fotografía de producto grande, precio/CTA destacados, señales de confianza.",
+  "collection.science.title": "Ciencia e Investigación",
+  "collection.science.desc":
+    "Publicación científica y comunicación de datos — layouts de artículo académico, preprint/arXiv, review/survey, póster de congreso y divulgación, primitivos científicos (figura+leyenda, bloque de ecuaciones, lista de citas, tabla de datos, tarjeta de abstract, autores/afiliación/ORCID, badges de revisión por pares), datos e interactivo (explorador de datasets, gráfico interactivo, línea de tiempo de experimentos, tabla periódica, visor de moléculas), sitios de laboratorio/grupo/revista y cinco landings temáticas (revista académica, revista de divulgación, laboratorio universitario, portal de datos abiertos, congreso científico). Blanco limpio + tinta + acento institucional, serif legible, ecuaciones tipo LaTeX, disciplina de figura-leyenda, WCAG AA.",
   "resource.copy": "Copiar",
   "resource.copied": "¡Copiado!",
   "resource.copiedPasteGemini": "¡Copiado! Gemini se abre en 3s — pega el contenido.",

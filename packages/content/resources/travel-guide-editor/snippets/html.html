@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wander — Guide Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#canvas">Skip to canvas</a>
+
+  <!-- ====================== TOP BAR ====================== -->
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+          <path d="M12 2C8.1 2 5 5 5 8.9 5 14 12 22 12 22s7-8 7-13.1C19 5 15.9 2 12 2Z" fill="currentColor"/>
+          <circle cx="12" cy="9" r="2.6" fill="#fbf7f1"/>
+        </svg>
+      </span>
+      <div class="brand__text">
+        <strong>Wander</strong>
+        <span>Guide Editor</span>
+      </div>
+    </div>
+
+    <div class="doc-meta" aria-live="polite">
+      <span class="doc-meta__title" id="docTitle">Lisboa in 72 Hours</span>
+      <span class="doc-meta__status" id="saveState">All changes saved</span>
+    </div>
+
+    <div class="topbar__actions">
+      <button class="btn btn--ghost" id="previewBtn" type="button">
+        <span aria-hidden="true">◷</span> Preview
+      </button>
+      <button class="btn btn--primary" id="publishBtn" type="button">Publish</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- ====================== LEFT: OUTLINE ====================== -->
+    <aside class="outline panel" aria-label="Guide outline">
+      <div class="panel__head">
+        <h2 class="panel__title">Outline</h2>
+        <button class="btn btn--mini" id="addSectionBtn" type="button" aria-label="Add section">+ Section</button>
+      </div>
+      <p class="outline__hint" id="outlineHint">Drag the handle to reorder · click to edit</p>
+      <ol class="section-list" id="sectionList" role="list"></ol>
+      <div class="outline__foot">
+        <span id="sectionCount">0 sections</span>
+        <span id="readTime">~0 min read</span>
+      </div>
+    </aside>
+
+    <!-- ====================== CENTER: CANVAS ====================== -->
+    <main class="canvas-wrap" id="canvas" tabindex="-1">
+      <article class="canvas" aria-label="Guide canvas">
+        <div class="cover" id="cover" data-scene="city">
+          <div class="cover__scene" id="coverScene" aria-hidden="true"></div>
+          <div class="cover__overlay">
+            <span class="cover__eyebrow" id="coverEyebrow">City Guide · Portugal</span>
+            <h1 class="cover__title" id="coverTitle" contenteditable="true" spellcheck="false" role="textbox" aria-label="Section title"></h1>
+            <span class="cover__badge" id="coverBadge" hidden>Best in Spring</span>
+          </div>
+          <span class="cover__draft" id="coverDraft">Draft — hidden from guide</span>
+        </div>
+
+        <div class="blocks" id="blocks" aria-live="polite"></div>
+      </article>
+    </main>
+
+    <!-- ====================== RIGHT: INSPECTOR ====================== -->
+    <aside class="inspector panel" aria-label="Section inspector">
+      <div class="panel__head">
+        <h2 class="panel__title">Inspector</h2>
+        <span class="inspector__tag" id="inspectorTag">Section</span>
+      </div>
+
+      <div class="inspector__body" id="inspectorBody">
+        <section class="field-group">
+          <label class="field">
+            <span class="field__label">Section title</span>
+            <input class="field__input" id="iTitle" type="text" autocomplete="off" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Eyebrow</span>
+            <input class="field__input" id="iEyebrow" type="text" autocomplete="off" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Body intro</span>
+            <textarea class="field__input field__textarea" id="iBody" rows="4"></textarea>
+          </label>
+
+          <div class="field">
+            <span class="field__label">Cover scene</span>
+            <div class="scene-pick" id="scenePick" role="radiogroup" aria-label="Cover scene">
+              <button class="scene-sw scene-sw--city"   data-scene="city"   type="button" role="radio" aria-checked="true"  aria-label="City"></button>
+              <button class="scene-sw scene-sw--coast"  data-scene="coast"  type="button" role="radio" aria-checked="false" aria-label="Coast"></button>
+              <button class="scene-sw scene-sw--alpine" data-scene="alpine" type="button" role="radio" aria-checked="false" aria-label="Alpine"></button>
+              <button class="scene-sw scene-sw--desert" data-scene="desert" type="button" role="radio" aria-checked="false" aria-label="Desert"></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="field-group">
+          <h3 class="field-group__title">Add block</h3>
+          <div class="block-add">
+            <button class="chip-btn" data-add="poi" type="button">＋ POI card</button>
+            <button class="chip-btn" data-add="map" type="button">🗺 Map block</button>
+            <button class="chip-btn" data-add="tip" type="button">💡 Tip callout</button>
+          </div>
+        </section>
+
+        <section class="field-group">
+          <h3 class="field-group__title">Settings</h3>
+          <div class="field">
+            <span class="field__label">Best time to visit</span>
+            <div class="seg" id="bestSeg" role="radiogroup" aria-label="Best time to visit">
+              <button class="seg__btn is-on" data-best="Spring" type="button" role="radio" aria-checked="true">Spring</button>
+              <button class="seg__btn" data-best="Summer" type="button" role="radio" aria-checked="false">Summer</button>
+              <button class="seg__btn" data-best="Autumn" type="button" role="radio" aria-checked="false">Autumn</button>
+              <button class="seg__btn" data-best="Winter" type="button" role="radio" aria-checked="false">Winter</button>
+            </div>
+          </div>
+
+          <label class="toggle">
+            <input type="checkbox" id="iPublish" />
+            <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+            <span class="toggle__text">Published in guide</span>
+          </label>
+        </section>
+
+        <section class="field-group">
+          <h3 class="field-group__title">SEO preview</h3>
+          <label class="field">
+            <span class="field__label">URL slug</span>
+            <span class="slug-wrap">
+              <span class="slug-pre">wander.guide / lisboa /</span>
+              <input class="field__input slug-in" id="iSlug" type="text" autocomplete="off" />
+            </span>
+          </label>
+          <div class="seo">
+            <span class="seo__url">wander.guide / lisboa / <span id="seoSlug">arrival</span></span>
+            <span class="seo__title" id="seoTitle">Arrival &amp; Alfama</span>
+            <p class="seo__desc" id="seoDesc">A practical, walkable opener for your first day in Lisboa.</p>
+            <div class="seo__meter"><span class="seo__meter-bar" id="seoBar"></span></div>
+            <span class="seo__hint" id="seoHint">Good length</span>
+          </div>
+        </section>
+
+        <div class="insp-stats">
+          <div class="stat"><strong id="statWords">0</strong><span>words</span></div>
+          <div class="stat"><strong id="statBlocks">0</strong><span>blocks</span></div>
+          <div class="stat"><strong id="statRead">0m</strong><span>read</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- toast region -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- preview modal -->
+  <div class="modal" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewHead" hidden>
+    <div class="modal__panel">
+      <header class="modal__head">
+        <h2 id="previewHead">Reader preview</h2>
+        <button class="btn btn--mini" id="closePreview" type="button" aria-label="Close preview">✕</button>
+      </header>
+      <div class="modal__body" id="previewBody"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A Survey of Neural Operators for PDE Surrogate Modeling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<a class="skip-link" href="#abstract">Skip to content</a>
+
+<header class="masthead" role="banner">
+  <div class="masthead-inner">
+    <div class="venue">
+      <span class="venue-mark">JCSM</span>
+      <span class="venue-meta">Journal of Computational Surrogate Modeling &middot; Vol. 14, No. 3 &middot; pp. 412&ndash;478</span>
+    </div>
+    <span class="badge badge-oa" aria-label="Open access">Open Access</span>
+  </div>
+</header>
+
+<div class="shell">
+  <!-- Sticky section nav -->
+  <nav class="toc" id="toc" aria-label="Section navigation">
+    <p class="toc-title">On this page</p>
+    <ol class="toc-list" id="tocList">
+      <li><a href="#abstract" data-target="abstract">Abstract</a></li>
+      <li><a href="#intro" data-target="intro">1. Introduction</a></li>
+      <li><a href="#taxonomy" data-target="taxonomy">2. Taxonomy of Methods</a></li>
+      <li><a href="#spectral" data-target="spectral">3. Spectral Operators</a></li>
+      <li><a href="#graph" data-target="graph">4. Graph &amp; Mesh Methods</a></li>
+      <li><a href="#transformer" data-target="transformer">5. Attention Operators</a></li>
+      <li><a href="#discussion" data-target="discussion">6. Open Challenges</a></li>
+      <li><a href="#references" data-target="references">References</a></li>
+    </ol>
+    <div class="reading-progress" aria-hidden="true"><span id="progressFill"></span></div>
+  </nav>
+
+  <main class="article" id="top">
+    <!-- Lead -->
+    <header class="article-head">
+      <p class="article-kicker">Review Article &middot; Machine Learning for Physics</p>
+      <h1 class="article-title">Neural Operators for PDE Surrogate Modeling: A Comparative Survey</h1>
+      <ul class="authors" aria-label="Authors">
+        <li><span class="a-name">Mira K. Holloway</span><sup>1</sup></li>
+        <li><span class="a-name">Tomás Renouf</span><sup>1,2</sup></li>
+        <li><span class="a-name">Aiko Vendel</span><sup>2</sup></li>
+        <li><span class="a-name">D. R. Castellano</span><sup>3</sup></li>
+      </ul>
+      <ol class="affiliations">
+        <li><sup>1</sup> Institute for Continuum Computation, Verlund University</li>
+        <li><sup>2</sup> Centre for Scientific Machine Learning, ETH Aldemar</li>
+        <li><sup>3</sup> Marrow National Laboratory, Applied Mathematics Division</li>
+      </ol>
+      <p class="article-doi">
+        <span class="mono">DOI: 10.48211/jcsm.2026.0143</span>
+        <span class="sep">&middot;</span>
+        Received 14 Jan 2026 <span class="sep">&middot;</span> Accepted 02 May 2026 <span class="sep">&middot;</span> Published 15 Jun 2026
+      </p>
+    </header>
+
+    <section id="abstract" class="abstract" aria-labelledby="abstract-h">
+      <h2 id="abstract-h" class="abstract-h">Abstract</h2>
+      <p>Neural operators learn mappings between function spaces and have emerged as fast surrogates for partial differential equation (PDE) solvers across fluid dynamics, electromagnetics, and climate modeling. This survey organizes the field into three families &mdash; <em>spectral</em>, <em>graph/mesh</em>, and <em>attention-based</em> operators &mdash; and compares them along discretization invariance, resolution generalization, training cost, and uncertainty quantification. We synthesize results from 84 fictional benchmark studies, identify recurring failure modes on multiscale problems, and outline open challenges in long-horizon rollout stability.</p>
+      <p class="abstract-keywords"><strong>Keywords:</strong> <span class="kw">neural operators</span> <span class="kw">surrogate modeling</span> <span class="kw">spectral methods</span> <span class="kw">PDE</span> <span class="kw">resolution invariance</span></p>
+    </section>
+
+    <!-- Section 1 -->
+    <section id="intro" class="section" aria-labelledby="intro-h">
+      <h2 id="intro-h" class="section-h"><span class="sec-num">1</span> Introduction</h2>
+      <p>Classical numerical solvers discretize a domain and march a fixed mesh forward in time, paying a steep cost when the same family of equations must be solved thousands of times during design optimization or data assimilation. <em>Neural operators</em> instead learn the solution operator <span class="ieq">G</span> directly, so that a single forward pass approximates the map from input fields (initial conditions, coefficients, boundary data) to the solution field.</p>
+
+      <p>The defining promise is <em>discretization invariance</em>: a model trained at one resolution should evaluate consistently at another. Formally, given an input function <span class="ieq">a</span> and target <span class="ieq">u</span>, the operator is approximated as</p>
+
+      <div class="equation" role="figure" aria-label="Operator learning objective">
+        <div class="eq-body"><span class="ieq">u</span>(<span class="ieq">x</span>) &asymp; <span class="ieq">G</span><sub>&theta;</sub>(<span class="ieq">a</span>)(<span class="ieq">x</span>) = &int;<sub>D</sub> <span class="op">&kappa;</span><sub>&theta;</sub>(<span class="ieq">x</span>, <span class="ieq">y</span>) <span class="ieq">a</span>(<span class="ieq">y</span>) d<span class="ieq">y</span>,</div>
+        <div class="eq-num">(1)</div>
+      </div>
+
+      <p>where <span class="ieq">&kappa;</span><sub>&theta;</sub> is a learned kernel and <span class="ieq">D</span> the spatial domain. Families of methods differ chiefly in how this integral kernel is parameterized &mdash; in the Fourier domain, on a graph, or through attention. Figure&nbsp;1 organizes the landscape we survey.</p>
+
+      <figure class="figure" id="fig-taxonomy">
+        <div class="taxonomy" role="img" aria-label="Taxonomy diagram of neural operator families branching from a root node into spectral, graph/mesh, and attention families, each with representative methods.">
+          <div class="tax-root">Neural<br>Operators</div>
+          <div class="tax-branches">
+            <div class="tax-col" data-fam="spectral">
+              <div class="tax-head">Spectral</div>
+              <ul><li>FNO</li><li>F-FNO</li><li>SpecBoost</li></ul>
+            </div>
+            <div class="tax-col" data-fam="graph">
+              <div class="tax-head">Graph / Mesh</div>
+              <ul><li>GNO</li><li>MeshGraphNet</li><li>U-Mesh</li></ul>
+            </div>
+            <div class="tax-col" data-fam="attn">
+              <div class="tax-head">Attention</div>
+              <ul><li>Galerkin-T</li><li>OFormer</li><li>LatentTok</li></ul>
+            </div>
+          </div>
+        </div>
+        <figcaption><span class="fig-label">Figure 1.</span> Taxonomy of neural operator families surveyed in this work. Hover a family to highlight the sections that discuss it; selecting a family scrolls to the corresponding analysis.</figcaption>
+      </figure>
+      <p class="fig-actions"><button class="btn-link" id="resetTax" type="button">Clear figure highlight</button></p>
+    </section>
+
+    <!-- Section 2 taxonomy / overview comparison -->
+    <section id="taxonomy" class="section" aria-labelledby="tax-h">
+      <h2 id="tax-h" class="section-h"><span class="sec-num">2</span> Taxonomy of Methods</h2>
+      <p>Table&nbsp;1 gives a high-level comparison across the three families on the properties that most affect deployment. A filled glyph (<span class="g g-yes" aria-label="yes">&#10003;</span>) denotes strong support, a partial glyph (<span class="g g-part" aria-label="partial">&#9643;</span>) a method-dependent or limited capability, and a cross (<span class="g g-no" aria-label="no">&#10007;</span>) denotes weak or absent support, as reported across the surveyed studies.</p>
+
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Table 1, scrollable">
+        <table class="cmp" id="overviewTable">
+          <caption><span class="fig-label">Table 1.</span> Family-level capability matrix. Click a column header to sort by that property.</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="sortable" data-key="name">Family</th>
+              <th scope="col" class="sortable" data-key="disc">Discretization<br>invariant</th>
+              <th scope="col" class="sortable" data-key="res">Zero-shot<br>super-res</th>
+              <th scope="col" class="sortable" data-key="irreg">Irregular<br>geometry</th>
+              <th scope="col" class="sortable" data-key="uq">Built-in<br>UQ</th>
+              <th scope="col" class="sortable" data-key="cost">Train cost<br><span class="unit">(GPU&middot;h)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-name="Spectral" data-disc="2" data-res="2" data-irreg="0" data-uq="0" data-cost="38">
+              <th scope="row">Spectral</th>
+              <td><span class="g g-yes">&#10003;</span></td>
+              <td><span class="g g-yes">&#10003;</span></td>
+              <td><span class="g g-no">&#10007;</span></td>
+              <td><span class="g g-no">&#10007;</span></td>
+              <td class="mono num">38</td>
+            </tr>
+            <tr data-name="Graph / Mesh" data-disc="1" data-res="1" data-irreg="2" data-uq="1" data-cost="71">
+              <th scope="row">Graph / Mesh</th>
+              <td><span class="g g-part">&#9643;</span></td>
+              <td><span class="g g-part">&#9643;</span></td>
+              <td><span class="g g-yes">&#10003;</span></td>
+              <td><span class="g g-part">&#9643;</span></td>
+              <td class="mono num">71</td>
+            </tr>
+            <tr data-name="Attention" data-disc="1" data-res="2" data-irreg="1" data-uq="2" data-cost="124">
+              <th scope="row">Attention</th>
+              <td><span class="g g-part">&#9643;</span></td>
+              <td><span class="g g-yes">&#10003;</span></td>
+              <td><span class="g g-part">&#9643;</span></td>
+              <td><span class="g g-yes">&#10003;</span></td>
+              <td class="mono num">124</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="takeaways" aria-label="Key takeaways for section 2">
+        <h3>Key takeaways</h3>
+        <ul>
+          <li>No single family dominates; the right choice is governed by geometry and uncertainty needs.</li>
+          <li>Spectral methods are cheapest to train but assume regular grids.</li>
+          <li>Attention operators offer the best uncertainty quantification at the highest compute cost.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- Section 3 spectral -->
+    <section id="spectral" class="section" aria-labelledby="spec-h">
+      <h2 id="spec-h" class="section-h"><span class="sec-num">3</span> Spectral Operators</h2>
+      <p>Spectral operators parameterize the kernel in the frequency domain, applying a learned multiplication after a fast transform. The Fourier Neural Operator (FNO) computes each layer as</p>
+
+      <div class="equation" role="figure" aria-label="Fourier layer update">
+        <div class="eq-body"><span class="ieq">v</span><sub>t+1</sub>(<span class="ieq">x</span>) = &sigma;&#8201;(<span class="ieq">W</span><span class="ieq">v</span><sub>t</sub>(<span class="ieq">x</span>) + <span class="op">&Fscr;</span><sup>&minus;1</sup>(<span class="ieq">R</span><sub>&theta;</sub> &middot; <span class="op">&Fscr;</span>(<span class="ieq">v</span><sub>t</sub>))(<span class="ieq">x</span>))</div>
+        <div class="eq-num">(2)</div>
+      </div>
+
+      <p>where <span class="op">&Fscr;</span> is the discrete Fourier transform and <span class="ieq">R</span><sub>&theta;</sub> retains only the lowest <span class="ieq">k</span><sub>max</sub> modes. This truncation yields resolution-invariant inference but limits accuracy on sharp, localized features.</p>
+
+      <blockquote class="pullquote">
+        <p>&ldquo;Mode truncation is both the source of the spectral operator&rsquo;s efficiency and the origin of its multiscale blind spot.&rdquo;</p>
+      </blockquote>
+
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Table 2, scrollable">
+        <table class="cmp">
+          <caption><span class="fig-label">Table 2.</span> Spectral methods on the fictional <span class="mono">Burgers-2D</span> benchmark (relative L<sup>2</sup> error, lower is better).</caption>
+          <thead>
+            <tr>
+              <th scope="col">Method</th>
+              <th scope="col">Res. invariant</th>
+              <th scope="col">Non-periodic BC</th>
+              <th scope="col">Rel. L<sup>2</sup> error</th>
+              <th scope="col">Params <span class="unit">(M)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">FNO</th><td><span class="g g-yes">&#10003;</span></td><td><span class="g g-no">&#10007;</span></td><td class="mono num">0.0182</td><td class="mono num">2.4</td></tr>
+            <tr><th scope="row">F-FNO</th><td><span class="g g-yes">&#10003;</span></td><td><span class="g g-part">&#9643;</span></td><td class="mono num">0.0114</td><td class="mono num">3.1</td></tr>
+            <tr><th scope="row">SpecBoost</th><td><span class="g g-yes">&#10003;</span></td><td><span class="g g-yes">&#10003;</span></td><td class="mono num">0.0079</td><td class="mono num">5.8</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="takeaways" aria-label="Key takeaways for section 3">
+        <h3>Key takeaways</h3>
+        <ul>
+          <li>Spectral models excel on periodic, structured-grid problems.</li>
+          <li>Boundary-aware variants (SpecBoost) recover most of the error gap on non-periodic domains.</li>
+          <li>Parameter counts stay modest relative to other families.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- Section 4 graph -->
+    <section id="graph" class="section" aria-labelledby="graph-h">
+      <h2 id="graph-h" class="section-h"><span class="sec-num">4</span> Graph &amp; Mesh Methods</h2>
+      <p>Graph neural operators discretize the kernel integral as message passing over a mesh, making them the natural choice for irregular geometries and adaptive refinement. The trade-off is a quadratic-leaning cost in neighborhood size and sensitivity to mesh quality.</p>
+
+      <blockquote class="pullquote">
+        <p>&ldquo;When the geometry is the problem &mdash; airfoils, vasculature, fractured media &mdash; mesh-native operators are not optional, they are the baseline.&rdquo;</p>
+      </blockquote>
+
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Table 3, scrollable">
+        <table class="cmp">
+          <caption><span class="fig-label">Table 3.</span> Graph/mesh operators on the fictional <span class="mono">Aero-Mesh</span> drag-prediction suite.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Method</th>
+              <th scope="col">Adaptive mesh</th>
+              <th scope="col">Long rollout</th>
+              <th scope="col">Drag MAE <span class="unit">(cts)</span></th>
+              <th scope="col">Inference <span class="unit">(ms)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">GNO</th><td><span class="g g-part">&#9643;</span></td><td><span class="g g-no">&#10007;</span></td><td class="mono num">7.4</td><td class="mono num">61</td></tr>
+            <tr><th scope="row">MeshGraphNet</th><td><span class="g g-yes">&#10003;</span></td><td><span class="g g-part">&#9643;</span></td><td class="mono num">4.1</td><td class="mono num">88</td></tr>
+            <tr><th scope="row">U-Mesh</th><td><span class="g g-yes">&#10003;</span></td><td><span class="g g-yes">&#10003;</span></td><td class="mono num">3.3</td><td class="mono num">52</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="takeaways" aria-label="Key takeaways for section 4">
+        <h3>Key takeaways</h3>
+        <ul>
+          <li>Mesh-native operators handle complex geometry where spectral methods cannot.</li>
+          <li>Hierarchical pooling (U-Mesh) stabilizes long rollouts and cuts inference time.</li>
+          <li>Accuracy is tightly coupled to mesh quality and connectivity.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- Section 5 attention -->
+    <section id="transformer" class="section" aria-labelledby="attn-h">
+      <h2 id="attn-h" class="section-h"><span class="sec-num">5</span> Attention Operators</h2>
+      <p>Attention-based operators treat sampled points as tokens and learn the kernel through softmax or linear attention. They generalize across resolutions and naturally express probabilistic outputs, but their compute and memory budgets are the largest in the survey.</p>
+
+      <div class="equation" role="figure" aria-label="Linear attention kernel">
+        <div class="eq-body"><span class="ieq">G</span>(<span class="ieq">a</span>)(<span class="ieq">x</span>) = &sum;<sub>j</sub> <span class="op">softmax</span><sub>j</sub>&#8201;(<span class="ieq">q</span>(<span class="ieq">x</span>) &middot; <span class="ieq">k</span>(<span class="ieq">y</span><sub>j</sub>) / &radic;<span class="ieq">d</span>) <span class="ieq">v</span>(<span class="ieq">y</span><sub>j</sub>)</div>
+        <div class="eq-num">(3)</div>
+      </div>
+
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Table 4, scrollable">
+        <table class="cmp">
+          <caption><span class="fig-label">Table 4.</span> Attention operators on the fictional <span class="mono">Climate-72</span> rollout benchmark.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Method</th>
+              <th scope="col">Linear attn.</th>
+              <th scope="col">Calibrated UQ</th>
+              <th scope="col">72h CRPS</th>
+              <th scope="col">Mem <span class="unit">(GB)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Galerkin-T</th><td><span class="g g-yes">&#10003;</span></td><td><span class="g g-no">&#10007;</span></td><td class="mono num">0.214</td><td class="mono num">18</td></tr>
+            <tr><th scope="row">OFormer</th><td><span class="g g-part">&#9643;</span></td><td><span class="g g-part">&#9643;</span></td><td class="mono num">0.188</td><td class="mono num">31</td></tr>
+            <tr><th scope="row">LatentTok</th><td><span class="g g-yes">&#10003;</span></td><td><span class="g g-yes">&#10003;</span></td><td class="mono num">0.161</td><td class="mono num">24</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="takeaways" aria-label="Key takeaways for section 5">
+        <h3>Key takeaways</h3>
+        <ul>
+          <li>Attention operators lead on calibrated uncertainty and long-horizon forecasts.</li>
+          <li>Latent tokenization (LatentTok) tames memory while keeping calibration.</li>
+          <li>Compute cost remains the principal barrier to adoption.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- Section 6 discussion -->
+    <section id="discussion" class="section" aria-labelledby="disc-h">
+      <h2 id="disc-h" class="section-h"><span class="sec-num">6</span> Open Challenges</h2>
+      <p>Across all three families, three problems recur: long-horizon rollout drift, distribution shift between training and deployment regimes, and the absence of standardized, geometry-rich benchmarks. We argue that progress hinges on physics-consistent training objectives and shared evaluation protocols rather than on architectural novelty alone.</p>
+      <blockquote class="pullquote">
+        <p>&ldquo;The field does not need a fourth family of operators so much as it needs benchmarks honest enough to tell the three apart.&rdquo;</p>
+      </blockquote>
+      <aside class="takeaways" aria-label="Key takeaways for section 6">
+        <h3>Key takeaways</h3>
+        <ul>
+          <li>Rollout stability, not single-step accuracy, is the binding constraint.</li>
+          <li>Standardized geometry-rich benchmarks are the most urgent community need.</li>
+          <li>Physics-consistent losses outperform purely data-driven objectives under shift.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- References collapsible -->
+    <section id="references" class="section references" aria-labelledby="ref-h">
+      <div class="ref-head">
+        <h2 id="ref-h" class="section-h"><span class="sec-num"></span>References</h2>
+        <button class="btn ghost" id="toggleRefs" type="button" aria-expanded="false" aria-controls="refList">Show references <span class="caret" aria-hidden="true">&#9656;</span></button>
+      </div>
+      <ol class="ref-list" id="refList" hidden>
+        <li id="r1"><span class="ref-authors">Holloway, M. K., &amp; Renouf, T.</span> (2024). Fourier neural operators revisited. <em>J. Comput. Surrog. Model.</em>, 12(2), 88&ndash;121. <span class="mono">doi:10.48211/jcsm.2024.0088</span></li>
+        <li id="r2"><span class="ref-authors">Vendel, A., et al.</span> (2025). Mesh-native message passing for aerodynamic surrogates. <em>Proc. SciML</em>, 4, 311&ndash;340. <span class="mono">doi:10.5066/sciml.2025.0311</span></li>
+        <li id="r3"><span class="ref-authors">Castellano, D. R.</span> (2023). Attention as an integral kernel. <em>Trans. Operator Learn.</em>, 7(1), 1&ndash;29. <span class="mono">doi:10.31021/tol.2023.0001</span></li>
+        <li id="r4"><span class="ref-authors">Aldemar SciML Group.</span> (2026). The Climate-72 rollout benchmark. <em>Datasets in Computational Science</em>, 9, 44&ndash;67. <span class="mono">doi:10.7910/dcs.2026.0044</span></li>
+        <li id="r5"><span class="ref-authors">Renouf, T., &amp; Vendel, A.</span> (2025). On calibration of probabilistic neural operators. <em>J. Comput. Surrog. Model.</em>, 13(4), 502&ndash;536. <span class="mono">doi:10.48211/jcsm.2025.0502</span></li>
+        <li id="r6"><span class="ref-authors">Marrow Lab Applied Math.</span> (2024). Boundary-aware spectral surrogates. <em>SIAM J. Sci. Approx.</em>, 46(3), A1100&ndash;A1132. <span class="mono">doi:10.1137/24sja1100</span></li>
+      </ol>
+    </section>
+
+    <footer class="article-foot">
+      <p>&copy; 2026 Journal of Computational Surrogate Modeling. Distributed under CC&nbsp;BY&nbsp;4.0. Article ID <span class="mono">jcsm.2026.0143</span>.</p>
+      <button class="btn ghost" id="toTop" type="button">Back to top &#8593;</button>
+    </footer>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

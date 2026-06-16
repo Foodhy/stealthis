@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Music — Sticky Bottom Player Bar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Page content (scrollable behind the sticky bar) -->
+  <main class="stage">
+    <header class="stage__head">
+      <span class="eyebrow">Now playing from</span>
+      <h1>Midnight Reservoir</h1>
+      <p class="byline">An album by <strong>Neon Tides</strong> · 2026 · Synthpop</p>
+    </header>
+
+    <section class="queue" aria-label="Up next">
+      <h2 class="queue__title">Up next in queue</h2>
+      <ol class="queue__list" id="queueList"></ol>
+    </section>
+  </main>
+
+  <!-- Sticky bottom player bar -->
+  <div
+    class="player"
+    id="player"
+    role="region"
+    aria-label="Now playing player"
+    style="--cover-a: var(--accent); --cover-b: var(--accent-2)"
+  >
+    <div class="player__inner">
+      <!-- LEFT: cover + meta + like -->
+      <div class="now" id="now">
+        <div class="now__cover" aria-hidden="true">
+          <div class="cover-art">
+            <span class="cover-art__blob"></span>
+            <span class="cover-art__blob cover-art__blob--2"></span>
+            <span class="cover-art__ring"></span>
+          </div>
+          <div class="eq" id="eq" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+        <div class="now__meta">
+          <div class="now__title" id="trackTitle">Paper Lanterns</div>
+          <div class="now__artist" id="trackArtist">Neon Tides</div>
+        </div>
+        <button
+          class="icon-btn like"
+          id="likeBtn"
+          type="button"
+          aria-pressed="false"
+          aria-label="Save to your library"
+          title="Like"
+        >
+          <svg viewBox="0 0 24 24" class="i-heart" aria-hidden="true">
+            <path d="M12 21s-7.5-4.6-10-9.1C.3 8.6 1.7 5 5.2 5c2 0 3.3 1.1 4.1 2.4C10.2 6.1 11.5 5 13.5 5 17 5 18.4 8.6 16.7 11.9 14.2 16.4 12 21 12 21z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- CENTER: transport + scrubber -->
+      <div class="transport">
+        <div class="transport__btns">
+          <button class="icon-btn t-toggle" id="shuffleBtn" type="button" aria-pressed="false" aria-label="Shuffle" title="Shuffle">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          </button>
+          <button class="icon-btn" id="prevBtn" type="button" aria-label="Previous track" title="Previous">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 20 9 12l10-8v16zM5 4v16"/></svg>
+          </button>
+          <button class="play-btn" id="playBtn" type="button" aria-pressed="false" aria-label="Play">
+            <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+            <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h4v15H7zM13 4.5h4v15h-4z"/></svg>
+          </button>
+          <button class="icon-btn" id="nextBtn" type="button" aria-label="Next track" title="Next">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4l10 8-10 8V4zM19 4v16"/></svg>
+          </button>
+          <button class="icon-btn t-toggle" id="repeatBtn" type="button" aria-pressed="false" aria-label="Repeat" title="Repeat">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </button>
+        </div>
+
+        <div class="scrub">
+          <span class="scrub__time" id="curTime">0:00</span>
+          <div
+            class="scrub__bar"
+            id="scrub"
+            role="slider"
+            tabindex="0"
+            aria-label="Seek"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-valuetext="0:00 of 0:00"
+          >
+            <div class="scrub__fill" id="scrubFill"></div>
+            <div class="scrub__thumb" id="scrubThumb"></div>
+          </div>
+          <span class="scrub__time" id="totTime">0:00</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: volume + queue + expand -->
+      <div class="extras">
+        <button class="icon-btn" id="muteBtn" type="button" aria-pressed="false" aria-label="Mute" title="Mute">
+          <svg class="i-vol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9a3 3 0 0 1 0 6M18.5 7a6 6 0 0 1 0 10"/></svg>
+          <svg class="i-mute" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9l5 6M21 9l-5 6"/></svg>
+        </button>
+        <div
+          class="vol"
+          id="vol"
+          role="slider"
+          tabindex="0"
+          aria-label="Volume"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="80"
+          aria-valuetext="80 percent"
+        >
+          <div class="vol__fill" id="volFill"></div>
+          <div class="vol__thumb" id="volThumb"></div>
+        </div>
+        <button class="icon-btn t-toggle" id="queueBtn" type="button" aria-pressed="true" aria-label="Toggle queue" title="Queue">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h13M3 12h13M3 18h9M18 14v6M18 14l3 2-3 2"/></svg>
+        </button>
+        <button class="icon-btn" id="expandBtn" type="button" aria-label="Expand to full screen" title="Full screen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

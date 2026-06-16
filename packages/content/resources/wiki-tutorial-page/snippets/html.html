@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deploying Project Nimbus to the Edge — Aurora DB Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#guide">Skip to guide</a>
+
+  <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="sidebar" aria-label="Open navigation">
+    <span></span><span></span><span></span>
+  </button>
+
+  <div class="layout">
+    <!-- ───────── Left sidebar nav ───────── -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◈</span>
+        <span class="brand-name">Aurora&nbsp;DB <em>Docs</em></span>
+      </div>
+
+      <div class="nav-group">
+        <p class="nav-head">Get started</p>
+        <a href="#" class="nav-link">Overview</a>
+        <a href="#" class="nav-link">Installation</a>
+        <a href="#" class="nav-link">Quickstart</a>
+      </div>
+
+      <div class="nav-group">
+        <p class="nav-head">Guides</p>
+        <a href="#" class="nav-link">Schema design</a>
+        <a href="#" class="nav-link">Replication topology</a>
+        <a href="#guide" class="nav-link is-current" aria-current="page">Deploy to the Edge</a>
+        <a href="#" class="nav-link">Backups &amp; recovery</a>
+      </div>
+
+      <div class="nav-group">
+        <p class="nav-head">Reference</p>
+        <a href="#" class="nav-link">CLI commands</a>
+        <a href="#" class="nav-link">Configuration</a>
+        <a href="#" class="nav-link">REST API</a>
+      </div>
+    </nav>
+
+    <div class="sidebar-scrim" id="scrim" hidden></div>
+
+    <!-- ───────── Main article ───────── -->
+    <main class="content" id="guide">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#">Docs</a><span aria-hidden="true">/</span>
+        <a href="#">Guides</a><span aria-hidden="true">/</span>
+        <span aria-current="page">Deploy to the Edge</span>
+      </nav>
+
+      <header class="guide-head">
+        <p class="eyebrow">Tutorial</p>
+        <h1>Deploying Project Nimbus to the Edge</h1>
+        <p class="lede">
+          Ship a read-replica of your <strong>Aurora DB</strong> cluster to the
+          <em>Verdant Edge</em> network so the fictional <strong>Project Nimbus</strong> storefront
+          serves catalog queries from a region close to every customer. By the end you will have a
+          live edge endpoint, a tuned cache, and a smoke-tested failover.
+        </p>
+
+        <ul class="meta-pills" aria-label="Guide details">
+          <li><span class="pill-k">Time</span><span class="pill-v">~25 min</span></li>
+          <li><span class="pill-k">Difficulty</span><span class="pill-v pill-med">Intermediate</span></li>
+          <li><span class="pill-k">Steps</span><span class="pill-v" id="stepTotalPill">7</span></li>
+          <li><span class="pill-k">Updated</span><span class="pill-v">Jun 8, 2026</span></li>
+        </ul>
+
+        <div class="callout callout-note" role="note">
+          <p class="callout-title"><span class="callout-icon" aria-hidden="true">✦</span> Prerequisites</p>
+          <ul>
+            <li>An Aurora DB cluster on <code>v4.2+</code> with the primary in a healthy state.</li>
+            <li>The <code>aurora</code> CLI installed and logged in (<kbd>aurora login</kbd>).</li>
+            <li>A Verdant Edge account with at least one <strong>deploy token</strong>.</li>
+            <li>Roughly <code>2 GB</code> of free disk on the build host for the snapshot.</li>
+          </ul>
+        </div>
+      </header>
+
+      <!-- ───────── Steps ───────── -->
+      <ol class="steps" id="steps">
+
+        <li class="step" id="step-1" data-step="1">
+          <div class="step-rail" aria-hidden="true"><span class="step-num">1</span></div>
+          <div class="step-body">
+            <div class="step-head">
+              <h2>Provision a read-replica</h2>
+              <label class="step-check">
+                <input type="checkbox" class="step-done" data-target="1" />
+                <span>Mark complete</span>
+              </label>
+            </div>
+            <p>
+              Start by carving off a <em>read-only</em> replica from the primary. Replicas stream the
+              write-ahead log and never accept writes, which makes them safe to push far from the
+              primary region. Give the replica a recognizable label so it shows up clearly in the
+              topology view.
+            </p>
+            <div class="code" data-lang="bash">
+              <div class="code-bar"><span class="code-lang">bash</span><button class="copy" type="button">Copy</button></div>
+<pre><code>aurora replica create \
+  --cluster nimbus-prod \
+  --label edge-verdant-eu \
+  --mode read-only \
+  --lag-budget 250ms</code></pre>
+            </div>
+            <p class="step-hint">The command prints a replica ID like <code>rpl_9f3ac21</code>. Keep it handy — later steps reference it.</p>
+          </div>
+        </li>
+
+        <li class="step" id="step-2" data-step="2">
+          <div class="step-rail" aria-hidden="true"><span class="step-num">2</span></div>
+          <div class="step-body">
+            <div class="step-head">
+              <h2>Snapshot and seed the edge node</h2>
+              <label class="step-check">
+                <input type="checkbox" class="step-done" data-target="2" />
+                <span>Mark complete</span>
+              </label>
+            </div>
+            <p>
+              The edge node needs a consistent base image before it can tail the log. Take a
+              point-in-time snapshot, then hand the snapshot URI to the seed command. Aurora verifies
+              the checksum on arrival, so a corrupted transfer fails loudly instead of silently.
+            </p>
+            <div class="code" data-lang="bash">
+              <div class="code-bar"><span class="code-lang">bash</span><button class="copy" type="button">Copy</button></div>
+<pre><code>aurora snapshot create rpl_9f3ac21 --out s3://nimbus-snaps/edge-eu.arz
+aurora edge seed \
+  --from s3://nimbus-snaps/edge-eu.arz \
+  --region verdant-eu-west \
+  --verify-checksum</code></pre>
+            </div>
+            <details class="solution">
+              <summary>Show solution — snapshot is stuck at <code>pending</code></summary>
+              <p>
+                A snapshot that stays <code>pending</code> usually means an open long-running
+                transaction is pinning the WAL. List them and cancel the offender, then re-run the
+                snapshot:
+              </p>
+              <div class="code" data-lang="bash">
+                <div class="code-bar"><span class="code-lang">bash</span><button class="copy" type="button">Copy</button></div>
+<pre><code>aurora tx list --cluster nimbus-prod --older-than 5m
+aurora tx cancel tx_4471</code></pre>
+              </div>
+            </details>
+          </div>
+        </li>
+
+        <li class="step" id="step-3" data-step="3">
+          <div class="step-rail" aria-hidden="true"><span class="step-num">3</span></div>
+          <div class="step-body">
+            <div class="step-head">
+              <h2>Configure the edge cache</h2>
+              <label class="step-check">
+                <input type="checkbox" class="step-done" data-target="3" />
+                <span>Mark complete</span>
+              </label>
+            </div>
+            <p>
+              Catalog reads are bursty and highly repetitive, so a small in-memory cache pays for
+              itself. Create an <code>edge.toml</code> alongside the node and declare which query
+              shapes are cacheable. Anything not listed falls through to the replica.
+            </p>
+            <div class="code" data-lang="toml">
+              <div class="code-bar"><span class="code-lang">edge.toml</span><button class="copy" type="button">Copy</button></div>
+<pre><code>[cache]
+size_mb   = 512
+ttl       = "30s"
+stale_ok  = true
+
+[[cache.rules]]
+match  = "catalog.product.read"
+key    = "{sku}:{locale}"
+ttl    = "120s"</code></pre>
+            </div>
+            <div class="callout callout-tip" role="note">
+              <p class="callout-title"><span class="callout-icon" aria-hidden="true">✓</span> Tip</p>
+              <p>Set <code>stale_ok = true</code> so the edge serves slightly stale data during a primary blip instead of erroring — almost always the right call for a storefront.</p>
+            </div>
+          </div>
+        </li>
+
+        <li class="step" id="step-4" data-step="4">
+          <div class="step-rail" aria-hidden="true"><span class="step-num">4</span></div>
+          <div class="step-body">
+            <div class="step-head">
+              <h2>Deploy the edge endpoint</h2>
+              <label class="step-check">
+                <input type="checkbox" class="step-done" data-target="4" />
+                <span>Mark complete</span>
+              </label>
+            </div>
+            <p>
+              With the node seeded and the cache configured, push the deploy. The CLI uploads the
+              config, rolls the node out region by region, and returns a public endpoint once the
+              first region reports healthy.
+            </p>
+            <div class="code" data-lang="bash">
+              <div class="code-bar"><span class="code-lang">bash</span><button class="copy" type="button">Copy</button></div>
+<pre><code>aurora edge deploy \
+  --config edge.toml \
+  --replica rpl_9f3ac21 \
+  --token "$VERDANT_DEPLOY_TOKEN"</code></pre>
+            </div>
+            <p class="step-hint">Output ends with your endpoint: <code>https://eu.edge.nimbus.aurora.dev</code>.</p>
+          </div>
+        </li>
+
+        <li class="step" id="step-5" data-step="5">
+          <div class="step-rail" aria-hidden="true"><span class="step-num">5</span></div>
+          <div class="step-body">
+            <div class="step-head">
+              <h2>Point the app at the edge</h2>
+              <label class="step-check">
+                <input type="checkbox" class="step-done" data-target="5" />
+                <span>Mark complete</span>
+              </label>
+            </div>
+            <p>
+              Route only <em>read</em> traffic to the edge while writes continue to the primary. The
+              Aurora client does this automatically when you pass a split connection string — reads
+              go to the nearest healthy edge, writes to <code>primary</code>.
+            </p>
+            <div class="code" data-lang="js">
+              <div class="code-bar"><span class="code-lang">app.config.js</span><button class="copy" type="button">Copy</button></div>
+<pre><code>export const db = createClient({
+  primary: "aurora://primary.nimbus.aurora.dev",
+  reads:   "aurora://eu.edge.nimbus.aurora.dev",
+  policy:  "nearest-healthy",
+});</code></pre>
+            </div>
+            <details class="solution">
+              <summary>Show solution — reads still hitting the primary</summary>
+              <p>
+                If latency hasn't dropped, the client may be ignoring the <code>reads</code> route
+                because the edge failed its health probe. Confirm the route and force a re-probe:
+              </p>
+              <div class="code" data-lang="bash">
+                <div class="code-bar"><span class="code-lang">bash</span><button class="copy" type="button">Copy</button></div>
+<pre><code>aurora edge status eu.edge.nimbus.aurora.dev
+aurora edge probe --force eu.edge.nimbus.aurora.dev</code></pre>
+              </div>
+            </details>
+          </div>
+        </li>
+
+        <li class="step" id="step-6" data-step="6">
+          <div class="step-rail" aria-hidden="true"><span class="step-num">6</span></div>
+          <div class="step-body">
+            <div class="step-head">
+              <h2>Verify replication lag</h2>
+              <label class="step-check">
+                <input type="checkbox" class="step-done" data-target="6" />
+                <span>Mark complete</span>
+              </label>
+            </div>
+            <p>
+              Before you trust the edge with live traffic, confirm it is keeping up. Watch the lag
+              metric for a minute or two under real load — it should sit comfortably under the
+              <code>250ms</code> budget you set in Step 1.
+            </p>
+            <div class="code" data-lang="bash">
+              <div class="code-bar"><span class="code-lang">bash</span><button class="copy" type="button">Copy</button></div>
+<pre><code>aurora edge watch eu.edge.nimbus.aurora.dev --metric lag --interval 2s</code></pre>
+            </div>
+            <div class="callout callout-warn" role="note">
+              <p class="callout-title"><span class="callout-icon" aria-hidden="true">!</span> Watch out</p>
+              <p>Sustained lag above the budget means the link is saturated. Lower the cache TTL or move the edge to a region with a shorter network path to the primary.</p>
+            </div>
+          </div>
+        </li>
+
+        <li class="step" id="step-7" data-step="7">
+          <div class="step-rail" aria-hidden="true"><span class="step-num">7</span></div>
+          <div class="step-body">
+            <div class="step-head">
+              <h2>Run a failover smoke test</h2>
+              <label class="step-check">
+                <input type="checkbox" class="step-done" data-target="7" />
+                <span>Mark complete</span>
+              </label>
+            </div>
+            <p>
+              Finally, prove the safety net works. Drain the edge node and confirm the client falls
+              back to the primary with zero failed reads. Aurora's <code>drain</code> is graceful —
+              in-flight queries finish before the node bows out.
+            </p>
+            <div class="code" data-lang="bash">
+              <div class="code-bar"><span class="code-lang">bash</span><button class="copy" type="button">Copy</button></div>
+<pre><code>aurora edge drain eu.edge.nimbus.aurora.dev --grace 10s
+aurora edge resume eu.edge.nimbus.aurora.dev</code></pre>
+            </div>
+            <p>
+              If reads stay green throughout the drain, your edge deployment is production-ready.
+              Repeat Steps 1–4 to add more regions to the <em>Verdant Edge</em> fleet.
+            </p>
+          </div>
+        </li>
+      </ol>
+
+      <!-- ───────── Next guide CTA ───────── -->
+      <a class="next-cta" href="#" id="nextCta">
+        <span class="next-k">Next guide</span>
+        <span class="next-t">Backups &amp; point-in-time recovery</span>
+        <span class="next-d">Schedule automated snapshots and restore Project Nimbus to any second in the last 35 days.</span>
+        <span class="next-arrow" aria-hidden="true">→</span>
+      </a>
+    </main>
+
+    <!-- ───────── Sticky progress sidebar ───────── -->
+    <aside class="progress" aria-label="Your progress">
+      <div class="progress-card">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 120 120" role="img" aria-labelledby="ringLabel">
+            <title id="ringLabel">Guide completion</title>
+            <circle class="ring-track" cx="60" cy="60" r="52" />
+            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52" />
+          </svg>
+          <div class="ring-text">
+            <strong id="ringPct">0%</strong>
+            <span id="ringCount">0 / 7</span>
+          </div>
+        </div>
+
+        <p class="progress-title">Your progress</p>
+        <ol class="progress-list" id="progressList">
+          <li><a href="#step-1" data-jump="1"><span class="dot"></span>Provision a read-replica</a></li>
+          <li><a href="#step-2" data-jump="2"><span class="dot"></span>Snapshot &amp; seed</a></li>
+          <li><a href="#step-3" data-jump="3"><span class="dot"></span>Configure the cache</a></li>
+          <li><a href="#step-4" data-jump="4"><span class="dot"></span>Deploy the endpoint</a></li>
+          <li><a href="#step-5" data-jump="5"><span class="dot"></span>Point the app</a></li>
+          <li><a href="#step-6" data-jump="6"><span class="dot"></span>Verify lag</a></li>
+          <li><a href="#step-7" data-jump="7"><span class="dot"></span>Failover smoke test</a></li>
+        </ol>
+        <button class="progress-reset" id="resetBtn" type="button">Reset progress</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

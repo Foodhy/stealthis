@@ -20,6 +20,9 @@ const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 const prefix = getLocalePrefix(locale);
 
+// Inline label — avoids adding a key to all ~16 typed locale maps for one button.
+const previewsLabel = locale === "es" ? "Mostrar vistas previas" : "Show previews";
+
 const allResources = (await getCollection("resources")).sort(
   (a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime()
 );
@@ -430,6 +433,43 @@ const discoverI18n = {
 
       <!-- Resource grid -->
       <div class="flex-1 min-w-0" id="resource-grid">
+
+        <!-- Preview toggle (opt-in; previews load only after activating) -->
+        <div class="flex items-center gap-2 mb-4">
+          <button
+            id="previews-toggle"
+            type="button"
+            aria-pressed="false"
+            title={previewsLabel}
+            class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-slate-400 hover:text-slate-200 hover:border-white/14 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            {previewsLabel}
+          </button>
+        </div>
+
+        <script>
+          // Opt-in previews: toggle active styling + tell FilterBar to load/unload
+          // the showcase-style preview iframes. Off by default (not persisted).
+          const previewsToggle = document.getElementById("previews-toggle");
+          if (previewsToggle) {
+            let enabled = false;
+            previewsToggle.addEventListener("click", () => {
+              enabled = !enabled;
+              previewsToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+              previewsToggle.classList.toggle("text-sky-400", enabled);
+              previewsToggle.classList.toggle("border-sky-400/50", enabled);
+              const svg = previewsToggle.querySelector("svg");
+              if (svg) svg.setAttribute("fill", enabled ? "currentColor" : "none");
+              window.dispatchEvent(
+                new CustomEvent("stealthis:previews-toggle", { detail: { enabled } })
+              );
+            });
+          }
+        </script>
 
         <!-- Sort bar -->
         {SHOW_SORT_BAR && (

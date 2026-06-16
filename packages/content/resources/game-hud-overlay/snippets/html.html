@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ashen Vanguard — HUD Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="stage" id="stage">
+    <!-- CSS-drawn game scene backdrop -->
+    <div class="scene" aria-hidden="true">
+      <div class="scene-sky"></div>
+      <div class="scene-sun"></div>
+      <div class="scene-ridge ridge-far"></div>
+      <div class="scene-ridge ridge-mid"></div>
+      <div class="scene-grid"></div>
+      <div class="scene-floor"></div>
+      <div class="scene-fog"></div>
+      <div class="scene-tower tower-a"></div>
+      <div class="scene-tower tower-b"></div>
+      <div class="scene-tower tower-c"></div>
+    </div>
+
+    <!-- HUD OVERLAY -->
+    <div class="hud" role="region" aria-label="In-game heads up display">
+
+      <!-- Top-left: vitals -->
+      <section class="hud-vitals" aria-label="Player vitals">
+        <div class="op-card">
+          <div class="op-avatar" aria-hidden="true">AV</div>
+          <div class="op-meta">
+            <span class="op-name">VANGUARD-07</span>
+            <span class="op-class">Ashen Operative · LVL 24</span>
+          </div>
+        </div>
+
+        <div class="bar-block">
+          <div class="bar-head">
+            <span class="bar-label">HEALTH</span>
+            <span class="bar-val"><span id="hpVal">100</span><i>/100</i></span>
+          </div>
+          <div class="seg-bar" id="hpBar" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div>
+        </div>
+
+        <div class="bar-block">
+          <div class="bar-head">
+            <span class="bar-label shield">SHIELD</span>
+            <span class="bar-val"><span id="shVal">75</span><i>/100</i></span>
+          </div>
+          <div class="seg-bar shield" id="shBar" role="progressbar" aria-label="Shield" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75"></div>
+        </div>
+      </section>
+
+      <!-- Top-center: objective banner -->
+      <section class="hud-objective" aria-label="Objective">
+        <div class="obj-banner">
+          <span class="obj-tag">OBJECTIVE</span>
+          <span class="obj-text" id="objText">Secure the Nullforge Relay — <strong id="objCount">2</strong>/3</span>
+        </div>
+        <div class="score-strip">
+          <span class="score-k">SCORE</span>
+          <span class="score-v" id="scoreVal">0</span>
+        </div>
+      </section>
+
+      <!-- Top-right: minimap / radar -->
+      <section class="hud-minimap" aria-label="Radar minimap">
+        <div class="map-frame">
+          <div class="radar" id="radar">
+            <span class="radar-ring r1"></span>
+            <span class="radar-ring r2"></span>
+            <span class="radar-cross h"></span>
+            <span class="radar-cross v"></span>
+            <span class="radar-sweep"></span>
+            <span class="radar-self"></span>
+          </div>
+          <div class="map-label"><span class="dot"></span> SECTOR · ND-12</div>
+        </div>
+      </section>
+
+      <!-- Kill feed -->
+      <ul class="kill-feed" id="killFeed" aria-label="Kill feed" aria-live="polite"></ul>
+
+      <!-- Center crosshair -->
+      <div class="crosshair" id="crosshair" aria-hidden="true">
+        <span class="ch t"></span><span class="ch r"></span><span class="ch b"></span><span class="ch l"></span>
+        <span class="ch dot"></span>
+      </div>
+
+      <!-- Bottom-left: abilities -->
+      <section class="hud-abilities" aria-label="Abilities">
+        <button class="ability" data-ability="dash" type="button" aria-label="Phase Dash ability">
+          <span class="ab-glyph">⟁</span>
+          <span class="ab-name">DASH</span>
+          <span class="ab-cd" aria-hidden="true"></span>
+          <span class="ab-key">Q</span>
+        </button>
+        <button class="ability" data-ability="pulse" type="button" aria-label="Ion Pulse ability">
+          <span class="ab-glyph">◎</span>
+          <span class="ab-name">PULSE</span>
+          <span class="ab-cd" aria-hidden="true"></span>
+          <span class="ab-key">E</span>
+        </button>
+        <button class="ability ult" data-ability="ult" type="button" aria-label="Ashfall ultimate ability">
+          <span class="ab-glyph">✦</span>
+          <span class="ab-name">ASHFALL</span>
+          <span class="ab-cd" aria-hidden="true"></span>
+          <span class="ab-key">X</span>
+        </button>
+      </section>
+
+      <!-- Bottom-center: ammo -->
+      <section class="hud-ammo" id="ammoBlock" aria-label="Weapon and ammo">
+        <div class="weapon-name">
+          <span class="wpn">HOLLOW REIGN</span>
+          <span class="wpn-sub">MK-IV · Pulse Rifle</span>
+        </div>
+        <div class="ammo-counter">
+          <span class="ammo-cur" id="ammoCur">30</span>
+          <span class="ammo-sep">/</span>
+          <span class="ammo-res" id="ammoRes">120</span>
+        </div>
+        <div class="reload-bar" id="reloadBar" aria-hidden="true"><span></span></div>
+        <div class="ammo-hint" id="ammoHint">FIRE-READY</div>
+      </section>
+
+      <!-- Bottom-right: controls -->
+      <section class="hud-controls" aria-label="Simulation controls">
+        <button class="ctl" id="btnSim" type="button"><span>▶</span> Simulate Combat</button>
+        <div class="ctl-row">
+          <button class="ctl sm danger" id="btnDamage" type="button">Take Damage</button>
+          <button class="ctl sm success" id="btnHeal" type="button">Heal</button>
+        </div>
+        <div class="ctl-row">
+          <button class="ctl sm" id="btnFire" type="button">Fire</button>
+          <button class="ctl sm accent" id="btnAbility" type="button">Use Ability</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

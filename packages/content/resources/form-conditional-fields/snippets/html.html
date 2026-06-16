@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conditional show/hide fields</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="card" aria-labelledby="form-title">
+        <header class="card__head">
+          <span class="badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M3 6h18v2H3zm3 5h12v2H6zm3 5h6v2H9z"
+              />
+            </svg>
+            Adaptive form
+          </span>
+          <h1 id="form-title" class="card__title">Open a business account</h1>
+          <p class="card__sub">
+            The form grows with your answers — extra fields appear only when they apply,
+            and hidden fields are never validated.
+          </p>
+        </header>
+
+        <!-- Error summary (shown only on a failed submit) -->
+        <div
+          id="summary"
+          class="summary"
+          role="alert"
+          tabindex="-1"
+          hidden
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-2h2zm0-4h-2V7h2z"
+            />
+          </svg>
+          <div>
+            <p class="summary__title" id="summary-title">Please fix these fields</p>
+            <ul class="summary__list" id="summary-list"></ul>
+          </div>
+        </div>
+
+        <form id="account" class="form" novalidate>
+          <!-- Full name -->
+          <div class="field" data-field="name">
+            <label class="field__label" for="name">
+              Full name <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="control">
+              <input
+                id="name"
+                name="name"
+                type="text"
+                class="input"
+                autocomplete="name"
+                placeholder="Priya Ramanathan"
+                required
+                aria-required="true"
+                aria-describedby="name-help"
+              />
+              <span class="control__icon" aria-hidden="true"></span>
+            </div>
+            <p id="name-help" class="help">The primary contact for the account.</p>
+          </div>
+
+          <!-- Email -->
+          <div class="field" data-field="email">
+            <label class="field__label" for="email">
+              Work email <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="control">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                class="input"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="priya@meridian.io"
+                required
+                aria-required="true"
+                aria-describedby="email-help"
+              />
+              <span class="control__icon" aria-hidden="true"></span>
+            </div>
+            <p id="email-help" class="help">We'll send the welcome packet here.</p>
+          </div>
+
+          <!-- ── Company toggle ── -->
+          <fieldset class="group" data-group="company">
+            <legend class="group__legend">
+              Are you opening this for a company?
+              <span class="req" aria-hidden="true">*</span>
+            </legend>
+            <div class="seg" role="radiogroup" aria-label="Are you opening this for a company?">
+              <label class="seg__opt">
+                <input type="radio" name="hasCompany" value="yes" />
+                <span class="seg__pill">Yes, a company</span>
+              </label>
+              <label class="seg__opt">
+                <input type="radio" name="hasCompany" value="no" />
+                <span class="seg__pill">No, just me</span>
+              </label>
+            </div>
+
+            <!-- Reveal: company details -->
+            <div class="reveal" data-reveal="company" hidden>
+              <div class="reveal__inner">
+                <div class="grid-2">
+                  <div class="field" data-field="companyName">
+                    <label class="field__label" for="companyName">
+                      Company name <span class="req" aria-hidden="true">*</span>
+                    </label>
+                    <div class="control">
+                      <input
+                        id="companyName"
+                        name="companyName"
+                        type="text"
+                        class="input"
+                        autocomplete="organization"
+                        placeholder="Meridian Labs, Inc."
+                        data-conditional="company"
+                        aria-describedby="companyName-help"
+                      />
+                      <span class="control__icon" aria-hidden="true"></span>
+                    </div>
+                    <p id="companyName-help" class="help">As registered legally.</p>
+                  </div>
+
+                  <div class="field" data-field="companySize">
+                    <label class="field__label" for="companySize">
+                      Team size <span class="req" aria-hidden="true">*</span>
+                    </label>
+                    <div class="control">
+                      <select
+                        id="companySize"
+                        name="companySize"
+                        class="input select"
+                        data-conditional="company"
+                        aria-describedby="companySize-help"
+                      >
+                        <option value="" disabled selected>Choose a range</option>
+                        <option value="1-9">1–9 people</option>
+                        <option value="10-49">10–49 people</option>
+                        <option value="50-249">50–249 people</option>
+                        <option value="250+">250+ people</option>
+                      </select>
+                      <span class="control__icon" aria-hidden="true"></span>
+                    </div>
+                    <p id="companySize-help" class="help">Helps us set sensible limits.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Billing address (always shown) -->
+          <div class="field" data-field="billing">
+            <label class="field__label" for="billing">
+              Billing address <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="control">
+              <input
+                id="billing"
+                name="billing"
+                type="text"
+                class="input"
+                autocomplete="billing street-address"
+                placeholder="48 Halcyon Row, Portland, OR 97204"
+                required
+                aria-required="true"
+                aria-describedby="billing-help"
+              />
+              <span class="control__icon" aria-hidden="true"></span>
+            </div>
+            <p id="billing-help" class="help">Street, city, state, ZIP.</p>
+          </div>
+
+          <!-- ── Shipping toggle ── -->
+          <fieldset class="group" data-group="shipping">
+            <legend class="group__legend">Where should we ship hardware?</legend>
+            <label class="check">
+              <input type="checkbox" id="sameAddr" name="sameAddr" checked />
+              <span class="check__box" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13">
+                  <path
+                    fill="currentColor"
+                    d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                  />
+                </svg>
+              </span>
+              <span class="check__text">Shipping address is the same as billing</span>
+            </label>
+
+            <!-- Reveal: shipping address -->
+            <div class="reveal" data-reveal="shipping" hidden>
+              <div class="reveal__inner">
+                <div class="field" data-field="shipping">
+                  <label class="field__label" for="shipping">
+                    Shipping address <span class="req" aria-hidden="true">*</span>
+                  </label>
+                  <div class="control">
+                    <input
+                      id="shipping"
+                      name="shipping"
+                      type="text"
+                      class="input"
+                      autocomplete="shipping street-address"
+                      placeholder="Suite 200, 19 Cedar Wharf, Seattle, WA 98101"
+                      data-conditional="shipping"
+                      aria-describedby="shipping-help"
+                    />
+                    <span class="control__icon" aria-hidden="true"></span>
+                  </div>
+                  <p id="shipping-help" class="help">Where deliveries should go instead.</p>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- ── Referral source ── -->
+          <fieldset class="group" data-group="referral">
+            <legend class="group__legend">
+              How did you hear about us? <span class="req" aria-hidden="true">*</span>
+            </legend>
+            <div class="field" data-field="referral">
+              <div class="control">
+                <select
+                  id="referral"
+                  name="referral"
+                  class="input select"
+                  required
+                  aria-required="true"
+                  aria-describedby="referral-help"
+                >
+                  <option value="" disabled selected>Select a source</option>
+                  <option value="search">Web search</option>
+                  <option value="friend">A friend or colleague</option>
+                  <option value="podcast">A podcast</option>
+                  <option value="conference">A conference</option>
+                  <option value="other">Other</option>
+                </select>
+                <span class="control__icon" aria-hidden="true"></span>
+              </div>
+              <p id="referral-help" class="help">Just so we know what's working.</p>
+            </div>
+
+            <!-- Reveal: other source -->
+            <div class="reveal" data-reveal="referral" hidden>
+              <div class="reveal__inner">
+                <div class="field" data-field="referralOther">
+                  <label class="field__label" for="referralOther">
+                    Tell us where <span class="req" aria-hidden="true">*</span>
+                  </label>
+                  <div class="control">
+                    <input
+                      id="referralOther"
+                      name="referralOther"
+                      type="text"
+                      class="input"
+                      placeholder="e.g. a newsletter, a YouTube review…"
+                      data-conditional="referral"
+                      aria-describedby="referralOther-help"
+                    />
+                    <span class="control__icon" aria-hidden="true"></span>
+                  </div>
+                  <p id="referralOther-help" class="help">A short note is plenty.</p>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <button id="submit" type="submit" class="submit">
+            <span class="submit__label">Create account</span>
+            <span class="submit__spin" aria-hidden="true"></span>
+          </button>
+
+          <p class="form__foot">
+            We only ask for what your answers require.
+            <a href="#" class="link">Privacy notice</a>.
+          </p>
+        </form>
+
+        <!-- Success overlay -->
+        <div id="done" class="done" hidden>
+          <div class="done__seal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="30" height="30">
+              <path
+                fill="currentColor"
+                d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+              />
+            </svg>
+          </div>
+          <h2 class="done__title" tabindex="-1">Account requested</h2>
+          <p class="done__text">
+            Thanks, <strong id="done-name">there</strong> — we captured
+            <strong id="done-fields">your details</strong> and will email
+            <strong id="done-email">you</strong> shortly.
+          </p>
+          <button type="button" class="ghost" id="reset">Start a new request</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

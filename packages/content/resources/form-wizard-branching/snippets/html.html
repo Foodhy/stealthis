@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Branching Wizard — Conditional Steps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="masthead">
+      <span class="kicker">Onboarding</span>
+      <h1 class="title">Create your Northwind account</h1>
+      <p class="sub">A wizard whose path adapts to your answers. Business accounts unlock extra company and tax steps that personal accounts skip.</p>
+    </header>
+
+    <section class="card" aria-label="Account setup wizard">
+      <!-- Progress / step rail -->
+      <div class="rail">
+        <div class="rail-head">
+          <p class="rail-count">
+            Step <span id="stepNow">1</span> of <span id="stepTotal">4</span>
+          </p>
+          <p class="rail-path" id="railPath">Personal path</p>
+        </div>
+        <div class="track" role="progressbar" aria-label="Wizard progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="track">
+          <div class="track-fill" id="trackFill"></div>
+        </div>
+        <ol class="crumbs" id="crumbs" aria-label="Steps in your current path"></ol>
+      </div>
+
+      <!-- Live region for validation summaries / status -->
+      <p class="sr-status" id="liveStatus" aria-live="polite"></p>
+
+      <form id="wizardForm" novalidate>
+        <div class="stage" id="stage">
+
+          <!-- STEP: account-type -->
+          <fieldset class="step" data-step="account-type" hidden>
+            <legend class="step-title">What kind of account is this?</legend>
+            <p class="step-sub">This decides which details we collect next.</p>
+            <div class="choice-grid" role="radiogroup" aria-label="Account type" aria-required="true">
+              <label class="choice">
+                <input type="radio" name="accountType" value="personal" />
+                <span class="choice-body">
+                  <span class="choice-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+                  </span>
+                  <span class="choice-name">Personal</span>
+                  <span class="choice-desc">Just for you. Three quick steps.</span>
+                </span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="accountType" value="business" />
+                <span class="choice-body">
+                  <span class="choice-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l6-3 6 3v13"/><path d="M15 21V11l6 3v7"/><path d="M3 21h18"/><path d="M7 11h.01M7 14h.01M7 17h.01"/></svg>
+                  </span>
+                  <span class="choice-name">Business</span>
+                  <span class="choice-desc">For a company. Adds VAT &amp; team steps.</span>
+                </span>
+              </label>
+            </div>
+            <p class="field-err" id="accountType-err" role="alert"></p>
+          </fieldset>
+
+          <!-- STEP: profile -->
+          <fieldset class="step" data-step="profile" hidden>
+            <legend class="step-title">Your details</legend>
+            <p class="step-sub">Tell us who's running this account.</p>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl" for="fullName">Full name <span class="req" aria-hidden="true">*</span></label>
+                <input class="inp" id="fullName" name="fullName" type="text" placeholder="Dana Okafor" autocomplete="name" aria-required="true" aria-describedby="fullName-help" />
+                <p class="help" id="fullName-help">As it should appear on your account.</p>
+                <p class="field-err" id="fullName-err" role="alert"></p>
+              </div>
+              <div class="field">
+                <label class="lbl" for="email">Email <span class="req" aria-hidden="true">*</span></label>
+                <input class="inp" id="email" name="email" type="email" placeholder="dana@example.com" autocomplete="email" aria-required="true" aria-describedby="email-help" />
+                <p class="help" id="email-help">We send a confirmation link here.</p>
+                <p class="field-err" id="email-err" role="alert"></p>
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl" for="password">Create a password <span class="req" aria-hidden="true">*</span></label>
+              <input class="inp" id="password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" aria-required="true" aria-describedby="password-help" />
+              <p class="help" id="password-help">Use 8+ characters with a number.</p>
+              <p class="field-err" id="password-err" role="alert"></p>
+            </div>
+          </fieldset>
+
+          <!-- STEP: company (business only) -->
+          <fieldset class="step" data-step="company" hidden>
+            <legend class="step-title">Company information</legend>
+            <p class="step-sub">Shown only because you chose a business account.</p>
+            <div class="field">
+              <label class="lbl" for="companyName">Legal company name <span class="req" aria-hidden="true">*</span></label>
+              <input class="inp" id="companyName" name="companyName" type="text" placeholder="Northwind Traders Ltd." autocomplete="organization" aria-required="true" aria-describedby="companyName-help" />
+              <p class="help" id="companyName-help">The registered legal entity name.</p>
+              <p class="field-err" id="companyName-err" role="alert"></p>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl" for="companySize">Team size <span class="req" aria-hidden="true">*</span></label>
+                <select class="inp sel" id="companySize" name="companySize" aria-required="true" aria-describedby="companySize-help">
+                  <option value="">Select a range…</option>
+                  <option value="1–10">1–10 people</option>
+                  <option value="11–50">11–50 people</option>
+                  <option value="51–200">51–200 people</option>
+                  <option value="200+">200+ people</option>
+                </select>
+                <p class="help" id="companySize-help">Helps us set seat defaults.</p>
+                <p class="field-err" id="companySize-err" role="alert"></p>
+              </div>
+              <div class="field">
+                <label class="lbl" for="country">Country of registration <span class="req" aria-hidden="true">*</span></label>
+                <select class="inp sel" id="country" name="country" aria-required="true" aria-describedby="country-help">
+                  <option value="">Select a country…</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="ES">Spain</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="US">United States</option>
+                </select>
+                <p class="help" id="country-help">Determines the tax fields we ask for.</p>
+                <p class="field-err" id="country-err" role="alert"></p>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- STEP: tax (business only) -->
+          <fieldset class="step" data-step="tax" hidden>
+            <legend class="step-title">Tax &amp; billing</legend>
+            <p class="step-sub">VAT is required for EU-registered businesses.</p>
+            <div class="field">
+              <span class="lbl" id="vatRegisteredLabel">Is your company VAT-registered? <span class="req" aria-hidden="true">*</span></span>
+              <div class="seg" role="radiogroup" aria-labelledby="vatRegisteredLabel" aria-required="true">
+                <label class="seg-opt"><input type="radio" name="vatRegistered" value="yes" /> <span>Yes</span></label>
+                <label class="seg-opt"><input type="radio" name="vatRegistered" value="no" /> <span>No</span></label>
+              </div>
+              <p class="field-err" id="vatRegistered-err" role="alert"></p>
+            </div>
+            <div class="field" id="vatNumberField" hidden>
+              <label class="lbl" for="vatNumber">VAT number <span class="req" aria-hidden="true">*</span></label>
+              <input class="inp" id="vatNumber" name="vatNumber" type="text" placeholder="DE123456789" autocomplete="off" aria-describedby="vatNumber-help" />
+              <p class="help" id="vatNumber-help">Country prefix followed by 8–12 digits.</p>
+              <p class="field-err" id="vatNumber-err" role="alert"></p>
+            </div>
+            <div class="field">
+              <label class="lbl" for="billingEmail">Billing email <span class="opt">(optional)</span></label>
+              <input class="inp" id="billingEmail" name="billingEmail" type="email" placeholder="finance@northwind.example" autocomplete="email" aria-describedby="billingEmail-help" />
+              <p class="help" id="billingEmail-help">Invoices go here instead of your account email.</p>
+              <p class="field-err" id="billingEmail-err" role="alert"></p>
+            </div>
+          </fieldset>
+
+          <!-- STEP: review -->
+          <fieldset class="step" data-step="review" hidden>
+            <legend class="step-title">Review &amp; finish</legend>
+            <p class="step-sub">Confirm everything looks right for your <span id="reviewPathName">account</span>.</p>
+            <dl class="summary" id="summary"></dl>
+            <label class="terms" for="terms">
+              <input type="checkbox" id="terms" name="terms" aria-required="true" aria-describedby="terms-err" />
+              <span>I agree to the Northwind Terms of Service and Privacy Policy. <span class="req" aria-hidden="true">*</span></span>
+            </label>
+            <p class="field-err" id="terms-err" role="alert"></p>
+          </fieldset>
+
+        </div>
+
+        <!-- Nav -->
+        <div class="nav">
+          <button type="button" class="btn ghost" id="backBtn" hidden>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            Back
+          </button>
+          <span class="nav-spacer"></span>
+          <button type="submit" class="btn primary" id="nextBtn">
+            <span id="nextLabel">Continue</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+      </form>
+
+      <!-- Success state -->
+      <div class="done" id="done" hidden>
+        <div class="done-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h2 class="done-title">Account created</h2>
+        <p class="done-msg" id="doneMsg">Welcome aboard. We've sent a confirmation link to your inbox.</p>
+        <button type="button" class="btn ghost" id="restartBtn">Start over</button>
+      </div>
+    </section>
+
+    <p class="footnote">Illustrative UI only — fictional company, people, and tax data.</p>
+  </main>
+
+  <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customers · Heliox Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Primary">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 2L3 7l9 5 9-5-9-5Z" fill="currentColor"/><path d="M3 12l9 5 9-5M3 17l9 5 9-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-name">Heliox</span>
+        <span class="brand-tag">Admin</span>
+      </div>
+      <nav class="nav" aria-label="Sections">
+        <a href="#" class="nav-item"><span class="dot" aria-hidden="true"></span>Overview</a>
+        <a href="#" class="nav-item is-active" aria-current="page"><span class="dot" aria-hidden="true"></span>Customers</a>
+        <a href="#" class="nav-item"><span class="dot" aria-hidden="true"></span>Subscriptions</a>
+        <a href="#" class="nav-item"><span class="dot" aria-hidden="true"></span>Invoices</a>
+        <a href="#" class="nav-item"><span class="dot" aria-hidden="true"></span>Usage</a>
+        <a href="#" class="nav-item"><span class="dot" aria-hidden="true"></span>Audit log</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="who">
+          <span class="avatar" aria-hidden="true">RM</span>
+          <span class="who-meta"><strong>Rae Morgan</strong><small>Revenue Ops</small></span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" id="main">
+      <header class="topbar">
+        <div class="crumbs">
+          <span>Accounts</span><span aria-hidden="true">/</span><strong>Customers</strong>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost" id="themeToggle" type="button" aria-pressed="false">
+            <span class="ico-sun" aria-hidden="true">☀</span><span class="lbl">Theme</span>
+          </button>
+          <button class="btn btn-primary" id="newBtn" type="button">+ New account</button>
+        </div>
+      </header>
+
+      <section class="page">
+        <div class="page-head">
+          <div>
+            <h1>Customers</h1>
+            <p class="sub">Manage accounts, plans, seats, and account health.</p>
+          </div>
+        </div>
+
+        <!-- Stat strip -->
+        <div class="stats" role="list">
+          <div class="stat" role="listitem">
+            <span class="stat-label">Accounts</span>
+            <strong class="stat-val" id="statAccounts">—</strong>
+            <span class="stat-trend up">live</span>
+          </div>
+          <div class="stat" role="listitem">
+            <span class="stat-label">Total MRR</span>
+            <strong class="stat-val" id="statMrr">—</strong>
+            <span class="stat-trend up">▲ 6.4%</span>
+          </div>
+          <div class="stat" role="listitem">
+            <span class="stat-label">Active seats</span>
+            <strong class="stat-val" id="statSeats">—</strong>
+            <span class="stat-trend up">▲ 3.1%</span>
+          </div>
+          <div class="stat" role="listitem">
+            <span class="stat-label">At-risk</span>
+            <strong class="stat-val" id="statRisk">—</strong>
+            <span class="stat-trend down">needs review</span>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar" role="region" aria-label="Filters">
+          <div class="search">
+            <span class="search-ico" aria-hidden="true">⌕</span>
+            <input id="search" type="search" placeholder="Search company or owner…" aria-label="Search customers" autocomplete="off" />
+          </div>
+          <label class="select">
+            <span class="vh">Plan</span>
+            <select id="planFilter" aria-label="Filter by plan">
+              <option value="">All plans</option>
+              <option value="Free">Free</option>
+              <option value="Starter">Starter</option>
+              <option value="Growth">Growth</option>
+              <option value="Scale">Scale</option>
+              <option value="Enterprise">Enterprise</option>
+            </select>
+          </label>
+          <label class="select">
+            <span class="vh">Status</span>
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="">Any status</option>
+              <option value="active">Active</option>
+              <option value="trialing">Trialing</option>
+              <option value="past_due">Past due</option>
+              <option value="churned">Churned</option>
+            </select>
+          </label>
+          <button class="btn btn-ghost" id="exportBtn" type="button">⭳ Export</button>
+        </div>
+
+        <!-- Bulk bar -->
+        <div class="bulkbar" id="bulkbar" hidden role="region" aria-label="Bulk actions">
+          <span><strong id="bulkCount">0</strong> selected</span>
+          <button class="btn btn-mini" id="bulkExport" type="button">Export selected</button>
+          <button class="btn btn-mini btn-warn" id="bulkFlag" type="button">Flag for review</button>
+          <button class="btn btn-mini btn-link" id="bulkClear" type="button">Clear</button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table class="grid" aria-label="Customer accounts">
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" id="checkAll" aria-label="Select all rows" /></th>
+                <th><button class="sort" data-key="company" type="button">Company <span class="caret" aria-hidden="true"></span></button></th>
+                <th><button class="sort" data-key="plan" type="button">Plan <span class="caret" aria-hidden="true"></span></button></th>
+                <th class="num"><button class="sort" data-key="mrr" type="button">MRR <span class="caret" aria-hidden="true"></span></button></th>
+                <th class="num"><button class="sort" data-key="seats" type="button">Seats <span class="caret" aria-hidden="true"></span></button></th>
+                <th><button class="sort" data-key="status" type="button">Status <span class="caret" aria-hidden="true"></span></button></th>
+                <th><button class="sort" data-key="health" type="button">Health <span class="caret" aria-hidden="true"></span></button></th>
+                <th class="col-act" aria-label="Actions"></th>
+              </tr>
+            </thead>
+            <tbody id="rows"><!-- rows injected --></tbody>
+          </table>
+
+          <div class="empty" id="empty" hidden>
+            <span class="empty-ico" aria-hidden="true">⌕</span>
+            <p><strong>No accounts match</strong><br/>Try clearing a filter or searching a different name.</p>
+            <button class="btn btn-ghost" id="resetEmpty" type="button">Reset filters</button>
+          </div>
+        </div>
+
+        <!-- Footer / pagination -->
+        <div class="pager">
+          <span class="pager-info" id="pagerInfo">—</span>
+          <div class="pager-ctl">
+            <button class="btn btn-ghost" id="prevPage" type="button" disabled>‹ Prev</button>
+            <span class="pager-pages" id="pagerPages"></span>
+            <button class="btn btn-ghost" id="nextPage" type="button">Next ›</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Detail drawer -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-label="Customer detail" aria-hidden="true" tabindex="-1">
+    <div class="drawer-inner" id="drawerInner"><!-- detail injected --></div>
+  </aside>
+
+  <div class="toast-wrap" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

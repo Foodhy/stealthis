@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acme Cloud — Team Members &amp; Roles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="shell">
+    <header class="topbar" role="banner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M12 7v10M7.5 9.5 12 12l4.5-2.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <div class="brand-name">
+          <strong>Acme Cloud</strong>
+          <span class="brand-sub">Workspace settings</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="workspace-pill" title="Current workspace">
+          <span class="dot" aria-hidden="true"></span> Northwind Org
+        </div>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Toggle dark mode">
+          <span class="theme-ico" aria-hidden="true">◐</span>
+          <span class="theme-label">Theme</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main" class="content" role="main">
+      <div class="page-head">
+        <div>
+          <h1>Team members &amp; roles</h1>
+          <p class="lede">Manage who can access this workspace and what they can do.</p>
+        </div>
+        <div class="seats" role="group" aria-label="Seat usage">
+          <div class="seats-meter">
+            <div class="seats-bar"><span id="seatsFill" style="width:0%"></span></div>
+            <div class="seats-text">
+              <strong id="seatsUsed">0</strong> of <span id="seatsTotal">12</span> seats used
+            </div>
+          </div>
+          <button class="btn btn-ghost" id="manageSeats" type="button">Manage plan</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- LEFT: members + table -->
+        <section class="card members-card" aria-labelledby="membersHead">
+          <div class="card-head">
+            <div>
+              <h2 id="membersHead">Members</h2>
+              <p class="muted" id="memberCount">—</p>
+            </div>
+            <div class="card-tools">
+              <div class="search">
+                <span class="search-ico" aria-hidden="true">⌕</span>
+                <input id="search" type="search" placeholder="Search name or email" aria-label="Search members" />
+              </div>
+              <div class="filter" role="group" aria-label="Filter by role">
+                <button class="chip is-active" data-role="all" type="button">All</button>
+                <button class="chip" data-role="Owner" type="button">Owner</button>
+                <button class="chip" data-role="Admin" type="button">Admin</button>
+                <button class="chip" data-role="Member" type="button">Member</button>
+                <button class="chip" data-role="Viewer" type="button">Viewer</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="members" aria-label="Workspace members">
+              <thead>
+                <tr>
+                  <th scope="col">Member</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Last active</th>
+                  <th scope="col" class="th-actions"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="memberRows"><!-- JS --></tbody>
+            </table>
+            <div class="empty" id="emptyState" hidden>
+              <div class="empty-ico" aria-hidden="true">🔍</div>
+              <p>No members match your search.</p>
+              <button class="btn btn-ghost" id="clearSearch" type="button">Clear filters</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT: invite + pending + permissions -->
+        <div class="side">
+          <section class="card invite-card" aria-labelledby="inviteHead">
+            <h2 id="inviteHead">Invite teammates</h2>
+            <p class="muted">They'll get an email to join Northwind Org.</p>
+            <form id="inviteForm" novalidate>
+              <div class="field">
+                <label for="inviteEmail">Email address</label>
+                <input id="inviteEmail" name="email" type="email" placeholder="name@company.com" autocomplete="off" required />
+                <p class="err" id="emailErr" role="alert" hidden></p>
+              </div>
+              <div class="field">
+                <label for="inviteRole">Role</label>
+                <select id="inviteRole" name="role">
+                  <option value="Admin">Admin</option>
+                  <option value="Member" selected>Member</option>
+                  <option value="Viewer">Viewer</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" type="submit">Send invite</button>
+            </form>
+          </section>
+
+          <section class="card pending-card" aria-labelledby="pendingHead">
+            <div class="card-head tight">
+              <h2 id="pendingHead">Pending invites <span class="count" id="pendingCount">0</span></h2>
+            </div>
+            <ul class="pending-list" id="pendingList" aria-live="polite"></ul>
+            <p class="pending-empty muted" id="pendingEmpty">No pending invites.</p>
+          </section>
+
+          <section class="card perms-card" aria-labelledby="permsHead">
+            <h2 id="permsHead">Role permissions</h2>
+            <ul class="perms" id="permsList"></ul>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div class="modal-backdrop" id="confirmBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmBody">
+      <h3 id="confirmTitle">Remove member?</h3>
+      <p id="confirmBody">This person will lose access to Northwind Org immediately.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirmCancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="confirmOk" type="button">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

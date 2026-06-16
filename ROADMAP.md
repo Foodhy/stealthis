@@ -2025,7 +2025,7 @@ If themes start repeating UI primitives (booking widgets, calendars, payment for
 
 ---
 
-## Phase 46 — Newspaper / Magazine / Editorial Theme 📰 PLAN
+## Phase 46 — Newspaper / Magazine / Editorial Theme 📰 ✅ DONE
 
 > Editorial publishing stack — front pages, article layouts, long-form features, opinion, photo essays, plus a newsroom CMS and themed mastheads (broadsheet, tabloid, glossy magazine, fashion editorial, literary journal).
 >
@@ -2038,53 +2038,53 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `news-front-page` | Front Page (masthead + multi-column lead grid) | pages | hard | [ ] |
-| 2 | `news-article` | Standard Article (byline · body · related) | pages | med | [ ] |
-| 3 | `news-longform-feature` | Long-form Feature (scroll, full-bleed, parallax) | pages | hard | [ ] |
-| 4 | `news-opinion-column` | Opinion / Editorial Column | pages | easy | [ ] |
-| 5 | `news-photo-essay` | Photo Essay / Visual Story | pages | med | [ ] |
-| 6 | `news-section-index` | Section Index (World · Sports · Culture) | pages | med | [ ] |
-| 7 | `news-live-blog` | Live Blog / Breaking News Stream | pages | med | [ ] |
-| 8 | `news-obituary` | Obituary / In Memoriam layout | ui-components | easy | [ ] |
+| 1 | `news-front-page` | Front Page (masthead + multi-column lead grid) | pages | hard | ✅ |
+| 2 | `news-article` | Standard Article (byline · body · related) | pages | med | ✅ |
+| 3 | `news-longform-feature` | Long-form Feature (scroll, full-bleed, parallax) | pages | hard | ✅ |
+| 4 | `news-opinion-column` | Opinion / Editorial Column | pages | easy | ✅ |
+| 5 | `news-photo-essay` | Photo Essay / Visual Story | pages | med | ✅ |
+| 6 | `news-section-index` | Section Index (World · Sports · Culture) | pages | med | ✅ |
+| 7 | `news-live-blog` | Live Blog / Breaking News Stream | pages | med | ✅ |
+| 8 | `news-obituary` | Obituary / In Memoriam layout | ui-components | easy | ✅ |
 
 ### 46.B — Editorial Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 9 | `news-masthead` | Masthead / Nameplate variants | ui-components | easy | [ ] |
-| 10 | `news-pull-quote` | Pull Quote & Drop Cap set | ui-components | easy | [ ] |
-| 11 | `news-byline-meta` | Byline · dateline · read-time meta | ui-components | easy | [ ] |
-| 12 | `news-column-grid` | Multi-column flow grid (CSS columns) | ui-components | med | [ ] |
-| 13 | `news-article-toc` | Sticky article TOC + progress | ui-components | med | [ ] |
-| 14 | `news-paywall-gate` | Paywall / subscribe gate overlay | ui-components | med | [ ] |
-| 15 | `news-newsletter-signup` | Inline newsletter signup | ui-components | easy | [ ] |
+| 9 | `news-masthead` | Masthead / Nameplate variants | ui-components | easy | ✅ |
+| 10 | `news-pull-quote` | Pull Quote & Drop Cap set | ui-components | easy | ✅ |
+| 11 | `news-byline-meta` | Byline · dateline · read-time meta | ui-components | easy | ✅ |
+| 12 | `news-column-grid` | Multi-column flow grid (CSS columns) | ui-components | med | ✅ |
+| 13 | `news-article-toc` | Sticky article TOC + progress | ui-components | med | ✅ |
+| 14 | `news-paywall-gate` | Paywall / subscribe gate overlay | ui-components | med | ✅ |
+| 15 | `news-newsletter-signup` | Inline newsletter signup | ui-components | easy | ✅ |
 
 ### 46.C — Magazine-Specific
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 16 | `news-mag-cover` | Magazine Cover (cover lines + hero) | pages | med | [ ] |
-| 17 | `news-mag-spread` | Two-page Spread layout | pages | hard | [ ] |
-| 18 | `news-mag-toc` | Magazine Table of Contents | pages | med | [ ] |
-| 19 | `news-mag-interview` | Q&A / Interview layout | pages | easy | [ ] |
+| 16 | `news-mag-cover` | Magazine Cover (cover lines + hero) | pages | med | ✅ |
+| 17 | `news-mag-spread` | Two-page Spread layout | pages | hard | ✅ |
+| 18 | `news-mag-toc` | Magazine Table of Contents | pages | med | ✅ |
+| 19 | `news-mag-interview` | Q&A / Interview layout | pages | easy | ✅ |
 
 ### 46.D — Newsroom CMS / Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 20 | `news-cms-editor` | Article Editor (headline · deck · body) | pages | hard | [ ] |
-| 21 | `news-cms-dashboard` | Newsroom Dashboard (queue · publish status) | pages | med | [ ] |
-| 22 | `news-cms-front-builder` | Front-page Layout Builder (drag slots) | pages | hard | [ ] |
+| 20 | `news-cms-editor` | Article Editor (headline · deck · body) | pages | hard | ✅ |
+| 21 | `news-cms-dashboard` | Newsroom Dashboard (queue · publish status) | pages | med | ✅ |
+| 22 | `news-cms-front-builder` | Front-page Layout Builder (drag slots) | pages | hard | ✅ |
 
 ### 46.E — Themed Mastheads / Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 23 | `news-landing-broadsheet` | Classic Broadsheet | Ink + cream + oxblood · Times-like serif · authoritative, dense | hard | [ ] |
-| 24 | `news-landing-tabloid` | Tabloid / Popular Daily | Black + white + bold red/yellow · condensed display · loud, punchy | med | [ ] |
-| 25 | `news-landing-glossy-mag` | Glossy Lifestyle Magazine | White + black + hot accent · fashion serif · airy, premium | med | [ ] |
-| 26 | `news-landing-fashion` | High-Fashion Editorial | Monochrome + single neon · thin couture sans · avant-garde, sparse | hard | [ ] |
-| 27 | `news-landing-literary` | Literary Journal / Review | Bone + ink + muted teal · book serif · contemplative, text-first | med | [ ] |
+| 23 | `news-landing-broadsheet` | Classic Broadsheet | Ink + cream + oxblood · Times-like serif · authoritative, dense | hard | ✅ |
+| 24 | `news-landing-tabloid` | Tabloid / Popular Daily | Black + white + bold red/yellow · condensed display · loud, punchy | med | ✅ |
+| 25 | `news-landing-glossy-mag` | Glossy Lifestyle Magazine | White + black + hot accent · fashion serif · airy, premium | med | ✅ |
+| 26 | `news-landing-fashion` | High-Fashion Editorial | Monochrome + single neon · thin couture sans · avant-garde, sparse | hard | ✅ |
+| 27 | `news-landing-literary` | Literary Journal / Review | Bone + ink + muted teal · book serif · contemplative, text-first | med | ✅ |
 
 ### Build order (Phase 46)
 
@@ -2095,9 +2095,17 @@ using the style of the news
 5. **CMS** — 20, 21, 22.
 6. **Landings** — 23 → 27.
 
+> **Progress (2026-06-08):** ✅ Complete. All 27 resources built via multi-agent workflow
+> (`docs/templates/phase46-editorial.workflow.js`) — each with `index.mdx` + `html/css/js`
+> snippets. New `editorial` collection wired in schema, www content config, `collections.ts`
+> (order 15, `NEW_LIBRARY_COLLECTION_IDS`), and i18n (en + es). MCP catalog regenerated (912
+> resources total; 27 distinct `news-*` slugs present).
+
 ---
 
-## Phase 47 — Science / Research Theme 🔬 PLAN
+## Phase 47 — Science / Research Theme 🔬 ✅ DONE
+
+> **Progress (2026-06-15):** 26/26 done via workflow `wf_e30a6aa0-753` (multi-agent, resumed past a session-limit cutoff at 11/26). New `science` collection wired in schema + www config + collections.ts + i18n (en/es) + docs. MCP catalog regenerated → 1380 resources.
 
 > Scientific publishing & data communication — academic paper layouts, dataset explorers, lab/research-group sites, figure & citation patterns, plus themed landings (academic journal, popular-science mag, research lab, dataset portal, scientific conference).
 >
@@ -2109,52 +2117,52 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `sci-paper-layout` | Academic Paper (abstract · sections · refs) | pages | hard | [ ] |
-| 2 | `sci-preprint-page` | Preprint / arXiv-style article page | pages | med | [ ] |
-| 3 | `sci-review-article` | Review / Survey layout (figures + tables) | pages | med | [ ] |
-| 4 | `sci-poster` | Conference Poster (single-sheet grid) | pages | med | [ ] |
-| 5 | `sci-popsci-article` | Popular-Science Article (explainer style) | pages | med | [ ] |
+| 1 | `sci-paper-layout` | Academic Paper (abstract · sections · refs) | pages | hard | ✅ |
+| 2 | `sci-preprint-page` | Preprint / arXiv-style article page | pages | med | ✅ |
+| 3 | `sci-review-article` | Review / Survey layout (figures + tables) | pages | med | ✅ |
+| 4 | `sci-poster` | Conference Poster (single-sheet grid) | pages | med | ✅ |
+| 5 | `sci-popsci-article` | Popular-Science Article (explainer style) | pages | med | ✅ |
 
 ### 47.B — Science Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `sci-figure-caption` | Figure + numbered caption block | ui-components | easy | [ ] |
-| 7 | `sci-equation-block` | Equation block (KaTeX-style display) | ui-components | med | [ ] |
-| 8 | `sci-citation-list` | References list + inline citation links | ui-components | med | [ ] |
-| 9 | `sci-data-table` | Scientific data table (units · sig figs) | ui-components | med | [ ] |
-| 10 | `sci-abstract-card` | Structured abstract card | ui-components | easy | [ ] |
-| 11 | `sci-author-affiliations` | Author + affiliation + ORCID block | ui-components | easy | [ ] |
-| 12 | `sci-peer-review-badge` | Peer-review / open-access status badges | ui-components | easy | [ ] |
+| 6 | `sci-figure-caption` | Figure + numbered caption block | ui-components | easy | ✅ |
+| 7 | `sci-equation-block` | Equation block (KaTeX-style display) | ui-components | med | ✅ |
+| 8 | `sci-citation-list` | References list + inline citation links | ui-components | med | ✅ |
+| 9 | `sci-data-table` | Scientific data table (units · sig figs) | ui-components | med | ✅ |
+| 10 | `sci-abstract-card` | Structured abstract card | ui-components | easy | ✅ |
+| 11 | `sci-author-affiliations` | Author + affiliation + ORCID block | ui-components | easy | ✅ |
+| 12 | `sci-peer-review-badge` | Peer-review / open-access status badges | ui-components | easy | ✅ |
 
 ### 47.C — Data & Interactive
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 13 | `sci-dataset-explorer` | Dataset Explorer (filter · download) | pages | hard | [ ] |
-| 14 | `sci-interactive-chart` | Interactive figure (toggle series) | ui-components | med | [ ] |
-| 15 | `sci-experiment-timeline` | Experiment / methods timeline | ui-components | med | [ ] |
-| 16 | `sci-periodic-table` | Interactive Periodic Table | pages | hard | [ ] |
-| 17 | `sci-molecule-viewer` | Molecule / structure viewer card | ui-components | hard | [ ] |
+| 13 | `sci-dataset-explorer` | Dataset Explorer (filter · download) | pages | hard | ✅ |
+| 14 | `sci-interactive-chart` | Interactive figure (toggle series) | ui-components | med | ✅ |
+| 15 | `sci-experiment-timeline` | Experiment / methods timeline | ui-components | med | ✅ |
+| 16 | `sci-periodic-table` | Interactive Periodic Table | pages | hard | ✅ |
+| 17 | `sci-molecule-viewer` | Molecule / structure viewer card | ui-components | hard | ✅ |
 
 ### 47.D — Lab / Group / Journal Sites
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 18 | `sci-lab-landing` | Research Lab / Group Landing | pages | med | [ ] |
-| 19 | `sci-publications-index` | Publications List (filter by year · topic) | pages | med | [ ] |
-| 20 | `sci-people-page` | Researchers / Team Page | pages | easy | [ ] |
-| 21 | `sci-journal-issue` | Journal Issue Index (vol · issue · articles) | pages | med | [ ] |
+| 18 | `sci-lab-landing` | Research Lab / Group Landing | pages | med | ✅ |
+| 19 | `sci-publications-index` | Publications List (filter by year · topic) | pages | med | ✅ |
+| 20 | `sci-people-page` | Researchers / Team Page | pages | easy | ✅ |
+| 21 | `sci-journal-issue` | Journal Issue Index (vol · issue · articles) | pages | med | ✅ |
 
 ### 47.E — Themed Science Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 22 | `sci-landing-journal` | Academic Journal (Nature/Science-style) | White + ink + signature red · classic serif · authoritative, scholarly | hard | [ ] |
-| 23 | `sci-landing-popsci` | Popular-Science Magazine | Deep blue + white + vivid accent · friendly sans + serif · curious, accessible | med | [ ] |
-| 24 | `sci-landing-lab` | University Research Lab | Institutional navy + grey + teal · clean grotesque · credible, modern | med | [ ] |
-| 25 | `sci-landing-dataset` | Open Data / Dataset Portal | White + slate + green · mono + sans · technical, utilitarian | med | [ ] |
-| 26 | `sci-landing-conference` | Scientific Conference | Charcoal + cyan + white · geometric sans · energetic, forward-looking | med | [ ] |
+| 22 | `sci-landing-journal` | Academic Journal (Nature/Science-style) | White + ink + signature red · classic serif · authoritative, scholarly | hard | ✅ |
+| 23 | `sci-landing-popsci` | Popular-Science Magazine | Deep blue + white + vivid accent · friendly sans + serif · curious, accessible | med | ✅ |
+| 24 | `sci-landing-lab` | University Research Lab | Institutional navy + grey + teal · clean grotesque · credible, modern | med | ✅ |
+| 25 | `sci-landing-dataset` | Open Data / Dataset Portal | White + slate + green · mono + sans · technical, utilitarian | med | ✅ |
+| 26 | `sci-landing-conference` | Scientific Conference | Charcoal + cyan + white · geometric sans · energetic, forward-looking | med | ✅ |
 
 ### Build order (Phase 47)
 
@@ -2166,63 +2174,65 @@ using the style of the news
 
 ---
 
-## Phase 48 — Museum / Gallery / Exhibition Theme 🏛️ PLAN
+## Phase 48 — Museum / Gallery / Exhibition Theme 🏛️ ✅ DONE
 
 > Cultural-institution stack — exhibition pages, collection browsing, artifact/artwork detail, virtual tours, ticketing & visit info, plus themed landings (art museum, natural history, science center, modern/contemporary art, history museum).
 >
 > Naming convention: `museum-<area>-<slug>`.
 > Shared design language: gallery white + deep charcoal + one curatorial accent · refined serif display + quiet sans · generous whitespace ("wall space") · large imagery · subtle gold/stone textures.
 > Collection: `museum`.
+>
+> **Progress (2026-06-15):** ✅ 25/25 done via multi-agent workflow (`wf_11b4e6ab-d54`). New `museum` collection wired in schema + www config + collections.ts + i18n (en/es) + docs (collections + choose-your-path). MCP catalog regenerated → 1379 resources.
 
 ### 48.A — Visitor-Facing
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `museum-exhibition-page` | Exhibition Page (hero · dates · themes) | pages | med | [ ] |
-| 2 | `museum-collection-browse` | Collection Browse (grid · filter by era/medium) | pages | hard | [ ] |
-| 3 | `museum-artifact-detail` | Artifact / Artwork Detail (provenance · zoom) | pages | med | [ ] |
-| 4 | `museum-virtual-tour` | Virtual Tour / Gallery Walk | pages | hard | [ ] |
-| 5 | `museum-visit-info` | Plan Your Visit (hours · tickets · map) | pages | easy | [ ] |
-| 6 | `museum-events-calendar` | Events & Programs Calendar | pages | med | [ ] |
+| 1 | `museum-exhibition-page` | Exhibition Page (hero · dates · themes) | pages | med | ✅ |
+| 2 | `museum-collection-browse` | Collection Browse (grid · filter by era/medium) | pages | hard | ✅ |
+| 3 | `museum-artifact-detail` | Artifact / Artwork Detail (provenance · zoom) | pages | med | ✅ |
+| 4 | `museum-virtual-tour` | Virtual Tour / Gallery Walk | pages | hard | ✅ |
+| 5 | `museum-visit-info` | Plan Your Visit (hours · tickets · map) | pages | easy | ✅ |
+| 6 | `museum-events-calendar` | Events & Programs Calendar | pages | med | ✅ |
 
 ### 48.B — Cultural Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `museum-artifact-card` | Artifact card (image · title · catalog no.) | ui-components | easy | [ ] |
-| 8 | `museum-gallery-wall` | Gallery wall / salon hang layout | ui-components | med | [ ] |
-| 9 | `museum-timeline` | Historical timeline (eras + milestones) | ui-components | med | [ ] |
-| 10 | `museum-label-plaque` | Object label / wall plaque component | ui-components | easy | [ ] |
-| 11 | `museum-audio-guide` | Audio-guide player (stop number + track) | ui-components | med | [ ] |
-| 12 | `museum-zoom-deepview` | Deep-zoom image viewer (artwork detail) | ui-components | hard | [ ] |
-| 13 | `museum-map-floor` | Floor map / gallery wayfinding | ui-components | med | [ ] |
+| 7 | `museum-artifact-card` | Artifact card (image · title · catalog no.) | ui-components | easy | ✅ |
+| 8 | `museum-gallery-wall` | Gallery wall / salon hang layout | ui-components | med | ✅ |
+| 9 | `museum-timeline` | Historical timeline (eras + milestones) | ui-components | med | ✅ |
+| 10 | `museum-label-plaque` | Object label / wall plaque component | ui-components | easy | ✅ |
+| 11 | `museum-audio-guide` | Audio-guide player (stop number + track) | ui-components | med | ✅ |
+| 12 | `museum-zoom-deepview` | Deep-zoom image viewer (artwork detail) | ui-components | hard | ✅ |
+| 13 | `museum-map-floor` | Floor map / gallery wayfinding | ui-components | med | ✅ |
 
 ### 48.C — Ticketing & Membership
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 14 | `museum-ticket-booking` | Ticket Booking (date · time slot · type) | pages | med | [ ] |
-| 15 | `museum-membership` | Membership / Patron tiers | pages | easy | [ ] |
-| 16 | `museum-donation` | Donation / Support panel | ui-components | easy | [ ] |
-| 17 | `museum-shop-card` | Gift-shop product card | ui-components | easy | [ ] |
+| 14 | `museum-ticket-booking` | Ticket Booking (date · time slot · type) | pages | med | ✅ |
+| 15 | `museum-membership` | Membership / Patron tiers | pages | easy | ✅ |
+| 16 | `museum-donation` | Donation / Support panel | ui-components | easy | ✅ |
+| 17 | `museum-shop-card` | Gift-shop product card | ui-components | easy | ✅ |
 
 ### 48.D — Curator / Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 18 | `museum-admin-catalog` | Collection Catalog Manager (CRUD) | pages | hard | [ ] |
-| 19 | `museum-admin-exhibition-builder` | Exhibition Builder (sequence objects) | pages | med | [ ] |
-| 20 | `museum-admin-attendance` | Attendance & Ticketing Dashboard | pages | med | [ ] |
+| 18 | `museum-admin-catalog` | Collection Catalog Manager (CRUD) | pages | hard | ✅ |
+| 19 | `museum-admin-exhibition-builder` | Exhibition Builder (sequence objects) | pages | med | ✅ |
+| 20 | `museum-admin-attendance` | Attendance & Ticketing Dashboard | pages | med | ✅ |
 
 ### 48.E — Themed Museum Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 21 | `museum-landing-art` | Fine Art Museum | Gallery white + charcoal + gold · classic serif · refined, timeless | med | [ ] |
-| 22 | `museum-landing-natural-history` | Natural History Museum | Bone + forest + amber · slab serif · earthy, exploratory | med | [ ] |
-| 23 | `museum-landing-science-center` | Science / Discovery Center | White + electric blue + lime · rounded sans · playful, hands-on | med | [ ] |
-| 24 | `museum-landing-modern-art` | Modern / Contemporary Art | Stark white + black + single neon · grotesque · bold, minimal | hard | [ ] |
-| 25 | `museum-landing-history` | History / Heritage Museum | Parchment + sepia + deep red · engraved serif · narrative, archival | med | [ ] |
+| 21 | `museum-landing-art` | Fine Art Museum | Gallery white + charcoal + gold · classic serif · refined, timeless | med | ✅ |
+| 22 | `museum-landing-natural-history` | Natural History Museum | Bone + forest + amber · slab serif · earthy, exploratory | med | ✅ |
+| 23 | `museum-landing-science-center` | Science / Discovery Center | White + electric blue + lime · rounded sans · playful, hands-on | med | ✅ |
+| 24 | `museum-landing-modern-art` | Modern / Contemporary Art | Stark white + black + single neon · grotesque · bold, minimal | hard | ✅ |
+| 25 | `museum-landing-history` | History / Heritage Museum | Parchment + sepia + deep red · engraved serif · narrative, archival | med | ✅ |
 
 ### Build order (Phase 48)
 
@@ -2235,7 +2245,7 @@ using the style of the news
 
 ---
 
-## Phase 49 — Game Dev Pages, Styles & Patterns 🎮 PLAN
+## Phase 49 — Game Dev Pages, Styles & Patterns 🎮 ✅ DONE
 
 > Game-facing web surfaces plus in-game UI patterns — marketing/store pages, devlogs & press kits, character/world content, and reusable HUD/menu primitives. Plus themed game landings across genres (AAA cinematic, indie pixel, mobile casual, retro arcade, fantasy RPG).
 >
@@ -2247,50 +2257,50 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `game-landing-hero` | Game Landing (trailer · wishlist CTA) | pages | hard | [ ] |
-| 2 | `game-store-page` | Store Page (Steam-style: media · specs · buy) | pages | hard | [ ] |
-| 3 | `game-features-page` | Features Showcase (mechanics scroll) | pages | med | [ ] |
-| 4 | `game-editions-compare` | Editions / Bundle Compare table | ui-components | med | [ ] |
-| 5 | `game-roadmap-page` | Game Roadmap / Early Access timeline | pages | med | [ ] |
-| 6 | `game-newsletter-signup` | Wishlist / Beta signup gate | ui-components | easy | [ ] |
+| 1 | `game-landing-hero` | Game Landing (trailer · wishlist CTA) | pages | hard | ✅ |
+| 2 | `game-store-page` | Store Page (Steam-style: media · specs · buy) | pages | hard | ✅ |
+| 3 | `game-features-page` | Features Showcase (mechanics scroll) | pages | med | ✅ |
+| 4 | `game-editions-compare` | Editions / Bundle Compare table | ui-components | med | ✅ |
+| 5 | `game-roadmap-page` | Game Roadmap / Early Access timeline | pages | med | ✅ |
+| 6 | `game-newsletter-signup` | Wishlist / Beta signup gate | ui-components | easy | ✅ |
 
 ### 49.B — Content & Community Pages
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `game-devlog` | Devlog / Update Post layout | pages | med | [ ] |
-| 8 | `game-press-kit` | Press Kit (presskit() style) | pages | med | [ ] |
-| 9 | `game-character-roster` | Character / Hero Roster (select grid) | pages | hard | [ ] |
-| 10 | `game-character-detail` | Character Detail (stats · lore · abilities) | pages | med | [ ] |
-| 11 | `game-world-map` | Interactive World / Level Map | pages | hard | [ ] |
-| 12 | `game-patch-notes` | Patch Notes / Changelog layout | ui-components | easy | [ ] |
-| 13 | `game-leaderboard-page` | Leaderboard / Rankings page | pages | med | [ ] |
+| 7 | `game-devlog` | Devlog / Update Post layout | pages | med | ✅ |
+| 8 | `game-press-kit` | Press Kit (presskit() style) | pages | med | ✅ |
+| 9 | `game-character-roster` | Character / Hero Roster (select grid) | pages | hard | ✅ |
+| 10 | `game-character-detail` | Character Detail (stats · lore · abilities) | pages | med | ✅ |
+| 11 | `game-world-map` | Interactive World / Level Map | pages | hard | ✅ |
+| 12 | `game-patch-notes` | Patch Notes / Changelog layout | ui-components | easy | ✅ |
+| 13 | `game-leaderboard-page` | Leaderboard / Rankings page | pages | med | ✅ |
 
 ### 49.C — In-Game UI Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 14 | `game-hud-overlay` | HUD overlay (health · ammo · minimap) | ui-components | hard | [ ] |
-| 15 | `game-main-menu` | Main Menu (Play · Options · Quit) | ui-components | med | [ ] |
-| 16 | `game-pause-menu` | Pause / Settings overlay | ui-components | med | [ ] |
-| 17 | `game-inventory-grid` | Inventory grid (drag · tooltips) | ui-components | hard | [ ] |
-| 18 | `game-dialogue-box` | Dialogue box (typewriter · choices) | ui-components | med | [ ] |
-| 19 | `game-skill-tree` | Skill / Tech tree (nodes + links) | ui-components | hard | [ ] |
-| 20 | `game-quest-log` | Quest log / objectives tracker | ui-components | med | [ ] |
-| 21 | `game-achievement-toast` | Achievement / trophy unlock toast | ui-components | easy | [ ] |
-| 22 | `game-health-bar` | Health / mana / XP bar variants | ui-components | easy | [ ] |
-| 23 | `game-loading-screen` | Loading screen (tips + progress) | ui-components | easy | [ ] |
-| 24 | `game-character-select` | Character / loadout select screen | ui-components | med | [ ] |
+| 14 | `game-hud-overlay` | HUD overlay (health · ammo · minimap) | ui-components | hard | ✅ |
+| 15 | `game-main-menu` | Main Menu (Play · Options · Quit) | ui-components | med | ✅ |
+| 16 | `game-pause-menu` | Pause / Settings overlay | ui-components | med | ✅ |
+| 17 | `game-inventory-grid` | Inventory grid (drag · tooltips) | ui-components | hard | ✅ |
+| 18 | `game-dialogue-box` | Dialogue box (typewriter · choices) | ui-components | med | ✅ |
+| 19 | `game-skill-tree` | Skill / Tech tree (nodes + links) | ui-components | hard | ✅ |
+| 20 | `game-quest-log` | Quest log / objectives tracker | ui-components | med | ✅ |
+| 21 | `game-achievement-toast` | Achievement / trophy unlock toast | ui-components | easy | ✅ |
+| 22 | `game-health-bar` | Health / mana / XP bar variants | ui-components | easy | ✅ |
+| 23 | `game-loading-screen` | Loading screen (tips + progress) | ui-components | easy | ✅ |
+| 24 | `game-character-select` | Character / loadout select screen | ui-components | med | ✅ |
 
 ### 49.D — Themed Game Landings (5 variants by genre/style)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 25 | `game-landing-aaa-cinematic` | AAA Cinematic (Souls/God-of-War-style) | Black + ember orange + steel · epic display serif · dramatic, full-bleed | hard | [ ] |
-| 26 | `game-landing-indie-pixel` | Indie Pixel-Art | Limited palette + scanlines · pixel font · charming, retro-modern | hard | [ ] |
-| 27 | `game-landing-mobile-casual` | Mobile Casual / Puzzle | Bright candy palette · rounded chunky sans · friendly, bouncy | med | [ ] |
-| 28 | `game-landing-retro-arcade` | Retro Arcade / Neon | Black + neon magenta/cyan · CRT glow display · 80s, high-energy | med | [ ] |
-| 29 | `game-landing-fantasy-rpg` | Fantasy RPG | Parchment + gold + deep crimson · ornate serif · epic, lore-rich | hard | [ ] |
+| 25 | `game-landing-aaa-cinematic` | AAA Cinematic (Souls/God-of-War-style) | Black + ember orange + steel · epic display serif · dramatic, full-bleed | hard | ✅ |
+| 26 | `game-landing-indie-pixel` | Indie Pixel-Art | Limited palette + scanlines · pixel font · charming, retro-modern | hard | ✅ |
+| 27 | `game-landing-mobile-casual` | Mobile Casual / Puzzle | Bright candy palette · rounded chunky sans · friendly, bouncy | med | ✅ |
+| 28 | `game-landing-retro-arcade` | Retro Arcade / Neon | Black + neon magenta/cyan · CRT glow display · 80s, high-energy | med | ✅ |
+| 29 | `game-landing-fantasy-rpg` | Fantasy RPG | Parchment + gold + deep crimson · ornate serif · epic, lore-rich | hard | ✅ |
 
 ### Build order (Phase 49)
 
@@ -2302,6 +2312,8 @@ using the style of the news
 
 > Note: Phase 49 mixes **web pages** (`game-landing-*`, `game-store-page`, `game-devlog`) with **in-game UI** (`game-hud-*`, `game-inventory-*`). Both are CSS/JS-renderable in Lab; the in-game patterns are simulated screens, not engine integrations.
 
+> **Progress (2026-06-12):** ✅ DONE — all 29 resources built via multi-agent workflow (`docs/templates/gamedev-phase49.workflow.js`). New `gamedev` collection wired in schema, www config, `collections.ts`, i18n (en/es), docs `collections.mdx`, and `choose-your-path.mdx`. MCP catalog regenerated. Covers 49.A marketing/store (6), 49.B content/community (7), 49.C in-game UI primitives (11), 49.D themed landings (5: AAA cinematic, indie pixel, mobile casual, retro arcade, fantasy RPG).
+
 ---
 
 ## Editorial & Content Theme Bundles — continued (Phases 50–56) 🧭 PLAN
@@ -2310,59 +2322,61 @@ using the style of the news
 
 ---
 
-## Phase 50 — Comics / Manga / Webtoon Theme 📖 PLAN
+## Phase 50 — Comics / Manga / Webtoon Theme 📖 ✅ DONE
 
 > Sequential-art publishing — panel-based reader layouts, vertical-scroll webtoon, chapter/series indexes, creator portal, plus themed landings across comic traditions (western comic, manga, webtoon, graphic novel, indie zine).
 >
 > Naming convention: `comic-<area>-<slug>`.
 > Shared design language: high-contrast ink + halftone textures + bold accent · display comic lettering + clean body sans · panel gutters and speech balloons as core primitives · immersive dark reader mode.
 > Collection: `comics`.
+>
+> **Progress (2026-06-08):** ✅ all 21 resources built via parallel multi-agent workflow (`docs/templates/comics-phase50.workflow.js`). Collection `comics` wired in schema + www config + collections.ts (order 16) + i18n (en/es) + docs collections table. MCP catalog regenerated (923 resources).
 
 ### 50.A — Reader Layouts
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `comic-page-reader` | Paged Comic Reader (page flip · zoom) | pages | hard | [ ] |
-| 2 | `comic-webtoon-reader` | Vertical-Scroll Webtoon Reader | pages | med | [ ] |
-| 3 | `comic-panel-grid` | Classic Panel Grid Page | pages | med | [ ] |
-| 4 | `comic-guided-view` | Guided View (panel-by-panel transitions) | pages | hard | [ ] |
-| 5 | `comic-cover-page` | Issue Cover Page | ui-components | easy | [ ] |
+| 1 | `comic-page-reader` | Paged Comic Reader (page flip · zoom) | pages | hard | ✅ |
+| 2 | `comic-webtoon-reader` | Vertical-Scroll Webtoon Reader | pages | med | ✅ |
+| 3 | `comic-panel-grid` | Classic Panel Grid Page | pages | med | ✅ |
+| 4 | `comic-guided-view` | Guided View (panel-by-panel transitions) | pages | hard | ✅ |
+| 5 | `comic-cover-page` | Issue Cover Page | ui-components | easy | ✅ |
 
 ### 50.B — Comic Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `comic-speech-balloon` | Speech / thought / shout balloon set | ui-components | easy | [ ] |
-| 7 | `comic-panel-frame` | Panel frame + gutter system | ui-components | med | [ ] |
-| 8 | `comic-sfx-text` | Sound-effect (SFX) lettering | ui-components | easy | [ ] |
-| 9 | `comic-halftone-bg` | Halftone / Ben-Day dot backgrounds | ui-components | easy | [ ] |
-| 10 | `comic-caption-box` | Narration caption box | ui-components | easy | [ ] |
+| 6 | `comic-speech-balloon` | Speech / thought / shout balloon set | ui-components | easy | ✅ |
+| 7 | `comic-panel-frame` | Panel frame + gutter system | ui-components | med | ✅ |
+| 8 | `comic-sfx-text` | Sound-effect (SFX) lettering | ui-components | easy | ✅ |
+| 9 | `comic-halftone-bg` | Halftone / Ben-Day dot backgrounds | ui-components | easy | ✅ |
+| 10 | `comic-caption-box` | Narration caption box | ui-components | easy | ✅ |
 
 ### 50.C — Series & Discovery
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 11 | `comic-series-page` | Series Page (synopsis · chapters list) | pages | med | [ ] |
-| 12 | `comic-chapter-index` | Chapter / Episode Index | ui-components | easy | [ ] |
-| 13 | `comic-library-browse` | Browse / Discover (genre grid) | pages | med | [ ] |
-| 14 | `comic-character-bio` | Character Bio / Cast page | ui-components | easy | [ ] |
+| 11 | `comic-series-page` | Series Page (synopsis · chapters list) | pages | med | ✅ |
+| 12 | `comic-chapter-index` | Chapter / Episode Index | ui-components | easy | ✅ |
+| 13 | `comic-library-browse` | Browse / Discover (genre grid) | pages | med | ✅ |
+| 14 | `comic-character-bio` | Character Bio / Cast page | ui-components | easy | ✅ |
 
 ### 50.D — Creator / Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 15 | `comic-creator-upload` | Episode Upload / Panel Sequencer | pages | hard | [ ] |
-| 16 | `comic-creator-dashboard` | Creator Dashboard (views · subs · revenue) | pages | med | [ ] |
+| 15 | `comic-creator-upload` | Episode Upload / Panel Sequencer | pages | hard | ✅ |
+| 16 | `comic-creator-dashboard` | Creator Dashboard (views · subs · revenue) | pages | med | ✅ |
 
 ### 50.E — Themed Comic Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 17 | `comic-landing-western` | Western Superhero Comic | Bold primary + ink + halftone · blocky display · dynamic, heroic | hard | [ ] |
-| 18 | `comic-landing-manga` | Manga | B/W + screentone + red accent · vertical-friendly · kinetic, expressive | med | [ ] |
-| 19 | `comic-landing-webtoon` | Webtoon Platform | Bright flat + white · rounded sans · modern, mobile-first | med | [ ] |
-| 20 | `comic-landing-graphic-novel` | Graphic Novel | Muted painterly + cream · literary serif · mature, cinematic | hard | [ ] |
-| 21 | `comic-landing-indie-zine` | Indie Zine / Webcomic | Limited photocopy palette · handwritten + mono · raw, DIY | med | [ ] |
+| 17 | `comic-landing-western` | Western Superhero Comic | Bold primary + ink + halftone · blocky display · dynamic, heroic | hard | ✅ |
+| 18 | `comic-landing-manga` | Manga | B/W + screentone + red accent · vertical-friendly · kinetic, expressive | med | ✅ |
+| 19 | `comic-landing-webtoon` | Webtoon Platform | Bright flat + white · rounded sans · modern, mobile-first | med | ✅ |
+| 20 | `comic-landing-graphic-novel` | Graphic Novel | Muted painterly + cream · literary serif · mature, cinematic | hard | ✅ |
+| 21 | `comic-landing-indie-zine` | Indie Zine / Webcomic | Limited photocopy palette · handwritten + mono · raw, DIY | med | ✅ |
 
 ### Build order (Phase 50)
 
@@ -2374,7 +2388,9 @@ using the style of the news
 
 ---
 
-## Phase 51 — Cookbook / Recipe Theme 🍳 PLAN
+## Phase 51 — Cookbook / Recipe Theme 🍳 ✅ DONE
+
+> **Progress (2026-06-15):** 22/22 done via workflow `wf_95cb698e-cbe` (16 first pass, 6 landings+admin on resume after a session-limit cut). New `cookbook` collection wired in schema, www config, collections.ts (explorer card order 27 + New badge), i18n en+es, docs `collections.mdx` + `choose-your-path.mdx`. MCP catalog regenerated → 1373 resources.
 
 > Recipe publishing & food content — recipe pages, step-by-step cook mode, ingredient scaling, collections/meal plans, plus themed landings (rustic cookbook, food magazine, vintage, modern wellness, restaurant chef).
 >
@@ -2386,48 +2402,48 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `recipe-detail` | Recipe Page (ingredients · steps · notes) | pages | med | [ ] |
-| 2 | `recipe-cook-mode` | Cook Mode (full-screen step-by-step + timers) | pages | med | [ ] |
-| 3 | `recipe-card-print` | Printable Recipe Card | ui-components | easy | [ ] |
-| 4 | `recipe-story-feature` | Recipe Feature / Food Story (long-form) | pages | med | [ ] |
-| 5 | `recipe-video-recipe` | Video Recipe layout (steps synced) | pages | med | [ ] |
+| 1 | `recipe-detail` | Recipe Page (ingredients · steps · notes) | pages | med | ✅ |
+| 2 | `recipe-cook-mode` | Cook Mode (full-screen step-by-step + timers) | pages | med | ✅ |
+| 3 | `recipe-card-print` | Printable Recipe Card | ui-components | easy | ✅ |
+| 4 | `recipe-story-feature` | Recipe Feature / Food Story (long-form) | pages | med | ✅ |
+| 5 | `recipe-video-recipe` | Video Recipe layout (steps synced) | pages | med | ✅ |
 
 ### 51.B — Recipe Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `recipe-ingredient-list` | Ingredient list + check-off | ui-components | easy | [ ] |
-| 7 | `recipe-scaler` | Serving scaler (½× · 2× quantities) | ui-components | med | [ ] |
-| 8 | `recipe-step-timeline` | Numbered step timeline w/ inline timers | ui-components | med | [ ] |
-| 9 | `recipe-nutrition-facts` | Nutrition facts panel | ui-components | easy | [ ] |
-| 10 | `recipe-meta-badges` | Prep/cook time · difficulty · diet badges | ui-components | easy | [ ] |
-| 11 | `recipe-rating-reviews` | Recipe rating + reviews block | ui-components | easy | [ ] |
+| 6 | `recipe-ingredient-list` | Ingredient list + check-off | ui-components | easy | ✅ |
+| 7 | `recipe-scaler` | Serving scaler (½× · 2× quantities) | ui-components | med | ✅ |
+| 8 | `recipe-step-timeline` | Numbered step timeline w/ inline timers | ui-components | med | ✅ |
+| 9 | `recipe-nutrition-facts` | Nutrition facts panel | ui-components | easy | ✅ |
+| 10 | `recipe-meta-badges` | Prep/cook time · difficulty · diet badges | ui-components | easy | ✅ |
+| 11 | `recipe-rating-reviews` | Recipe rating + reviews block | ui-components | easy | ✅ |
 
 ### 51.C — Collections & Planning
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 12 | `recipe-browse` | Browse / Search (cuisine · diet filters) | pages | med | [ ] |
-| 13 | `recipe-collection` | Recipe Collection / Cookbook index | pages | easy | [ ] |
-| 14 | `recipe-meal-planner` | Weekly Meal Planner (drag recipes) | pages | hard | [ ] |
-| 15 | `recipe-shopping-list` | Auto Shopping List (from selected recipes) | ui-components | med | [ ] |
+| 12 | `recipe-browse` | Browse / Search (cuisine · diet filters) | pages | med | ✅ |
+| 13 | `recipe-collection` | Recipe Collection / Cookbook index | pages | easy | ✅ |
+| 14 | `recipe-meal-planner` | Weekly Meal Planner (drag recipes) | pages | hard | ✅ |
+| 15 | `recipe-shopping-list` | Auto Shopping List (from selected recipes) | ui-components | med | ✅ |
 
 ### 51.D — Creator / Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 16 | `recipe-editor` | Recipe Editor (ingredients + steps builder) | pages | med | [ ] |
-| 17 | `recipe-admin-dashboard` | Food Blog Dashboard (traffic · top recipes) | pages | med | [ ] |
+| 16 | `recipe-editor` | Recipe Editor (ingredients + steps builder) | pages | med | ✅ |
+| 17 | `recipe-admin-dashboard` | Food Blog Dashboard (traffic · top recipes) | pages | med | ✅ |
 
 ### 51.E — Themed Cookbook Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 18 | `recipe-landing-rustic` | Rustic / Farmhouse Cookbook | Cream + sage + clay · warm serif · cozy, handmade | med | [ ] |
-| 19 | `recipe-landing-food-mag` | Food Magazine (Bon Appétit-style) | White + black + bold accent · editorial serif · glossy, modern | med | [ ] |
-| 20 | `recipe-landing-vintage` | Vintage / Retro Recipes | Mustard + avocado + cream · 70s display · nostalgic, playful | med | [ ] |
-| 21 | `recipe-landing-wellness` | Modern Wellness / Clean Eating | Bone + matcha + terracotta · light sans · airy, healthy | med | [ ] |
-| 22 | `recipe-landing-chef` | Restaurant Chef / Fine Dining | Charcoal + gold + ivory · couture serif · refined, premium | hard | [ ] |
+| 18 | `recipe-landing-rustic` | Rustic / Farmhouse Cookbook | Cream + sage + clay · warm serif · cozy, handmade | med | ✅ |
+| 19 | `recipe-landing-food-mag` | Food Magazine (Bon Appétit-style) | White + black + bold accent · editorial serif · glossy, modern | med | ✅ |
+| 20 | `recipe-landing-vintage` | Vintage / Retro Recipes | Mustard + avocado + cream · 70s display · nostalgic, playful | med | ✅ |
+| 21 | `recipe-landing-wellness` | Modern Wellness / Clean Eating | Bone + matcha + terracotta · light sans · airy, healthy | med | ✅ |
+| 22 | `recipe-landing-chef` | Restaurant Chef / Fine Dining | Charcoal + gold + ivory · couture serif · refined, premium | hard | ✅ |
 
 ### Build order (Phase 51)
 
@@ -2439,7 +2455,7 @@ using the style of the news
 
 ---
 
-## Phase 52 — Music / Album / Artist Theme 🎵 PLAN
+## Phase 52 — Music / Album / Artist Theme 🎵 ✅ DONE
 
 > Music presence & playback — artist pages, album/track views, lyrics, tour dates, custom player, plus themed landings (vinyl-retro, streaming-modern, festival, classical, hip-hop/club).
 >
@@ -2451,48 +2467,48 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `music-artist-page` | Artist Page (hero · top tracks · about) | pages | med | [ ] |
-| 2 | `music-album-page` | Album Page (tracklist · credits) | pages | med | [ ] |
-| 3 | `music-track-lyrics` | Track + Synced Lyrics view | pages | med | [ ] |
-| 4 | `music-tour-dates` | Tour / Live Dates (list + tickets) | ui-components | easy | [ ] |
-| 5 | `music-discography` | Discography Grid (albums · singles) | pages | easy | [ ] |
-| 6 | `music-playlist-page` | Playlist Page (cover · tracks · share) | pages | med | [ ] |
+| 1 | `music-artist-page` | Artist Page (hero · top tracks · about) | pages | med | ✅ |
+| 2 | `music-album-page` | Album Page (tracklist · credits) | pages | med | ✅ |
+| 3 | `music-track-lyrics` | Track + Synced Lyrics view | pages | med | ✅ |
+| 4 | `music-tour-dates` | Tour / Live Dates (list + tickets) | ui-components | easy | ✅ |
+| 5 | `music-discography` | Discography Grid (albums · singles) | pages | easy | ✅ |
+| 6 | `music-playlist-page` | Playlist Page (cover · tracks · share) | pages | med | ✅ |
 
 ### 52.B — Player Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `music-player-bar` | Sticky bottom player bar | ui-components | med | [ ] |
-| 8 | `music-player-full` | Full-screen Now Playing (art + controls) | ui-components | hard | [ ] |
-| 9 | `music-waveform` | Waveform / progress scrubber | ui-components | med | [ ] |
-| 10 | `music-equalizer-anim` | Animated equalizer bars | ui-components | easy | [ ] |
-| 11 | `music-track-row` | Track list row (play · duration · like) | ui-components | easy | [ ] |
-| 12 | `music-queue-panel` | Up-next queue panel | ui-components | med | [ ] |
+| 7 | `music-player-bar` | Sticky bottom player bar | ui-components | med | ✅ |
+| 8 | `music-player-full` | Full-screen Now Playing (art + controls) | ui-components | hard | ✅ |
+| 9 | `music-waveform` | Waveform / progress scrubber | ui-components | med | ✅ |
+| 10 | `music-equalizer-anim` | Animated equalizer bars | ui-components | easy | ✅ |
+| 11 | `music-track-row` | Track list row (play · duration · like) | ui-components | easy | ✅ |
+| 12 | `music-queue-panel` | Up-next queue panel | ui-components | med | ✅ |
 
 ### 52.C — Discovery & Social
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 13 | `music-browse` | Browse / Genres / New Releases | pages | med | [ ] |
-| 14 | `music-search` | Search (artists · albums · tracks) | ui-components | med | [ ] |
-| 15 | `music-profile` | Listener Profile (top artists · stats) | pages | med | [ ] |
+| 13 | `music-browse` | Browse / Genres / New Releases | pages | med | ✅ |
+| 14 | `music-search` | Search (artists · albums · tracks) | ui-components | med | ✅ |
+| 15 | `music-profile` | Listener Profile (top artists · stats) | pages | med | ✅ |
 
 ### 52.D — Artist / Label Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 16 | `music-artist-dashboard` | Artist Dashboard (streams · listeners · revenue) | pages | hard | [ ] |
-| 17 | `music-release-upload` | Release Upload (tracks · art · metadata) | pages | med | [ ] |
+| 16 | `music-artist-dashboard` | Artist Dashboard (streams · listeners · revenue) | pages | hard | ✅ |
+| 17 | `music-release-upload` | Release Upload (tracks · art · metadata) | pages | med | ✅ |
 
 ### 52.E — Themed Music Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 18 | `music-landing-vinyl` | Vinyl / Analog Retro | Warm sepia + cream + oxblood · vintage serif · tactile, nostalgic | med | [ ] |
-| 19 | `music-landing-streaming` | Streaming / Modern Pop | Black + neon gradient · bold sans · sleek, dynamic | med | [ ] |
-| 20 | `music-landing-festival` | Music Festival | Sunset gradient + black · loud display · hype, energetic | hard | [ ] |
-| 21 | `music-landing-classical` | Classical / Orchestra | Ivory + deep navy + gold · elegant serif · refined, timeless | med | [ ] |
-| 22 | `music-landing-hiphop` | Hip-Hop / Club | Black + chrome + acid accent · graffiti/condensed · bold, street | hard | [ ] |
+| 18 | `music-landing-vinyl` | Vinyl / Analog Retro | Warm sepia + cream + oxblood · vintage serif · tactile, nostalgic | med | ✅ |
+| 19 | `music-landing-streaming` | Streaming / Modern Pop | Black + neon gradient · bold sans · sleek, dynamic | med | ✅ |
+| 20 | `music-landing-festival` | Music Festival | Sunset gradient + black · loud display · hype, energetic | hard | ✅ |
+| 21 | `music-landing-classical` | Classical / Orchestra | Ivory + deep navy + gold · elegant serif · refined, timeless | med | ✅ |
+| 22 | `music-landing-hiphop` | Hip-Hop / Club | Black + chrome + acid accent · graffiti/condensed · bold, street | hard | ✅ |
 
 ### Build order (Phase 52)
 
@@ -2502,9 +2518,15 @@ using the style of the news
 4. **Admin** — 16, 17.
 5. **Landings** — 18 → 22.
 
+**Progress (2026-06-08):** ✅ DONE — all 22 resources built via multi-agent `Workflow`
+(`docs/templates/music-phase52.workflow.js`). New `music` collection wired in schema, www config,
+`collections.ts` (order 17), i18n (`en` + `es`), and docs `collections.mdx`. MCP catalog regenerated
+(945 resources). Two landings (classical, hip-hop) plus `music-tour-dates` finished on a resume run
+after a session-limit cutoff.
+
 ---
 
-## Phase 53 — Wiki / Knowledge Base / Docs Theme 📚 PLAN
+## Phase 53 — Wiki / Knowledge Base / Docs Theme 📚 ✅ DONE
 
 > Structured reference content — wiki articles, doc pages, infoboxes, search, version switching, plus themed landings (encyclopedia, developer docs, fandom wiki, internal handbook, support center).
 >
@@ -2516,49 +2538,49 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `wiki-article` | Wiki Article (sidebar · TOC · body) | pages | med | [ ] |
-| 2 | `wiki-doc-page` | Docs Page (dev-docs layout + code) | pages | med | [ ] |
-| 3 | `wiki-category-page` | Category / Portal Page | pages | easy | [ ] |
-| 4 | `wiki-api-reference` | API Reference (endpoints · params) | pages | hard | [ ] |
-| 5 | `wiki-tutorial-page` | Tutorial / Guide (step sections) | pages | med | [ ] |
+| 1 | `wiki-article` | Wiki Article (sidebar · TOC · body) | pages | med | ✅ |
+| 2 | `wiki-doc-page` | Docs Page (dev-docs layout + code) | pages | med | ✅ |
+| 3 | `wiki-category-page` | Category / Portal Page | pages | easy | ✅ |
+| 4 | `wiki-api-reference` | API Reference (endpoints · params) | pages | hard | ✅ |
+| 5 | `wiki-tutorial-page` | Tutorial / Guide (step sections) | pages | med | ✅ |
 
 ### 53.B — Knowledge Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `wiki-infobox` | Infobox / fact sidebar card | ui-components | easy | [ ] |
-| 7 | `wiki-toc-sidebar` | Sticky TOC + scrollspy | ui-components | med | [ ] |
-| 8 | `wiki-doc-sidebar-nav` | Collapsible doc tree nav | ui-components | med | [ ] |
-| 9 | `wiki-callout-admonition` | Callout / admonition blocks (note · warn · tip) | ui-components | easy | [ ] |
-| 10 | `wiki-version-switcher` | Version / language switcher | ui-components | med | [ ] |
-| 11 | `wiki-edit-history` | Revision history / diff view | ui-components | med | [ ] |
-| 12 | `wiki-reference-footnotes` | Footnotes / citations block | ui-components | easy | [ ] |
+| 6 | `wiki-infobox` | Infobox / fact sidebar card | ui-components | easy | ✅ |
+| 7 | `wiki-toc-sidebar` | Sticky TOC + scrollspy | ui-components | med | ✅ |
+| 8 | `wiki-doc-sidebar-nav` | Collapsible doc tree nav | ui-components | med | ✅ |
+| 9 | `wiki-callout-admonition` | Callout / admonition blocks (note · warn · tip) | ui-components | easy | ✅ |
+| 10 | `wiki-version-switcher` | Version / language switcher | ui-components | med | ✅ |
+| 11 | `wiki-edit-history` | Revision history / diff view | ui-components | med | ✅ |
+| 12 | `wiki-reference-footnotes` | Footnotes / citations block | ui-components | easy | ✅ |
 
 ### 53.C — Search & Navigation
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 13 | `wiki-search-results` | Search Results (faceted) | pages | med | [ ] |
-| 14 | `wiki-command-search` | Command-K instant search overlay | ui-components | med | [ ] |
-| 15 | `wiki-breadcrumb-trail` | Breadcrumb + related links | ui-components | easy | [ ] |
-| 16 | `wiki-home-portal` | Knowledge-base Home / Portal | pages | med | [ ] |
+| 13 | `wiki-search-results` | Search Results (faceted) | pages | med | ✅ |
+| 14 | `wiki-command-search` | Command-K instant search overlay | ui-components | med | ✅ |
+| 15 | `wiki-breadcrumb-trail` | Breadcrumb + related links | ui-components | easy | ✅ |
+| 16 | `wiki-home-portal` | Knowledge-base Home / Portal | pages | med | ✅ |
 
 ### 53.D — Editor / Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 17 | `wiki-editor` | Article Editor (markdown + preview) | pages | hard | [ ] |
-| 18 | `wiki-admin-dashboard` | KB Dashboard (top articles · stale flags) | pages | med | [ ] |
+| 17 | `wiki-editor` | Article Editor (markdown + preview) | pages | hard | ✅ |
+| 18 | `wiki-admin-dashboard` | KB Dashboard (top articles · stale flags) | pages | med | ✅ |
 
 ### 53.E — Themed KB Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 19 | `wiki-landing-encyclopedia` | Encyclopedia (Wikipedia-style) | White + ink + link blue · neutral serif · dense, authoritative | med | [ ] |
-| 20 | `wiki-landing-dev-docs` | Developer Docs | White/dark toggle + accent · sans + mono · clean, technical | med | [ ] |
-| 21 | `wiki-landing-fandom` | Fandom / Game Wiki | Themed dark + vivid accent · display + sans · immersive, fan-driven | med | [ ] |
-| 22 | `wiki-landing-handbook` | Internal Company Handbook | Brand neutral + accent · friendly sans · approachable, on-brand | easy | [ ] |
-| 23 | `wiki-landing-support` | Support / Help Center | White + calm accent · rounded sans · reassuring, searchable | med | [ ] |
+| 19 | `wiki-landing-encyclopedia` | Encyclopedia (Wikipedia-style) | White + ink + link blue · neutral serif · dense, authoritative | med | ✅ |
+| 20 | `wiki-landing-dev-docs` | Developer Docs | White/dark toggle + accent · sans + mono · clean, technical | med | ✅ |
+| 21 | `wiki-landing-fandom` | Fandom / Game Wiki | Themed dark + vivid accent · display + sans · immersive, fan-driven | med | ✅ |
+| 22 | `wiki-landing-handbook` | Internal Company Handbook | Brand neutral + accent · friendly sans · approachable, on-brand | easy | ✅ |
+| 23 | `wiki-landing-support` | Support / Help Center | White + calm accent · rounded sans · reassuring, searchable | med | ✅ |
 
 ### Build order (Phase 53)
 
@@ -2568,9 +2590,15 @@ using the style of the news
 4. **Editor** — 17, 18.
 5. **Landings** — 19 → 23.
 
+**Progress (2026-06-08):** ✅ Complete. All 23 resources built via parallel multi-agent workflow
+(`docs/templates/wiki-phase53.workflow.js`). New `wiki` collection wired in 6 places (schema,
+www config, collections.ts card, i18n en+es, docs collections.mdx). MCP catalog regenerated
+(968 resources). Not added to `choose-your-path.mdx` — `wiki` is a content theme, not an
+industry vertical.
+
 ---
 
-## Phase 54 — Children's / Storybook Theme 🧸 PLAN
+## Phase 54 — Children's / Storybook Theme 🧸 ✅ DONE (2026-06-14)
 
 > Kids' & picture-book content — illustrated story spreads, read-along, interactive activity pages, plus themed landings (classic fairytale, modern flat, pop-up, educational, nursery/baby).
 >
@@ -2582,39 +2610,39 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `kids-storybook-reader` | Picture-Book Reader (page-turn spreads) | pages | med | [ ] |
-| 2 | `kids-read-along` | Read-Along (highlighted text + audio) | pages | med | [ ] |
-| 3 | `kids-story-spread` | Two-page Illustrated Spread | pages | easy | [ ] |
-| 4 | `kids-interactive-scene` | Tap-to-animate interactive scene | pages | hard | [ ] |
+| 1 | `kids-storybook-reader` | Picture-Book Reader (page-turn spreads) | pages | med | ✅ |
+| 2 | `kids-read-along` | Read-Along (highlighted text + audio) | pages | med | ✅ |
+| 3 | `kids-story-spread` | Two-page Illustrated Spread | pages | easy | ✅ |
+| 4 | `kids-interactive-scene` | Tap-to-animate interactive scene | pages | hard | ✅ |
 
 ### 54.B — Activity & Learning Patterns
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 5 | `kids-alphabet-card` | Alphabet / flashcard set | ui-components | easy | [ ] |
-| 6 | `kids-drag-match` | Drag-to-match activity | ui-components | med | [ ] |
-| 7 | `kids-coloring-page` | Simple coloring / paint canvas | ui-components | med | [ ] |
-| 8 | `kids-quiz-stars` | Star-reward quiz | ui-components | easy | [ ] |
-| 9 | `kids-progress-stickers` | Sticker / reward progress board | ui-components | easy | [ ] |
-| 10 | `kids-character-mascot` | Animated mascot / guide | ui-components | med | [ ] |
+| 5 | `kids-alphabet-card` | Alphabet / flashcard set | ui-components | easy | ✅ |
+| 6 | `kids-drag-match` | Drag-to-match activity | ui-components | med | ✅ |
+| 7 | `kids-coloring-page` | Simple coloring / paint canvas | ui-components | med | ✅ |
+| 8 | `kids-quiz-stars` | Star-reward quiz | ui-components | easy | ✅ |
+| 9 | `kids-progress-stickers` | Sticker / reward progress board | ui-components | easy | ✅ |
+| 10 | `kids-character-mascot` | Animated mascot / guide | ui-components | med | ✅ |
 
 ### 54.C — Library & Parent Area
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 11 | `kids-library-shelf` | Bookshelf Browse (covers grid) | pages | easy | [ ] |
-| 12 | `kids-parent-dashboard` | Parent Dashboard (progress · time limits) | pages | med | [ ] |
-| 13 | `kids-profile-avatar` | Kid Profile + avatar picker | ui-components | easy | [ ] |
+| 11 | `kids-library-shelf` | Bookshelf Browse (covers grid) | pages | easy | ✅ |
+| 12 | `kids-parent-dashboard` | Parent Dashboard (progress · time limits) | pages | med | ✅ |
+| 13 | `kids-profile-avatar` | Kid Profile + avatar picker | ui-components | easy | ✅ |
 
 ### 54.D — Themed Storybook Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 14 | `kids-landing-fairytale` | Classic Fairytale | Cream + gold + storybook red · ornate serif · whimsical, timeless | med | [ ] |
-| 15 | `kids-landing-modern-flat` | Modern Flat Illustration | Bright flat palette · rounded sans · clean, contemporary | med | [ ] |
-| 16 | `kids-landing-popup` | Pop-Up Book | Paper textures + layered shadows · playful · tactile, 3D feel | hard | [ ] |
-| 17 | `kids-landing-educational` | Educational / EdTech for Kids | Primary colors + white · chunky sans · cheerful, learning | med | [ ] |
-| 18 | `kids-landing-nursery` | Nursery / Baby | Soft pastels + cream · rounded soft · gentle, soothing | easy | [ ] |
+| 14 | `kids-landing-fairytale` | Classic Fairytale | Cream + gold + storybook red · ornate serif · whimsical, timeless | med | ✅ |
+| 15 | `kids-landing-modern-flat` | Modern Flat Illustration | Bright flat palette · rounded sans · clean, contemporary | med | ✅ |
+| 16 | `kids-landing-popup` | Pop-Up Book | Paper textures + layered shadows · playful · tactile, 3D feel | hard | ✅ |
+| 17 | `kids-landing-educational` | Educational / EdTech for Kids | Primary colors + white · chunky sans · cheerful, learning | med | ✅ |
+| 18 | `kids-landing-nursery` | Nursery / Baby | Soft pastels + cream · rounded soft · gentle, soothing | easy | ✅ |
 
 ### Build order (Phase 54)
 
@@ -2625,7 +2653,7 @@ using the style of the news
 
 ---
 
-## Phase 55 — Travel Guide / Magazine Theme 🧳 PLAN
+## Phase 55 — Travel Guide / Magazine Theme 🧳 ✅ DONE (2026-06-14)
 
 > Destination & travel content — city/destination guides, itineraries, photo-essay travel stories, map+content layouts, plus themed landings (Lonely-Planet guide, luxury travel, backpacker, National-Geographic, travel agency).
 >
@@ -2637,47 +2665,47 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `travel-destination-guide` | Destination Guide (overview · sections) | pages | hard | [ ] |
-| 2 | `travel-city-guide` | City Guide (neighborhoods · top spots) | pages | med | [ ] |
-| 3 | `travel-story-feature` | Travel Story / Photo Essay (long-form) | pages | med | [ ] |
-| 4 | `travel-itinerary` | Day-by-day Itinerary | pages | med | [ ] |
-| 5 | `travel-listicle` | "Top 10 Places" listicle layout | pages | easy | [ ] |
+| 1 | `travel-destination-guide` | Destination Guide (overview · sections) | pages | hard | ✅ |
+| 2 | `travel-city-guide` | City Guide (neighborhoods · top spots) | pages | med | ✅ |
+| 3 | `travel-story-feature` | Travel Story / Photo Essay (long-form) | pages | med | ✅ |
+| 4 | `travel-itinerary` | Day-by-day Itinerary | pages | med | ✅ |
+| 5 | `travel-listicle` | "Top 10 Places" listicle layout | pages | easy | ✅ |
 
 ### 55.B — Travel Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `travel-poi-card` | Point-of-interest card (photo · rating · map link) | ui-components | easy | [ ] |
-| 7 | `travel-map-content` | Map + scrollable content split layout | ui-components | hard | [ ] |
-| 8 | `travel-itinerary-timeline` | Itinerary timeline (per-day stops) | ui-components | med | [ ] |
-| 9 | `travel-photo-gallery` | Destination photo gallery + lightbox | ui-components | med | [ ] |
-| 10 | `travel-weather-widget` | Best-time / weather widget | ui-components | easy | [ ] |
-| 11 | `travel-budget-bar` | Trip budget / cost indicator | ui-components | easy | [ ] |
+| 6 | `travel-poi-card` | Point-of-interest card (photo · rating · map link) | ui-components | easy | ✅ |
+| 7 | `travel-map-content` | Map + scrollable content split layout | ui-components | hard | ✅ |
+| 8 | `travel-itinerary-timeline` | Itinerary timeline (per-day stops) | ui-components | med | ✅ |
+| 9 | `travel-photo-gallery` | Destination photo gallery + lightbox | ui-components | med | ✅ |
+| 10 | `travel-weather-widget` | Best-time / weather widget | ui-components | easy | ✅ |
+| 11 | `travel-budget-bar` | Trip budget / cost indicator | ui-components | easy | ✅ |
 
 ### 55.C — Planning & Discovery
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 12 | `travel-explore` | Explore / Browse Destinations | pages | med | [ ] |
-| 13 | `travel-trip-planner` | Trip Planner (save spots → itinerary) | pages | hard | [ ] |
-| 14 | `travel-saved-trips` | Saved Trips / Wishlist | ui-components | easy | [ ] |
+| 12 | `travel-explore` | Explore / Browse Destinations | pages | med | ✅ |
+| 13 | `travel-trip-planner` | Trip Planner (save spots → itinerary) | pages | hard | ✅ |
+| 14 | `travel-saved-trips` | Saved Trips / Wishlist | ui-components | easy | ✅ |
 
 ### 55.D — Editor / Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 15 | `travel-guide-editor` | Guide Editor (sections + POIs + map) | pages | med | [ ] |
-| 16 | `travel-admin-dashboard` | Travel Site Dashboard (top guides · seasonality) | pages | med | [ ] |
+| 15 | `travel-guide-editor` | Guide Editor (sections + POIs + map) | pages | med | ✅ |
+| 16 | `travel-admin-dashboard` | Travel Site Dashboard (top guides · seasonality) | pages | med | ✅ |
 
 ### 55.E — Themed Travel Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 17 | `travel-landing-guidebook` | Classic Guidebook (Lonely-Planet) | Cream + teal + coral · friendly serif + sans · practical, trusty | med | [ ] |
-| 18 | `travel-landing-luxury` | Luxury / Bespoke Travel | Ivory + bronze + deep green · elegant serif · refined, aspirational | hard | [ ] |
-| 19 | `travel-landing-backpacker` | Backpacker / Budget | Bright sunset + denim + white · chunky sans · adventurous, youthful | med | [ ] |
-| 20 | `travel-landing-natgeo` | National-Geographic-style | Black + signature yellow + white · bold serif · documentary, epic | hard | [ ] |
-| 21 | `travel-landing-agency` | Travel Agency / Tour Operator | Sky blue + sand + orange · clean sans · inviting, conversion-focused | med | [ ] |
+| 17 | `travel-landing-guidebook` | Classic Guidebook (Lonely-Planet) | Cream + teal + coral · friendly serif + sans · practical, trusty | med | ✅ |
+| 18 | `travel-landing-luxury` | Luxury / Bespoke Travel | Ivory + bronze + deep green · elegant serif · refined, aspirational | hard | ✅ |
+| 19 | `travel-landing-backpacker` | Backpacker / Budget | Bright sunset + denim + white · chunky sans · adventurous, youthful | med | ✅ |
+| 20 | `travel-landing-natgeo` | National-Geographic-style | Black + signature yellow + white · bold serif · documentary, epic | hard | ✅ |
+| 21 | `travel-landing-agency` | Travel Agency / Tour Operator | Sky blue + sand + orange · clean sans · inviting, conversion-focused | med | ✅ |
 
 ### Build order (Phase 55)
 
@@ -2689,7 +2717,7 @@ using the style of the news
 
 ---
 
-## Phase 56 — Portfolio / Résumé Styles 🧑‍🎨 PLAN
+## Phase 56 — Portfolio / Résumé Styles 🧑‍🎨 ✅ DONE (2026-06-14)
 
 > A **style collection** (like Phase 22) focused on personal sites — the same portfolio/résumé content reinterpreted across distinct aesthetics, plus the reusable building blocks every personal site needs.
 >
@@ -2701,35 +2729,35 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `port-hero-intro` | Hero / intro header variants | ui-components | easy | [ ] |
-| 2 | `port-project-card` | Project / case-study card | ui-components | easy | [ ] |
-| 3 | `port-work-grid` | Work / projects grid + filter | ui-components | med | [ ] |
-| 4 | `port-about-bio` | About / bio block | ui-components | easy | [ ] |
-| 5 | `port-experience-timeline` | Experience / résumé timeline | ui-components | easy | [ ] |
-| 6 | `port-skills-cloud` | Skills / tools display | ui-components | easy | [ ] |
-| 7 | `port-contact-cta` | Contact / hire-me CTA + form | ui-components | easy | [ ] |
-| 8 | `port-testimonial` | Testimonial / recommendation block | ui-components | easy | [ ] |
+| 1 | `port-hero-intro` | Hero / intro header variants | ui-components | easy | ✅ |
+| 2 | `port-project-card` | Project / case-study card | ui-components | easy | ✅ |
+| 3 | `port-work-grid` | Work / projects grid + filter | ui-components | med | ✅ |
+| 4 | `port-about-bio` | About / bio block | ui-components | easy | ✅ |
+| 5 | `port-experience-timeline` | Experience / résumé timeline | ui-components | easy | ✅ |
+| 6 | `port-skills-cloud` | Skills / tools display | ui-components | easy | ✅ |
+| 7 | `port-contact-cta` | Contact / hire-me CTA + form | ui-components | easy | ✅ |
+| 8 | `port-testimonial` | Testimonial / recommendation block | ui-components | easy | ✅ |
 
 ### 56.B — Full Résumé / CV Layouts
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 9 | `port-resume-classic` | Classic one-column CV (print-ready) | pages | easy | [ ] |
-| 10 | `port-resume-two-column` | Two-column CV (sidebar skills) | pages | med | [ ] |
-| 11 | `port-resume-creative` | Creative / visual CV | pages | med | [ ] |
+| 9 | `port-resume-classic` | Classic one-column CV (print-ready) | pages | easy | ✅ |
+| 10 | `port-resume-two-column` | Two-column CV (sidebar skills) | pages | med | ✅ |
+| 11 | `port-resume-creative` | Creative / visual CV | pages | med | ✅ |
 
 ### 56.C — Themed Portfolio Styles (8 full one-pagers)
 
 | # | Slug | Style | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 12 | `port-style-minimal` | Minimal / Swiss | White + ink + one accent · grotesque · restrained, confident | easy | [ ] |
-| 13 | `port-style-editorial` | Editorial / Typographic | Cream + black · large serif · magazine-like, text-forward | med | [ ] |
-| 14 | `port-style-brutalist` | Brutalist | Raw white + harsh borders + clashing accent · mono/sans · bold, anti-design | med | [ ] |
-| 15 | `port-style-terminal` | Terminal / Dev | Black + green/amber · monospace · hacker, CLI aesthetic | easy | [ ] |
-| 16 | `port-style-motion` | Motion-Heavy | Dark + gradient · display · animation-first, kinetic | hard | [ ] |
-| 17 | `port-style-3d-interactive` | 3D / Interactive | Dark + neon · display · immersive, WebGL-feel (CSS 3D) | hard | [ ] |
-| 18 | `port-style-glass` | Glassmorphism | Gradient bg + frosted cards · clean sans · modern, layered | med | [ ] |
-| 19 | `port-style-playful` | Playful / Illustrated | Bright + hand-drawn accents · rounded display · friendly, characterful | med | [ ] |
+| 12 | `port-style-minimal` | Minimal / Swiss | White + ink + one accent · grotesque · restrained, confident | easy | ✅ |
+| 13 | `port-style-editorial` | Editorial / Typographic | Cream + black · large serif · magazine-like, text-forward | med | ✅ |
+| 14 | `port-style-brutalist` | Brutalist | Raw white + harsh borders + clashing accent · mono/sans · bold, anti-design | med | ✅ |
+| 15 | `port-style-terminal` | Terminal / Dev | Black + green/amber · monospace · hacker, CLI aesthetic | easy | ✅ |
+| 16 | `port-style-motion` | Motion-Heavy | Dark + gradient · display · animation-first, kinetic | hard | ✅ |
+| 17 | `port-style-3d-interactive` | 3D / Interactive | Dark + neon · display · immersive, WebGL-feel (CSS 3D) | hard | ✅ |
+| 18 | `port-style-glass` | Glassmorphism | Gradient bg + frosted cards · clean sans · modern, layered | med | ✅ |
+| 19 | `port-style-playful` | Playful / Illustrated | Bright + hand-drawn accents · rounded display · friendly, characterful | med | ✅ |
 
 ### Build order (Phase 56)
 
@@ -2747,7 +2775,7 @@ using the style of the news
 
 ---
 
-## Phase 57 — E-commerce / Retail Theme 🛒 PLAN
+## Phase 57 — E-commerce / Retail Theme 🛒 ✅ DONE (2026-06-14)
 
 > Full storefront stack — product discovery, PDP, cart/checkout, account, plus merchant/seller admin and themed store landings (fashion, electronics, grocery, marketplace, luxury boutique).
 >
@@ -2760,54 +2788,54 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `shop-home` | Storefront Home (hero · collections · deals) | pages | med | [ ] |
-| 2 | `shop-category` | Category / PLP (filters · sort · grid) | pages | hard | [ ] |
-| 3 | `shop-product-detail` | Product Detail (gallery · variants · reviews) | pages | hard | [ ] |
-| 4 | `shop-cart` | Cart / Bag (qty · promo · summary) | pages | med | [ ] |
-| 5 | `shop-checkout` | Checkout (shipping · pay · review) | pages | hard | [ ] |
-| 6 | `shop-order-confirmation` | Order Confirmation / Thank-you | pages | easy | [ ] |
-| 7 | `shop-account` | Account (orders · addresses · returns) | pages | med | [ ] |
-| 8 | `shop-wishlist` | Wishlist / Saved items | ui-components | easy | [ ] |
-| 9 | `shop-search-results` | Search Results (autocomplete · facets) | pages | med | [ ] |
+| 1 | `shop-home` | Storefront Home (hero · collections · deals) | pages | med | ✅ |
+| 2 | `shop-category` | Category / PLP (filters · sort · grid) | pages | hard | ✅ |
+| 3 | `shop-product-detail` | Product Detail (gallery · variants · reviews) | pages | hard | ✅ |
+| 4 | `shop-cart` | Cart / Bag (qty · promo · summary) | pages | med | ✅ |
+| 5 | `shop-checkout` | Checkout (shipping · pay · review) | pages | hard | ✅ |
+| 6 | `shop-order-confirmation` | Order Confirmation / Thank-you | pages | easy | ✅ |
+| 7 | `shop-account` | Account (orders · addresses · returns) | pages | med | ✅ |
+| 8 | `shop-wishlist` | Wishlist / Saved items | ui-components | easy | ✅ |
+| 9 | `shop-search-results` | Search Results (autocomplete · facets) | pages | med | ✅ |
 
 ### 57.B — Commerce Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 10 | `shop-product-card` | Product card (price · rating · quick-add) | ui-components | easy | [ ] |
-| 11 | `shop-variant-picker` | Variant selector (size · color swatches) | ui-components | med | [ ] |
-| 12 | `shop-mini-cart` | Mini-cart flyout / drawer | ui-components | med | [ ] |
-| 13 | `shop-price-display` | Price + discount + installment display | ui-components | easy | [ ] |
-| 14 | `shop-filter-rail` | Faceted filter sidebar | ui-components | med | [ ] |
-| 15 | `shop-reviews-block` | Reviews + rating breakdown | ui-components | med | [ ] |
-| 16 | `shop-promo-banner` | Promo / countdown sale banner | ui-components | easy | [ ] |
+| 10 | `shop-product-card` | Product card (price · rating · quick-add) | ui-components | easy | ✅ |
+| 11 | `shop-variant-picker` | Variant selector (size · color swatches) | ui-components | med | ✅ |
+| 12 | `shop-mini-cart` | Mini-cart flyout / drawer | ui-components | med | ✅ |
+| 13 | `shop-price-display` | Price + discount + installment display | ui-components | easy | ✅ |
+| 14 | `shop-filter-rail` | Faceted filter sidebar | ui-components | med | ✅ |
+| 15 | `shop-reviews-block` | Reviews + rating breakdown | ui-components | med | ✅ |
+| 16 | `shop-promo-banner` | Promo / countdown sale banner | ui-components | easy | ✅ |
 
 ### 57.C — Marketing Pages
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 17 | `shop-page-collection` | Collection / Lookbook page | pages | med | [ ] |
-| 18 | `shop-page-sale` | Sale / Deals landing | pages | easy | [ ] |
-| 19 | `shop-page-brand-story` | Brand Story / About | pages | easy | [ ] |
+| 17 | `shop-page-collection` | Collection / Lookbook page | pages | med | ✅ |
+| 18 | `shop-page-sale` | Sale / Deals landing | pages | easy | ✅ |
+| 19 | `shop-page-brand-story` | Brand Story / About | pages | easy | ✅ |
 
 ### 57.D — Seller / Merchant Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 20 | `shop-admin-dashboard` | Store Dashboard (sales · AOV · conversion) | pages | hard | [ ] |
-| 21 | `shop-admin-products` | Product Manager (CRUD · inventory) | pages | hard | [ ] |
-| 22 | `shop-admin-orders` | Orders Manager (fulfill · refund) | pages | med | [ ] |
-| 23 | `shop-admin-discounts` | Discounts / Promo Codes | ui-components | med | [ ] |
+| 20 | `shop-admin-dashboard` | Store Dashboard (sales · AOV · conversion) | pages | hard | ✅ |
+| 21 | `shop-admin-products` | Product Manager (CRUD · inventory) | pages | hard | ✅ |
+| 22 | `shop-admin-orders` | Orders Manager (fulfill · refund) | pages | med | ✅ |
+| 23 | `shop-admin-discounts` | Discounts / Promo Codes | ui-components | med | ✅ |
 
 ### 57.E — Themed Store Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 24 | `shop-landing-fashion` | Fashion / Apparel | White + black + editorial accent · couture serif + sans · aspirational | hard | [ ] |
-| 25 | `shop-landing-electronics` | Electronics / Tech | Dark + electric blue · clean sans · spec-forward, modern | med | [ ] |
-| 26 | `shop-landing-grocery` | Grocery / Essentials | White + fresh green + orange · friendly sans · fast, practical | med | [ ] |
-| 27 | `shop-landing-marketplace` | Multi-vendor Marketplace | White + bold primary · dense sans · busy, deal-driven | hard | [ ] |
-| 28 | `shop-landing-luxury` | Luxury Boutique | Black + champagne + ivory · refined serif · exclusive, minimal | hard | [ ] |
+| 24 | `shop-landing-fashion` | Fashion / Apparel | White + black + editorial accent · couture serif + sans · aspirational | hard | ✅ |
+| 25 | `shop-landing-electronics` | Electronics / Tech | Dark + electric blue · clean sans · spec-forward, modern | med | ✅ |
+| 26 | `shop-landing-grocery` | Grocery / Essentials | White + fresh green + orange · friendly sans · fast, practical | med | ✅ |
+| 27 | `shop-landing-marketplace` | Multi-vendor Marketplace | White + bold primary · dense sans · busy, deal-driven | hard | ✅ |
+| 28 | `shop-landing-luxury` | Luxury Boutique | Black + champagne + ivory · refined serif · exclusive, minimal | hard | ✅ |
 
 ### Build order (Phase 57)
 
@@ -2819,7 +2847,7 @@ using the style of the news
 
 ---
 
-## Phase 58 — SaaS Product Theme ☁️ PLAN
+## Phase 58 — SaaS Product Theme ☁️ ✅ DONE (2026-06-14)
 
 > Complete SaaS surface — marketing site, app shell, onboarding, billing/subscription, settings, plus an internal admin and themed product landings (dev tool, productivity, analytics, AI product, fintech SaaS).
 >
@@ -2832,49 +2860,49 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `saas-landing-home` | SaaS Landing (hero · features · social proof) | pages | med | [ ] |
-| 2 | `saas-features-page` | Features / Product Tour | pages | med | [ ] |
-| 3 | `saas-pricing-page` | Pricing (tiers · toggle · FAQ) | pages | med | [ ] |
-| 4 | `saas-integrations-page` | Integrations Directory | pages | med | [ ] |
-| 5 | `saas-changelog` | Changelog / What's New | pages | easy | [ ] |
+| 1 | `saas-landing-home` | SaaS Landing (hero · features · social proof) | pages | med | ✅ |
+| 2 | `saas-features-page` | Features / Product Tour | pages | med | ✅ |
+| 3 | `saas-pricing-page` | Pricing (tiers · toggle · FAQ) | pages | med | ✅ |
+| 4 | `saas-integrations-page` | Integrations Directory | pages | med | ✅ |
+| 5 | `saas-changelog` | Changelog / What's New | pages | easy | ✅ |
 
 ### 58.B — App Shell & Onboarding
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `saas-app-shell` | App Shell (sidebar · topbar · content) | pages | hard | [ ] |
-| 7 | `saas-onboarding-flow` | Onboarding Wizard (setup checklist) | pages | med | [ ] |
-| 8 | `saas-empty-state` | First-run / empty workspace states | ui-components | easy | [ ] |
-| 9 | `saas-dashboard-home` | App Dashboard / Home | pages | hard | [ ] |
-| 10 | `saas-command-bar` | Global command bar (⌘K actions) | ui-components | med | [ ] |
+| 6 | `saas-app-shell` | App Shell (sidebar · topbar · content) | pages | hard | ✅ |
+| 7 | `saas-onboarding-flow` | Onboarding Wizard (setup checklist) | pages | med | ✅ |
+| 8 | `saas-empty-state` | First-run / empty workspace states | ui-components | easy | ✅ |
+| 9 | `saas-dashboard-home` | App Dashboard / Home | pages | hard | ✅ |
+| 10 | `saas-command-bar` | Global command bar (⌘K actions) | ui-components | med | ✅ |
 
 ### 58.C — Account, Billing & Settings
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 11 | `saas-settings-page` | Settings (profile · workspace · prefs) | pages | med | [ ] |
-| 12 | `saas-billing-page` | Billing & Subscription (plan · invoices) | pages | med | [ ] |
-| 13 | `saas-upgrade-modal` | Upgrade / plan-compare modal | ui-components | med | [ ] |
-| 14 | `saas-team-members` | Team Members & Roles (invite · permissions) | pages | med | [ ] |
-| 15 | `saas-api-keys` | API Keys & Webhooks | ui-components | med | [ ] |
-| 16 | `saas-usage-meter` | Usage / quota meter | ui-components | easy | [ ] |
+| 11 | `saas-settings-page` | Settings (profile · workspace · prefs) | pages | med | ✅ |
+| 12 | `saas-billing-page` | Billing & Subscription (plan · invoices) | pages | med | ✅ |
+| 13 | `saas-upgrade-modal` | Upgrade / plan-compare modal | ui-components | med | ✅ |
+| 14 | `saas-team-members` | Team Members & Roles (invite · permissions) | pages | med | ✅ |
+| 15 | `saas-api-keys` | API Keys & Webhooks | ui-components | med | ✅ |
+| 16 | `saas-usage-meter` | Usage / quota meter | ui-components | easy | ✅ |
 
 ### 58.D — Internal Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 17 | `saas-admin-customers` | Customers / Accounts admin | pages | hard | [ ] |
-| 18 | `saas-admin-metrics` | SaaS Metrics (MRR · churn · LTV) | pages | hard | [ ] |
+| 17 | `saas-admin-customers` | Customers / Accounts admin | pages | hard | ✅ |
+| 18 | `saas-admin-metrics` | SaaS Metrics (MRR · churn · LTV) | pages | hard | ✅ |
 
 ### 58.E — Themed SaaS Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 19 | `saas-landing-devtool` | Developer Tool | Dark + terminal accent · sans + mono · technical, credible | med | [ ] |
-| 20 | `saas-landing-productivity` | Productivity / Collaboration | White + friendly accent · clean sans · calm, organized | med | [ ] |
-| 21 | `saas-landing-analytics` | Analytics / Data Platform | Dark + chart gradients · sans · insight-forward, dense | hard | [ ] |
-| 22 | `saas-landing-ai` | AI Product | Black + iridescent gradient · modern sans · cutting-edge | hard | [ ] |
-| 23 | `saas-landing-fintech` | Fintech SaaS | Navy + mint + white · precise sans · trustworthy, compliant | med | [ ] |
+| 19 | `saas-landing-devtool` | Developer Tool | Dark + terminal accent · sans + mono · technical, credible | med | ✅ |
+| 20 | `saas-landing-productivity` | Productivity / Collaboration | White + friendly accent · clean sans · calm, organized | med | ✅ |
+| 21 | `saas-landing-analytics` | Analytics / Data Platform | Dark + chart gradients · sans · insight-forward, dense | hard | ✅ |
+| 22 | `saas-landing-ai` | AI Product | Black + iridescent gradient · modern sans · cutting-edge | hard | ✅ |
+| 23 | `saas-landing-fintech` | Fintech SaaS | Navy + mint + white · precise sans · trustworthy, compliant | med | ✅ |
 
 ### Build order (Phase 58)
 
@@ -2887,7 +2915,7 @@ using the style of the news
 
 ---
 
-## Phase 59 — Crypto / Web3 Theme 🪙 PLAN
+## Phase 59 — Crypto / Web3 Theme 🪙 ✅ DONE
 
 > Web3 app surfaces — wallet, token swap, NFT marketplace, staking/DeFi, DAO governance, plus themed landings (exchange, DeFi protocol, NFT project, L1/L2 chain, wallet app).
 >
@@ -2900,42 +2928,42 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `web3-wallet-dashboard` | Wallet Dashboard (balances · tokens · NFTs) | pages | hard | [ ] |
-| 2 | `web3-token-swap` | Token Swap (from/to · slippage · route) | pages | hard | [ ] |
-| 3 | `web3-send-receive` | Send / Receive (address · QR · confirm) | ui-components | med | [ ] |
-| 4 | `web3-tx-history` | Transaction History (status · explorer link) | ui-components | med | [ ] |
-| 5 | `web3-portfolio-chart` | Portfolio value chart (PnL) | ui-components | med | [ ] |
+| 1 | `web3-wallet-dashboard` | Wallet Dashboard (balances · tokens · NFTs) | pages | hard | ✅ |
+| 2 | `web3-token-swap` | Token Swap (from/to · slippage · route) | pages | hard | ✅ |
+| 3 | `web3-send-receive` | Send / Receive (address · QR · confirm) | ui-components | med | ✅ |
+| 4 | `web3-tx-history` | Transaction History (status · explorer link) | ui-components | med | ✅ |
+| 5 | `web3-portfolio-chart` | Portfolio value chart (PnL) | ui-components | med | ✅ |
 
 ### 59.B — Web3 Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `web3-connect-wallet` | Connect Wallet button + modal | ui-components | med | [ ] |
-| 7 | `web3-address-chip` | Address chip (truncate · copy · ENS) | ui-components | easy | [ ] |
-| 8 | `web3-tx-confirm` | Transaction confirm / signing sheet | ui-components | med | [ ] |
-| 9 | `web3-gas-selector` | Gas / network fee selector | ui-components | med | [ ] |
-| 10 | `web3-token-row` | Token balance row (price · 24h · value) | ui-components | easy | [ ] |
-| 11 | `web3-network-switch` | Network / chain switcher | ui-components | easy | [ ] |
+| 6 | `web3-connect-wallet` | Connect Wallet button + modal | ui-components | med | ✅ |
+| 7 | `web3-address-chip` | Address chip (truncate · copy · ENS) | ui-components | easy | ✅ |
+| 8 | `web3-tx-confirm` | Transaction confirm / signing sheet | ui-components | med | ✅ |
+| 9 | `web3-gas-selector` | Gas / network fee selector | ui-components | med | ✅ |
+| 10 | `web3-token-row` | Token balance row (price · 24h · value) | ui-components | easy | ✅ |
+| 11 | `web3-network-switch` | Network / chain switcher | ui-components | easy | ✅ |
 
 ### 59.C — NFT · DeFi · DAO
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 12 | `web3-nft-marketplace` | NFT Marketplace (grid · filters · bid) | pages | hard | [ ] |
-| 13 | `web3-nft-detail` | NFT Detail (traits · history · buy) | pages | med | [ ] |
-| 14 | `web3-staking` | Staking / Yield (APR · stake · claim) | pages | hard | [ ] |
-| 15 | `web3-liquidity-pool` | Liquidity Pool / Provide LP | ui-components | hard | [ ] |
-| 16 | `web3-dao-governance` | DAO Governance (proposals · vote) | pages | med | [ ] |
+| 12 | `web3-nft-marketplace` | NFT Marketplace (grid · filters · bid) | pages | hard | ✅ |
+| 13 | `web3-nft-detail` | NFT Detail (traits · history · buy) | pages | med | ✅ |
+| 14 | `web3-staking` | Staking / Yield (APR · stake · claim) | pages | hard | ✅ |
+| 15 | `web3-liquidity-pool` | Liquidity Pool / Provide LP | ui-components | hard | ✅ |
+| 16 | `web3-dao-governance` | DAO Governance (proposals · vote) | pages | med | ✅ |
 
 ### 59.D — Themed Web3 Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 17 | `web3-landing-exchange` | Crypto Exchange / CEX | Black + green/red · clean sans + mono · data-dense, trustworthy | hard | [ ] |
-| 18 | `web3-landing-defi` | DeFi Protocol | Dark + neon gradient · geometric sans · futuristic, techy | hard | [ ] |
-| 19 | `web3-landing-nft` | NFT Project / Collection | Bold themed + glow · display · hype, community | med | [ ] |
-| 20 | `web3-landing-chain` | L1 / L2 Blockchain | Deep space + signature accent · modern sans · visionary, technical | hard | [ ] |
-| 21 | `web3-landing-wallet` | Wallet App | Clean dark + friendly accent · rounded sans · approachable, secure | med | [ ] |
+| 17 | `web3-landing-exchange` | Crypto Exchange / CEX | Black + green/red · clean sans + mono · data-dense, trustworthy | hard | ✅ |
+| 18 | `web3-landing-defi` | DeFi Protocol | Dark + neon gradient · geometric sans · futuristic, techy | hard | ✅ |
+| 19 | `web3-landing-nft` | NFT Project / Collection | Bold themed + glow · display · hype, community | med | ✅ |
+| 20 | `web3-landing-chain` | L1 / L2 Blockchain | Deep space + signature accent · modern sans · visionary, technical | hard | ✅ |
+| 21 | `web3-landing-wallet` | Wallet App | Clean dark + friendly accent · rounded sans · approachable, secure | med | ✅ |
 
 ### Build order (Phase 59)
 
@@ -2945,6 +2973,8 @@ using the style of the news
 4. **Landings** — 17 → 21.
 
 > Note: All Phase 59 resources are **UI-only simulations** — no real wallet connection, RPC, or on-chain calls. Mock data + clear "demo" framing.
+>
+> **Progress:** ✅ All 21 resources built (collection `web3`), wired into schema/config/collections/i18n/docs, MCP catalog regenerated. Built via multi-agent `Workflow` (`docs/templates/web3-phase59.workflow.js`).
 
 ---
 
@@ -3022,7 +3052,7 @@ using the style of the news
 
 ---
 
-## Phase 61 — Onboarding & Empty States 🚀 PLAN
+## Phase 61 — Onboarding & Empty States ✅ DONE
 
 > Every first-run, activation, and zero-data surface — the moments that decide whether a user sticks. Tours, checklists, wizards, and the full range of empty/error/loading states.
 >
@@ -3033,25 +3063,25 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `onb-welcome-modal` | Welcome / first-run modal | ui-components | easy | [ ] |
-| 2 | `onb-setup-wizard` | Multi-step setup wizard | pages | med | [ ] |
-| 3 | `onb-checklist` | Getting-started checklist (progress) | ui-components | med | [ ] |
-| 4 | `onb-product-tour` | Spotlight product tour (coachmarks) | ui-components | hard | [ ] |
-| 5 | `onb-tooltip-hints` | Contextual hint tooltips / beacons | ui-components | med | [ ] |
-| 6 | `onb-progress-nudge` | Profile/setup completion nudge bar | ui-components | easy | [ ] |
-| 7 | `onb-role-selector` | "What brings you here?" role/intent picker | ui-components | easy | [ ] |
-| 8 | `onb-sample-data` | Sample-data / "try with demo" prompt | ui-components | easy | [ ] |
+| 1 | `onb-welcome-modal` | Welcome / first-run modal | ui-components | easy | ✅ |
+| 2 | `onb-setup-wizard` | Multi-step setup wizard | pages | med | ✅ |
+| 3 | `onb-checklist` | Getting-started checklist (progress) | ui-components | med | ✅ |
+| 4 | `onb-product-tour` | Spotlight product tour (coachmarks) | ui-components | hard | ✅ |
+| 5 | `onb-tooltip-hints` | Contextual hint tooltips / beacons | ui-components | med | ✅ |
+| 6 | `onb-progress-nudge` | Profile/setup completion nudge bar | ui-components | easy | ✅ |
+| 7 | `onb-role-selector` | "What brings you here?" role/intent picker | ui-components | easy | ✅ |
+| 8 | `onb-sample-data` | Sample-data / "try with demo" prompt | ui-components | easy | ✅ |
 
 ### 61.B — Empty, Zero-Data & Error States
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 9 | `onb-empty-first-use` | First-use empty state (CTA to create) | ui-components | easy | [ ] |
-| 10 | `onb-empty-no-results` | No-search-results empty state | ui-components | easy | [ ] |
-| 11 | `onb-empty-cleared` | All-done / inbox-zero state | ui-components | easy | [ ] |
-| 12 | `onb-error-state` | Error / something-went-wrong state | ui-components | easy | [ ] |
-| 13 | `onb-permission-state` | No-access / permission-required state | ui-components | easy | [ ] |
-| 14 | `onb-loading-states` | Skeleton + spinner + progressive load set | ui-components | med | [ ] |
+| 9 | `onb-empty-first-use` | First-use empty state (CTA to create) | ui-components | easy | ✅ |
+| 10 | `onb-empty-no-results` | No-search-results empty state | ui-components | easy | ✅ |
+| 11 | `onb-empty-cleared` | All-done / inbox-zero state | ui-components | easy | ✅ |
+| 12 | `onb-error-state` | Error / something-went-wrong state | ui-components | easy | ✅ |
+| 13 | `onb-permission-state` | No-access / permission-required state | ui-components | easy | ✅ |
+| 14 | `onb-loading-states` | Skeleton + spinner + progressive load set | ui-components | med | ✅ |
 
 ### 61.C — Variants matrix
 
@@ -3064,9 +3094,17 @@ using the style of the news
 3. **Guidance** — 4, 5, 6.
 4. **Variants pass** — fill matrix across 61.A/61.B.
 
+> **Progress (2026-06-09):** ✅ Complete. All 14 resources built via parallel workflow
+> (`docs/templates/onboarding-phase61.workflow.js`) — `index.mdx` + html/css/js snippets each,
+> with live variant switchers. New `patterns` collection wired in all required places
+> (schema enum, www content config enum, `collections.ts` card + id lists, i18n `en`/`es`
+> title+desc, docs `collections.mdx` table row). MCP catalog regenerated (982 resources).
+
 ---
 
-## Phase 62 — Pricing & Paywall 💰 PLAN
+## Phase 62 — Pricing & Paywall 💰 ✅ DONE (2026-06-13)
+
+**Progress (2026-06-13):** All 16 resources complete — index.mdx + snippets/{html,css,js} for each. Built via workflow `wf_cfbe81d8-674` (16/16 agents). Collection `patterns`.
 
 > The complete monetization-surface toolkit — every pricing table, plan comparison, paywall, upsell, trial, and checkout-nudge variant.
 >
@@ -3077,32 +3115,32 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `pay-pricing-3tier` | Classic 3-tier pricing | ui-components | easy | [ ] |
-| 2 | `pay-pricing-toggle` | Monthly/annual toggle pricing | ui-components | med | [ ] |
-| 3 | `pay-pricing-slider` | Usage-slider pricing (price scales) | ui-components | hard | [ ] |
-| 4 | `pay-pricing-compare` | Feature comparison matrix | ui-components | med | [ ] |
-| 5 | `pay-pricing-single` | Single-plan / one-price layout | ui-components | easy | [ ] |
-| 6 | `pay-pricing-enterprise` | Tiers + "Contact sales" enterprise card | ui-components | easy | [ ] |
+| 1 | `pay-pricing-3tier` | Classic 3-tier pricing | ui-components | easy | ✅ |
+| 2 | `pay-pricing-toggle` | Monthly/annual toggle pricing | ui-components | med | ✅ |
+| 3 | `pay-pricing-slider` | Usage-slider pricing (price scales) | ui-components | hard | ✅ |
+| 4 | `pay-pricing-compare` | Feature comparison matrix | ui-components | med | ✅ |
+| 5 | `pay-pricing-single` | Single-plan / one-price layout | ui-components | easy | ✅ |
+| 6 | `pay-pricing-enterprise` | Tiers + "Contact sales" enterprise card | ui-components | easy | ✅ |
 
 ### 62.B — Paywalls & Gates
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `pay-paywall-hard` | Hard paywall (full block) | ui-components | easy | [ ] |
-| 8 | `pay-paywall-soft` | Soft / metered paywall (fade + count) | ui-components | med | [ ] |
-| 9 | `pay-paywall-blur` | Blur-locked premium content | ui-components | easy | [ ] |
-| 10 | `pay-feature-gate` | Inline feature-locked gate (pro badge) | ui-components | easy | [ ] |
+| 7 | `pay-paywall-hard` | Hard paywall (full block) | ui-components | easy | ✅ |
+| 8 | `pay-paywall-soft` | Soft / metered paywall (fade + count) | ui-components | med | ✅ |
+| 9 | `pay-paywall-blur` | Blur-locked premium content | ui-components | easy | ✅ |
+| 10 | `pay-feature-gate` | Inline feature-locked gate (pro badge) | ui-components | easy | ✅ |
 
 ### 62.C — Upsell, Trial & Nudges
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 11 | `pay-upgrade-modal` | Upgrade modal (plan compare) | ui-components | med | [ ] |
-| 12 | `pay-trial-banner` | Trial countdown / "X days left" banner | ui-components | easy | [ ] |
-| 13 | `pay-usage-limit` | Usage-limit reached prompt | ui-components | easy | [ ] |
-| 14 | `pay-addon-upsell` | Add-on / cross-sell at checkout | ui-components | med | [ ] |
-| 15 | `pay-discount-offer` | Win-back / discount offer modal | ui-components | easy | [ ] |
-| 16 | `pay-cancel-flow` | Cancellation / downgrade retention flow | pages | med | [ ] |
+| 11 | `pay-upgrade-modal` | Upgrade modal (plan compare) | ui-components | med | ✅ |
+| 12 | `pay-trial-banner` | Trial countdown / "X days left" banner | ui-components | easy | ✅ |
+| 13 | `pay-usage-limit` | Usage-limit reached prompt | ui-components | easy | ✅ |
+| 14 | `pay-addon-upsell` | Add-on / cross-sell at checkout | ui-components | med | ✅ |
+| 15 | `pay-discount-offer` | Win-back / discount offer modal | ui-components | easy | ✅ |
+| 16 | `pay-cancel-flow` | Cancellation / downgrade retention flow | pages | med | ✅ |
 
 ### 62.D — Variants matrix
 
@@ -3117,7 +3155,9 @@ using the style of the news
 
 ---
 
-## Phase 63 — Form Patterns 📝 PLAN
+## Phase 63 — Form Patterns 📝 ✅ DONE (2026-06-13)
+
+**Progress (2026-06-13):** All 16 resources complete — index.mdx + snippets/{html,css,js} for each. Built via workflow `wf_799ae3b2-a32` (16/16 agents). Collection `patterns`.
 
 > Beyond single inputs (covered in Phases 6/7) — the hard parts of forms: multi-step, conditional logic, validation, autosave, and complex composite inputs.
 >
@@ -3128,32 +3168,32 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `form-multi-step` | Multi-step form (progress + back/next) | ui-components | med | [ ] |
-| 2 | `form-wizard-branching` | Branching wizard (conditional steps) | ui-components | hard | [ ] |
-| 3 | `form-sectioned-long` | Long sectioned form (sticky nav) | ui-components | med | [ ] |
-| 4 | `form-inline-edit` | Inline edit / edit-in-place | ui-components | med | [ ] |
-| 5 | `form-repeatable-rows` | Repeatable field rows (add/remove) | ui-components | med | [ ] |
+| 1 | `form-multi-step` | Multi-step form (progress + back/next) | ui-components | med | ✅ |
+| 2 | `form-wizard-branching` | Branching wizard (conditional steps) | ui-components | hard | ✅ |
+| 3 | `form-sectioned-long` | Long sectioned form (sticky nav) | ui-components | med | ✅ |
+| 4 | `form-inline-edit` | Inline edit / edit-in-place | ui-components | med | ✅ |
+| 5 | `form-repeatable-rows` | Repeatable field rows (add/remove) | ui-components | med | ✅ |
 
 ### 63.B — Validation & Feedback
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 6 | `form-inline-validation` | Real-time inline validation | ui-components | med | [ ] |
-| 7 | `form-error-summary` | Top error summary + jump-to-field | ui-components | med | [ ] |
-| 8 | `form-password-strength` | Password strength + rules checklist | ui-components | easy | [ ] |
-| 9 | `form-async-validation` | Async availability check (username/email) | ui-components | med | [ ] |
-| 10 | `form-success-feedback` | Submit success / confirmation states | ui-components | easy | [ ] |
+| 6 | `form-inline-validation` | Real-time inline validation | ui-components | med | ✅ |
+| 7 | `form-error-summary` | Top error summary + jump-to-field | ui-components | med | ✅ |
+| 8 | `form-password-strength` | Password strength + rules checklist | ui-components | easy | ✅ |
+| 9 | `form-async-validation` | Async availability check (username/email) | ui-components | med | ✅ |
+| 10 | `form-success-feedback` | Submit success / confirmation states | ui-components | easy | ✅ |
 
 ### 63.C — State & Complex Inputs
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 11 | `form-autosave-draft` | Autosave + "saved" indicator + restore | ui-components | med | [ ] |
-| 12 | `form-conditional-fields` | Conditional show/hide fields | ui-components | med | [ ] |
-| 13 | `form-dependent-selects` | Dependent / cascading selects | ui-components | med | [ ] |
-| 14 | `form-address-input` | Smart address input (autocomplete) | ui-components | med | [ ] |
-| 15 | `form-payment-input` | Card / payment input group | ui-components | med | [ ] |
-| 16 | `form-unsaved-guard` | Unsaved-changes leave guard | ui-components | easy | [ ] |
+| 11 | `form-autosave-draft` | Autosave + "saved" indicator + restore | ui-components | med | ✅ |
+| 12 | `form-conditional-fields` | Conditional show/hide fields | ui-components | med | ✅ |
+| 13 | `form-dependent-selects` | Dependent / cascading selects | ui-components | med | ✅ |
+| 14 | `form-address-input` | Smart address input (autocomplete) | ui-components | med | ✅ |
+| 15 | `form-payment-input` | Card / payment input group | ui-components | med | ✅ |
+| 16 | `form-unsaved-guard` | Unsaved-changes leave guard | ui-components | easy | ✅ |
 
 ### 63.D — Variants matrix
 
@@ -3168,7 +3208,9 @@ using the style of the news
 
 ---
 
-## Phase 64 — Dashboard Layouts 📊 PLAN
+## Phase 64 — Dashboard Layouts 📊 ✅ DONE (2026-06-13)
+
+**Progress (2026-06-13):** All 16 resources complete — index.mdx + snippets/{html,css,js} for each. Built via workflow `wf_579b22db-af6` (16/16 agents; first run hit the session limit at 0/16, completed on resume after reset). Collection `patterns`.
 
 > The shells and composition patterns for data-dense apps — bento grids, command centers, analytics layouts, and configurable widget systems. Composes the charts/metrics from Phase 10.
 >
@@ -3179,32 +3221,32 @@ using the style of the news
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `dash-bento-grid` | Bento-grid dashboard | pages | med | [ ] |
-| 2 | `dash-analytics-shell` | Analytics layout (filters + grid) | pages | hard | [ ] |
-| 3 | `dash-command-center` | Ops command center (live tiles) | pages | hard | [ ] |
-| 4 | `dash-single-metric` | Single-KPI focus dashboard | pages | easy | [ ] |
-| 5 | `dash-multi-tab` | Tabbed / sectioned dashboard | pages | med | [ ] |
-| 6 | `dash-sidebar-detail` | List + detail (master-detail) layout | pages | med | [ ] |
+| 1 | `dash-bento-grid` | Bento-grid dashboard | pages | med | ✅ |
+| 2 | `dash-analytics-shell` | Analytics layout (filters + grid) | pages | hard | ✅ |
+| 3 | `dash-command-center` | Ops command center (live tiles) | pages | hard | ✅ |
+| 4 | `dash-single-metric` | Single-KPI focus dashboard | pages | easy | ✅ |
+| 5 | `dash-multi-tab` | Tabbed / sectioned dashboard | pages | med | ✅ |
+| 6 | `dash-sidebar-detail` | List + detail (master-detail) layout | pages | med | ✅ |
 
 ### 64.B — Widget & Composition Patterns
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `dash-widget-card` | Resizable widget card frame | ui-components | med | [ ] |
-| 8 | `dash-draggable-grid` | Drag-rearrange widget grid | ui-components | hard | [ ] |
-| 9 | `dash-stat-row` | KPI / stat row (with trends) | ui-components | easy | [ ] |
-| 10 | `dash-filter-bar` | Global filter + date-range bar | ui-components | med | [ ] |
-| 11 | `dash-widget-picker` | Add-widget / customize panel | ui-components | med | [ ] |
-| 12 | `dash-empty-widget` | Empty / loading widget states | ui-components | easy | [ ] |
+| 7 | `dash-widget-card` | Resizable widget card frame | ui-components | med | ✅ |
+| 8 | `dash-draggable-grid` | Drag-rearrange widget grid | ui-components | hard | ✅ |
+| 9 | `dash-stat-row` | KPI / stat row (with trends) | ui-components | easy | ✅ |
+| 10 | `dash-filter-bar` | Global filter + date-range bar | ui-components | med | ✅ |
+| 11 | `dash-widget-picker` | Add-widget / customize panel | ui-components | med | ✅ |
+| 12 | `dash-empty-widget` | Empty / loading widget states | ui-components | easy | ✅ |
 
 ### 64.C — Specialized Dashboards
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 13 | `dash-realtime-monitor` | Real-time monitoring (live updates) | pages | hard | [ ] |
-| 14 | `dash-finance` | Finance dashboard (P&L · cashflow) | pages | hard | [ ] |
-| 15 | `dash-marketing` | Marketing dashboard (funnels · channels) | pages | med | [ ] |
-| 16 | `dash-mobile` | Mobile-first dashboard layout | pages | med | [ ] |
+| 13 | `dash-realtime-monitor` | Real-time monitoring (live updates) | pages | hard | ✅ |
+| 14 | `dash-finance` | Finance dashboard (P&L · cashflow) | pages | hard | ✅ |
+| 15 | `dash-marketing` | Marketing dashboard (funnels · channels) | pages | med | ✅ |
+| 16 | `dash-mobile` | Mobile-first dashboard layout | pages | med | ✅ |
 
 ### 64.D — Variants matrix
 
@@ -3220,6 +3262,293 @@ using the style of the news
 
 ---
 
+## Phase 65 — Remotion: Ads & Promo 📣 ✅ DONE
+
+Spots de video para anuncios, ofertas y campañas promocionales con Remotion.
+
+**Progress (2026-06-12):** All 12 resources complete — index.mdx + snippets/react.tsx for each.
+
+### Video Ads
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-product-ad` | Product advertisement spot | remotion | med | ✅ |
+| `remotion-app-promo` | App store promo video | remotion | med | ✅ |
+| `remotion-sale-spot` | Sale announcement spot | remotion | easy | ✅ |
+| `remotion-flash-sale` | Flash sale countdown ad | remotion | med | ✅ |
+
+### Seasonal & Events
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-holiday-promo` | Holiday/seasonal promo | remotion | med | ✅ |
+| `remotion-black-friday` | Black Friday deal video | remotion | med | ✅ |
+| `remotion-event-promo` | Event promo teaser | remotion | med | ✅ |
+| `remotion-webinar-promo` | Webinar promo video | remotion | easy | ✅ |
+
+### Retail Hooks
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-coupon-reveal` | Coupon reveal animation | remotion | easy | ✅ |
+| `remotion-discount-banner` | Animated discount banner | remotion | easy | ✅ |
+| `remotion-limited-offer` | Limited-time offer spot | remotion | med | ✅ |
+| `remotion-giveaway` | Giveaway announcement | remotion | easy | ✅ |
+
+## Phase 66 — Remotion: Explainer & Education 🎓 ✅ DONE (2026-06-13)
+
+Videos explicativos, tutoriales y onboarding con Remotion.
+
+### Explainers
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-explainer` | Animated explainer video | remotion | hard | ✅ |
+| `remotion-how-to` | How-to step video | remotion | med | ✅ |
+| `remotion-tutorial-steps` | Numbered tutorial steps | remotion | med | ✅ |
+| `remotion-product-demo` | Product demo walkthrough | remotion | med | ✅ |
+
+### Courses
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-course-promo` | Online course promo | remotion | med | ✅ |
+| `remotion-lesson-intro` | Lesson intro animation | remotion | easy | ✅ |
+| `remotion-quiz-card` | Animated quiz card | remotion | med | ✅ |
+| `remotion-flashcard` | Flashcard flip video | remotion | easy | ✅ |
+
+### Onboarding
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-feature-tour` | Feature tour video | remotion | med | ✅ |
+| `remotion-onboarding-clip` | Onboarding welcome clip | remotion | easy | ✅ |
+| `remotion-walkthrough` | UI walkthrough video | remotion | med | ✅ |
+| `remotion-faq-video` | Animated FAQ video | remotion | easy | ✅ |
+
+## Phase 67 — Remotion: Music & Audio-reactive 🎧 ✅ DONE (2026-06-13)
+
+Visualizaciones de audio y videos musicales con Remotion.
+
+### Audio Visuals
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-audiogram` | Audiogram waveform clip | remotion | med | ✅ |
+| `remotion-waveform` | Waveform visualizer | remotion | med | ✅ |
+| `remotion-lyric-video` | Lyric video animation | remotion | hard | ✅ |
+| `remotion-spectrum-bars` | Frequency spectrum bars | remotion | med | ✅ |
+
+### Music Promo
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-album-promo` | Album release promo | remotion | med | ✅ |
+| `remotion-spotify-canvas` | Spotify-style canvas loop | remotion | easy | ✅ |
+| `remotion-now-playing` | Now-playing card | remotion | easy | ✅ |
+| `remotion-playlist-promo` | Playlist promo video | remotion | med | ✅ |
+
+### Reactive
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-beat-sync` | Beat-synced animation | remotion | hard | ✅ |
+| `remotion-vu-meter` | VU meter animation | remotion | med | ✅ |
+| `remotion-music-visualizer` | Music visualizer scene | remotion | hard | ✅ |
+| `remotion-radio-card` | Radio/podcast audio card | remotion | easy | ✅ |
+
+## Phase 68 — Remotion: Data & Reports 📊 ✅ DONE (2026-06-12)
+
+Videos de datos, métricas y reportes animados con Remotion.
+
+### Charts
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-bar-race` | Animated bar chart race | remotion | hard | ✅ |
+| `remotion-line-chart` | Animated line chart | remotion | med | ✅ |
+| `remotion-pie-reveal` | Pie chart reveal | remotion | med | ✅ |
+| `remotion-area-chart` | Animated area chart | remotion | med | ✅ |
+
+### KPIs
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-kpi-cards` | KPI cards animation | remotion | med | ✅ |
+| `remotion-metric-counter` | Animated metric counter | remotion | easy | ✅ |
+| `remotion-growth-chart` | Growth chart reveal | remotion | med | ✅ |
+| `remotion-dashboard-recap` | Dashboard recap video | remotion | hard | ✅ |
+
+### Rankings
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-leaderboard` | Animated leaderboard | remotion | med | ✅ |
+| `remotion-stock-ticker` | Stock ticker reel | remotion | med | ✅ |
+| `remotion-survey-results` | Survey results video | remotion | med | ✅ |
+| `remotion-poll-results` | Poll results animation | remotion | easy | ✅ |
+
+## Phase 69 — Remotion: News & Broadcast 📺 ✅ DONE (2026-06-13)
+
+Gráficos de noticias y broadcast con Remotion.
+
+> Progress (2026-06-13): 12/12 recursos completados con workflow multi-agente. Catálogo MCP regenerado (1128 recursos totales).
+
+### News
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-breaking-news` | Breaking news bumper | remotion | med | ✅ |
+| `remotion-headline-reel` | Headline reel animation | remotion | med | ✅ |
+| `remotion-news-intro` | News show intro | remotion | med | ✅ |
+| `remotion-news-lower-third` | News lower third bug | remotion | easy | ✅ |
+
+### Broadcast
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-weather` | Weather forecast graphic | remotion | med | ✅ |
+| `remotion-sports-score` | Sports scoreboard | remotion | med | ✅ |
+| `remotion-sports-highlight` | Sports highlight reel | remotion | hard | ✅ |
+| `remotion-market-watch` | Market watch ticker | remotion | med | ✅ |
+
+### Bulletin
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-ticker-bar` | Scrolling ticker bar | remotion | easy | ✅ |
+| `remotion-anchor-card` | Anchor intro card | remotion | easy | ✅ |
+| `remotion-byline` | Byline/credit animation | remotion | easy | ✅ |
+| `remotion-press-quote` | Press quote card | remotion | easy | ✅ |
+
+## Phase 70 — Remotion: Events & Personal 🎉 ✅ DONE (2026-06-13)
+
+Invitaciones, recaps y videos personales con Remotion.
+
+### Invites
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-wedding-invite` | Wedding invitation video | remotion | med | ✅ |
+| `remotion-birthday` | Birthday greeting video | remotion | easy | ✅ |
+| `remotion-save-the-date` | Save-the-date animation | remotion | easy | ✅ |
+| `remotion-party-invite` | Party invite video | remotion | easy | ✅ |
+
+### Recaps
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-year-review` | Year-in-review recap | remotion | hard | ✅ |
+| `remotion-recap-reel` | Highlights recap reel | remotion | med | ✅ |
+| `remotion-milestone` | Milestone celebration | remotion | easy | ✅ |
+| `remotion-anniversary` | Anniversary video | remotion | easy | ✅ |
+
+### Celebration
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-certificate-reveal` | Certificate reveal | remotion | med | ✅ |
+| `remotion-congrats` | Congratulations animation | remotion | easy | ✅ |
+| `remotion-thank-you` | Thank-you video | remotion | easy | ✅ |
+| `remotion-rsvp-card` | RSVP confirmation card | remotion | easy | ✅ |
+
+## Phase 71 — Remotion: SaaS / Product motion ☁️ ✅ DONE (2026-06-13)
+
+Videos de producto, releases y social proof para SaaS con Remotion.
+
+### Releases
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-changelog` | Changelog video | remotion | med | ✅ |
+| `remotion-feature-announce` | Feature announcement | remotion | med | ✅ |
+| `remotion-release-notes` | Release notes reel | remotion | med | ✅ |
+| `remotion-roadmap-reel` | Roadmap teaser reel | remotion | med | ✅ |
+
+### Showcase
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-integration-showcase` | Integration showcase | remotion | med | ✅ |
+| `remotion-product-tour` | Product tour video | remotion | med | ✅ |
+| `remotion-ui-showcase` | UI showcase reel | remotion | med | ✅ |
+| `remotion-pricing-reveal` | Pricing reveal animation | remotion | med | ✅ |
+
+### Social Proof
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-testimonial-wall` | Testimonial wall video | remotion | med | ✅ |
+| `remotion-product-review` | Product review video | remotion | med | ✅ |
+| `remotion-rating-stars` | Animated rating stars | remotion | easy | ✅ |
+| `remotion-case-study` | Case study highlight | remotion | hard | ✅ |
+
+## Phase 72 — Remotion: Shorts / Social II 📱 ✅ DONE (2026-06-13)
+
+Plantillas para shorts, reels y clips sociales con Remotion.
+
+### Shorts
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-youtube-shorts` | YouTube Shorts template | remotion | med | ✅ |
+| `remotion-reels-template` | Instagram Reels template | remotion | med | ✅ |
+| `remotion-shorts-hook` | Shorts hook intro | remotion | easy | ✅ |
+| `remotion-swipe-cta` | Swipe-up CTA animation | remotion | easy | ✅ |
+
+### Clips
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-podcast-clip` | Podcast clip template | remotion | med | ✅ |
+| `remotion-caption-karaoke` | Karaoke caption clip | remotion | hard | ✅ |
+| `remotion-subtitle-burn` | Burned-in subtitle clip | remotion | med | ✅ |
+| `remotion-quote-short` | Quote short video | remotion | easy | ✅ |
+
+### Engagement
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-poll-sticker` | Poll sticker animation | remotion | easy | ✅ |
+| `remotion-quiz-short` | Quiz short video | remotion | med | ✅ |
+| `remotion-countdown-teaser` | Countdown teaser | remotion | easy | ✅ |
+| `remotion-meme-frame` | Meme frame template | remotion | easy | ✅ |
+
+## Phase 73 — Remotion: Clinic / Healthcare videos 🏥 ✅ DONE (2026-06-13)
+
+Videos informativos y promocionales para clínicas con Remotion.
+
+> Progress (2026-06-13): 12/12 recursos completados con workflow multi-agente. Catálogo MCP regenerado (1104 recursos totales).
+
+### Promo
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-clinic-promo` | Clinic promo video | remotion | med | ✅ |
+| `remotion-health-tip` | Health tip animation | remotion | easy | ✅ |
+| `remotion-appointment-reminder` | Appointment reminder clip | remotion | easy | ✅ |
+| `remotion-service-highlight` | Service highlight video | remotion | med | ✅ |
+
+### Info
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-medication-guide` | Medication guide video | remotion | med | ✅ |
+| `remotion-symptom-clip` | Symptom info clip | remotion | med | ✅ |
+| `remotion-clinic-hours` | Clinic hours card | remotion | easy | ✅ |
+| `remotion-doctor-intro` | Doctor intro video | remotion | easy | ✅ |
+
+### Patient
+
+| Slug | Description | Tech | Difficulty | Status |
+|---|---|---|---|---|
+| `remotion-patient-testimonial` | Patient testimonial video | remotion | med | ✅ |
+| `remotion-wellness-stat` | Wellness stat animation | remotion | easy | ✅ |
+| `remotion-vaccine-info` | Vaccine info clip | remotion | med | ✅ |
+| `remotion-emergency-info` | Emergency info card | remotion | easy | ✅ |
+
+---
+
 ## Phase index (planned families) 🗂️
 
 > Quick map of the planned/future phase families for navigation. ✅ = shipped phases tracked in their own sections above.
@@ -3232,4 +3561,5 @@ using the style of the news
 | Editorial & content (II) | 50–56 | Comics/Manga · Cookbook · Music · Wiki/Docs · Children's · Travel · Portfolio styles |
 | Vertical bundles (II) | 57–60 | E-commerce · SaaS · Crypto/Web3 · Nonprofit |
 | Pattern & system collections | 61–64 | Onboarding/Empty · Pricing/Paywall · Forms · Dashboards |
+| Video & motion (Remotion II) | 65–73 | Ads · Explainer · Music · Data · News · Events · SaaS · Shorts · Clinic |
 

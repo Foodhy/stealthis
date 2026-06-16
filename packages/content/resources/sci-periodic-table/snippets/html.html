@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Periodic Table — Cavendish Open Chemistry Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to table</a>
+
+  <header class="masthead" role="banner">
+    <div class="masthead__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">Z</span>
+        <div class="brand__txt">
+          <p class="brand__lab">Cavendish Open Chemistry Lab</p>
+          <h1 class="brand__title">Interactive Periodic Table of the Elements</h1>
+        </div>
+      </div>
+      <p class="masthead__meta">
+        Dataset <span class="mono">COCL-PTE v3.2</span> · 118 elements ·
+        <abbr title="Digital Object Identifier">DOI</abbr>
+        <span class="mono">10.5821/cocl.pte.2026.0312</span>
+      </p>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="lede" aria-labelledby="lede-h">
+      <h2 id="lede-h" class="lede__h">A tactile reference for the periodic system</h2>
+      <p class="lede__p">
+        Hover any cell to lift it; click to open the element dossier. Recolor the
+        whole table by chemical <strong>category</strong>, room-temperature
+        <strong>state</strong>, or relative <strong>electronegativity</strong>, and
+        use the search field to spotlight matches by symbol, name, or atomic number.
+        Compiled by the Cavendish Open Chemistry Lab from the fictional
+        <span class="mono">COCL-PTE</span> reference release.
+      </p>
+    </section>
+
+    <section class="toolbar" aria-label="Table controls">
+      <div class="toolbar__group">
+        <label class="search" for="search">
+          <span class="search__icon" aria-hidden="true">⌕</span>
+          <input
+            id="search"
+            type="search"
+            placeholder="Search symbol, name, or number…"
+            autocomplete="off"
+            aria-describedby="search-count"
+          />
+        </label>
+        <span id="search-count" class="search__count mono" role="status" aria-live="polite"></span>
+      </div>
+
+      <fieldset class="toolbar__group toolbar__modes">
+        <legend class="sr-only">Color mode</legend>
+        <span class="modes__label">Color by</span>
+        <div class="seg" role="radiogroup" aria-label="Color mode">
+          <button class="seg__btn is-active" data-mode="category" role="radio" aria-checked="true">Category</button>
+          <button class="seg__btn" data-mode="state" role="radio" aria-checked="false">State</button>
+          <button class="seg__btn" data-mode="electronegativity" role="radio" aria-checked="false">Electroneg.</button>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="board" aria-label="Periodic table">
+      <div class="table-scroll">
+        <div id="ptable" class="ptable" role="grid" aria-label="118 chemical elements arranged by atomic number"></div>
+      </div>
+
+      <div class="figure-note">
+        <p><strong>Figure 1.</strong> The 118 confirmed elements positioned by group and period.
+        Lanthanides (57–71) and actinides (89–103) are extracted to the two lower rows, as in the
+        standard 18-column layout. Cell tint follows the active color mode.</p>
+      </div>
+    </section>
+
+    <section class="legend-wrap" aria-label="Color legend">
+      <h3 class="legend-h">Legend <span id="legend-mode" class="mono"></span></h3>
+      <ul id="legend" class="legend"></ul>
+    </section>
+  </main>
+
+  <!-- Detail panel -->
+  <aside id="panel" class="panel" aria-hidden="true" aria-label="Element details" tabindex="-1">
+    <div class="panel__inner">
+      <button id="panel-close" class="panel__close" aria-label="Close element details">✕</button>
+      <div class="panel__head">
+        <div id="panel-symbol" class="panel__symbol">H</div>
+        <div class="panel__head-txt">
+          <p id="panel-num" class="panel__num mono">1</p>
+          <h2 id="panel-name" class="panel__name">Hydrogen</h2>
+          <p id="panel-cat" class="panel__cat"></p>
+        </div>
+      </div>
+
+      <dl class="panel__grid">
+        <div class="kv"><dt>Atomic mass</dt><dd id="panel-mass" class="mono">—</dd></div>
+        <div class="kv"><dt>Group / Period</dt><dd id="panel-gp" class="mono">—</dd></div>
+        <div class="kv"><dt>Block</dt><dd id="panel-block" class="mono">—</dd></div>
+        <div class="kv"><dt>State (298 K)</dt><dd id="panel-state">—</dd></div>
+        <div class="kv"><dt>Electronegativity</dt><dd id="panel-en" class="mono">—</dd></div>
+        <div class="kv"><dt>Discovered</dt><dd id="panel-disc" class="mono">—</dd></div>
+      </dl>
+
+      <div class="panel__econf">
+        <p class="econf__label">Electron configuration</p>
+        <p id="panel-conf" class="econf__val mono">—</p>
+        <div id="panel-shells" class="shells" aria-hidden="true"></div>
+      </div>
+
+      <p id="panel-fact" class="panel__fact"></p>
+
+      <p class="panel__src">
+        Source: <span class="mono">COCL-PTE v3.2</span>, element record
+        <span id="panel-rec" class="mono">#0001</span>. Illustrative values.
+      </p>
+    </div>
+  </aside>
+  <div id="scrim" class="scrim" hidden></div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <footer class="foot" role="contentinfo">
+    <p>Cavendish Open Chemistry Lab · 14 Becquerel Court, Northgate · Educational reference build.</p>
+    <p class="foot__cite mono">Vance, A. R., Okonkwo, M. &amp; Liang, P. (2026). COCL Periodic Reference, 3rd ed. DOI 10.5821/cocl.pte.2026.0312</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

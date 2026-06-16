@@ -1,0 +1,27 @@
+---
+slug: form-unsaved-guard
+title: "Form — Unsaved-changes leave guard"
+description: "A profile-settings form that flips to a dirty state the moment any field diverges from its saved baseline, then guards every exit against losing that work. In-page route links and the Cancel button are intercepted while dirty and routed through a focus-trapped confirm modal offering Leave and discard or Stay, with Escape mapped to Stay. A native beforeunload handler covers tab close and refresh. Saving validates, re-baselines the form, and switches the guard off, all in dependency-free vanilla JavaScript."
+category: ui-components
+type: component
+tags: [patterns, guard, dirty-state]
+tech: [html, css, vanilla-js]
+difficulty: easy
+targets: [html]
+collections: [patterns]
+labRoute: /ui-components/form-unsaved-guard
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-06-13
+updatedAt: 2026-06-13
+---
+
+## Unsaved-changes leave guard
+
+A mock account-settings editor that protects in-progress edits. The form starts in a clean state with a green "All changes saved" badge and a disabled Save button. As soon as any value diverges from its saved baseline — name, email, job title, time zone, bio, or notification toggles — the badge turns amber to read "Unsaved changes", and Save enables. The dirty check is a real value snapshot compared against the last saved baseline, so undoing an edit by hand flips the state cleanly back to saved.
+
+While the form is dirty, any attempt to leave is intercepted. The side-rail route links (Profile, Billing, Security, Team) and the Cancel button all funnel through an accessible `role="alertdialog"` confirm modal that names the destination and offers "Leave and discard" or "Stay on page". The modal traps Tab focus inside the dialog, opens with focus on the safe default (Stay), maps Escape and a backdrop click to Stay, and restores focus to the triggering control on close. A native `beforeunload` handler — opted in only while dirty — extends the same protection to closing the tab, refreshing, or following an external link.
+
+Required fields (display name and email) have real inline validation with `aria-invalid`, error helper text, and a live character counter on the bio. Saving validates first, focuses the first invalid field on failure, and on success re-snapshots the baseline, resets the badge to "All changes saved", disables Save again, and renders status via an `aria-live` region plus a transient toast. The layout is a two-column grid with a sticky rail that collapses to a stacked, single-column view under 520px, and it respects `prefers-reduced-motion`.

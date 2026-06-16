@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora DB Docs — Command-K Instant Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ───────────────────────── Top bar ───────────────────────── -->
+  <header class="topbar">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <a class="brand" href="#main">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span class="brand-name">Aurora DB</span>
+      <span class="brand-sub">Docs</span>
+    </a>
+
+    <button class="search-trigger" id="searchTrigger" aria-haspopup="dialog" aria-label="Search docs">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.3-4.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="search-trigger-label">Search docs…</span>
+      <kbd class="kbd-chip"><span class="cmd">⌘</span>K</kbd>
+    </button>
+
+    <nav class="topbar-links" aria-label="Primary">
+      <a href="#main">Guides</a>
+      <a href="#main">API</a>
+      <a href="#main">Changelog</a>
+    </nav>
+  </header>
+
+  <div class="shell">
+    <!-- ───────────────────────── Sidebar ───────────────────────── -->
+    <aside class="sidebar" id="sidebar" aria-label="Documentation navigation">
+      <nav class="sidebar-nav">
+        <p class="nav-group-label">Getting started</p>
+        <ul>
+          <li><a href="#main" class="active">Introduction</a></li>
+          <li><a href="#main">Installation</a></li>
+          <li><a href="#main">Quickstart</a></li>
+        </ul>
+        <p class="nav-group-label">Core concepts</p>
+        <ul>
+          <li><a href="#main">Storage engine</a></li>
+          <li><a href="#main">Write path</a></li>
+          <li><a href="#main">Replication</a></li>
+          <li><a href="#main">Consistency model</a></li>
+        </ul>
+        <p class="nav-group-label">Operations</p>
+        <ul>
+          <li><a href="#main">Backups</a></li>
+          <li><a href="#main">Compaction</a></li>
+          <li><a href="#main">Monitoring</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <!-- ───────────────────────── Main ───────────────────────── -->
+    <main class="main" id="main" tabindex="-1">
+      <article class="article">
+        <p class="breadcrumb"><a href="#main">Docs</a> <span aria-hidden="true">/</span> <a href="#main">Core concepts</a> <span aria-hidden="true">/</span> Storage engine</p>
+        <h1>The Aurora DB storage engine</h1>
+        <p class="lede">Aurora DB persists data through a log-structured merge tree tuned for write-heavy workloads.
+          This page covers the on-disk layout, the write path, and how background compaction keeps read
+          amplification bounded. Press <kbd>⌘K</kbd> at any time to jump anywhere in these docs.</p>
+
+        <h2>How writes land</h2>
+        <p>Every mutation is appended to a durable write-ahead log before it is acknowledged, then folded
+          into an in-memory <code>memtable</code>. When the memtable crosses its flush threshold it is
+          frozen and written out as an immutable sorted segment. Because segments never change after they
+          are sealed, reads can be served lock-free and replicas can ship segments byte-for-byte.</p>
+
+        <pre class="code"><code>CREATE TABLE orders (
+  id        UUID PRIMARY KEY,
+  customer  TEXT NOT NULL,
+  total     NUMERIC,
+  placed_at TIMESTAMPTZ DEFAULT now()
+) WITH (engine = 'lsm', compaction = 'leveled');</code></pre>
+
+        <blockquote>
+          <strong>Note —</strong> The flush threshold defaults to 64&nbsp;MiB. Lower it for latency-sensitive
+          tenants; raise it to reduce the number of segments a query must merge.
+        </blockquote>
+
+        <h2>Segment format</h2>
+        <p>Each segment carries a sparse index, a bloom filter, and a footer with checksums. The bloom
+          filter lets the engine skip segments that cannot contain a key, which is what keeps point reads
+          fast even as the number of segments grows.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Region</th><th>Bytes</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td>Header</td><td>32</td><td>Magic, version, flags</td></tr>
+              <tr><td>Data blocks</td><td>variable</td><td>Sorted key/value pairs</td></tr>
+              <tr><td>Bloom filter</td><td>~1.2/key</td><td>Negative-lookup skip</td></tr>
+              <tr><td>Sparse index</td><td>variable</td><td>Block offsets by key</td></tr>
+              <tr><td>Footer</td><td>48</td><td>Checksums, index offset</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Compaction</h2>
+        <p>Leveled compaction merges overlapping segments into a higher level, discarding tombstones and
+          superseded versions along the way. This bounds the number of segments any read must consult,
+          trading a steady background write cost for predictable read latency.</p>
+
+        <p class="hint-row">Try the palette: open it with <kbd>⌘K</kbd>, move with <kbd>↑</kbd> <kbd>↓</kbd>,
+          open a result with <kbd>↵</kbd>, and dismiss with <kbd>Esc</kbd>.</p>
+      </article>
+    </main>
+  </div>
+
+  <!-- ───────────────────────── Command palette ───────────────────────── -->
+  <div class="palette-backdrop" id="paletteBackdrop" hidden>
+    <div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Search documentation" aria-describedby="paletteFoot">
+      <div class="palette-input-row">
+        <svg class="palette-search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.3-4.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input
+          id="paletteInput"
+          class="palette-input"
+          type="text"
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="paletteResults"
+          aria-activedescendant=""
+          aria-autocomplete="list"
+          placeholder="Search pages, API, actions…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <kbd class="palette-esc">Esc</kbd>
+      </div>
+
+      <div class="palette-results" id="paletteResults" role="listbox" aria-label="Search results"></div>
+
+      <div class="palette-footer" id="paletteFoot">
+        <span class="foot-hint"><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+        <span class="foot-hint"><kbd>↵</kbd> open</span>
+        <span class="foot-hint"><kbd>Esc</kbd> close</span>
+        <span class="foot-spacer"></span>
+        <span class="foot-brand">Aurora DB Search</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

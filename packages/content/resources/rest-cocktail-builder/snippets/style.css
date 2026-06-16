@@ -1,0 +1,473 @@
+/* ========================================
+   Cocktail Builder — Phase 27 Restaurant Theme
+   ======================================== */
+
+:root {
+  --cream: #FAF7F1;
+  --ink: #2C1A0E;
+  --forest: #345F40;
+  --forest-d: #213D29;
+  --terracotta: #C4622D;
+  --gold: #D4A853;
+  --warm-gray: #8A7D72;
+  --bone: #F0EBE0;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 100px;
+
+  --shadow-card: 0 2px 8px rgba(44, 26, 14, 0.08);
+  --shadow-hover: 0 6px 20px rgba(44, 26, 14, 0.14);
+  --shadow-panel: 0 4px 24px rgba(44, 26, 14, 0.10);
+
+  --transition: 160ms ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ========================================
+   Layout
+   ======================================== */
+
+.app {
+  display: grid;
+  grid-template-columns: 55% 45%;
+  min-height: 100vh;
+  gap: 0;
+}
+
+/* Builder Column */
+.builder-col {
+  background: var(--cream);
+  padding: 40px 36px 40px 44px;
+  overflow-y: auto;
+  border-right: 1px solid var(--bone);
+}
+
+/* Result Column */
+.result-col {
+  background: var(--bone);
+  padding: 40px 36px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* ========================================
+   Builder Header
+   ======================================== */
+
+.builder-header {
+  margin-bottom: 36px;
+}
+
+.builder-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.builder-subtitle {
+  font-size: 0.95rem;
+  color: var(--warm-gray);
+  margin-top: 6px;
+  font-weight: 400;
+}
+
+/* ========================================
+   Step Sections
+   ======================================== */
+
+.step-section {
+  margin-bottom: 36px;
+}
+
+.step-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.step-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--terracotta);
+  background: rgba(196, 98, 45, 0.10);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.06em;
+}
+
+.step-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.step-hint {
+  font-weight: 400;
+  color: var(--warm-gray);
+  font-size: 0.85rem;
+}
+
+/* ========================================
+   Spirit Cards Grid
+   ======================================== */
+
+.spirits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.spirit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 90px;
+  background: white;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: var(--shadow-card);
+  padding: 10px 8px;
+}
+
+.spirit-card:hover {
+  border-color: var(--forest);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.spirit-card.selected {
+  border-color: var(--forest);
+  background: var(--bone);
+  box-shadow: 0 0 0 1px var(--forest), var(--shadow-card);
+}
+
+.spirit-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.spirit-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* ========================================
+   Mixer Chips
+   ======================================== */
+
+.mixers-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mixer-chip {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--bone);
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), color var(--transition), transform var(--transition);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.mixer-chip:hover {
+  border-color: var(--forest);
+  transform: translateY(-1px);
+}
+
+.mixer-chip.selected {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: white;
+  font-weight: 600;
+}
+
+.mixer-chip.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.mixer-count {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--warm-gray);
+  font-weight: 500;
+}
+
+/* ========================================
+   Garnish Chips
+   ======================================== */
+
+.garnish-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.garnish-chip {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--bone);
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), color var(--transition), transform var(--transition);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.garnish-chip:hover {
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
+.garnish-chip.selected {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ========================================
+   Result Panel
+   ======================================== */
+
+.result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Glass */
+.glass-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.glass-svg {
+  width: 120px;
+  height: 165px;
+  filter: drop-shadow(0 4px 12px rgba(52, 95, 64, 0.18));
+  transition: filter var(--transition);
+}
+
+/* Cocktail Name */
+.cocktail-name-wrapper {
+  text-align: center;
+}
+
+.cocktail-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  transition: opacity 200ms ease;
+}
+
+.cocktail-tagline {
+  font-size: 0.85rem;
+  color: var(--warm-gray);
+  margin-top: 4px;
+}
+
+/* Radar Chart */
+.radar-wrapper {
+  display: flex;
+  justify-content: center;
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.radar-svg {
+  width: 160px;
+  height: 160px;
+}
+
+#radar-poly {
+  transition: points 300ms ease;
+}
+
+/* Recipe */
+.recipe-wrapper {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.recipe-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.recipe-steps {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recipe-step {
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.recipe-step.muted {
+  color: var(--warm-gray);
+  list-style: none;
+  padding-left: 0;
+  margin-left: -18px;
+}
+
+/* Price + CTA */
+.price-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.price-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.price-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--warm-gray);
+}
+
+.price-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+.cta-btn {
+  padding: 10px 22px;
+  background: var(--forest);
+  color: white;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition), box-shadow var(--transition);
+  letter-spacing: 0.02em;
+}
+
+.cta-btn:hover:not(:disabled) {
+  background: var(--forest-d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(52, 95, 64, 0.3);
+}
+
+.cta-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cta-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cta-btn.added {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+
+@media (max-width: 700px) {
+  .app {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .builder-col {
+    padding: 28px 20px;
+    border-right: none;
+    border-bottom: 1px solid var(--bone);
+  }
+
+  .result-col {
+    position: static;
+    height: auto;
+    padding: 28px 20px;
+  }
+
+  .builder-title {
+    font-size: 1.7rem;
+  }
+
+  .spirits-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .spirit-card {
+    height: 80px;
+  }
+
+  .spirit-emoji {
+    font-size: 1.4rem;
+  }
+}

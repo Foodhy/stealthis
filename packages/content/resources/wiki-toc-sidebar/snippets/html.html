@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora DB — Storage Engine · Verdant Knowledge Base</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- top reading progress bar -->
+  <div class="reading-bar" aria-hidden="true"><span id="readingFill"></span></div>
+
+  <header class="topbar">
+    <button class="hamburger" id="navToggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidenav">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true">◭</span>
+      <span class="brand-name">Verdant <em>KB</em></span>
+    </a>
+    <div class="topsearch">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      <input type="search" placeholder="Search the knowledge base…" aria-label="Search the knowledge base" />
+      <kbd>/</kbd>
+    </div>
+    <span class="ver-pill">v3.2 · stable</span>
+  </header>
+
+  <div class="shell">
+    <!-- LEFT SIDEBAR NAV -->
+    <nav class="sidenav" id="sidenav" aria-label="Documentation sections">
+      <div class="sidenav-scroll">
+        <p class="nav-group">Aurora DB</p>
+        <ul class="nav-list">
+          <li><a href="#top">Overview</a></li>
+          <li><a href="#install">Getting started</a></li>
+          <li><a class="is-current" href="#top" aria-current="page">Storage engine</a></li>
+          <li><a href="#install">Query planner</a></li>
+          <li><a href="#install">Replication</a></li>
+        </ul>
+        <p class="nav-group">Operations</p>
+        <ul class="nav-list">
+          <li><a href="#install">Backups &amp; PITR</a></li>
+          <li><a href="#install">Observability</a></li>
+          <li><a href="#install">Capacity planning</a></li>
+        </ul>
+        <p class="nav-group">Reference</p>
+        <ul class="nav-list">
+          <li><a href="#install">CLI: <code>aurora</code></a></li>
+          <li><a href="#install">Config keys</a></li>
+          <li><a href="#install">Error codes</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <!-- MAIN ARTICLE -->
+    <main class="article" id="top">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="#top">Docs</a><span aria-hidden="true">/</span>
+        <a href="#top">Aurora DB</a><span aria-hidden="true">/</span>
+        <span aria-current="page">Storage engine</span>
+      </nav>
+
+      <header class="article-head">
+        <h1>The Aurora DB Storage Engine</h1>
+        <p class="lede">
+          Aurora DB is a distributed, log-structured database built for the
+          <em>Verdant</em> platform. This page is the canonical reference for how the
+          storage engine persists, compacts, and recovers data on disk — from the write path
+          down to the on-disk segment format.
+        </p>
+        <div class="meta-row">
+          <span class="meta-pill">Updated Jun 8, 2026</span>
+          <span class="meta-pill">~9 min read</span>
+          <span class="meta-pill author"><span class="dot" aria-hidden="true"></span>Maintained by the Storage team</span>
+        </div>
+      </header>
+
+      <article class="prose">
+        <section id="overview" data-toc="Overview">
+          <h2>Overview</h2>
+          <p>
+            The storage engine — codenamed <strong>Project Nimbus</strong> — is the lowest layer of
+            Aurora DB. It owns everything below the query planner: the write-ahead log, in-memory
+            memtables, immutable on-disk segments, and the background compaction that keeps read
+            amplification bounded. Every higher subsystem, from the planner to replication, ultimately
+            speaks to Nimbus through a narrow key/value interface.
+          </p>
+          <p>
+            Nimbus is a <em>log-structured merge</em> (LSM) engine. Writes are always sequential:
+            they land in the log first, then in a sorted in-memory buffer, and are only ever rewritten
+            in bulk during compaction. This trades a little read complexity for write throughput that
+            scales close to raw disk bandwidth.
+          </p>
+          <blockquote>
+            <p>
+              Nimbus never updates a record in place. A “delete” is just another append — a tombstone
+              that shadows older versions until compaction reclaims the space.
+            </p>
+          </blockquote>
+        </section>
+
+        <section id="write-path" data-toc="The write path">
+          <h2>The write path</h2>
+          <p>
+            A write travels through three stages before it is durable and queryable. Understanding the
+            order of these stages explains nearly every latency characteristic of the engine.
+          </p>
+
+          <h3 id="wal" data-toc="Write-ahead log">Write-ahead log</h3>
+          <p>
+            Each mutation is first appended to the <strong>write-ahead log</strong> (WAL), a single
+            sequential file per shard. The WAL is the durability boundary: once an entry is
+            <code>fsync</code>-ed, the write is considered committed even if the process crashes a
+            microsecond later. Recovery replays the tail of the WAL into fresh memtables.
+          </p>
+          <pre><code>aurora write \
+  --shard 7 \
+  --key "verdant:user:8821" \
+  --value @profile.json \
+  --durability sync   <span class="cm"># fsync before ack</span></code></pre>
+          <p>
+            Set <code>--durability async</code> only for workloads that can tolerate losing the last
+            few milliseconds of writes on an unclean shutdown.
+          </p>
+
+          <h3 id="memtable" data-toc="Memtables">Memtables</h3>
+          <p>
+            After the WAL, the mutation is inserted into the active <strong>memtable</strong>, a
+            concurrent sorted map kept entirely in RAM. Reads check the memtable first, so freshly
+            written keys are served without touching disk. When a memtable exceeds
+            <code>nimbus.memtable.max_bytes</code> it is sealed, made read-only, and queued for flush.
+          </p>
+
+          <h3 id="flush" data-toc="Flush to segments">Flush to segments</h3>
+          <p>
+            A background flusher streams each sealed memtable to disk as an immutable
+            <strong>segment</strong>. Because the memtable is already sorted, the flush is a single
+            sequential pass — no random I/O. The original WAL entries become eligible for truncation
+            once their segment is fully persisted.
+          </p>
+        </section>
+
+        <section id="segment-format" data-toc="On-disk segments">
+          <h2>On-disk segments</h2>
+          <p>
+            A segment is a self-describing, immutable file. Its layout is designed so a single segment
+            can be opened, validated, and range-scanned without consulting any external index.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Block</th><th>Purpose</th><th>Typical size</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>header</code></td><td>Magic, format version, shard id, key range</td><td>4 KB</td></tr>
+                <tr><td><code>data</code></td><td>Sorted, prefix-compressed key/value pairs</td><td>up to 256 MB</td></tr>
+                <tr><td><code>filter</code></td><td>Bloom filter for negative lookups</td><td>~1.2% of data</td></tr>
+                <tr><td><code>index</code></td><td>Sparse index: one entry per data block</td><td>~0.4% of data</td></tr>
+                <tr><td><code>footer</code></td><td>Block offsets, full-file CRC32C</td><td>512 B</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Lookups consult the <code>filter</code> block before any disk read. A miss in the Bloom
+            filter is a guaranteed “not present,” which is what keeps point reads cheap even when a key
+            is spread across dozens of segments.
+          </p>
+        </section>
+
+        <section id="compaction" data-toc="Compaction">
+          <h2>Compaction</h2>
+          <p>
+            Left alone, an LSM engine accumulates overlapping segments and read amplification climbs.
+            <strong>Compaction</strong> merges segments together, drops shadowed versions and
+            tombstones, and rewrites the survivors into a smaller, non-overlapping set.
+          </p>
+          <h3 id="leveling" data-toc="Leveled strategy">Leveled strategy</h3>
+          <p>
+            Nimbus uses <em>leveled</em> compaction by default. Level 0 holds raw flushed segments that
+            may overlap; every deeper level holds non-overlapping, size-tiered segments. A level fills
+            up, spills into the next, and the cascade keeps the worst-case read bounded to roughly one
+            segment per level.
+          </p>
+          <p class="callout note">
+            <strong>Note —</strong> Compaction is I/O-bound. On busy shards, cap it with
+            <code>nimbus.compaction.rate_limit_mb</code> so background work never starves foreground
+            queries.
+          </p>
+          <p class="callout warn">
+            <strong>Warning —</strong> Disabling compaction entirely will <em>not</em> reclaim deleted
+            space. Tombstones live forever until a compaction sweeps them, and disk usage grows without
+            bound.
+          </p>
+        </section>
+
+        <section id="recovery" data-toc="Crash recovery">
+          <h2>Crash recovery</h2>
+          <p>
+            On startup, Nimbus scans the segment directory, verifies each footer CRC, and replays any
+            WAL entries written after the newest durable segment. Segments with a torn footer are
+            quarantined rather than trusted — a partially written file is treated as if the flush never
+            happened.
+          </p>
+          <pre><code>aurora recover --shard 7 --verify-crc <span class="cm"># dry run, reports torn segments</span>
+aurora recover --shard 7 --apply      <span class="cm"># replay WAL, reopen for writes</span></code></pre>
+          <p>
+            Recovery time is proportional to the size of the un-flushed WAL tail, not the size of the
+            dataset — typically well under a second per gigabyte of pending writes.
+          </p>
+        </section>
+
+        <section id="tuning" data-toc="Tuning &amp; limits">
+          <h2>Tuning &amp; limits</h2>
+          <p>
+            The defaults are tuned for a balanced read/write mix on NVMe storage. The keys below are the
+            ones worth touching first when a workload skews heavily in one direction.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Config key</th><th>Default</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td><code>nimbus.memtable.max_bytes</code></td><td>64 MiB</td><td>Bigger = fewer, larger segments</td></tr>
+                <tr><td><code>nimbus.compaction.rate_limit_mb</code></td><td>128</td><td>Throttle background I/O</td></tr>
+                <tr><td><code>nimbus.bloom.bits_per_key</code></td><td>10</td><td>Higher = fewer false positives</td></tr>
+                <tr><td><code>nimbus.block.target_kb</code></td><td>32</td><td>Smaller = faster point reads</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="install" data-toc="Next steps">
+          <h2>Next steps</h2>
+          <p>
+            With the storage layer understood, the natural next reads are the
+            <a href="#top">Query planner</a> (how scans turn into segment reads) and
+            <a href="#top">Replication</a> (how segments stream to followers). For day-two operations,
+            see <a href="#top">Backups &amp; PITR</a>, which builds directly on the immutable-segment
+            model described above.
+          </p>
+          <p>
+            Press <kbd>T</kbd> at any time to jump back to the top of this page.
+          </p>
+        </section>
+
+        <p class="page-foot">Last reviewed by the Storage team · Verdant Knowledge Base · CC&nbsp;BY&nbsp;4.0</p>
+      </article>
+    </main>
+
+    <!-- RIGHT RAIL: STICKY TOC + SCROLLSPY -->
+    <aside class="toc" aria-label="Table of contents">
+      <div class="toc-sticky">
+        <p class="toc-title">On this page</p>
+        <div class="toc-progress" aria-hidden="true"><span id="tocFill"></span></div>
+        <nav id="tocNav" class="toc-nav"><!-- built by script.js --></nav>
+        <a class="toc-top" href="#top" id="tocTop">↑ Back to top</a>
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

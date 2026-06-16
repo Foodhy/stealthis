@@ -1,0 +1,57 @@
+---
+slug: remotion-sports-highlight
+title: "Sports Highlight Reel (Remotion)"
+description: A cinematic multi-segment sports highlight reel intro built with Remotion for SportsPulse TV. Covers four key match plays — goal, save, red card, and final goal — each with spring-driven stat cards, lower-third chyrons, and a play counter bar. Features a dramatic dark broadcast aesthetic, yellow and red accent palette, animated confetti on the winning goal, and a polished outro with the final score split across both teams.
+category: remotion
+type: animation
+tags: [remotion, sports, highlight-reel, recap, broadcast, action]
+tech: [remotion, react, typescript]
+difficulty: hard
+targets: [react]
+collections: [remotion]
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-06-13
+updatedAt: 2026-06-13
+---
+
+## Sports Highlight Reel
+
+A broadcast-quality sports highlight reel built entirely in Remotion. The composition opens with a spring-driven logo burst for SportsPulse TV — the show name scales from 0.1 using `spring({ damping: 14, stiffness: 180 })` alongside a radial yellow glow, a tagline fade, and a full-width red accent line sweeping across the frame. The dark base (`#0a0e1a`) is layered with an SVG grid pattern, diagonal accent lines, and a radial vignette to achieve a dramatic stadium-broadcast look.
+
+Each of the four play segments runs for 50 frames and follows a consistent rhythm: a lower-third chyron slides in from the left (spring `damping: 18, stiffness: 160`), a player stat card springs in from the right (spring `damping: 16, stiffness: 140`), and a four-segment play counter bar advances at the bottom left. Every scene fades in and out smoothly using `interpolate` with frame-boundary clamps. Play 3 (red card) adds a sine-wave red flash overlay; Play 4 (final goal) replaces the stat card with a large spring-animated score display (`damping: 12, stiffness: 200`) and a confetti burst of twelve colored rectangles fanning out with staggered easing. The outro slides both team names in from opposite sides, scales the final score into view, draws a yellow gradient accent line, and fades in the website CTA.
+
+All visual primitives — grid, glow, cards, chyrons, confetti — are pure inline React style objects. No external images or CSS files are used. The component is split into named sub-components (`Background`, `TopBar`, `PlayCounterBar`, `LowerThird`, `StatCard`, `ConfettiBurst`, `ScoreUpdate`, `SceneIntro`, `ScenePlay`, `ScenePlay4`, `SceneOutro`) for maintainability and readability.
+
+### Composition specs
+
+| Property | Value |
+|---|---|
+| Resolution | 1280 × 720 |
+| FPS | 30 |
+| Duration | 10.0 s (300 frames) |
+
+### Timeline
+
+| Time | Frames | Action |
+|---|---|---|
+| 0:00 – 0:01.3 | 0 – 40 | Intro: SportsPulse TV logo burst, tagline fade, red line sweep |
+| 0:01.3 – 0:03 | 40 – 90 | Play 1: GOAL · 14' — J. Martinez stat card, lower third, play bar segment 1 |
+| 0:03 – 0:04.7 | 90 – 140 | Play 2: SAVE · 31' — R. Okonkwo goalkeeper card in cyan, segment 2 |
+| 0:04.7 – 0:06.7 | 140 – 200 | Play 3: RED CARD · 58' — K. Banks, red flash overlay, segment 3 |
+| 0:06.7 – 0:08.7 | 200 – 260 | Play 4: GOAL · 87' — L. Chen, score 3–1, confetti burst, segment 4 |
+| 0:08.7 – 0:10 | 260 – 300 | Outro: Final score reveal, team names slide in, yellow accent line, website CTA |
+
+### Customization
+
+- `SHOW_NAME` — broadcast channel name shown in the logo burst and top bar (default: `SportsPulse TV`)
+- `SHOW_TAGLINE` — subtitle displayed below the logo in the intro (default: `MATCH HIGHLIGHTS`)
+- `TEAM_A` / `TEAM_B` — full team names used in score displays and lower thirds
+- `FINAL_SCORE_A` / `FINAL_SCORE_B` — integer scores shown in the Play 4 update and outro
+- `WEBSITE` — the CTA domain faded in at the end of the outro
+- `PLAYS` — array of four play objects; each controls `type`, `time`, `name`, `number`, `position`, `stat`, `accent` color, and `teamLabel`
+- `ACCENT_YELLOW` / `ACCENT_RED` / `ACCENT_CYAN` — three broadcast accent colors applied to play types, glows, card header bars, and confetti
+- `BG_PRIMARY` — root background color for the entire composition
+- Scene boundary constants (`SCENE_INTRO_END`, `SCENE_PLAY1_START`, etc.) — adjust frame lengths for each segment without refactoring logic

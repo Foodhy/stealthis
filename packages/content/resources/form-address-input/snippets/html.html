@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smart address input</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <form class="card" id="address-form" novalidate>
+        <header class="card__head">
+          <span class="eyebrow">Shipping details</span>
+          <h1>Where should we deliver?</h1>
+          <p class="lede">
+            Start typing your address and pick a match — we’ll fill in the rest.
+          </p>
+        </header>
+
+        <!-- Autocomplete combobox -->
+        <div class="field">
+          <label for="ac-input" id="ac-label">
+            Search address <span class="req" aria-hidden="true">*</span>
+          </label>
+
+          <div class="combo" data-state="idle">
+            <span class="combo__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </span>
+
+            <input
+              id="ac-input"
+              class="combo__input"
+              type="text"
+              role="combobox"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              aria-expanded="false"
+              aria-controls="ac-listbox"
+              aria-autocomplete="list"
+              aria-describedby="ac-help"
+              placeholder="e.g. 18 Marlowe Crescent"
+            />
+
+            <button type="button" class="combo__clear" aria-label="Clear address search" hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            <ul id="ac-listbox" class="combo__list" role="listbox" aria-labelledby="ac-label" hidden></ul>
+          </div>
+
+          <p class="help" id="ac-help">We never store partial searches.</p>
+        </div>
+
+        <div class="manual-toggle">
+          <span class="manual-toggle__hint" id="manual-hint">Can’t find it?</span>
+          <button type="button" class="linkbtn" id="manual-btn" aria-expanded="false" aria-controls="manual-fields">
+            Enter manually
+          </button>
+        </div>
+
+        <!-- Structured fields -->
+        <fieldset class="fields" id="manual-fields" data-open="false">
+          <legend class="sr-only">Address details</legend>
+
+          <div class="field field--full">
+            <label for="f-street">Street address <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-street" name="street" type="text" autocomplete="street-address"
+              aria-describedby="e-street" placeholder="Street and number" />
+            <p class="help help--error" id="e-street" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="f-city">City <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-city" name="city" type="text" autocomplete="address-level2"
+              aria-describedby="e-city" placeholder="City" />
+            <p class="help help--error" id="e-city" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="f-postcode">Postcode <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-postcode" name="postcode" type="text" autocomplete="postal-code"
+              aria-describedby="e-postcode" placeholder="Postcode" inputmode="text" />
+            <p class="help help--error" id="e-postcode" hidden></p>
+          </div>
+
+          <div class="field field--full">
+            <label for="f-country">Country <span class="req" aria-hidden="true">*</span></label>
+            <div class="selectwrap">
+              <select id="f-country" name="country" autocomplete="country-name" aria-describedby="e-country">
+                <option value="">Select a country…</option>
+                <option>United Kingdom</option>
+                <option>Ireland</option>
+                <option>France</option>
+                <option>Germany</option>
+                <option>Spain</option>
+                <option>Netherlands</option>
+              </select>
+              <span class="selectwrap__chev" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+              </span>
+            </div>
+            <p class="help help--error" id="e-country" hidden></p>
+          </div>
+        </fieldset>
+
+        <!-- Error summary (focus target) -->
+        <div class="summary" id="error-summary" role="alert" tabindex="-1" hidden>
+          <strong>Please fix the highlighted fields.</strong>
+          <ul id="summary-list"></ul>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span>Confirm address</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </button>
+
+        <p class="status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+
+      <!-- Success state -->
+      <section class="card confirm" id="confirm-card" hidden aria-live="polite">
+        <span class="confirm__badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </span>
+        <h2>Address confirmed</h2>
+        <p class="confirm__lede">We’ll ship your order here:</p>
+        <address class="confirm__addr" id="confirm-addr"></address>
+        <button type="button" class="linkbtn" id="edit-btn">Edit address</button>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

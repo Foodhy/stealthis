@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS — Void &amp; Refund Manager</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- LEFT PANEL: Ticket List -->
+    <aside class="panel-left">
+      <div class="panel-left__header">
+        <h1 class="panel-left__title">Void &amp; Refunds</h1>
+        <div class="search-wrap">
+          <span class="search-icon">&#128269;</span>
+          <input
+            id="search-input"
+            class="search-input"
+            type="text"
+            placeholder="Search table…"
+            aria-label="Search tickets by table number"
+          />
+        </div>
+        <div class="filter-chips" role="group" aria-label="Filter tickets">
+          <button class="chip chip--active" data-filter="all">All</button>
+          <button class="chip" data-filter="open">Open</button>
+          <button class="chip" data-filter="closed">Closed</button>
+        </div>
+      </div>
+      <ul id="ticket-list" class="ticket-list" role="list" aria-label="Ticket list"></ul>
+    </aside>
+
+    <!-- RIGHT PANEL: Ticket Detail -->
+    <main class="panel-right">
+
+      <!-- Empty state -->
+      <div id="empty-state" class="empty-state">
+        <div class="empty-state__icon">&#128179;</div>
+        <p class="empty-state__text">Select a ticket to review and void items</p>
+      </div>
+
+      <!-- Ticket detail (hidden until ticket selected) -->
+      <div id="detail-view" class="detail-view hidden">
+
+        <!-- Tabs -->
+        <div class="tabs" role="tablist">
+          <button
+            class="tab tab--active"
+            id="tab-detail"
+            role="tab"
+            aria-selected="true"
+            aria-controls="panel-detail"
+            data-tab="detail"
+          >Ticket Detail</button>
+          <button
+            class="tab"
+            id="tab-audit"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-audit"
+            data-tab="audit"
+          >
+            Audit Trail
+            <span id="audit-badge" class="audit-badge hidden">0</span>
+          </button>
+        </div>
+
+        <!-- Detail Tab Panel -->
+        <div id="panel-detail" role="tabpanel" aria-labelledby="tab-detail">
+          <div class="ticket-header">
+            <div class="ticket-header__info">
+              <h2 id="detail-title" class="ticket-header__title"></h2>
+              <span id="detail-meta" class="ticket-header__meta"></span>
+            </div>
+            <span id="detail-status" class="status-chip"></span>
+          </div>
+
+          <div class="items-section">
+            <div class="items-section__header">
+              <span class="items-section__label">Line Items</span>
+              <button id="select-all-btn" class="select-all-btn">Select all</button>
+            </div>
+            <ul id="items-list" class="items-list" role="list" aria-label="Ticket line items"></ul>
+          </div>
+
+          <div class="void-summary" id="void-summary">
+            <span class="void-summary__label">Voiding:</span>
+            <span id="void-amount" class="void-summary__amount">$0.00</span>
+            <span class="void-summary__from">from</span>
+            <span id="ticket-total" class="void-summary__total">$0.00</span>
+            <span class="void-summary__label">total</span>
+          </div>
+
+          <div class="void-controls">
+            <div class="reason-wrap">
+              <label class="reason-label" for="void-reason">Void reason</label>
+              <select id="void-reason" class="reason-select" aria-label="Select void reason">
+                <option value="">— Select reason —</option>
+                <option value="Mistake">Mistake</option>
+                <option value="Comp · Manager">Comp · Manager</option>
+                <option value="Quality issue">Quality issue</option>
+                <option value="Allergy">Allergy</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <button id="void-btn" class="void-btn" disabled>
+              <span>Void selected</span>
+              <span class="void-btn__arrow">&#8594;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Audit Tab Panel -->
+        <div id="panel-audit" role="tabpanel" aria-labelledby="tab-audit" class="hidden">
+          <div class="audit-header">
+            <h3 class="audit-header__title">Recent Void Events</h3>
+            <span class="audit-header__sub">Last 10 entries</span>
+          </div>
+          <div id="audit-list-wrap" class="audit-list-wrap">
+            <table class="audit-table" aria-label="Void audit trail">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Table</th>
+                  <th>Items voided</th>
+                  <th>Reason</th>
+                  <th>Approver</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody"></tbody>
+            </table>
+            <p id="audit-empty" class="audit-empty">No void events recorded yet.</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- PIN Overlay -->
+  <div id="pin-overlay" class="pin-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pin-title">
+    <div class="pin-card">
+      <button class="pin-close" id="pin-close" aria-label="Cancel PIN entry">&#10005;</button>
+      <h2 class="pin-title" id="pin-title">Manager Approval</h2>
+      <p class="pin-subtitle">Enter 4-digit manager PIN to confirm void</p>
+
+      <div class="pin-summary" id="pin-summary"></div>
+
+      <div class="pin-display" aria-live="polite" aria-label="PIN entry">
+        <span class="pin-dot" id="dot-0"></span>
+        <span class="pin-dot" id="dot-1"></span>
+        <span class="pin-dot" id="dot-2"></span>
+        <span class="pin-dot" id="dot-3"></span>
+      </div>
+
+      <p class="pin-error hidden" id="pin-error">&#9888; Incorrect PIN. Try again.</p>
+
+      <div class="pin-keypad" aria-label="PIN keypad">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key key--clear" data-key="clear">C</button>
+        <button class="key" data-key="0">0</button>
+        <button class="key key--back" data-key="back">&#9003;</button>
+      </div>
+
+      <button class="pin-approve-btn" id="pin-approve-btn" disabled>Approve Void</button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast hidden" role="alert" aria-live="assertive"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API Keys &amp; Webhooks — Stealthis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+        </svg>
+      </span>
+      <span class="brand-name">Vault<span class="brand-accent">API</span></span>
+      <span class="env-pill" title="Current environment">Production</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Toggle theme">
+        <span class="theme-icon" aria-hidden="true">◐</span>
+        <span class="sr-only">Toggle dark mode</span>
+      </button>
+      <div class="user-chip">
+        <span class="avatar" aria-hidden="true">AK</span>
+        <span class="user-meta">
+          <span class="user-name">Ada Keys</span>
+          <span class="user-org">Helix Labs</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap" role="main">
+    <div class="page-head">
+      <div>
+        <h1>API Keys &amp; Webhooks</h1>
+        <p class="lede">Manage programmatic access and delivery of real-time events for your workspace.</p>
+      </div>
+    </div>
+
+    <nav class="tabs" aria-label="Sections">
+      <button class="tab is-active" type="button" role="tab" aria-selected="true" data-tab="keys">
+        API Keys <span class="tab-count" id="keyCount">3</span>
+      </button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="hooks">
+        Webhooks <span class="tab-count" id="hookCount">2</span>
+      </button>
+    </nav>
+
+    <!-- KEYS PANEL -->
+    <section class="panel is-active" id="panel-keys" role="tabpanel" aria-label="API keys">
+      <div class="panel-head">
+        <div class="panel-head-text">
+          <h2>Secret keys</h2>
+          <p class="muted">Keys carry the permissions of the user who created them. Treat them like passwords.</p>
+        </div>
+        <button class="btn btn-primary" id="newKeyBtn" type="button">
+          <span aria-hidden="true">＋</span> Create key
+        </button>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table" id="keysTable">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Key</th>
+              <th scope="col">Scopes</th>
+              <th scope="col">Created</th>
+              <th scope="col">Last used</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="keysBody"><!-- rows injected --></tbody>
+        </table>
+        <div class="empty" id="keysEmpty" hidden>
+          <div class="empty-art" aria-hidden="true">🔑</div>
+          <p>No active keys. Create one to start calling the API.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEBHOOKS PANEL -->
+    <section class="panel" id="panel-hooks" role="tabpanel" aria-label="Webhooks" hidden>
+      <div class="panel-head">
+        <div class="panel-head-text">
+          <h2>Webhook endpoints</h2>
+          <p class="muted">We POST event payloads to these URLs and retry with backoff on failure.</p>
+        </div>
+        <button class="btn btn-primary" id="newHookBtn" type="button">
+          <span aria-hidden="true">＋</span> Add endpoint
+        </button>
+      </div>
+
+      <div class="hooks-grid" id="hooksGrid"><!-- cards injected --></div>
+      <div class="empty" id="hooksEmpty" hidden>
+        <div class="empty-art" aria-hidden="true">📡</div>
+        <p>No endpoints yet. Add one to receive events.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- CREATE KEY DIALOG -->
+  <div class="modal-scrim" id="keyModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="keyModalTitle">
+      <header class="modal-head">
+        <h3 id="keyModalTitle">Create API key</h3>
+        <button class="icon-btn" type="button" data-close="keyModal" aria-label="Close">✕</button>
+      </header>
+      <form id="keyForm" class="modal-body">
+        <label class="field">
+          <span class="field-label">Key name</span>
+          <input type="text" id="keyName" name="keyName" placeholder="e.g. Billing service" maxlength="40" required autocomplete="off" />
+        </label>
+        <fieldset class="field">
+          <legend class="field-label">Scopes</legend>
+          <div class="scopes">
+            <label class="check"><input type="checkbox" name="scope" value="read" checked /> <span>read</span></label>
+            <label class="check"><input type="checkbox" name="scope" value="write" /> <span>write</span></label>
+            <label class="check"><input type="checkbox" name="scope" value="billing" /> <span>billing</span></label>
+            <label class="check"><input type="checkbox" name="scope" value="admin" /> <span>admin</span></label>
+          </div>
+        </fieldset>
+        <footer class="modal-foot">
+          <button class="btn btn-ghost" type="button" data-close="keyModal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Generate key</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- SECRET SHOWN ONCE DIALOG -->
+  <div class="modal-scrim" id="secretModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="secretModalTitle">
+      <header class="modal-head">
+        <h3 id="secretModalTitle">Save your secret key</h3>
+      </header>
+      <div class="modal-body">
+        <div class="warn-banner" role="alert">
+          <span aria-hidden="true">⚠️</span>
+          This key is shown <strong>only once</strong>. Copy it now — you won't be able to see it again.
+        </div>
+        <div class="secret-box">
+          <code id="secretValue" class="secret-code"></code>
+          <button class="btn btn-soft" type="button" id="copySecret">Copy</button>
+        </div>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-primary" type="button" id="secretDone">I've saved it</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ADD WEBHOOK DIALOG -->
+  <div class="modal-scrim" id="hookModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="hookModalTitle">
+      <header class="modal-head">
+        <h3 id="hookModalTitle">Add webhook endpoint</h3>
+        <button class="icon-btn" type="button" data-close="hookModal" aria-label="Close">✕</button>
+      </header>
+      <form id="hookForm" class="modal-body">
+        <label class="field">
+          <span class="field-label">Endpoint URL</span>
+          <input type="url" id="hookUrl" name="hookUrl" placeholder="https://api.example.com/webhooks" required autocomplete="off" />
+        </label>
+        <fieldset class="field">
+          <legend class="field-label">Events to send</legend>
+          <div class="scopes">
+            <label class="check"><input type="checkbox" name="event" value="invoice.paid" checked /> <span>invoice.paid</span></label>
+            <label class="check"><input type="checkbox" name="event" value="customer.created" /> <span>customer.created</span></label>
+            <label class="check"><input type="checkbox" name="event" value="subscription.updated" /> <span>subscription.updated</span></label>
+            <label class="check"><input type="checkbox" name="event" value="payout.failed" /> <span>payout.failed</span></label>
+          </div>
+        </fieldset>
+        <footer class="modal-foot">
+          <button class="btn btn-ghost" type="button" data-close="hookModal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Add endpoint</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONFIRM DIALOG -->
+  <div class="modal-scrim" id="confirmModal" hidden>
+    <div class="modal modal-sm" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+      <header class="modal-head">
+        <h3 id="confirmTitle">Revoke key?</h3>
+      </header>
+      <div class="modal-body">
+        <p id="confirmText" class="muted">This immediately disables the key. Any request using it will fail with 401.</p>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="confirmModal">Cancel</button>
+        <button class="btn btn-danger" type="button" id="confirmRevoke">Revoke</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

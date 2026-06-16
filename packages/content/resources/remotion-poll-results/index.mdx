@@ -1,0 +1,50 @@
+---
+slug: remotion-poll-results
+title: "Remotion — Poll Results Animation"
+description: "A 4-second Remotion poll results animation featuring a clockwise-revealing donut chart alongside four staggered option rows, each with a colored dot, animated vote count, percentage read-out, and a spring-driven progress bar — winner option highlighted with a subtle glow and badge."
+category: remotion
+type: animation
+tags: [remotion, poll, vote, results, donut]
+tech: [remotion, react, typescript]
+difficulty: easy
+targets: [react]
+collections: [remotion]
+license: MIT
+createdAt: 2026-06-12
+updatedAt: 2026-06-12
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## Poll Results Animation
+
+Four fictional feature requests — Dark Mode (42%), API Access (28%), Mobile App (18%), and More Templates (12%) — are presented against a deep cinema-dark background. A donut chart in the left half reveals clockwise over the first 60 frames using a `spring()`-driven `strokeDasharray` animation on stacked SVG circles, each segment colored with a distinct vibrant hue (indigo, cyan, emerald, amber). A running vote counter in the donut's center counts up from zero to 1,842 as the arcs complete, giving the viewer an immediate sense of scale before the breakdown appears.
+
+Starting at frame 60, the four option rows slide in from the right one by one with a 15-frame stagger. Each row contains a glowing colored dot, the option label, an animated vote count that counts up on entrance, a percentage that ticks from 0 to its final value, and a `spring()`-powered horizontal progress bar with a shine overlay. The winner row (Dark Mode) is distinguished by a faint indigo gradient background, a colored border, and a compact "Top" badge — making the result legible at a glance without being heavy-handed. All entrance animations use `spring()` for the slide and bar-fill so motion feels physical rather than mechanical.
+
+The layout places the donut and the option list side-by-side separated by a subtle divider line, keeping the composition balanced at 1280 × 720. A soft radial glow behind the donut and a secondary violet glow in the top-right corner add depth to the dark background without distracting from the data.
+
+### Composition specs
+
+| Property | Value |
+|---|---|
+| Resolution | 1280 × 720 |
+| FPS | 30 |
+| Duration | 4 s (120 frames) |
+
+### Data format
+
+All data is defined in the `OPTIONS` constant near the top of the file. Each entry is a `PollOption` object:
+
+```ts
+interface PollOption {
+  label: string;   // display name
+  votes: number;   // raw vote count
+  pct: number;     // 0–100 percentage (should sum to 100)
+  color: string;   // hex accent color for dot, bar, and percentage
+  isWinner: boolean; // highlights the row with a glow + badge
+}
+```
+
+To customise the poll, replace the four entries in `OPTIONS`, update `POLL_QUESTION`, and set `TOTAL_VOTES` to match the sum of all vote counts. Each option's `color` should be chosen from the palette constants at the top (indigo `#6366f1`, cyan `#06b6d4`, emerald `#10b981`, amber `#f59e0b`, violet `#8b5cf6`, etc.) or any vibrant hex that stands out on the dark background. The `OPTION_STAGGER` constant controls the per-row delay in frames (default 15), and `OPTIONS_START` sets the frame at which the first row begins to appear (default 60).

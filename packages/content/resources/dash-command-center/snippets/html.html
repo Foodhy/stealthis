@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Helios Ops — Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <!-- Sidebar -->
+      <nav class="sidebar" aria-label="Primary">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">◎</span>
+          <span class="brand-name">Helios<span class="brand-sub">Ops</span></span>
+        </div>
+        <ul class="nav-list">
+          <li><a class="nav-item is-active" href="#" aria-current="page"><span class="nav-ic" aria-hidden="true">▦</span>Command center</a></li>
+          <li><a class="nav-item" href="#"><span class="nav-ic" aria-hidden="true">◔</span>Services</a></li>
+          <li><a class="nav-item" href="#"><span class="nav-ic" aria-hidden="true">⚑</span>Incidents <span class="nav-pill" id="navIncidentCount">0</span></a></li>
+          <li><a class="nav-item" href="#"><span class="nav-ic" aria-hidden="true">⤳</span>Traffic</a></li>
+          <li><a class="nav-item" href="#"><span class="nav-ic" aria-hidden="true">◈</span>Regions</a></li>
+          <li><a class="nav-item" href="#"><span class="nav-ic" aria-hidden="true">⚙</span>Settings</a></li>
+        </ul>
+        <div class="sidebar-foot">
+          <div class="op-card">
+            <span class="op-dot" id="globalDot" aria-hidden="true"></span>
+            <div>
+              <div class="op-label">System status</div>
+              <div class="op-state" id="globalState">Operational</div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main -->
+      <div class="main-wrap">
+        <header class="topbar">
+          <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+          <div class="page-head">
+            <h1 class="page-title">Command center</h1>
+            <p class="page-sub">Live fleet telemetry · <span class="region-tag">us-east, eu-west, ap-south</span></p>
+          </div>
+          <div class="toolbar" role="group" aria-label="Dashboard controls">
+            <div class="seg" role="tablist" aria-label="Time window">
+              <button class="seg-btn is-active" role="tab" aria-selected="true" data-window="1h">1H</button>
+              <button class="seg-btn" role="tab" aria-selected="false" data-window="6h">6H</button>
+              <button class="seg-btn" role="tab" aria-selected="false" data-window="24h">24H</button>
+            </div>
+            <div class="live-state" id="liveState" data-state="live">
+              <span class="live-dot" aria-hidden="true"></span>
+              <span id="liveLabel">Live</span>
+            </div>
+            <button class="btn-primary" id="pauseBtn" aria-pressed="false">
+              <span class="btn-ic" aria-hidden="true">⏸</span><span id="pauseLabel">Pause</span>
+            </button>
+          </div>
+        </header>
+
+        <main class="content" aria-label="Operations dashboard">
+          <!-- KPI row -->
+          <section class="kpi-row" aria-label="Key metrics">
+            <article class="kpi" id="kpi-rps">
+              <header class="kpi-head"><span class="kpi-name">Requests / sec</span><span class="kpi-delta up" data-delta>+4.2%</span></header>
+              <div class="kpi-value" data-value>0</div>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><polyline data-spark fill="none" points=""></polyline></svg>
+            </article>
+            <article class="kpi" id="kpi-lat">
+              <header class="kpi-head"><span class="kpi-name">p95 latency</span><span class="kpi-delta down" data-delta>-2.8%</span></header>
+              <div class="kpi-value" data-value>0<span class="kpi-unit">ms</span></div>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><polyline data-spark fill="none" points=""></polyline></svg>
+            </article>
+            <article class="kpi" id="kpi-err">
+              <header class="kpi-head"><span class="kpi-name">Error rate</span><span class="kpi-delta up" data-delta>+0.1%</span></header>
+              <div class="kpi-value" data-value>0<span class="kpi-unit">%</span></div>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><polyline data-spark fill="none" points=""></polyline></svg>
+            </article>
+            <article class="kpi" id="kpi-cpu">
+              <header class="kpi-head"><span class="kpi-name">Fleet CPU</span><span class="kpi-delta up" data-delta>+1.4%</span></header>
+              <div class="kpi-value" data-value>0<span class="kpi-unit">%</span></div>
+              <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><polyline data-spark fill="none" points=""></polyline></svg>
+            </article>
+          </section>
+
+          <!-- Widget grid (draggable) -->
+          <section class="grid" id="grid" aria-label="Widgets">
+            <!-- Streaming throughput chart -->
+            <article class="card card-wide" draggable="true" data-card="stream">
+              <header class="card-head">
+                <div class="card-titles">
+                  <h2 class="card-title"><span class="drag-grip" aria-hidden="true">⠿</span>Throughput stream</h2>
+                  <p class="card-meta">requests/sec · rolling 60s</p>
+                </div>
+                <div class="card-actions">
+                  <span class="legend"><i class="dot-edge"></i>edge</span>
+                  <span class="legend"><i class="dot-core"></i>core</span>
+                  <button class="icon-btn" aria-label="Stream options" data-menu>⋯</button>
+                </div>
+              </header>
+              <div class="card-body stream-body">
+                <svg class="stream-chart" id="streamChart" viewBox="0 0 600 200" preserveAspectRatio="none" role="img" aria-label="Live throughput line chart">
+                  <defs>
+                    <linearGradient id="fillEdge" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="var(--brand)" stop-opacity="0.28" />
+                      <stop offset="100%" stop-color="var(--brand)" stop-opacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <g class="grid-lines" id="streamGrid"></g>
+                  <polygon id="streamArea" fill="url(#fillEdge)" points=""></polygon>
+                  <polyline id="streamLineEdge" class="stream-line edge" fill="none" points=""></polyline>
+                  <polyline id="streamLineCore" class="stream-line core" fill="none" points=""></polyline>
+                </svg>
+                <div class="stream-now">
+                  <span class="now-label">now</span>
+                  <span class="now-val" id="streamNow">0</span>
+                  <span class="now-unit">req/s</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- Region grid -->
+            <article class="card" draggable="true" data-card="regions">
+              <header class="card-head">
+                <div class="card-titles">
+                  <h2 class="card-title"><span class="drag-grip" aria-hidden="true">⠿</span>Regions</h2>
+                  <p class="card-meta">14 edge zones</p>
+                </div>
+                <button class="icon-btn" aria-label="Region options" data-menu>⋯</button>
+              </header>
+              <div class="card-body">
+                <div class="region-grid" id="regionGrid" aria-label="Region health"></div>
+                <div class="region-legend">
+                  <span><i class="hp hp-ok"></i>healthy</span>
+                  <span><i class="hp hp-warn"></i>degraded</span>
+                  <span><i class="hp hp-down"></i>down</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- Service status tiles -->
+            <article class="card card-wide" draggable="true" data-card="services">
+              <header class="card-head">
+                <div class="card-titles">
+                  <h2 class="card-title"><span class="drag-grip" aria-hidden="true">⠿</span>Service fleet</h2>
+                  <p class="card-meta" id="serviceMeta">0 services monitored</p>
+                </div>
+                <div class="card-actions">
+                  <div class="filter" role="group" aria-label="Filter services by status">
+                    <button class="chip is-active" data-filter="all">All</button>
+                    <button class="chip" data-filter="up">Up</button>
+                    <button class="chip" data-filter="degraded">Degraded</button>
+                    <button class="chip" data-filter="down">Down</button>
+                  </div>
+                </div>
+              </header>
+              <div class="card-body">
+                <div class="tile-grid" id="serviceGrid" aria-label="Service status tiles"></div>
+              </div>
+            </article>
+
+            <!-- Alert / incident feed -->
+            <article class="card" draggable="true" data-card="alerts">
+              <header class="card-head">
+                <div class="card-titles">
+                  <h2 class="card-title"><span class="drag-grip" aria-hidden="true">⠿</span>Alert feed</h2>
+                  <p class="card-meta">newest first</p>
+                </div>
+                <button class="icon-btn" id="clearAlerts" aria-label="Clear alert feed">clear</button>
+              </header>
+              <div class="card-body feed-body">
+                <ul class="feed" id="alertFeed" aria-live="polite" aria-label="Incident and alert feed"></ul>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+
+      <div class="scrim" id="scrim" hidden></div>
+      <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
