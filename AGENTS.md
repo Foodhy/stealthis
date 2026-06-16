@@ -139,3 +139,38 @@ Resources are rendered from the Astro content collection (`apps/www/src/content/
 - `architectures`
 - `boilerplates`
 - `remotion`
+
+## Cursor Cloud specific instructions
+
+### Toolchain
+
+- **Bun** is the only package manager (`bun install` at repo root). If `bun` is not on `PATH`, use `export PATH="$HOME/.bun/bin:$PATH"` (installed via `curl -fsSL https://bun.sh/install | bash`).
+- There is **no root `test` script**; quality gate is `bun run lint` (Biome). The repo has many pre-existing lint findings — a non-zero exit from `bun run lint` does not mean the environment is broken.
+
+### Core dev servers (flagship library flow)
+
+For browse → resource → live demo E2E, run **both**:
+
+| App | Command | Port |
+|-----|---------|------|
+| www | `bun run dev:www` | 4321 |
+| lab | `bun run dev:lab` | 4323 |
+
+Use **tmux** for long-running dev servers (e.g. session `www-dev-server`, `lab-dev-server`). Other apps are independent — see root `package.json` `dev:*` scripts and `README.md`.
+
+### Smoke checks
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" http://localhost:4321/
+curl -s -o /dev/null -w "%{http_code}" http://localhost:4321/library
+curl -s -o /dev/null -w "%{http_code}" http://localhost:4323/
+curl -s -o /dev/null -w "%{http_code}" http://localhost:4323/ui-components/glass-card
+```
+
+Hello-world path: `/library` → `/r/glass-card` → **Open in Lab** → `http://localhost:4323/ui-components/glass-card`.
+
+### Builds
+
+- `bun run build:www` is slow (~12+ min) because it SSGs thousands of localized resource pages across 17 locales.
+- After **content** changes, regenerate MCP catalog before `build:mcp`: `bun run --filter @stealthis/mcp catalog`.
+- Optional post-install: `bun run sync:vendor` (lab vendor module sync) — not required for www/lab dev.
