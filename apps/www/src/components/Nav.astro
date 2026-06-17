@@ -1102,8 +1102,14 @@ const menuTitle = menuLabels[locale].title;
     return { barePath: pathname || "/" };
   };
 
+  // Resource detail pages (/r/<slug>) are English-only — localized variants are
+  // not built (Cloudflare 20k-file cap), so prefixing a locale produces a dead
+  // URL that 404s to the homepage. Keep the canonical English path for those.
+  const isEnglishOnlyPath = (barePath) => barePath === "/r" || barePath.startsWith("/r/");
+
   const toLocalizedPath = (locale, barePath) => {
     if (locale === defaultLocale) return barePath;
+    if (isEnglishOnlyPath(barePath)) return barePath;
     if (barePath === "/") return `/${locale}/`;
     return `/${locale}${barePath}`;
   };

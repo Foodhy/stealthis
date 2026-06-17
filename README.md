@@ -19,6 +19,7 @@ The canonical source of resource content lives in `packages/content/resources/<s
 - `en` — English
 - `es` — Spanish
 - `fr` — French
+- `ar` — Arabic
 - `ja` — Japanese
 - `ms` — Malay
 - `hi` — Hindi
@@ -31,9 +32,10 @@ The canonical source of resource content lives in `packages/content/resources/<s
 - `de-ch` — Swiss German
 - `it` — Italian
 - `pl` — Polish
+- `ru` — Russian
 - `uk` — Ukrainian
 
-Browser locale detection also maps `UA` users to `uk`.
+Browser locale detection also maps `RU` users to `ru` and `UA` users to `uk`.
 
 ## Monorepo Structure
 
@@ -338,6 +340,33 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:4321/library
 curl -s -o /dev/null -w "%{http_code}" http://localhost:4323/
 curl -s -o /dev/null -w "%{http_code}" http://localhost:4323/<category>/<slug>
 ```
+
+## Supply-Chain Security
+
+This repo is hardened against malicious dependency updates: a 3-day install
+cooldown (`minimumReleaseAge`), a Socket pre-install scanner, and blocked
+postinstall scripts by default. Full explanation in **`SUPPLY_CHAIN_SECURITY.md`**.
+
+**Verify the project is not compromised** — runs every defense check, scans for
+known CVEs and blocked install scripts, and writes a timestamped report to
+`SECURITY_REPORT.md`:
+
+```bash
+bun run security:verify
+```
+
+Run it **before pulling new dependencies, before a deploy, and routinely**.
+Exit code is non-zero only when a *defense layer* is broken (the real "repo no
+longer hardened" signal); known transitive CVEs do not fail it.
+
+```bash
+bun run audit            # bun audit — known CVEs in the lockfile
+bun run outdated         # outdated deps across all workspaces
+bun run security:trust   # review blocked postinstall scripts
+```
+
+For prioritized triage of what to update vs. what is still inside the cooldown
+window, run the **`/pkg-audit`** command.
 
 ## License
 

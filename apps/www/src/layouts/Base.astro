@@ -151,8 +151,14 @@ const aiIndexURL = new URL("/ai-index.json", site).toString();
         UA: "uk",
       };
 
+      // Resource detail pages (/r/<slug>) are English-only — localized variants
+      // are not built (Cloudflare 20k-file cap). Prefixing a locale yields a dead
+      // URL that 404s to the homepage, so keep the canonical English path.
+      const isEnglishOnlyPath = (barePath) => barePath === "/r" || barePath.startsWith("/r/");
+
       const toLocalePath = (locale, barePath) => {
         if (locale === defaultLocale) return barePath;
+        if (isEnglishOnlyPath(barePath)) return barePath;
         if (barePath === "/") return `/${locale}/`;
         return `/${locale}${barePath}`;
       };
