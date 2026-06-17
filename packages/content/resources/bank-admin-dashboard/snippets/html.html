@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Northgate Bank — Ops Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">N</div>
+        <div class="brand-name">
+          <strong>Northgate</strong>
+          <span>Operations</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-item is-active" aria-current="page"><span class="ni-dot"></span>Overview</a>
+        <a href="#" class="nav-item"><span class="ni-dot"></span>Transactions</a>
+        <a href="#" class="nav-item"><span class="ni-dot"></span>Fraud</a>
+        <a href="#" class="nav-item"><span class="ni-dot"></span>KYC Queue</a>
+        <a href="#" class="nav-item"><span class="ni-dot"></span>Disputes</a>
+        <a href="#" class="nav-item"><span class="ni-dot"></span>Reports</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="status-line"><span class="dot-ok"></span>All systems nominal</div>
+        <div class="env-tag">PROD · region eu-west</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>Operations Overview</h1>
+          <p class="sub">Live monitoring · <span id="clock" aria-live="off">—</span></p>
+        </div>
+        <div class="topbar-right">
+          <div class="timeframe" role="group" aria-label="Timeframe">
+            <button class="tf-btn is-active" data-tf="24h">24h</button>
+            <button class="tf-btn" data-tf="7d">7d</button>
+            <button class="tf-btn" data-tf="30d">30d</button>
+          </div>
+          <div class="op-user" title="Signed in operator">
+            <span class="op-avatar">RV</span>
+            <span class="op-meta"><strong>R. Valdés</strong><small><span class="lock" aria-hidden="true">🔒</span> 2FA verified</small></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- KPIs -->
+      <section class="kpis" aria-label="Key metrics">
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Transaction volume</span><span class="kpi-ico tone-blue">≈</span></div>
+          <div class="kpi-val" data-kpi="volume">€4.82M</div>
+          <div class="kpi-foot"><span class="delta up" data-delta="volume">▲ 6.4%</span> vs prev</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Active users</span><span class="kpi-ico tone-teal">◉</span></div>
+          <div class="kpi-val" data-kpi="users">38,204</div>
+          <div class="kpi-foot"><span class="delta up" data-delta="users">▲ 2.1%</span> vs prev</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Fraud flags</span><span class="kpi-ico tone-danger">!</span></div>
+          <div class="kpi-val" data-kpi="fraud">17</div>
+          <div class="kpi-foot"><span class="delta down" data-delta="fraud">▼ 12%</span> vs prev</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">KYC queue</span><span class="kpi-ico tone-violet">⧗</span></div>
+          <div class="kpi-val" data-kpi="kyc">6</div>
+          <div class="kpi-foot"><span class="muted-foot" data-delta="kyc">awaiting review</span></div>
+        </article>
+      </section>
+
+      <!-- Grid -->
+      <section class="grid">
+        <!-- Volume chart -->
+        <article class="card chart-card">
+          <div class="card-head">
+            <h2>Transaction volume</h2>
+            <span class="chip" id="chart-range">last 24 hours</span>
+          </div>
+          <div class="chart" id="chart" role="img" aria-label="Bar chart of transaction volume over time"></div>
+          <div class="chart-legend">
+            <span><i class="lg lg-credit"></i> Credits</span>
+            <span><i class="lg lg-debit"></i> Debits</span>
+            <span class="peak" id="chart-peak">Peak —</span>
+          </div>
+        </article>
+
+        <!-- Fraud feed -->
+        <article class="card feed-card">
+          <div class="card-head">
+            <h2>Fraud alerts</h2>
+            <span class="count-pill" id="fraud-count">5 open</span>
+          </div>
+          <ul class="feed" id="fraud-feed" aria-live="polite"></ul>
+        </article>
+
+        <!-- KYC queue -->
+        <article class="card kyc-card">
+          <div class="card-head">
+            <h2>KYC approval queue</h2>
+            <span class="count-pill" id="kyc-pill">6 pending</span>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl kyc-tbl">
+              <thead>
+                <tr><th>Applicant</th><th>Type</th><th>Risk</th><th>Submitted</th><th class="ta-r">Action</th></tr>
+              </thead>
+              <tbody id="kyc-body"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- Disputes -->
+        <article class="card disputes-card">
+          <div class="card-head">
+            <h2>Recent disputes</h2>
+            <span class="chip">chargebacks</span>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>Case</th><th>Merchant</th><th class="ta-r">Amount</th><th>Status</th></tr>
+              </thead>
+              <tbody id="dispute-body"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+  <script src="script.js"></script>
+</body>
+</html>

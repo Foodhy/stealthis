@@ -76,13 +76,21 @@ default allow-list) to `trustedDependencies` in the root `package.json`. **Never
 ## Daily / routine workflow
 
 ```bash
-bun run audit       # bun audit — known CVEs in the lockfile
-bun run outdated    # bun outdated --filter '*' — outdated across all 14 workspaces
+bun run security:verify  # one-shot: checks every defense layer + writes SECURITY_REPORT.md
+bun run audit            # bun audit — known CVEs in the lockfile
+bun run outdated         # bun outdated --filter '*' — outdated across all 14 workspaces
 bun run security:trust   # review blocked postinstall scripts
 ```
 
-Or just run **`/pkg-audit`** — it bundles all three, cross-references the cooldown window, and
-hands back a prioritized "update now / clear / wait / review scripts" report.
+**`bun run security:verify`** (`scripts/security-verify.mjs`) is the "are we still hardened /
+not compromised?" check. It confirms bun ≥ 1.3, the cooldown, the Socket scanner, and that
+postinstall scripts aren't blanket-trusted; counts known CVEs and blocked install scripts; and
+writes a timestamped **`SECURITY_REPORT.md`**. It exits non-zero **only when a defense layer is
+broken** — known transitive CVEs don't fail it. Run it before pulling new deps, before a deploy,
+and routinely.
+
+Or run **`/pkg-audit`** — it bundles audit/outdated/trust, cross-references the cooldown window,
+and hands back a prioritized "update now / clear / wait / review scripts" report.
 
 ---
 

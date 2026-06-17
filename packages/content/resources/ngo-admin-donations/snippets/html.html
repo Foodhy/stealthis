@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Brightwell Foundation — Donations Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">BW</div>
+        <div class="brand-text">
+          <strong>Brightwell</strong>
+          <span>Foundation</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-item is-active"><span class="ni-dot" aria-hidden="true"></span>Donations</a>
+        <a href="#" class="nav-item"><span class="ni-dot" aria-hidden="true"></span>Campaigns</a>
+        <a href="#" class="nav-item"><span class="ni-dot" aria-hidden="true"></span>Donors</a>
+        <a href="#" class="nav-item"><span class="ni-dot" aria-hidden="true"></span>Programs</a>
+        <a href="#" class="nav-item"><span class="ni-dot" aria-hidden="true"></span>Reports</a>
+      </nav>
+      <div class="trust-card">
+        <span class="trust-badge">✓ Registered Charity</span>
+        <p>EIN 47&#8209;1029384 · Gifts are tax&#8209;deductible to the fullest extent allowed by law.</p>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Fundraising overview</p>
+          <h1>Donations Dashboard</h1>
+        </div>
+        <div class="topbar-actions">
+          <div class="seg" role="group" aria-label="Timeframe">
+            <button class="seg-btn is-active" data-range="30" aria-pressed="true">30D</button>
+            <button class="seg-btn" data-range="90" aria-pressed="false">90D</button>
+            <button class="seg-btn" data-range="365" aria-pressed="false">1Y</button>
+          </div>
+          <button class="btn btn-ghost" id="exportBtn" type="button">
+            <span aria-hidden="true">⤓</span> Export CSV
+          </button>
+          <button class="btn btn-donate" id="donateBtn" type="button">Donate</button>
+        </div>
+      </header>
+
+      <!-- KPIs -->
+      <section class="kpis" aria-label="Key metrics">
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Total raised</span><span class="pill pill-up" data-trend="raised">▲ 0%</span></div>
+          <div class="kpi-value" data-kpi="raised">$0</div>
+          <div class="kpi-sub" data-kpisub="raised">vs. previous period</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Recurring revenue</span><span class="pill pill-up" data-trend="recurring">▲ 0%</span></div>
+          <div class="kpi-value" data-kpi="recurring">$0</div>
+          <div class="kpi-sub" data-kpisub="recurring">monthly run&#8209;rate</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Average gift</span><span class="pill pill-up" data-trend="avg">▲ 0%</span></div>
+          <div class="kpi-value" data-kpi="avg">$0</div>
+          <div class="kpi-sub" data-kpisub="avg">per donation</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-top"><span class="kpi-label">New donors</span><span class="pill pill-up" data-trend="donors">▲ 0%</span></div>
+          <div class="kpi-value" data-kpi="donors">0</div>
+          <div class="kpi-sub" data-kpisub="donors">first&#8209;time givers</div>
+        </article>
+      </section>
+
+      <!-- Chart + split -->
+      <section class="grid-2">
+        <article class="card chart-card">
+          <div class="card-head">
+            <div>
+              <h2>Donations over time</h2>
+              <p class="card-meta"><span data-chart-meta>Last 30 days</span></p>
+            </div>
+            <div class="legend">
+              <span class="lg"><i class="lg-sw lg-brand" aria-hidden="true"></i>Daily total</span>
+            </div>
+          </div>
+          <div class="chart" id="chart">
+            <svg viewBox="0 0 720 260" preserveAspectRatio="none" role="img" aria-label="Donations over time area chart">
+              <defs>
+                <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--brand)" stop-opacity="0.28" />
+                  <stop offset="100%" stop-color="var(--brand)" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <g class="gridlines" id="gridlines"></g>
+              <path id="area" fill="url(#fill)" stroke="none"></path>
+              <path id="line" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>
+              <g id="dots"></g>
+            </svg>
+            <div class="chart-tip" id="tip" hidden></div>
+            <div class="x-axis" id="xaxis"></div>
+          </div>
+        </article>
+
+        <article class="card split-card">
+          <div class="card-head"><h2>Recurring vs one&#8209;time</h2></div>
+          <div class="donut" role="img" aria-label="Recurring versus one-time donation split">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="var(--line)" stroke-width="16" />
+              <circle id="donutArc" cx="60" cy="60" r="48" fill="none" stroke="var(--brand)" stroke-width="16" stroke-linecap="round" transform="rotate(-90 60 60)" />
+            </svg>
+            <div class="donut-center">
+              <strong id="donutPct">0%</strong>
+              <span>recurring</span>
+            </div>
+          </div>
+          <ul class="split-legend">
+            <li><i class="lg-sw lg-brand"></i><span>Recurring</span><b id="recAmt">$0</b></li>
+            <li><i class="lg-sw lg-accent"></i><span>One&#8209;time</span><b id="oneAmt">$0</b></li>
+          </ul>
+          <div class="impact-strip">
+            <div><strong id="impactMeals">0</strong><span>meals funded</span></div>
+            <div><strong id="impactKits">0</strong><span>relief kits</span></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Campaigns + thermometer -->
+      <section class="grid-2">
+        <article class="card">
+          <div class="card-head">
+            <h2>Top campaigns</h2>
+            <p class="card-meta">Click a campaign to drill in</p>
+          </div>
+          <ul class="campaigns" id="campaigns"></ul>
+        </article>
+
+        <article class="card therm-card">
+          <div class="card-head"><h2>Spring Appeal goal</h2></div>
+          <div class="therm">
+            <div class="therm-track"><div class="therm-fill" id="thermFill"></div></div>
+            <div class="therm-stats">
+              <div><strong id="thermRaised">$0</strong><span>raised</span></div>
+              <div class="ta-right"><strong>$250,000</strong><span>goal</span></div>
+            </div>
+          </div>
+          <div class="donors-recog">
+            <p class="recog-title">Recent leadership gifts</p>
+            <ul id="recogList"></ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- Recent donations -->
+      <section class="card table-card">
+        <div class="card-head">
+          <div>
+            <h2 id="tableTitle">Recent donations</h2>
+            <p class="card-meta" id="tableMeta">All campaigns</p>
+          </div>
+          <div class="table-tools">
+            <input type="search" id="search" class="search" placeholder="Search donor or campaign…" aria-label="Search donations" />
+            <button class="btn btn-ghost btn-sm" id="clearDrill" type="button" hidden>Clear filter ✕</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Donor</th><th>Campaign</th><th>Type</th><th class="num">Amount</th><th>Date</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="emptyRow" hidden>No donations match your search.</p>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Board — Job Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="#" aria-label="Northbeam Jobs home">
+        <span class="brand__mark" aria-hidden="true">N</span>
+        <span class="brand__name">Northbeam<span>Jobs</span></span>
+      </a>
+      <nav class="topnav" aria-label="Primary">
+        <a href="#" class="topnav__link is-active">Find jobs</a>
+        <a href="#" class="topnav__link">Companies</a>
+        <a href="#" class="topnav__link">Salaries</a>
+      </nav>
+      <div class="topbar__right">
+        <button class="btn btn--ghost" type="button">Sign in</button>
+        <button class="btn btn--solid" type="button">Post a job</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Filter rail -->
+    <aside class="rail" aria-label="Filter jobs">
+      <form id="filterForm" class="rail__form">
+        <div class="rail__head">
+          <h2 class="rail__title">Filters</h2>
+          <button type="button" class="rail__clear" id="clearFilters">Clear all</button>
+        </div>
+
+        <fieldset class="filter">
+          <legend class="filter__legend">Role</legend>
+          <div class="select-wrap">
+            <select id="fRole" name="role" class="select">
+              <option value="">All roles</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Design">Design</option>
+              <option value="Product">Product</option>
+              <option value="Data">Data</option>
+              <option value="Marketing">Marketing</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="filter">
+          <legend class="filter__legend">Location</legend>
+          <div class="select-wrap">
+            <select id="fLocation" name="location" class="select">
+              <option value="">Anywhere</option>
+              <option value="Berlin">Berlin</option>
+              <option value="London">London</option>
+              <option value="Lisbon">Lisbon</option>
+              <option value="Austin">Austin</option>
+              <option value="Toronto">Toronto</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="filter">
+          <legend class="filter__legend">Remote</legend>
+          <label class="switch">
+            <input type="checkbox" id="fRemote" name="remote" />
+            <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+            <span class="switch__label">Remote only</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="filter">
+          <legend class="filter__legend">Minimum salary</legend>
+          <div class="range">
+            <input type="range" id="fSalary" name="salary" min="40" max="200" step="10" value="40" />
+            <output id="salaryOut" class="range__out">Any salary</output>
+          </div>
+        </fieldset>
+
+        <fieldset class="filter">
+          <legend class="filter__legend">Job type</legend>
+          <div class="chips" role="group" aria-label="Job type">
+            <label class="chip"><input type="checkbox" name="type" value="Full-time" /><span>Full-time</span></label>
+            <label class="chip"><input type="checkbox" name="type" value="Part-time" /><span>Part-time</span></label>
+            <label class="chip"><input type="checkbox" name="type" value="Contract" /><span>Contract</span></label>
+            <label class="chip"><input type="checkbox" name="type" value="Internship" /><span>Internship</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="filter">
+          <legend class="filter__legend">Experience</legend>
+          <div class="chips" role="group" aria-label="Experience level">
+            <label class="chip"><input type="checkbox" name="level" value="Junior" /><span>Junior</span></label>
+            <label class="chip"><input type="checkbox" name="level" value="Mid" /><span>Mid</span></label>
+            <label class="chip"><input type="checkbox" name="level" value="Senior" /><span>Senior</span></label>
+            <label class="chip"><input type="checkbox" name="level" value="Lead" /><span>Lead</span></label>
+          </div>
+        </fieldset>
+      </form>
+    </aside>
+
+    <!-- Results column -->
+    <section class="results" aria-label="Job results">
+      <div class="searchbar">
+        <div class="searchbar__field">
+          <svg class="searchbar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="search" id="searchInput" class="searchbar__input" placeholder="Search title, company or tag…" aria-label="Search jobs" />
+        </div>
+        <button class="btn btn--solid searchbar__btn" type="button" id="searchBtn">Search</button>
+      </div>
+
+      <div class="resultsbar">
+        <p class="resultsbar__count" id="countLabel" aria-live="polite">Loading…</p>
+        <label class="sortwrap">
+          <span>Sort by</span>
+          <div class="select-wrap select-wrap--sm">
+            <select id="sortSelect" class="select">
+              <option value="relevance">Relevance</option>
+              <option value="newest">Newest</option>
+              <option value="salary-desc">Salary: high to low</option>
+              <option value="salary-asc">Salary: low to high</option>
+            </select>
+          </div>
+        </label>
+      </div>
+
+      <ul class="joblist" id="jobList"></ul>
+
+      <div class="empty" id="emptyState" hidden>
+        <div class="empty__icon" aria-hidden="true">⌕</div>
+        <h3>No matching roles</h3>
+        <p>Try removing a filter or broadening your search.</p>
+        <button class="btn btn--ghost" type="button" id="emptyReset">Reset filters</button>
+      </div>
+
+      <nav class="pager" id="pager" aria-label="Pagination"></nav>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

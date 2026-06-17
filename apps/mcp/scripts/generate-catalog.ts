@@ -1,10 +1,15 @@
 /**
- * Generates catalog.json from the content package at build time.
- * Bundles snippet content so the Worker can serve it at runtime.
+ * Generates the MCP catalog from the content package at build time.
+ *
+ * Output is split to keep the Worker script under Cloudflare's 3 MiB limit:
+ *   - src/catalog.json     — metadata only (+ snippetKeys), bundled into the script.
+ *   - public/s/<slug>.json — per-resource snippet bodies, served as Workers
+ *     Static Assets and fetched on demand by get_snippet (NOT in the script).
+ *
  * Run: bun run scripts/generate-catalog.ts
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadResources } from "@stealthis/schema";
@@ -33,6 +38,11 @@ const resources = (await loadResources(CONTENT_DIR)).filter(
   (resource) => resource.type !== "recommendation"
 );
 
+// Per-resource snippet bodies go here, one file per slug, served as Static Assets.
+const snippetsDir = fileURLToPath(new URL("../public/s", import.meta.url));
+rmSync(snippetsDir, { recursive: true, force: true });
+mkdirSync(snippetsDir, { recursive: true });
+
 const entries = resources.map((resource) => {
   const resourceDir = path.join(CONTENT_DIR, `resources/${resource.slug}`);
   const snippets: Record<string, string> = {};
@@ -44,7 +54,14 @@ const entries = resources.map((resource) => {
     }
   }
 
-  return { ...resource, snippets };
+  // Snippet bodies are written as a separate static asset; the bundled catalog
+  // keeps only the list of available targets (snippetKeys).
+  const snippetKeys = Object.keys(snippets);
+  if (snippetKeys.length > 0) {
+    writeFileSync(path.join(snippetsDir, `${resource.slug}.json`), JSON.stringify(snippets));
+  }
+
+  return { ...resource, snippetKeys };
 });
 
 const catalog = {
@@ -58,4 +75,6 @@ mkdirSync(outDir, { recursive: true });
 
 writeFileSync(path.join(outDir, "catalog.json"), JSON.stringify(catalog, null, 2));
 
-console.log(`✦ Generated catalog.json with ${entries.length} resources`);
+console.log(
+  `✦ Generated catalog.json (${entries.length} resources) + ${entries.filter((e) => e.snippetKeys.length > 0).length} snippet asset files`
+);

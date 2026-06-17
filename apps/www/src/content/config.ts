@@ -145,6 +145,17 @@ const ResourceCollectionSchema = z.enum([
   "science",
   "museum",
   "cookbook",
+  "agency",
+  "d2c",
+  "ai-product",
+  "fintech",
+  "elearning",
+  "delivery",
+  "streaming",
+  "jobs",
+  "events",
+  "nonprofit",
+  "creator",
 ]);
 
 const resources = defineCollection({

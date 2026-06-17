@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nebula — Content Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Primary">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">N</span>
+        <span class="brand__name">Nebula<span class="brand__sub">Studio</span></span>
+      </div>
+      <nav class="nav" aria-label="Sections">
+        <a class="nav__item is-active" href="#" aria-current="page"><span class="nav__ico" aria-hidden="true">▤</span>Overview</a>
+        <a class="nav__item" href="#"><span class="nav__ico" aria-hidden="true">▦</span>Catalog</a>
+        <a class="nav__item" href="#"><span class="nav__ico" aria-hidden="true">◷</span>Audience</a>
+        <a class="nav__item" href="#"><span class="nav__ico" aria-hidden="true">◍</span>Regions</a>
+        <a class="nav__item" href="#"><span class="nav__ico" aria-hidden="true">⚙</span>Settings</a>
+      </nav>
+      <div class="sidebar__foot">
+        <div class="who">
+          <span class="who__avatar" aria-hidden="true">AR</span>
+          <span class="who__meta"><strong>Ada Reyes</strong><small>Content Analyst</small></span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 class="topbar__title">Content Dashboard</h1>
+          <p class="topbar__crumb">Performance overview · fictional data</p>
+        </div>
+        <div class="topbar__tools">
+          <div class="timeframe" role="tablist" aria-label="Timeframe">
+            <button class="tf is-active" role="tab" aria-selected="true" data-range="7d">7D</button>
+            <button class="tf" role="tab" aria-selected="false" data-range="30d">30D</button>
+            <button class="tf" role="tab" aria-selected="false" data-range="90d">90D</button>
+            <button class="tf" role="tab" aria-selected="false" data-range="12m">12M</button>
+          </div>
+          <button class="btn-export" id="exportBtn" type="button">Export</button>
+        </div>
+      </header>
+
+      <!-- KPIs -->
+      <section class="kpis" aria-label="Key metrics">
+        <article class="kpi" data-kpi="viewers">
+          <div class="kpi__top"><span class="kpi__label">Active viewers</span><span class="kpi__badge up" data-delta>+0%</span></div>
+          <div class="kpi__value" data-value>—</div>
+          <div class="kpi__spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><path class="spark" d=""/></svg></div>
+        </article>
+        <article class="kpi" data-kpi="hours">
+          <div class="kpi__top"><span class="kpi__label">Watch hours</span><span class="kpi__badge up" data-delta>+0%</span></div>
+          <div class="kpi__value" data-value>—</div>
+          <div class="kpi__spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><path class="spark" d=""/></svg></div>
+        </article>
+        <article class="kpi" data-kpi="retention">
+          <div class="kpi__top"><span class="kpi__label">Retention</span><span class="kpi__badge up" data-delta>+0%</span></div>
+          <div class="kpi__value" data-value>—</div>
+          <div class="kpi__spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><path class="spark" d=""/></svg></div>
+        </article>
+        <article class="kpi" data-kpi="churn">
+          <div class="kpi__top"><span class="kpi__label">Churn</span><span class="kpi__badge down" data-delta>+0%</span></div>
+          <div class="kpi__value" data-value>—</div>
+          <div class="kpi__spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><path class="spark" d=""/></svg></div>
+        </article>
+      </section>
+
+      <div class="grid">
+        <!-- Viewership chart -->
+        <section class="card card--chart" aria-label="Viewership trend">
+          <header class="card__head">
+            <div>
+              <h2 class="card__title">Viewership</h2>
+              <p class="card__sub" id="chartSub">Daily watch hours · last 7 days</p>
+            </div>
+            <div class="metric-tabs" role="tablist" aria-label="Metric">
+              <button class="mt is-active" role="tab" aria-selected="true" data-metric="hours">Watch hours</button>
+              <button class="mt" role="tab" aria-selected="false" data-metric="viewers">Viewers</button>
+              <button class="mt" role="tab" aria-selected="false" data-metric="completion">Completion</button>
+            </div>
+          </header>
+          <div class="chart-wrap">
+            <svg class="chart" id="chart" viewBox="0 0 640 240" preserveAspectRatio="none" role="img" aria-label="Viewership line chart">
+              <g class="grid-lines" id="gridLines"></g>
+              <path class="area" id="chartArea" d="" />
+              <path class="line" id="chartLine" d="" />
+              <g id="chartDots"></g>
+            </svg>
+            <div class="chart-x" id="chartX" aria-hidden="true"></div>
+            <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <!-- Regional heat list -->
+        <section class="card card--regions" aria-label="Top regions">
+          <header class="card__head">
+            <div><h2 class="card__title">Regional heat</h2><p class="card__sub">Share of watch hours</p></div>
+          </header>
+          <ul class="regions" id="regions"></ul>
+        </section>
+
+        <!-- Top titles table -->
+        <section class="card card--table" aria-label="Top titles">
+          <header class="card__head">
+            <div><h2 class="card__title">Top titles</h2><p class="card__sub">Tap a row to drill into title metrics</p></div>
+          </header>
+          <div class="table-scroll">
+            <table class="titles">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Type</th>
+                  <th scope="col" class="num">Views</th>
+                  <th scope="col" class="num">Hours</th>
+                  <th scope="col" class="num">Compl.</th>
+                  <th scope="col" class="num">Trend</th>
+                </tr>
+              </thead>
+              <tbody id="titlesBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Retention curve -->
+        <section class="card card--retention" aria-label="Retention curve">
+          <header class="card__head">
+            <div><h2 class="card__title">Retention curve</h2><p class="card__sub" id="retSub">Viewers remaining over an episode</p></div>
+          </header>
+          <div class="chart-wrap chart-wrap--ret">
+            <svg class="chart" id="retChart" viewBox="0 0 640 200" preserveAspectRatio="none" role="img" aria-label="Retention curve">
+              <g class="grid-lines" id="retGrid"></g>
+              <path class="area area--ret" id="retArea" d="" />
+              <path class="line line--ret" id="retLine" d="" />
+            </svg>
+            <div class="chart-x" id="retX" aria-hidden="true"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Drill drawer -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer__scrim" data-close></div>
+    <aside class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <header class="drawer__head">
+        <div class="drawer__poster" id="drawerPoster" aria-hidden="true"></div>
+        <div>
+          <p class="drawer__kicker" id="drawerType">Series</p>
+          <h3 class="drawer__title" id="drawerTitle">Title</h3>
+        </div>
+        <button class="drawer__close" type="button" data-close aria-label="Close">✕</button>
+      </header>
+      <div class="drawer__stats" id="drawerStats"></div>
+      <div class="drawer__chart">
+        <p class="card__sub">7-day watch hours</p>
+        <svg viewBox="0 0 320 110" preserveAspectRatio="none" class="chart chart--mini" id="drawerChart" aria-hidden="true">
+          <path class="area" id="drawerArea" d=""/>
+          <path class="line" id="drawerLine" d=""/>
+        </svg>
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

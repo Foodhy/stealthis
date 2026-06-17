@@ -94,6 +94,17 @@ export const ResourceCollectionSchema = z.enum([
   "science",
   "museum",
   "cookbook",
+  "agency",
+  "d2c",
+  "ai-product",
+  "fintech",
+  "elearning",
+  "delivery",
+  "streaming",
+  "jobs",
+  "events",
+  "nonprofit",
+  "creator",
 ]);
 
 // Sub-kind / bucket for a recommendation topic (drives the card badge label)

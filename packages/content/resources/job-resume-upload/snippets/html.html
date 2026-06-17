@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Board — Resume Upload</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <path d="M6 3h7l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 3v5h5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M8.5 13h7M8.5 16h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <strong>Northpath</strong>
+          <span>Candidate Portal</span>
+        </div>
+      </div>
+      <div class="stepper" aria-label="Application progress">
+        <span class="step done">Account</span>
+        <span class="step current" aria-current="step">Resume</span>
+        <span class="step">Review</span>
+      </div>
+    </header>
+
+    <section class="lede">
+      <h1>Upload your resume</h1>
+      <p>Drop a PDF or DOCX and we’ll auto-fill your profile. You can edit everything before submitting your application for <strong>Senior Frontend Engineer</strong>.</p>
+    </section>
+
+    <div class="grid">
+      <!-- LEFT: dropzone + file chip -->
+      <section class="panel" aria-labelledby="dz-title">
+        <h2 id="dz-title" class="panel-title">Resume file</h2>
+
+        <div id="dropzone" class="dropzone" tabindex="0" role="button"
+             aria-label="Upload resume. Drag a file here or press Enter to browse.">
+          <div class="dz-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
+              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="dz-headline">Drag &amp; drop your resume</p>
+          <p class="dz-sub">or <button type="button" id="browseBtn" class="linkbtn">browse files</button></p>
+          <p class="dz-hint">PDF, DOC or DOCX · up to 5&nbsp;MB</p>
+          <input type="file" id="fileInput" class="sr-only" accept=".pdf,.doc,.docx" />
+        </div>
+
+        <ul class="sample-row" aria-label="Try a sample resume">
+          <li>No file handy?</li>
+          <li><button type="button" class="chip-ghost" data-sample="Amara Okafor">Try sample</button></li>
+        </ul>
+
+        <div id="fileChip" class="filechip" hidden>
+          <span class="fc-thumb" aria-hidden="true">PDF</span>
+          <div class="fc-body">
+            <div class="fc-head">
+              <span class="fc-name" id="fcName">resume.pdf</span>
+              <span class="fc-status" id="fcStatus">Uploading…</span>
+            </div>
+            <div class="fc-meta" id="fcMeta">1.2 MB</div>
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span class="progress-bar" id="fcBar"></span>
+            </div>
+          </div>
+          <button type="button" class="fc-remove" id="fcRemove" aria-label="Remove file" title="Remove">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="trust">
+          <span class="trust-dot" aria-hidden="true"></span>
+          Parsed on-device for this demo — nothing leaves your browser.
+        </div>
+      </section>
+
+      <!-- RIGHT: parsed preview -->
+      <section class="panel preview" aria-labelledby="pv-title" aria-live="polite">
+        <div class="pv-head">
+          <h2 id="pv-title" class="panel-title">Parsed details</h2>
+          <span class="badge-empty" id="pvBadge">Awaiting upload</span>
+        </div>
+
+        <!-- empty state -->
+        <div class="pv-empty" id="pvEmpty">
+          <div class="pv-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none">
+              <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p>Your name, contact, skills and experience will appear here automatically once a resume is parsed.</p>
+        </div>
+
+        <!-- parsing skeleton -->
+        <div class="pv-parsing" id="pvParsing" hidden>
+          <div class="parse-spinner" aria-hidden="true"></div>
+          <p id="parseLabel">Reading document…</p>
+          <ul class="parse-checks">
+            <li data-check="contact">Contact details</li>
+            <li data-check="skills">Skills</li>
+            <li data-check="experience">Work experience</li>
+          </ul>
+        </div>
+
+        <!-- populated form -->
+        <form class="pv-form" id="pvForm" hidden novalidate>
+          <div class="field-grid">
+            <label class="field">
+              <span>Full name</span>
+              <input type="text" id="fName" name="name" autocomplete="name" />
+            </label>
+            <label class="field">
+              <span>Job title</span>
+              <input type="text" id="fTitle" name="title" />
+            </label>
+            <label class="field">
+              <span>Email</span>
+              <input type="email" id="fEmail" name="email" autocomplete="email" />
+            </label>
+            <label class="field">
+              <span>Phone</span>
+              <input type="tel" id="fPhone" name="phone" autocomplete="tel" />
+            </label>
+            <label class="field span2">
+              <span>Location</span>
+              <input type="text" id="fLocation" name="location" />
+            </label>
+          </div>
+
+          <div class="field span2">
+            <span class="field-label">Skills <em id="skillCount">0</em></span>
+            <div class="skills" id="skillBox" aria-label="Skills, click to remove"></div>
+            <div class="skill-add">
+              <input type="text" id="skillInput" placeholder="Add a skill and press Enter" aria-label="Add a skill" />
+            </div>
+          </div>
+
+          <div class="field span2">
+            <span class="field-label">Experience</span>
+            <ul class="exp-list" id="expList"></ul>
+          </div>
+
+          <div class="pv-actions">
+            <button type="button" class="btn-ghost" id="reuploadBtn">Re-upload</button>
+            <button type="submit" class="btn-primary">Save &amp; continue</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="assertive"></div>
+  <script src="script.js"></script>
+</body>
+</html>

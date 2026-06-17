@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Posting Editor — Northbridge Talent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">NB</span>
+      <span class="brand-name">Northbridge <em>Talent</em></span>
+    </div>
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="#">Jobs</a><span aria-hidden="true">/</span><span aria-current="page">New posting</span>
+    </nav>
+    <div class="topbar-actions">
+      <span class="status-pill" id="statusPill" data-state="draft">Draft</span>
+      <button class="btn btn-ghost" id="saveDraftBtn" type="button">Save draft</button>
+      <button class="btn btn-primary" id="publishBtn" type="button">Publish</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- EDITOR -->
+    <section class="editor" aria-label="Job posting editor">
+      <form id="jobForm" novalidate>
+        <div class="card">
+          <h2 class="card-title">Role details</h2>
+
+          <div class="field">
+            <label for="f-title">Job title</label>
+            <input id="f-title" name="title" type="text" value="Senior Frontend Engineer" maxlength="80" autocomplete="off" />
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="f-dept">Department</label>
+              <select id="f-dept" name="dept">
+                <option>Engineering</option>
+                <option>Design</option>
+                <option>Product</option>
+                <option>Marketing</option>
+                <option>Sales</option>
+                <option>Operations</option>
+                <option>People</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-type">Employment type</label>
+              <select id="f-type" name="type">
+                <option>Full-time</option>
+                <option>Part-time</option>
+                <option>Contract</option>
+                <option>Internship</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="f-location">Location</label>
+              <input id="f-location" name="location" type="text" value="Lisbon, Portugal" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label class="toggle-label" for="f-remote">Remote-friendly</label>
+              <label class="switch">
+                <input id="f-remote" name="remote" type="checkbox" checked />
+                <span class="switch-track" aria-hidden="true"></span>
+                <span class="switch-text">Allow remote applicants</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Salary range (annual)</span>
+            <div class="salary-row">
+              <div class="salary-input">
+                <span class="prefix">€</span>
+                <input id="f-salmin" name="salaryMin" type="number" value="62000" min="0" step="1000" inputmode="numeric" aria-label="Minimum salary" />
+              </div>
+              <span class="salary-dash" aria-hidden="true">–</span>
+              <div class="salary-input">
+                <span class="prefix">€</span>
+                <input id="f-salmax" name="salaryMax" type="number" value="84000" min="0" step="1000" inputmode="numeric" aria-label="Maximum salary" />
+              </div>
+              <select id="f-salper" name="salaryPeriod" aria-label="Salary period">
+                <option value="yr">/ year</option>
+                <option value="mo">/ month</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Description</h2>
+          <div class="rt-toolbar" role="toolbar" aria-label="Formatting">
+            <button type="button" class="rt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+            <button type="button" class="rt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+            <button type="button" class="rt-btn" data-cmd="insertUnorderedList" title="Bulleted list">• List</button>
+            <span class="rt-sep" aria-hidden="true"></span>
+            <button type="button" class="rt-btn" data-cmd="formatBlock" data-val="h3" title="Heading">H</button>
+          </div>
+          <div id="f-desc" class="rt-area" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Job description">
+            <p>We're building the next generation of design tooling and need a frontend engineer who sweats the details.</p>
+            <h3>What you'll do</h3>
+            <ul>
+              <li>Ship accessible, performant interfaces in our component library.</li>
+              <li>Partner with design to prototype and refine new flows.</li>
+              <li>Mentor engineers and raise the bar on code quality.</li>
+            </ul>
+          </div>
+          <p class="hint">Mock rich-text editor — formatting buttons apply to the selected text.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">Screening questions</h2>
+            <button type="button" class="btn btn-soft" id="addQBtn">+ Add question</button>
+          </div>
+          <p class="hint">Applicants answer these before submitting. Mark any as required.</p>
+          <ul class="q-list" id="qList" aria-live="polite"></ul>
+          <p class="q-empty" id="qEmpty" hidden>No screening questions yet — applicants apply with just a resume.</p>
+        </div>
+      </form>
+    </section>
+
+    <!-- PREVIEW -->
+    <aside class="preview" aria-label="Live preview">
+      <div class="preview-sticky">
+        <div class="preview-head">
+          <h2>Live preview</h2>
+          <span class="preview-tag">Candidate view</span>
+        </div>
+
+        <article class="job-card" id="previewCard">
+          <div class="job-top">
+            <div class="logo" aria-hidden="true">NB</div>
+            <div class="job-headings">
+              <h3 id="pv-title">Senior Frontend Engineer</h3>
+              <p class="job-company">Northbridge Talent</p>
+            </div>
+            <button class="bookmark" id="pvBookmark" type="button" aria-pressed="false" aria-label="Save job">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/></svg>
+            </button>
+          </div>
+
+          <div class="chips" id="pv-chips"></div>
+
+          <div class="job-body" id="pv-desc"></div>
+
+          <div class="job-screening" id="pv-screening" hidden>
+            <h4>Screening questions</h4>
+            <ol id="pv-qlist"></ol>
+          </div>
+
+          <button class="btn btn-primary btn-block" type="button" id="pvApply">Apply now</button>
+          <p class="job-foot"><span class="dot" id="pv-statusdot"></span><span id="pv-status">Draft — not visible to candidates</span></p>
+        </article>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

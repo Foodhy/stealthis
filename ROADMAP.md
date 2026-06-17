@@ -1978,29 +1978,464 @@ landings use per-variant palette overrides.
 
 ---
 
-## Future verticals (backlog) 📋
+## Future verticals — scoped (Phases 36–45) 🧭 PLAN
 
-> Additional themed bundles to consider after Phases 28–35 ship. Not yet scoped into sub-sections — recorded here so they're not lost.
+> Second wave of transactional verticals. Same template as Phases 28–35 / 57–60: end-to-end
+> coverage across customer-facing, ops/staff and admin, plus a `*.E` themed-landing sub-section
+> of 5 variants. Conventions identical (naming `<prefix>-<area>-<slug>`, vanilla `html/css/js`,
+> interactive-by-default, `pages` for full layouts + `ui-components` for widgets). **Add the
+> collection slug to the schema (5 places) before authoring** — see CLAUDE.md § "Adding a new
+> library collection".
+>
+> Phases 36–41 are **full verticals** (A–E). Phases 42–45 are **landing-only** packs (5 variants,
+> no admin) — cheaper, marketing-focused.
 
-### Mid-fit (rich UI surface, mostly single-sided)
+### Build priority (by market value, 2026)
 
-| Phase ID | Theme | Notes |
-|---|---|---|
-| 36 | **Banking / Fintech App** 💳 | Accounts · transactions · cards · transfers · investments · KYC · onboarding · landings (neobank, traditional, crypto-bank, business banking, lending). |
-| 37 | **E-learning / LMS** 🎓 | Course catalog · classroom player · quiz · gradebook · instructor dashboard · landings (university, bootcamp, kids, language, professional cert). |
-| 38 | **Event Ticketing** 🎟️ | Discovery · seat selection · ticket QR · organizer dashboard · landings (concert, conference, sports, festival, theater). |
-| 39 | **Streaming Platform** 🎬 | Browse · player · profile · episode picker · landings (general SVOD, kids, sports, niche, music). |
-| 40 | **Job Board / ATS** 💼 | Listings · application form · recruiter pipeline · candidate portal · landings (general, tech, executive, gig, internal mobility). |
-| 41 | **Delivery / Logistics** 📦 | Driver app · customer tracking · dispatch board · warehouse · landings (food delivery, parcels, freight, grocery, last-mile). |
+> Ranked by commercial demand + monetization surface, **not** by phase number. Build top-down;
+> renumbering is avoided so existing references stay valid.
 
-### Specialized (themed landings only, no full vertical)
+| Rank | Phase | Vertical | Why first |
+|---|---|---|---|
+| 1 | 36 | Banking / Fintech 💳 | Highest-value B2C/B2B UI; huge regulated surface; reuses Phase 32/57 forms + dashboards. |
+| 2 | 45 | AI Product 🤖 | Hottest 2026 category; high inbound; small (landing-only) → fast win. |
+| 3 | 37 | E-learning / LMS 🎓 | Large stable market; reuses Phase 26/61 onboarding + Phase 64 dashboards. |
+| 4 | 41 | Delivery / Logistics 📦 | Big ops market; map/tracking patterns reuse Phase 16. |
+| 5 | 39 | Streaming 🎬 | Mass-market; player + browse reuse Phase 15 media. |
+| 6 | 40 | Job Board / ATS 💼 | Steady B2B SaaS demand; reuses Phase 63 forms + Phase 64 pipelines. |
+| 7 | 44 | D2C Brand 🛍️ | Strong commerce pull; landing-only; reuses Phase 57 commerce primitives. |
+| 8 | 38 | Event Ticketing 🎟️ | Seasonal but reusable; seat-map is the novel asset. |
+| 9 | 42 | Agency 🎨 | Easy, high reuse of Phase 56 portfolio; landing-only. |
+| 10 | 43 | Creator / Personal Brand 🎤 | Niche; landing-only; overlaps Phase 56. |
 
-| Phase ID | Theme | Notes |
-|---|---|---|
-| 42 | **Agency Landings** 🎨 | 5 variants — design, dev, marketing, video, branding. Same shape as 27.F. |
-| 43 | **Creator / Personal Brand Landings** 🎤 | 5 variants — musician, photographer, author, coach, streamer. |
-| 44 | **D2C Brand Landings** 🛍️ | 5 variants — skincare, coffee, fashion, hardware, supplements. |
-| 45 | **AI Product Landings** 🤖 | 5 variants — chatbot, image gen, code assistant, voice AI, search engine. |
+---
+
+## Phase 36 — Banking / Fintech Theme 💳 ✅ DONE (2026-06-16)
+
+> Full money stack — accounts, transactions, cards, transfers, investing, plus KYC onboarding and
+> internal ops. Trust-first, dense-but-calm. Reuses Phase 63 forms + Phase 64 dashboards.
+>
+> Naming: `bank-<area>-<slug>`. Collection: `fintech`.
+> Design language: deep navy/ink + single trust accent (teal or violet) · clean geometric sans ·
+> generous whitespace · tabular figures · security/verification cues everywhere.
+
+### 36.A — Customer / Account Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `bank-dashboard` | Account overview (balances · spend · cards) | pages | hard | ✅ |
+| 2 | `bank-transactions` | Transaction list (search · filter · categories) | pages | hard | ✅ |
+| 3 | `bank-transfer` | Send money / transfer flow (payee · amount · review) | pages | hard | ✅ |
+| 4 | `bank-card-detail` | Card detail (freeze · limits · virtual card) | pages | med | ✅ |
+| 5 | `bank-statements` | Statements & documents | pages | easy | ✅ |
+| 6 | `bank-invest` | Investing / portfolio (holdings · chart · buy-sell) | pages | hard | ✅ |
+
+### 36.B — Fintech Patterns (reusable primitives)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 7 | `bank-balance-card` | Balance / account card | ui-components | easy | ✅ |
+| 8 | `bank-transaction-row` | Transaction row (icon · merchant · amount) | ui-components | easy | ✅ |
+| 9 | `bank-amount-input` | Currency amount keypad / input | ui-components | med | ✅ |
+| 10 | `bank-card-visual` | Virtual card visual (flip · masked PAN) | ui-components | med | ✅ |
+| 11 | `bank-spend-chart` | Spending breakdown donut + categories | ui-components | med | ✅ |
+| 12 | `bank-otp-input` | OTP / 2FA code input | ui-components | easy | ✅ |
+
+### 36.C — KYC / Onboarding
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 13 | `bank-onboard-signup` | Account-open wizard (KYC steps) | pages | hard | ✅ |
+| 14 | `bank-id-verify` | ID / document verification step | ui-components | med | ✅ |
+| 15 | `bank-success-funded` | Account funded / welcome state | pages | easy | ✅ |
+
+### 36.D — Admin / Ops
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 16 | `bank-admin-dashboard` | Ops dashboard (volume · fraud flags · KYC queue) | pages | hard | ✅ |
+| 17 | `bank-admin-customer` | Customer detail (accounts · risk · actions) | pages | med | ✅ |
+| 18 | `bank-admin-disputes` | Disputes / chargeback queue | pages | med | ✅ |
+
+### 36.E — Themed Fintech Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 19 | `bank-landing-neobank` | Neobank (Revolut/N26-style) | White + electric violet · bold sans · playful, modern | hard | ✅ |
+| 20 | `bank-landing-traditional` | Traditional retail bank | Navy + gold + ivory · serif accent · stable, trusted | med | ✅ |
+| 21 | `bank-landing-business` | Business / SMB banking | Slate + green · clean sans · efficient, B2B | med | ✅ |
+| 22 | `bank-landing-lending` | Lending / BNPL | Warm white + coral · friendly sans · fast, approachable | med | ✅ |
+| 23 | `bank-landing-wealth` | Wealth / investing | Charcoal + emerald · refined serif · premium, calm | hard | ✅ |
+
+### Build order (Phase 36)
+
+1. **Patterns** — 7, 8, 9, 10, 11, 12.
+2. **Customer core** — 1, 2, 3, 4.
+3. **Invest / statements** — 5, 6.
+4. **KYC** — 13, 14, 15.
+5. **Admin** — 16, 17, 18.
+6. **Landings** — 19 → 23.
+
+> **Progress (2026-06-16):** ✅ Complete. All 23 resources built via workflow `wf_ea521f21-844`
+> (`docs/templates/phase36-banking.workflow.js`) — `index.mdx` + html/css/js each. New `fintech`
+> collection wired in all 5 places + docs `collections.mdx` + `choose-your-path.mdx`. MCP catalog
+> regenerated (1418 resources).
+
+---
+
+## Phase 37 — E-learning / LMS Theme 🎓 ✅ DONE (2026-06-17)
+
+> Learn-and-teach stack — catalog, classroom player, quizzes, progress, instructor tools.
+> Reuses Phase 61 onboarding + Phase 64 dashboards.
+>
+> Naming: `lms-<area>-<slug>`. Collection: `elearning`.
+> Design language: friendly bright + focused-reading typography · clear progress affordances ·
+> calm light theme + optional dark "study" mode.
+
+### 37.A — Learner Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `lms-catalog` | Course catalog (filter · level · duration) | pages | med | ✅ |
+| 2 | `lms-course-detail` | Course detail (syllabus · reviews · enroll) | pages | med | ✅ |
+| 3 | `lms-classroom` | Classroom player (video · transcript · notes) | pages | hard | ✅ |
+| 4 | `lms-quiz` | Quiz / assessment (timer · feedback) | pages | hard | ✅ |
+| 5 | `lms-dashboard` | Learner dashboard (in-progress · streak · certs) | pages | med | ✅ |
+| 6 | `lms-certificate` | Completion certificate | pages | easy | ✅ |
+
+### 37.B — LMS Patterns (reusable primitives)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 7 | `lms-course-card` | Course card (progress · rating · level) | ui-components | easy | ✅ |
+| 8 | `lms-lesson-list` | Curriculum / lesson accordion | ui-components | med | ✅ |
+| 9 | `lms-progress-ring` | Progress ring / completion meter | ui-components | easy | ✅ |
+| 10 | `lms-video-controls` | Lesson player controls (speed · captions) | ui-components | med | ✅ |
+| 11 | `lms-quiz-question` | Quiz question types (mcq · drag · code) | ui-components | hard | ✅ |
+| 12 | `lms-streak-badge` | Streak / XP / badge widgets | ui-components | easy | ✅ |
+
+### 37.C — Instructor / Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 13 | `lms-admin-dashboard` | Instructor dashboard (enrollments · revenue · completion) | pages | hard | ✅ |
+| 14 | `lms-admin-course-builder` | Course builder (modules · lessons · upload) | pages | hard | ✅ |
+| 15 | `lms-admin-gradebook` | Gradebook / submissions review | pages | med | ✅ |
+
+### 37.D — Themed LMS Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 16 | `lms-landing-university` | University / academic | Deep blue + crimson · serif · scholarly, credible | med | ✅ |
+| 17 | `lms-landing-bootcamp` | Coding bootcamp | Black + neon green · mono accent · intense, career-focused | hard | ✅ |
+| 18 | `lms-landing-kids` | Kids learning | Bright primaries · rounded sans · playful, safe | med | ✅ |
+| 19 | `lms-landing-language` | Language app | White + warm gradient · friendly sans · gamified | med | ✅ |
+| 20 | `lms-landing-cert` | Professional certification | Slate + gold · clean sans · authoritative, B2B | med | ✅ |
+
+### Build order (Phase 37)
+
+1. **Patterns** — 7, 8, 9, 10, 11, 12.
+2. **Learner core** — 1, 2, 3, 5.
+3. **Assessment** — 4, 6.
+4. **Instructor** — 13, 14, 15.
+5. **Landings** — 16 → 20.
+
+> **Progress (2026-06-17):** ✅ Complete. 20 resources built in Tanda 2 workflow `wf_d96a73e9-69a`
+> (`docs/templates/tanda2-verticals.workflow.js`, with LMS+Delivery+Streaming). New `elearning`
+> collection wired (6 places incl. choose-your-path). Catalog regenerated (1472).
+
+---
+
+## Phase 38 — Event Ticketing Theme 🎟️ ✅ DONE (2026-06-17)
+
+> Discovery → seat selection → ticket → organizer ops. Seat-map is the signature asset.
+>
+> Naming: `tix-<area>-<slug>`. Collection: `events`.
+> Design language: bold high-contrast + photographic hero · energetic accent · clear pricing/CTA ·
+> QR/ticket motifs.
+
+### 38.A — Attendee Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `tix-discovery` | Event discovery (search · date · category) | pages | med | ✅ |
+| 2 | `tix-event-detail` | Event detail (lineup · venue · tickets) | pages | med | ✅ |
+| 3 | `tix-seat-map` | Interactive seat selection map | pages | hard | ✅ |
+| 4 | `tix-checkout` | Ticket checkout (qty · fees · pay) | pages | med | ✅ |
+| 5 | `tix-ticket` | Digital ticket (QR · wallet · transfer) | pages | easy | ✅ |
+
+### 38.B — Ticketing Patterns (reusable primitives)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 6 | `tix-event-card` | Event card (date · venue · price-from) | ui-components | easy | ✅ |
+| 7 | `tix-seat-picker` | Seat-map zoom + tier legend | ui-components | hard | ✅ |
+| 8 | `tix-qr-ticket` | QR ticket stub component | ui-components | easy | ✅ |
+| 9 | `tix-date-filter` | Date / when filter chips | ui-components | easy | ✅ |
+
+### 38.C — Organizer Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 10 | `tix-admin-dashboard` | Organizer dashboard (sales · capacity · scans) | pages | hard | ✅ |
+| 11 | `tix-admin-event-setup` | Event setup (tiers · seating · dates) | pages | hard | ✅ |
+| 12 | `tix-admin-checkin` | Door / check-in scanner view | ui-components | med | ✅ |
+
+### 38.D — Themed Ticketing Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 13 | `tix-landing-concert` | Concert / music | Black + neon magenta · display sans · loud, hype | hard | ✅ |
+| 14 | `tix-landing-conference` | Conference / tech | White + indigo · clean sans · professional | med | ✅ |
+| 15 | `tix-landing-sports` | Sports / stadium | Team color + white · bold condensed · competitive | med | ✅ |
+| 16 | `tix-landing-festival` | Festival / multi-day | Warm gradient + grain · funky display · immersive | hard | ✅ |
+| 17 | `tix-landing-theater` | Theater / arts | Burgundy + gold · serif · elegant, classic | med | ✅ |
+
+### Build order (Phase 38)
+
+1. **Patterns** — 6, 7, 8, 9.
+2. **Funnel** — 1, 2, 3, 4, 5.
+3. **Organizer** — 10, 11, 12.
+4. **Landings** — 13 → 17.
+
+> **Progress (2026-06-17):** ✅ Complete. 17 resources built in Tanda 3 workflow `wf_08b490f4-b12`
+> (with Job Board). New `events` collection wired (6 places incl. choose-your-path). Catalog 1506.
+
+---
+
+## Phase 39 — Streaming Platform Theme 🎬 ✅ DONE (2026-06-17)
+
+> Browse → player → profile. Reuses Phase 15 media players.
+>
+> Naming: `stream-<area>-<slug>`. Collection: `streaming`.
+> Design language: dark-first cinematic · poster art · minimal chrome · hover-preview motion.
+
+### 39.A — Viewer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `stream-browse` | Browse home (rows · hero · continue) | pages | hard | ✅ |
+| 2 | `stream-title-detail` | Title detail (episodes · cast · similar) | pages | med | ✅ |
+| 3 | `stream-player` | Video player (scrubber · next-up · captions) | pages | hard | ✅ |
+| 4 | `stream-search` | Search / category grid | pages | med | ✅ |
+| 5 | `stream-profiles` | Who's watching / profile switcher | pages | easy | ✅ |
+
+### 39.B — Streaming Patterns (reusable primitives)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 6 | `stream-poster-card` | Poster card (hover preview · badge) | ui-components | med | ✅ |
+| 7 | `stream-content-row` | Carousel row (scroll · lazy) | ui-components | med | ✅ |
+| 8 | `stream-player-controls` | Player control bar | ui-components | hard | ✅ |
+| 9 | `stream-episode-list` | Episode picker / season tabs | ui-components | med | ✅ |
+| 10 | `stream-hero-billboard` | Featured hero billboard | ui-components | med | ✅ |
+
+### 39.C — Account / Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 11 | `stream-account` | Account / plan & devices | pages | easy | ✅ |
+| 12 | `stream-admin-dashboard` | Content dashboard (views · retention · top titles) | pages | hard | ✅ |
+
+### 39.D — Themed Streaming Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 13 | `stream-landing-svod` | General SVOD (Netflix-style) | Black + red · bold sans · blockbuster | hard | ✅ |
+| 14 | `stream-landing-kids` | Kids streaming | Bright + rounded · playful sans · safe, fun | med | ✅ |
+| 15 | `stream-landing-sports` | Live sports | Dark + electric green · condensed · live, urgent | med | ✅ |
+| 16 | `stream-landing-niche` | Niche / indie (anime, docs) | Moody + accent · editorial · curated, cool | med | ✅ |
+| 17 | `stream-landing-music` | Music / audio streaming | Gradient + vibrant · modern sans · rhythmic | hard | ✅ |
+
+### Build order (Phase 39)
+
+1. **Patterns** — 6, 7, 8, 9, 10.
+2. **Viewer core** — 1, 2, 3.
+3. **Search / profiles** — 4, 5, 11.
+4. **Admin** — 12.
+5. **Landings** — 13 → 17.
+
+> **Progress (2026-06-17):** ✅ Complete. 17 resources built in Tanda 2 workflow `wf_d96a73e9-69a`.
+> New `streaming` collection wired (6 places incl. choose-your-path). Catalog regenerated (1472).
+
+---
+
+## Phase 40 — Job Board / ATS Theme 💼 ✅ DONE (2026-06-17)
+
+> Two-sided — seeker (search/apply) + recruiter (pipeline). Reuses Phase 63 forms + Phase 64 boards.
+>
+> Naming: `job-<area>-<slug>`. Collection: `jobs`.
+> Design language: clean professional + trustworthy blue/slate · scannable list density · clear
+> status pills.
+
+### 40.A — Job Seeker Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `job-listings` | Job search (filters · salary · remote) | pages | med | ✅ |
+| 2 | `job-detail` | Job detail (description · company · apply) | pages | med | ✅ |
+| 3 | `job-apply` | Application form (resume · screening Qs) | pages | med | ✅ |
+| 4 | `job-seeker-dashboard` | Applications tracker (status · saved) | pages | med | ✅ |
+| 5 | `job-profile` | Candidate profile / resume builder | pages | hard | ✅ |
+
+### 40.B — Job Patterns (reusable primitives)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 6 | `job-listing-card` | Job card (logo · salary · tags) | ui-components | easy | ✅ |
+| 7 | `job-filter-rail` | Faceted job filters | ui-components | med | ✅ |
+| 8 | `job-status-pill` | Application status pill set | ui-components | easy | ✅ |
+| 9 | `job-resume-upload` | Resume upload + parse preview | ui-components | med | ✅ |
+
+### 40.C — Recruiter / ATS Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 10 | `job-admin-pipeline` | Candidate pipeline (kanban stages) | pages | hard | ✅ |
+| 11 | `job-admin-posting` | Job posting editor | pages | med | ✅ |
+| 12 | `job-admin-candidate` | Candidate detail (notes · scorecard) | pages | med | ✅ |
+
+### 40.D — Themed Job Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 13 | `job-landing-general` | General job board | White + blue · clean sans · broad, friendly | med | ✅ |
+| 14 | `job-landing-tech` | Tech / startup jobs | Dark + mono accent · modern · developer-cool | hard | ✅ |
+| 15 | `job-landing-executive` | Executive / senior | Charcoal + gold · serif · prestige, discreet | med | ✅ |
+| 16 | `job-landing-gig` | Gig / shift work | Bright + bold · chunky sans · fast, accessible | med | ✅ |
+| 17 | `job-landing-internal` | Internal mobility / careers site | Brand-flex + clean · warm sans · belonging | med | ✅ |
+
+### Build order (Phase 40)
+
+1. **Patterns** — 6, 7, 8, 9.
+2. **Seeker core** — 1, 2, 3, 4.
+3. **Profile** — 5.
+4. **Recruiter** — 10, 11, 12.
+5. **Landings** — 13 → 17.
+
+> **Progress (2026-06-17):** ✅ Complete. 17 resources built in Tanda 3 workflow `wf_08b490f4-b12`
+> (with Ticketing). New `jobs` collection wired (6 places incl. choose-your-path). Catalog 1506.
+
+---
+
+## Phase 41 — Delivery / Logistics Theme 📦 ✅ DONE (2026-06-17)
+
+> Three roles — customer tracking, driver app, dispatch ops. Reuses Phase 16 maps.
+>
+> Naming: `ship-<area>-<slug>`. Collection: `delivery`.
+> Design language: high-clarity + map-forward · big status/ETA · mobile-first driver views ·
+> safety-green/alert-amber semantics.
+
+### 41.A — Customer Side
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `ship-track` | Live order tracking (map · ETA · status) | pages | hard | ✅ |
+| 2 | `ship-order-detail` | Order detail / receipt | pages | easy | ✅ |
+| 3 | `ship-schedule` | Schedule / book a delivery | pages | med | ✅ |
+
+### 41.B — Driver App (mobile-first)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 4 | `ship-driver-route` | Driver route / next-stop | pages | hard | ✅ |
+| 5 | `ship-driver-delivery` | Delivery confirm (photo · signature) | pages | med | ✅ |
+| 6 | `ship-driver-earnings` | Driver earnings / shift summary | pages | easy | ✅ |
+
+### 41.C — Logistics Patterns (reusable primitives)
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 7 | `ship-status-tracker` | Step tracker (placed → out → delivered) | ui-components | easy | ✅ |
+| 8 | `ship-eta-badge` | ETA / countdown badge | ui-components | easy | ✅ |
+| 9 | `ship-map-route` | Map with route + driver marker | ui-components | hard | ✅ |
+| 10 | `ship-package-row` | Package / shipment list row | ui-components | easy | ✅ |
+
+### 41.D — Dispatch / Warehouse Admin
+
+| # | Slug | Title | Category | Difficulty | Status |
+|---|---|---|---|---|---|
+| 11 | `ship-admin-dispatch` | Dispatch board (orders · drivers · assign) | pages | hard | ✅ |
+| 12 | `ship-admin-warehouse` | Warehouse / inventory & picking | pages | med | ✅ |
+
+### 41.E — Themed Delivery Landings (5 variants)
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 13 | `ship-landing-food` | Food delivery | White + appetite-red/orange · friendly sans · fast, tasty | med | ✅ |
+| 14 | `ship-landing-parcel` | Parcel / courier | Blue + white · clean sans · reliable | med | ✅ |
+| 15 | `ship-landing-freight` | Freight / B2B logistics | Slate + safety-amber · industrial sans · heavy-duty | hard | ✅ |
+| 16 | `ship-landing-grocery` | Grocery delivery | Fresh green + cream · rounded sans · wholesome | med | ✅ |
+| 17 | `ship-landing-lastmile` | Last-mile / instant | Black + electric · bold sans · speed, urgency | med | ✅ |
+
+### Build order (Phase 41)
+
+1. **Patterns** — 7, 8, 9, 10.
+2. **Customer** — 1, 2, 3.
+3. **Driver** — 4, 5, 6.
+4. **Dispatch** — 11, 12.
+5. **Landings** — 13 → 17.
+
+> **Progress (2026-06-17):** ✅ Complete. 17 resources built in Tanda 2 workflow `wf_d96a73e9-69a`.
+> New `delivery` collection wired (6 places incl. choose-your-path). Catalog regenerated (1472).
+
+---
+
+## Phases 42–45 — Landing-only packs 🎨🎤🛍️🤖
+
+> Marketing-only collections: 5 themed landings each, **no admin / no app shell**. Cheaper to
+> build (`pages`, hero-first). Reuse Phase 56 portfolio + Phase 57 commerce primitives where it
+> fits. Each pack adds its own collection slug.
+>
+> **Progress (2026-06-16):** Tanda 1 built via workflow `wf_3f4baa54-f10` — **42 Agency, 44 D2C,
+> 45 AI ✅ DONE** (15 landings, mdx + html/css/js each). New collections `agency`, `d2c`,
+> `ai-product` wired in all 5 places + docs. MCP catalog regenerated (1395 resources).
+>
+> **Progress (2026-06-17):** **43 Creator ✅ DONE** via workflow `wf_9eca0940-000` (5 landings).
+> New `creator` collection wired (5 places + docs). Catalog 1534. **Backlog 36–45 now 10/10 complete.**
+
+### Phase 42 — Agency Landings 🎨 ✅ DONE · `agency-landing-<slug>` · collection `agency`
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `agency-landing-design` | Design studio | Off-white + ink + 1 bold accent · editorial serif · confident, curated | med | ✅ |
+| 2 | `agency-landing-dev` | Dev / software shop | Dark + mono accent · technical sans · precise, modern | med | ✅ |
+| 3 | `agency-landing-marketing` | Marketing / growth | Bright gradient · punchy sans · energetic, results-driven | med | ✅ |
+| 4 | `agency-landing-video` | Video / production | Black + cinematic · display · dramatic, motion-rich | hard | ✅ |
+| 5 | `agency-landing-branding` | Branding / identity | Cream + duotone · refined sans · artfull, premium | hard | ✅ |
+
+### Phase 43 — Creator / Personal Brand Landings 🎤 ✅ DONE · `creator-landing-<slug>` · collection `creator`
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `creator-landing-musician` | Musician / artist | Dark + neon · display · moody, hype | med | ✅ |
+| 2 | `creator-landing-photographer` | Photographer | White + full-bleed photo · minimal sans · gallery-quiet | med | ✅ |
+| 3 | `creator-landing-author` | Author / writer | Cream + serif · literary · warm, bookish | easy | ✅ |
+| 4 | `creator-landing-coach` | Coach / speaker | Warm + bold accent · friendly sans · trustworthy, motivating | med | ✅ |
+| 5 | `creator-landing-streamer` | Streamer / gamer | Black + purple/green · gamer sans · electric, fan-first | med | ✅ |
+
+### Phase 44 — D2C Brand Landings 🛍️ ✅ DONE · `d2c-landing-<slug>` · collection `d2c`
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `d2c-landing-skincare` | Skincare / beauty | Soft neutrals + blush · elegant sans · clean, dewy | med | ✅ |
+| 2 | `d2c-landing-coffee` | Coffee / beverage | Kraft + espresso brown · rugged serif · artisanal | med | ✅ |
+| 3 | `d2c-landing-fashion` | Fashion / apparel | White + black · couture serif · editorial, aspirational | hard | ✅ |
+| 4 | `d2c-landing-hardware` | Hardware / gadget | Dark + product photography · clean sans · spec-proud | hard | ✅ |
+| 5 | `d2c-landing-supplements` | Supplements / wellness | Clinical white + vibrant accent · confident sans · science-backed | med | ✅ |
+
+### Phase 45 — AI Product Landings 🤖 ✅ DONE · `ai-landing-<slug>` · collection `ai-product`
+
+| # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
+|---|---|---|---|---|---|
+| 1 | `ai-landing-chatbot` | Chat / assistant | Dark + gradient glow · modern sans · intelligent, sleek | hard | ✅ |
+| 2 | `ai-landing-imagegen` | Image generation | Black + iridescent · display · creative, vivid | hard | ✅ |
+| 3 | `ai-landing-code` | Code assistant | Dark + mono + syntax accents · technical · developer-native | med | ✅ |
+| 4 | `ai-landing-voice` | Voice AI | Deep + waveform motif · soft sans · calm, futuristic | med | ✅ |
+| 5 | `ai-landing-search` | AI search / answers | White + single accent · clean sans · fast, authoritative | med | ✅ |
+
+> Build order (42–45): start with the highest-priority pack (**45 AI**, then **44 D2C**, **42 Agency**,
+> **43 Creator** per the market-value table). Within each pack, build the 5 variants in listed order.
 
 ### Other candidates to evaluate
 
@@ -2978,7 +3413,7 @@ industry vertical.
 
 ---
 
-## Phase 60 — Nonprofit / Charity Theme ❤️ PLAN
+## Phase 60 — Nonprofit / Charity Theme ❤️ ✅ DONE (2026-06-17)
 
 > Mission-driven org stack — donation flows, campaign pages, volunteer portal, impact reporting, plus themed landings (humanitarian NGO, animal welfare, environmental, education, religious/community).
 >
@@ -2990,49 +3425,49 @@ industry vertical.
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `ngo-home` | Nonprofit Home (mission · impact · donate) | pages | med | [ ] |
-| 2 | `ngo-donate-flow` | Donation Flow (amount · frequency · pay) | pages | hard | [ ] |
-| 3 | `ngo-campaign-page` | Campaign / Fundraiser (goal · progress) | pages | med | [ ] |
-| 4 | `ngo-impact-report` | Impact Report (stats · stories) | pages | med | [ ] |
-| 5 | `ngo-story-feature` | Story / Beneficiary Spotlight | pages | easy | [ ] |
-| 6 | `ngo-events-page` | Events / Fundraiser Calendar | pages | easy | [ ] |
+| 1 | `ngo-home` | Nonprofit Home (mission · impact · donate) | pages | med | ✅ |
+| 2 | `ngo-donate-flow` | Donation Flow (amount · frequency · pay) | pages | hard | ✅ |
+| 3 | `ngo-campaign-page` | Campaign / Fundraiser (goal · progress) | pages | med | ✅ |
+| 4 | `ngo-impact-report` | Impact Report (stats · stories) | pages | med | ✅ |
+| 5 | `ngo-story-feature` | Story / Beneficiary Spotlight | pages | easy | ✅ |
+| 6 | `ngo-events-page` | Events / Fundraiser Calendar | pages | easy | ✅ |
 
 ### 60.B — Nonprofit Patterns (reusable primitives)
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `ngo-donation-widget` | Donation amount widget (presets + custom) | ui-components | med | [ ] |
-| 8 | `ngo-progress-thermometer` | Fundraising goal thermometer / bar | ui-components | easy | [ ] |
-| 9 | `ngo-impact-stat` | Impact stat counter ("X meals served") | ui-components | easy | [ ] |
-| 10 | `ngo-donor-wall` | Donor wall / recognition list | ui-components | easy | [ ] |
-| 11 | `ngo-recurring-toggle` | One-time / monthly giving toggle | ui-components | easy | [ ] |
-| 12 | `ngo-pledge-card` | Pledge / sponsorship card | ui-components | easy | [ ] |
+| 7 | `ngo-donation-widget` | Donation amount widget (presets + custom) | ui-components | med | ✅ |
+| 8 | `ngo-progress-thermometer` | Fundraising goal thermometer / bar | ui-components | easy | ✅ |
+| 9 | `ngo-impact-stat` | Impact stat counter ("X meals served") | ui-components | easy | ✅ |
+| 10 | `ngo-donor-wall` | Donor wall / recognition list | ui-components | easy | ✅ |
+| 11 | `ngo-recurring-toggle` | One-time / monthly giving toggle | ui-components | easy | ✅ |
+| 12 | `ngo-pledge-card` | Pledge / sponsorship card | ui-components | easy | ✅ |
 
 ### 60.C — Volunteer & Community
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 13 | `ngo-volunteer-signup` | Volunteer Signup / Opportunities | pages | med | [ ] |
-| 14 | `ngo-volunteer-portal` | Volunteer Portal (shifts · hours) | pages | med | [ ] |
-| 15 | `ngo-petition` | Petition / Pledge page | ui-components | easy | [ ] |
+| 13 | `ngo-volunteer-signup` | Volunteer Signup / Opportunities | pages | med | ✅ |
+| 14 | `ngo-volunteer-portal` | Volunteer Portal (shifts · hours) | pages | med | ✅ |
+| 15 | `ngo-petition` | Petition / Pledge page | ui-components | easy | ✅ |
 
 ### 60.D — Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 16 | `ngo-admin-donations` | Donations Dashboard (totals · recurring · trends) | pages | hard | [ ] |
-| 17 | `ngo-admin-campaigns` | Campaign Manager (CRUD · goals) | pages | med | [ ] |
-| 18 | `ngo-admin-volunteers` | Volunteer / Roster Manager | pages | med | [ ] |
+| 16 | `ngo-admin-donations` | Donations Dashboard (totals · recurring · trends) | pages | hard | ✅ |
+| 17 | `ngo-admin-campaigns` | Campaign Manager (CRUD · goals) | pages | med | ✅ |
+| 18 | `ngo-admin-volunteers` | Volunteer / Roster Manager | pages | med | ✅ |
 
 ### 60.E — Themed Nonprofit Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 19 | `ngo-landing-humanitarian` | Humanitarian / Relief NGO | Warm sand + deep blue + red · humane serif + sans · urgent, hopeful | med | [ ] |
-| 20 | `ngo-landing-animal` | Animal Welfare | Soft green + cream + warm orange · rounded sans · caring, friendly | med | [ ] |
-| 21 | `ngo-landing-environmental` | Environmental / Climate | Forest + ocean + earth · clean sans · natural, activist | med | [ ] |
-| 22 | `ngo-landing-education` | Education / Youth | Bright optimistic + white · friendly sans · uplifting, future-focused | med | [ ] |
-| 23 | `ngo-landing-community` | Religious / Community Center | Warm neutrals + gold + accent · classic serif · welcoming, rooted | easy | [ ] |
+| 19 | `ngo-landing-humanitarian` | Humanitarian / Relief NGO | Warm sand + deep blue + red · humane serif + sans · urgent, hopeful | med | ✅ |
+| 20 | `ngo-landing-animal` | Animal Welfare | Soft green + cream + warm orange · rounded sans · caring, friendly | med | ✅ |
+| 21 | `ngo-landing-environmental` | Environmental / Climate | Forest + ocean + earth · clean sans · natural, activist | med | ✅ |
+| 22 | `ngo-landing-education` | Education / Youth | Bright optimistic + white · friendly sans · uplifting, future-focused | med | ✅ |
+| 23 | `ngo-landing-community` | Religious / Community Center | Warm neutrals + gold + accent · classic serif · welcoming, rooted | easy | ✅ |
 
 ### Build order (Phase 60)
 
@@ -3041,6 +3476,11 @@ industry vertical.
 3. **Volunteer** — 13, 14, 15.
 4. **Admin** — 16, 17, 18.
 5. **Landings** — 19 → 23.
+
+> **Progress (2026-06-17):** ✅ Complete. All 23 resources built via workflow `wf_17cc14df-fd3`
+> (`docs/templates/phase60-nonprofit.workflow.js`). New `nonprofit` collection wired in all 6
+> places (schema, www config, collections.ts ×3, i18n en+es, docs collections.mdx,
+> choose-your-path.mdx). MCP catalog regenerated (1529 resources).
 
 ---
 
@@ -3556,7 +3996,7 @@ Videos informativos y promocionales para clínicas con Remotion.
 | Family | Phases | Theme |
 |---|---|---|
 | Vertical bundles (I) | 28–35 | Hotel · Clinic · Gym · Salon · Real Estate · Airline · Coworking · Auto |
-| Backlog (unscoped) | 36–45 | Banking · LMS · Ticketing · Streaming · Job Board · Delivery · Agency · Creator · D2C · AI Product |
+| Future verticals (scoped, PLAN) | 36–45 | Banking · LMS · Ticketing · Streaming · Job Board · Delivery · Agency · Creator · D2C · AI Product — full A–E specs + market-value build order |
 | Editorial & content (I) | 46–49 | Newspaper/Magazine · Science · Museum · Game Dev |
 | Editorial & content (II) | 50–56 | Comics/Manga · Cookbook · Music · Wiki/Docs · Children's · Travel · Portfolio styles |
 | Vertical bundles (II) | 57–60 | E-commerce · SaaS · Crypto/Web3 · Nonprofit |

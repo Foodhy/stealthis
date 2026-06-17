@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LMS — Course Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ TOP / PUBLISH BAR ============ -->
+    <header class="topbar">
+      <div class="topbar__left">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </span>
+        <div class="topbar__title">
+          <div class="crumb">Courses <span aria-hidden="true">/</span> Builder</div>
+          <h1 id="course-name-display">Intro to Generative Design</h1>
+        </div>
+        <span class="status-pill" id="status-pill" data-state="draft">Draft</span>
+      </div>
+      <div class="topbar__right">
+        <span class="autosave" id="autosave">All changes saved</span>
+        <button class="btn btn--ghost" id="btn-preview" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+        <button class="btn btn--soft" id="btn-save" type="button">Save draft</button>
+        <button class="btn btn--primary" id="btn-publish" type="button">Publish</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- ============ LEFT — MODULE / LESSON TREE ============ -->
+      <aside class="panel tree" aria-label="Course outline">
+        <div class="panel__head">
+          <h2>Curriculum</h2>
+          <span class="counter" id="tree-counter">0 lessons</span>
+        </div>
+        <div class="tree__progress">
+          <div class="tree__progress-row">
+            <span>Course completion</span>
+            <strong id="completion-pct">0%</strong>
+          </div>
+          <div class="bar"><span class="bar__fill" id="completion-fill" style="width:0%"></span></div>
+        </div>
+        <div class="tree__list" id="module-list" role="tree" aria-label="Modules and lessons"></div>
+        <button class="add-module" id="btn-add-module" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add module
+        </button>
+      </aside>
+
+      <!-- ============ CENTER — LESSON EDITOR ============ -->
+      <main class="panel editor" aria-label="Lesson editor">
+        <div class="editor__head">
+          <div class="editor__crumb" id="editor-crumb">Module 1 · Lesson 1</div>
+          <div class="editor__actions">
+            <button class="btn btn--ghost btn--sm" id="btn-duplicate" type="button">Duplicate</button>
+            <button class="btn btn--ghost btn--sm danger" id="btn-delete-lesson" type="button">Delete lesson</button>
+          </div>
+        </div>
+
+        <label class="field">
+          <span class="field__label">Lesson title</span>
+          <input class="field__input field__input--lg" id="lesson-title" type="text" placeholder="e.g. Working with vector fields" />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Lesson type</span>
+            <select class="field__input" id="lesson-type">
+              <option value="video">🎬 Video</option>
+              <option value="reading">📖 Reading</option>
+              <option value="quiz">✅ Quiz</option>
+              <option value="assignment">📝 Assignment</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field__label">Estimated duration</span>
+            <div class="field__suffix">
+              <input class="field__input" id="lesson-duration" type="number" min="1" max="240" value="12" />
+              <span>min</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="field" id="video-field">
+          <span class="field__label">Lesson video</span>
+          <div class="uploader" id="uploader" tabindex="0" role="button" aria-label="Upload lesson video">
+            <div class="uploader__empty" id="uploader-empty">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p><strong>Drop a video</strong> or click to upload</p>
+              <span>MP4 or MOV · up to 2&nbsp;GB</span>
+            </div>
+            <div class="uploader__file" id="uploader-file" hidden>
+              <span class="uploader__thumb" aria-hidden="true">▶</span>
+              <div class="uploader__meta">
+                <strong id="uploader-name">field-vectors-final.mp4</strong>
+                <span id="uploader-size">148 MB · 11:42</span>
+              </div>
+              <div class="uploader__bar"><span class="uploader__bar-fill" id="uploader-bar"></span></div>
+              <button class="uploader__remove" id="uploader-remove" type="button" aria-label="Remove video">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <label class="field">
+          <span class="field__label">Lesson content</span>
+          <div class="editor__toolbar" aria-hidden="true">
+            <button type="button" data-fmt="b"><b>B</b></button>
+            <button type="button" data-fmt="i"><i>I</i></button>
+            <button type="button" data-fmt="h">H</button>
+            <button type="button" data-fmt="ul">•</button>
+            <button type="button" data-fmt="link">🔗</button>
+          </div>
+          <textarea class="field__input field__textarea" id="lesson-content" rows="6" placeholder="Outline what learners will build, watch, or practice in this lesson…"></textarea>
+        </label>
+
+        <label class="toggle-row">
+          <span>
+            <strong>Free preview</strong>
+            <small>Let non-enrolled learners watch this lesson</small>
+          </span>
+          <span class="switch"><input type="checkbox" id="lesson-free" /><span class="switch__track"></span></span>
+        </label>
+      </main>
+
+      <!-- ============ RIGHT — SETTINGS ============ -->
+      <aside class="panel settings" aria-label="Course settings">
+        <div class="panel__head"><h2>Course settings</h2></div>
+
+        <div class="settings__group">
+          <span class="settings__heading">Pricing</span>
+          <div class="seg" id="pricing-seg" role="tablist">
+            <button class="seg__btn is-active" data-price="paid" role="tab" type="button">Paid</button>
+            <button class="seg__btn" data-price="free" role="tab" type="button">Free</button>
+          </div>
+          <label class="field" id="price-field">
+            <span class="field__label">Price (USD)</span>
+            <div class="field__prefix">
+              <span>$</span>
+              <input class="field__input" id="course-price" type="number" min="0" step="1" value="79" />
+            </div>
+          </label>
+        </div>
+
+        <div class="settings__group">
+          <span class="settings__heading">Difficulty</span>
+          <div class="levels" id="levels">
+            <button class="level" data-level="Beginner" type="button">Beginner</button>
+            <button class="level is-active" data-level="Intermediate" type="button">Intermediate</button>
+            <button class="level" data-level="Advanced" type="button">Advanced</button>
+          </div>
+        </div>
+
+        <div class="settings__group">
+          <span class="settings__heading">Category</span>
+          <select class="field__input" id="course-category">
+            <option>Design &amp; Creative</option>
+            <option>Development</option>
+            <option>Data &amp; AI</option>
+            <option>Business</option>
+            <option>Marketing</option>
+          </select>
+        </div>
+
+        <div class="settings__group">
+          <span class="settings__heading">Tags</span>
+          <div class="tags" id="tags"></div>
+          <input class="field__input tag-input" id="tag-input" type="text" placeholder="Add a tag, press Enter" />
+        </div>
+
+        <div class="settings__group settings__stats">
+          <div class="stat"><span id="stat-modules">0</span><small>Modules</small></div>
+          <div class="stat"><span id="stat-lessons">0</span><small>Lessons</small></div>
+          <div class="stat"><span id="stat-mins">0</span><small>Minutes</small></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Door Check-in Scanner — Neon Pulse Festival</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar" role="banner">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true">◢◤</span>
+          <div class="brand__text">
+            <strong>Neon Pulse Festival</strong>
+            <span>Door Check-in · Gate B</span>
+          </div>
+        </div>
+        <div class="topbar__meta">
+          <span class="pill pill--live"><span class="dot" aria-hidden="true"></span>Live</span>
+          <span class="pill" id="clock">--:--:--</span>
+          <button class="avatar" type="button" aria-label="Door staff: Riley Tran">RT</button>
+        </div>
+      </header>
+
+      <main class="grid">
+        <!-- Scanner column -->
+        <section class="panel scanner" aria-label="Scan viewport">
+          <div class="scanner__head">
+            <h1>Scan a ticket</h1>
+            <p>Point the camera at the QR on each guest's pass.</p>
+          </div>
+
+          <div class="viewport" id="viewport" data-state="idle">
+            <div class="viewport__feed" aria-hidden="true"></div>
+            <div class="targeting" aria-hidden="true">
+              <span class="corner tl"></span>
+              <span class="corner tr"></span>
+              <span class="corner bl"></span>
+              <span class="corner br"></span>
+              <span class="laser"></span>
+            </div>
+            <p class="viewport__hint" id="viewportHint">Camera ready</p>
+          </div>
+
+          <div class="scan-actions">
+            <button class="btn btn--primary" id="simScan" type="button">
+              <span class="btn__spin" aria-hidden="true"></span>
+              Simulate scan
+            </button>
+            <div class="scan-actions__forced" role="group" aria-label="Force a result">
+              <button class="chip chip--ok" data-force="valid" type="button">Valid</button>
+              <button class="chip chip--used" data-force="used" type="button">Used</button>
+              <button class="chip chip--bad" data-force="invalid" type="button">Invalid</button>
+            </div>
+          </div>
+
+          <!-- Result card -->
+          <article class="result" id="result" data-state="empty" aria-live="polite">
+            <div class="result__empty" id="resultEmpty">
+              <span class="result__icon" aria-hidden="true">⬚</span>
+              <p>Awaiting first scan of the night.</p>
+            </div>
+            <div class="result__body" id="resultBody" hidden>
+              <div class="result__badge" id="resultBadge">VALID</div>
+              <div class="result__perf" aria-hidden="true"></div>
+              <div class="result__guest">
+                <div class="result__avatar" id="resultInitials" aria-hidden="true">—</div>
+                <div>
+                  <h2 id="resultName">—</h2>
+                  <p id="resultTier">—</p>
+                </div>
+                <span class="tier-dot" id="resultTierDot" aria-hidden="true"></span>
+              </div>
+              <dl class="result__meta">
+                <div><dt>Ticket</dt><dd id="resultCode">—</dd></div>
+                <div><dt>Section</dt><dd id="resultSeat">—</dd></div>
+                <div><dt>Status</dt><dd id="resultStatus">—</dd></div>
+              </dl>
+              <p class="result__note" id="resultNote"></p>
+              <button class="btn btn--ghost" id="overrideBtn" type="button" hidden>
+                Override &amp; admit anyway
+              </button>
+            </div>
+          </article>
+        </section>
+
+        <!-- Side column -->
+        <aside class="side">
+          <section class="panel stats" aria-label="Check-in stats">
+            <div class="stat stat--main">
+              <span class="stat__label">Checked in</span>
+              <span class="stat__value"><span id="countIn">0</span><span class="stat__total">/ <span id="countCap">2,400</span></span></span>
+              <div class="bar"><span class="bar__fill" id="bar"></span></div>
+              <span class="stat__pct" id="pct">0% of capacity</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat">
+                <span class="stat__label">Scan rate</span>
+                <span class="stat__value stat__value--sm"><span id="rate">0</span><small>/min</small></span>
+              </div>
+              <div class="stat">
+                <span class="stat__label">Rejected</span>
+                <span class="stat__value stat__value--sm stat__value--bad" id="rejected">0</span>
+              </div>
+              <div class="stat">
+                <span class="stat__label">Doors open</span>
+                <span class="stat__value stat__value--sm" id="elapsed">0m</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel lookup" aria-label="Manual lookup">
+            <h2 class="panel__title">Manual lookup</h2>
+            <form id="lookupForm" role="search">
+              <label class="sr-only" for="lookupInput">Search by name or ticket code</label>
+              <div class="lookup__field">
+                <span aria-hidden="true">⌕</span>
+                <input
+                  id="lookupInput"
+                  type="search"
+                  placeholder="Name or ticket code (e.g. NP-7K2Q)"
+                  autocomplete="off"
+                />
+              </div>
+            </form>
+            <ul class="lookup__results" id="lookupResults"></ul>
+          </section>
+
+          <section class="panel recent" aria-label="Recent scans">
+            <div class="recent__head">
+              <h2 class="panel__title">Recent scans</h2>
+              <button class="link" id="clearRecent" type="button">Clear</button>
+            </div>
+            <ul class="recent__list" id="recentList">
+              <li class="recent__empty">No scans yet.</li>
+            </ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LMS — Lesson Player Controls</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="course-bar">
+      <div class="course-meta">
+        <span class="crumb">Frontend Foundations</span>
+        <span class="sep" aria-hidden="true">›</span>
+        <span class="crumb crumb-dim">Module 3 · Layout &amp; Flexbox</span>
+      </div>
+      <div class="course-progress">
+        <span class="cp-label">Course progress</span>
+        <div class="cp-track" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress 62 percent">
+          <div class="cp-fill" style="width:62%"></div>
+        </div>
+        <span class="cp-pct">62%</span>
+      </div>
+    </header>
+
+    <section class="stage" aria-label="Lesson player">
+      <!-- Fake video surface -->
+      <div class="screen" id="screen">
+        <div class="screen-art" aria-hidden="true">
+          <div class="orbit o1"></div>
+          <div class="orbit o2"></div>
+          <div class="screen-title">Lesson 14 · Building a Responsive Card Grid</div>
+        </div>
+
+        <div class="captions" id="captions" hidden>
+          <span id="captionText">Now we’ll wrap the grid in a container query so the cards reflow.</span>
+        </div>
+
+        <button class="big-play" id="bigPlay" aria-label="Play lesson">
+          <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        </button>
+
+        <div class="rate-badge" id="rateBadge" hidden>1.5×</div>
+      </div>
+
+      <!-- Control bar -->
+      <div class="controls" id="controls">
+        <!-- Scrubber -->
+        <div class="scrub-row">
+          <div class="scrubber" id="scrubber" role="slider" tabindex="0"
+               aria-label="Seek lesson" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="scrub-buffer" id="scrubBuffer"></div>
+            <div class="scrub-played" id="scrubPlayed"></div>
+            <div class="scrub-knob" id="scrubKnob"></div>
+            <div class="scrub-tip" id="scrubTip" hidden>0:00</div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-row">
+          <div class="btn-cluster">
+            <button class="ctl" id="playBtn" aria-label="Play" data-state="paused">
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>
+            </button>
+
+            <button class="ctl" id="nextBtn" aria-label="Next lesson">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14l9-7zM16 5h2.5v14H16z" fill="currentColor"/></svg>
+            </button>
+
+            <div class="vol" id="vol">
+              <button class="ctl" id="muteBtn" aria-label="Mute">
+                <svg class="i-vol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16 8a5 5 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <svg class="i-mute" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <div class="vol-track" id="volTrack" role="slider" tabindex="0"
+                   aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80">
+                <div class="vol-fill" id="volFill" style="width:80%"></div>
+                <div class="vol-knob" id="volKnob" style="left:80%"></div>
+              </div>
+            </div>
+
+            <span class="time" id="time"><b id="cur">0:00</b> / <span id="dur">12:40</span></span>
+          </div>
+
+          <div class="btn-cluster btn-right">
+            <!-- Speed -->
+            <div class="menu-wrap">
+              <button class="ctl ctl-text" id="speedBtn" aria-haspopup="true" aria-expanded="false" aria-label="Playback speed">
+                <span id="speedLabel">1×</span>
+              </button>
+              <div class="menu" id="speedMenu" role="menu" hidden>
+                <p class="menu-head">Playback speed</p>
+                <button class="menu-item" role="menuitemradio" data-speed="0.5">0.5×</button>
+                <button class="menu-item" role="menuitemradio" data-speed="0.75">0.75×</button>
+                <button class="menu-item is-on" role="menuitemradio" data-speed="1" aria-checked="true">Normal</button>
+                <button class="menu-item" role="menuitemradio" data-speed="1.25">1.25×</button>
+                <button class="menu-item" role="menuitemradio" data-speed="1.5">1.5×</button>
+                <button class="menu-item" role="menuitemradio" data-speed="2">2×</button>
+              </div>
+            </div>
+
+            <!-- Captions -->
+            <button class="ctl ctl-cc" id="ccBtn" aria-pressed="false" aria-label="Toggle captions">
+              <span class="cc-glyph">CC</span>
+            </button>
+
+            <!-- Quality -->
+            <div class="menu-wrap">
+              <button class="ctl ctl-text" id="qualBtn" aria-haspopup="true" aria-expanded="false" aria-label="Video quality">
+                <span id="qualLabel">720p</span>
+              </button>
+              <div class="menu menu-right" id="qualMenu" role="menu" hidden>
+                <p class="menu-head">Quality</p>
+                <button class="menu-item" role="menuitemradio" data-qual="Auto">Auto <span class="q-note">recommended</span></button>
+                <button class="menu-item" role="menuitemradio" data-qual="1080p">1080p</button>
+                <button class="menu-item is-on" role="menuitemradio" data-qual="720p" aria-checked="true">720p</button>
+                <button class="menu-item" role="menuitemradio" data-qual="480p">480p</button>
+                <button class="menu-item" role="menuitemradio" data-qual="240p">240p</button>
+              </div>
+            </div>
+
+            <!-- Fullscreen -->
+            <button class="ctl" id="fsBtn" aria-label="Fullscreen">
+              <svg class="i-fs" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg class="i-fsx" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Up next + lesson list -->
+    <section class="below">
+      <div class="lesson-head">
+        <div>
+          <div class="lh-pills">
+            <span class="pill pill-level">Intermediate</span>
+            <span class="pill pill-time">12:40</span>
+          </div>
+          <h1 class="lh-title">Building a Responsive Card Grid</h1>
+          <p class="lh-by">with Mara Okonkwo · Module 3 of 6</p>
+        </div>
+        <button class="mark-done" id="markDone">Mark complete</button>
+      </div>
+
+      <ol class="lessons" id="lessons">
+        <li class="lesson is-done">
+          <span class="ck" aria-hidden="true"></span>
+          <span class="ln-no">12</span>
+          <span class="ln-title">CSS Grid vs Flexbox</span>
+          <span class="ln-dur">08:14</span>
+        </li>
+        <li class="lesson is-done">
+          <span class="ck" aria-hidden="true"></span>
+          <span class="ln-no">13</span>
+          <span class="ln-title">Auto-fit &amp; minmax()</span>
+          <span class="ln-dur">10:02</span>
+        </li>
+        <li class="lesson is-current" aria-current="true">
+          <span class="ck" aria-hidden="true"></span>
+          <span class="ln-no">14</span>
+          <span class="ln-title">Building a Responsive Card Grid</span>
+          <span class="ln-dur">12:40</span>
+        </li>
+        <li class="lesson" data-next>
+          <span class="ck" aria-hidden="true"></span>
+          <span class="ln-no">15</span>
+          <span class="ln-title">Container Queries in Practice</span>
+          <span class="ln-dur">09:48</span>
+        </li>
+        <li class="lesson">
+          <span class="ck" aria-hidden="true"></span>
+          <span class="ln-no">16</span>
+          <span class="ln-title">Layout Debugging Toolkit</span>
+          <span class="ln-dur">07:33</span>
+        </li>
+      </ol>
+
+      <p class="hint">Shortcuts — <kbd>Space</kbd> play · <kbd>←</kbd>/<kbd>→</kbd> seek · <kbd>↑</kbd>/<kbd>↓</kbd> volume · <kbd>M</kbd> mute · <kbd>C</kbd> captions · <kbd>F</kbd> fullscreen · <kbd>N</kbd> next</p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

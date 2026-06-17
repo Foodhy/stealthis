@@ -1,26 +1,20 @@
 ---
-import Base from "@layouts/Base.astro";
-import CodeTabs from "@components/CodeTabs.astro";
-import ActionMenu from "@components/ActionMenu.astro";
-import RemotionPreview from "@components/RemotionPreview";
-import ExpoSnackEmbed from "@components/ExpoSnackEmbed.astro";
-import CodePenExamples from "@components/CodePenExamples.astro";
-import ComparisonTable from "@components/ComparisonTable.astro";
-import TechIcon from "@components/TechIcon.astro";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { getCollection, render } from "astro:content";
-import {
-  getAlternateLinks,
-  getLocaleFromUrl,
-  getLocalePrefix,
-  getLocalizedPath,
-  useTranslations,
-} from "@i18n/index";
+import ActionMenu from "@components/ActionMenu.astro";
+import CodePenExamples from "@components/CodePenExamples.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+import ComparisonTable from "@components/ComparisonTable.astro";
+import ExpoSnackEmbed from "@components/ExpoSnackEmbed.astro";
+import RemotionPreview from "@components/RemotionPreview";
+import TechIcon from "@components/TechIcon.astro";
+import { getLocaleFromUrl, getLocalePrefix, getLocalizedPath, useTranslations } from "@i18n/index";
+import Base from "@layouts/Base.astro";
+import { SHOW_PROMPT_DESIGNER } from "@lib/constant";
+import { findResourcePreview, normalizePreviewPath } from "@lib/resource-preview";
 import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 import { SITE_URLS } from "@lib/urls";
-import { findResourcePreview, normalizePreviewPath } from "@lib/resource-preview";
-import { SHOW_PROMPT_DESIGNER } from "@lib/constant";
 
 export async function getStaticPaths() {
   const resources = await getCollection("resources");
@@ -111,45 +105,47 @@ const toYouTubeEmbed = (url?: string): string => {
   }
 };
 const kindLabel = recommendationKind
-  ? t(`recommendations.cat.${recommendationKind}` as
-      | "recommendations.cat.agent-frameworks"
-      | "recommendations.cat.ai-models"
-      | "recommendations.cat.creative-apps"
-      | "recommendations.cat.books"
-      | "recommendations.cat.practice-platforms"
-      | "recommendations.cat.hackathons-events"
-      | "recommendations.cat.internships"
-      | "recommendations.cat.app-builders"
-      | "recommendations.cat.payments"
-      | "recommendations.cat.libraries"
-      | "recommendations.cat.platforms"
-      | "recommendations.cat.learning"
-      | "recommendations.cat.editors"
-      | "recommendations.cat.backend"
-      | "recommendations.cat.local-ai"
-      | "recommendations.cat.vector-db"
-      | "recommendations.cat.agent-tools"
-      | "recommendations.cat.audio"
-      | "recommendations.cat.3d"
-      | "recommendations.cat.business-apps"
-      | "recommendations.cat.design-assets"
-      | "recommendations.cat.media"
-      | "recommendations.cat.mcp"
-      | "recommendations.cat.game-dev"
-      | "recommendations.cat.hosting"
-      | "recommendations.cat.design-tools"
-      | "recommendations.cat.graphics"
-      | "recommendations.cat.auth"
-      | "recommendations.cat.email"
-      | "recommendations.cat.databases"
-      | "recommendations.cat.analytics"
-      | "recommendations.cat.cms"
-      | "recommendations.cat.search"
-      | "recommendations.cat.realtime"
-      | "recommendations.cat.monitoring"
-      | "recommendations.cat.jobs"
-      | "recommendations.cat.feature-flags"
-      | "recommendations.cat.storage")
+  ? t(
+      `recommendations.cat.${recommendationKind}` as
+        | "recommendations.cat.agent-frameworks"
+        | "recommendations.cat.ai-models"
+        | "recommendations.cat.creative-apps"
+        | "recommendations.cat.books"
+        | "recommendations.cat.practice-platforms"
+        | "recommendations.cat.hackathons-events"
+        | "recommendations.cat.internships"
+        | "recommendations.cat.app-builders"
+        | "recommendations.cat.payments"
+        | "recommendations.cat.libraries"
+        | "recommendations.cat.platforms"
+        | "recommendations.cat.learning"
+        | "recommendations.cat.editors"
+        | "recommendations.cat.backend"
+        | "recommendations.cat.local-ai"
+        | "recommendations.cat.vector-db"
+        | "recommendations.cat.agent-tools"
+        | "recommendations.cat.audio"
+        | "recommendations.cat.3d"
+        | "recommendations.cat.business-apps"
+        | "recommendations.cat.design-assets"
+        | "recommendations.cat.media"
+        | "recommendations.cat.mcp"
+        | "recommendations.cat.game-dev"
+        | "recommendations.cat.hosting"
+        | "recommendations.cat.design-tools"
+        | "recommendations.cat.graphics"
+        | "recommendations.cat.auth"
+        | "recommendations.cat.email"
+        | "recommendations.cat.databases"
+        | "recommendations.cat.analytics"
+        | "recommendations.cat.cms"
+        | "recommendations.cat.search"
+        | "recommendations.cat.realtime"
+        | "recommendations.cat.monitoring"
+        | "recommendations.cat.jobs"
+        | "recommendations.cat.feature-flags"
+        | "recommendations.cat.storage"
+    )
   : "";
 let recHost = "";
 try {
@@ -157,7 +153,8 @@ try {
 } catch {
   recHost = "";
 }
-const recImg = logo ?? (recHost ? `https://www.google.com/s2/favicons?domain=${recHost}&sz=64` : "");
+const recImg =
+  logo ?? (recHost ? `https://www.google.com/s2/favicons?domain=${recHost}&sz=64` : "");
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
 const snippetsDir = path.join(CONTENT_DIR, `resources/${slug}/snippets`);
@@ -234,7 +231,12 @@ const ogImageUrl = new URL(imagePath, "https://stealthis.dev").toString();
 const baseResourcePath = `/r/${slug}`;
 const canonicalPath = getLocalizedPath(baseResourcePath, locale);
 const resourceUrl = `https://stealthis.dev${canonicalPath}`;
-const alternateLinks = getAlternateLinks(baseResourcePath);
+// Resource detail pages are English-only (Cloudflare Pages 20k-file cap), so
+// advertise only the canonical English URL — no hreflang to removed locale pages.
+const alternateLinks = [
+  { hreflang: "en", href: `https://stealthis.dev${baseResourcePath}` },
+  { hreflang: "x-default", href: `https://stealthis.dev${baseResourcePath}` },
+];
 const resourceKeywords = mergeKeywords(
   BRAND_ALIASES,
   [

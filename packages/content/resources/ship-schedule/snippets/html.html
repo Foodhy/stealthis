@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pelican Courier — Schedule a Delivery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7h11v8H3z"/><path d="M14 10h4l3 3v2h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>
+          </svg>
+        </span>
+        <div>
+          <strong>Pelican Courier</strong>
+          <small>Same-day &amp; scheduled delivery</small>
+        </div>
+      </div>
+      <div class="steps-mini" aria-hidden="true">
+        <span class="dot on"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <form class="panel form" id="bookForm" novalidate aria-label="Schedule a delivery">
+        <section class="block">
+          <h2 class="block-title">Route</h2>
+          <div class="field">
+            <label for="pickup">Pickup address</label>
+            <div class="input-wrap pin pickup">
+              <input id="pickup" name="pickup" type="text" autocomplete="off"
+                value="221 Harbor Walk, Westport" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="dropoff">Drop-off address</label>
+            <div class="input-wrap pin drop">
+              <input id="dropoff" name="dropoff" type="text" autocomplete="off"
+                value="14 Maple Court, Eastside" required />
+            </div>
+          </div>
+          <div class="route-card" aria-label="Estimated route">
+            <div class="route-map" role="img" aria-label="Map preview of delivery route">
+              <svg class="route-svg" viewBox="0 0 300 120" preserveAspectRatio="none">
+                <path class="route-line" d="M30 92 C 90 92, 110 30, 170 30 S 250 40, 272 28" />
+                <circle class="node start" cx="30" cy="92" r="6" />
+                <circle class="node end" cx="272" cy="28" r="6" />
+                <circle class="driver" cx="30" cy="92" r="7">
+                  <animateMotion dur="6s" repeatCount="indefinite"
+                    path="M0 0 C 60 0, 80 -62, 140 -62 S 220 -52, 242 -64" />
+                </circle>
+              </svg>
+            </div>
+            <div class="route-meta">
+              <span><strong id="distance">6.2 mi</strong><small>distance</small></span>
+              <span><strong id="driveTime">~22 min</strong><small>drive</small></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2 class="block-title">Package size</h2>
+          <div class="size-grid" role="radiogroup" aria-label="Package size">
+            <button type="button" class="size" role="radio" aria-checked="true" data-size="small">
+              <span class="size-ico">📦</span>
+              <strong>Small</strong>
+              <small>Up to 5 lb · envelope/box</small>
+            </button>
+            <button type="button" class="size" role="radio" aria-checked="false" data-size="medium">
+              <span class="size-ico">🧰</span>
+              <strong>Medium</strong>
+              <small>5–25 lb · carry-on</small>
+            </button>
+            <button type="button" class="size" role="radio" aria-checked="false" data-size="large">
+              <span class="size-ico">🛋️</span>
+              <strong>Large</strong>
+              <small>25–60 lb · bulky</small>
+            </button>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2 class="block-title">Date</h2>
+          <div class="date-row" id="dateRow" role="radiogroup" aria-label="Delivery date"></div>
+        </section>
+
+        <section class="block">
+          <h2 class="block-title">Time slot</h2>
+          <div class="slot-grid" id="slotGrid" role="radiogroup" aria-label="Time slot"></div>
+        </section>
+
+        <section class="block">
+          <h2 class="block-title">Service level</h2>
+          <div class="service-grid" role="radiogroup" aria-label="Service level">
+            <button type="button" class="service" role="radio" aria-checked="true" data-service="standard">
+              <span class="svc-top"><strong>Standard</strong><span class="pill ok">Eco</span></span>
+              <small>Delivered within your slot</small>
+              <span class="svc-price" data-base="standard"></span>
+            </button>
+            <button type="button" class="service" role="radio" aria-checked="false" data-service="express">
+              <span class="svc-top"><strong>Express</strong><span class="pill warn">Priority</span></span>
+              <small>First in the driver queue · ~45 min faster</small>
+              <span class="svc-price" data-base="express"></span>
+            </button>
+          </div>
+        </section>
+      </form>
+
+      <aside class="panel summary" aria-label="Order summary">
+        <h2 class="block-title">Estimate</h2>
+        <div class="price-hero">
+          <span class="currency">$</span>
+          <span class="price-num" id="priceNum">0.00</span>
+        </div>
+        <p class="price-note" id="priceNote">Standard · Small package</p>
+
+        <ul class="break" id="breakdown"></ul>
+
+        <dl class="recap">
+          <div><dt>From</dt><dd id="recapFrom">—</dd></div>
+          <div><dt>To</dt><dd id="recapTo">—</dd></div>
+          <div><dt>When</dt><dd id="recapWhen">Select a slot</dd></div>
+        </dl>
+
+        <button type="submit" form="bookForm" class="confirm" id="confirmBtn" disabled>
+          Confirm delivery
+        </button>
+        <p class="fine">No charge until a driver accepts. Free cancellation up to pickup.</p>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Success overlay -->
+  <div class="overlay" id="overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="okTitle">
+      <div class="check" aria-hidden="true">
+        <svg viewBox="0 0 52 52" width="56" height="56"><circle class="ck-c" cx="26" cy="26" r="24"/><path class="ck-p" d="M16 27l7 7 14-15"/></svg>
+      </div>
+      <h3 id="okTitle">Delivery scheduled</h3>
+      <p class="ok-sub" id="okSub"></p>
+      <div class="ok-id">Tracking <strong id="okId">PCX-000000</strong></div>
+      <button type="button" class="confirm" id="okClose">Done</button>
+    </div>
+  </div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

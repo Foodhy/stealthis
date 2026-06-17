@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nebula — Player Control Bar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="stage">
+    <p class="stage__lede">Streaming player chrome — drag the scrubber, tweak volume, open settings, or use keyboard shortcuts.</p>
+
+    <!-- Player -->
+    <section class="player" id="player" aria-label="Video player" tabindex="0">
+      <!-- Faux video poster -->
+      <div class="player__poster" id="poster" aria-hidden="true">
+        <div class="player__art"></div>
+        <div class="player__vignette"></div>
+      </div>
+
+      <!-- Center play overlay -->
+      <button class="bigplay" id="bigplay" aria-label="Play">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+      </button>
+
+      <!-- Buffering spinner -->
+      <div class="buffering" id="buffering" aria-hidden="true"><span class="buffering__ring"></span></div>
+
+      <!-- Top gradient w/ title -->
+      <header class="player__top" id="top">
+        <button class="iconbtn iconbtn--back" id="back" aria-label="Back to browse">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        </button>
+        <div class="player__meta">
+          <span class="player__kicker">S2 · E4</span>
+          <h1 class="player__title">The Lantern Tide</h1>
+        </div>
+        <span class="badge badge--quality" id="qualityBadge">4K</span>
+      </header>
+
+      <!-- Skip / center cluster -->
+      <div class="cluster" id="cluster">
+        <button class="cluster__btn" id="rewind" aria-label="Rewind 10 seconds">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 8V5l-5 4 5 4v-3a5 5 0 1 1-5 5"/></svg>
+          <span>10</span>
+        </button>
+        <button class="cluster__btn cluster__btn--main" id="centerToggle" aria-label="Play or pause">
+          <svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+          <svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg>
+        </button>
+        <button class="cluster__btn" id="forward" aria-label="Forward 10 seconds">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 8V5l5 4-5 4v-3a5 5 0 1 0 5 5"/></svg>
+          <span>10</span>
+        </button>
+      </div>
+
+      <!-- Bottom control bar -->
+      <div class="controls" id="controls">
+        <!-- Scrubber -->
+        <div class="scrub" id="scrub" role="slider" tabindex="0"
+             aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="scrub__track">
+            <div class="scrub__buffered" id="buffered"></div>
+            <div class="scrub__played" id="played"></div>
+            <div class="scrub__handle" id="handle"></div>
+          </div>
+          <div class="scrub__tip" id="tip" aria-hidden="true">
+            <div class="scrub__thumb" id="thumb"></div>
+            <span class="scrub__tiptime" id="tipTime">0:00</span>
+          </div>
+        </div>
+
+        <!-- Buttons row -->
+        <div class="bar">
+          <div class="bar__group">
+            <button class="iconbtn" id="playToggle" aria-label="Play">
+              <svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+              <svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg>
+            </button>
+
+            <button class="iconbtn" id="prev" aria-label="Previous episode">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zM20 6v12l-9-6z" /></svg>
+            </button>
+            <button class="iconbtn" id="next" aria-label="Next episode">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6h2v12h-2zM4 6l9 6-9 6z" /></svg>
+            </button>
+
+            <!-- Volume -->
+            <div class="vol" id="vol">
+              <button class="iconbtn" id="muteToggle" aria-label="Mute">
+                <svg class="ico-vol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="vol-wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12"/></svg>
+                <svg class="ico-mute" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
+              </button>
+              <div class="vol__slider" id="volSlider" role="slider" tabindex="0"
+                   aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80">
+                <div class="vol__track"><div class="vol__fill" id="volFill"></div><div class="vol__handle" id="volHandle"></div></div>
+              </div>
+            </div>
+
+            <span class="time" id="time"><b id="cur">0:00</b> <i>/</i> <span id="dur">48:12</span></span>
+          </div>
+
+          <div class="bar__group bar__group--end">
+            <span class="upnext" id="upnext" hidden>
+              <span class="upnext__label">Up next</span>
+              <span class="upnext__title">E5 · Saltwater Vows</span>
+            </span>
+
+            <button class="iconbtn" id="cc" aria-label="Subtitles and captions" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 13h3M14 13h3" stroke-width="2"/></svg>
+            </button>
+
+            <!-- Settings -->
+            <div class="menuwrap">
+              <button class="iconbtn" id="settingsBtn" aria-label="Settings" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L16 2H8l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 3 12a7 7 0 0 0 .1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L8 22h8l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6A7 7 0 0 0 19 12z"/></svg>
+              </button>
+              <div class="menu" id="settingsMenu" role="menu" hidden></div>
+            </div>
+
+            <button class="iconbtn" id="pip" aria-label="Picture in picture">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </button>
+
+            <button class="iconbtn" id="fs" aria-label="Fullscreen">
+              <svg class="ico-fs" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+              <svg class="ico-fs-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="hint">
+      Shortcuts:
+      <kbd>Space</kbd> play/pause · <kbd>←</kbd>/<kbd>→</kbd> seek 5s · <kbd>↑</kbd>/<kbd>↓</kbd> volume ·
+      <kbd>M</kbd> mute · <kbd>C</kbd> captions · <kbd>F</kbd> fullscreen
+    </p>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

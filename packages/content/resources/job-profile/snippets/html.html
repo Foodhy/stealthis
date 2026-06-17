@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resume Builder — Candidate Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <span class="brand-name">HireDeck</span>
+      <span class="brand-sub">Resume Builder</span>
+    </div>
+    <div class="topbar-actions">
+      <label class="visibility" title="Toggle profile visibility to recruiters">
+        <span class="visibility-label" id="visState">Visible to recruiters</span>
+        <span class="switch">
+          <input type="checkbox" id="visibilityToggle" checked aria-label="Profile visibility" />
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </span>
+      </label>
+      <button class="btn btn-ghost" id="downloadBtn" type="button">↧ Download</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ============ EDITOR ============ -->
+    <section class="editor" aria-label="Resume editor">
+      <div class="meter card">
+        <div class="meter-head">
+          <div>
+            <h2 class="meter-title">Profile completeness</h2>
+            <p class="meter-sub" id="meterHint">A complete profile gets 3× more recruiter views.</p>
+          </div>
+          <strong class="meter-pct" id="meterPct">0%</strong>
+        </div>
+        <div class="meter-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="meterBarWrap">
+          <span class="meter-fill" id="meterFill"></span>
+        </div>
+        <ul class="meter-checks" id="meterChecks"></ul>
+      </div>
+
+      <!-- Identity -->
+      <fieldset class="card section" data-section="identity">
+        <legend class="section-title">Basics</legend>
+        <div class="grid-2">
+          <label class="field"><span>Full name</span>
+            <input type="text" data-bind="name" value="Mara Velez" />
+          </label>
+          <label class="field"><span>Headline</span>
+            <input type="text" data-bind="title" value="Senior Product Designer" />
+          </label>
+          <label class="field"><span>Location</span>
+            <input type="text" data-bind="location" value="Lisbon, Portugal" />
+          </label>
+          <label class="field"><span>Email</span>
+            <input type="email" data-bind="email" value="mara.velez@inboxly.io" />
+          </label>
+        </div>
+        <label class="field"><span>Professional summary</span>
+          <textarea data-bind="summary" rows="3">Product designer with 8 years shaping fintech and marketplace experiences. I turn fuzzy problems into shippable, measurable interfaces — and bring engineers and PMs along for the ride.</textarea>
+        </label>
+      </fieldset>
+
+      <!-- Experience -->
+      <fieldset class="card section" data-section="experience">
+        <legend class="section-title">Experience <span class="section-count" data-count="experience"></span></legend>
+        <div class="entries" id="expList" data-list="experience"></div>
+        <button class="btn btn-add" type="button" data-add="experience">+ Add experience</button>
+      </fieldset>
+
+      <!-- Education -->
+      <fieldset class="card section" data-section="education">
+        <legend class="section-title">Education <span class="section-count" data-count="education"></span></legend>
+        <div class="entries" id="eduList" data-list="education"></div>
+        <button class="btn btn-add" type="button" data-add="education">+ Add education</button>
+      </fieldset>
+
+      <!-- Skills -->
+      <fieldset class="card section" data-section="skills">
+        <legend class="section-title">Skills <span class="section-count" data-count="skills"></span></legend>
+        <div class="skill-input">
+          <input type="text" id="skillEntry" placeholder="Add a skill and press Enter…" aria-label="Add skill" />
+          <button class="btn btn-add" type="button" id="skillAdd">Add</button>
+        </div>
+        <div class="chips" id="skillChips"></div>
+      </fieldset>
+
+      <!-- Links -->
+      <fieldset class="card section" data-section="links">
+        <legend class="section-title">Links <span class="section-count" data-count="links"></span></legend>
+        <div class="entries" id="linkList" data-list="links"></div>
+        <button class="btn btn-add" type="button" data-add="links">+ Add link</button>
+      </fieldset>
+    </section>
+
+    <!-- ============ PREVIEW ============ -->
+    <aside class="preview-pane" aria-label="Live resume preview">
+      <div class="preview-toolbar">
+        <span class="preview-tag">Live preview</span>
+        <span class="preview-status" id="previewVis">● Visible</span>
+      </div>
+      <article class="resume" id="resume">
+        <header class="resume-head">
+          <div class="resume-avatar" id="rAvatar">MV</div>
+          <div class="resume-id">
+            <h1 id="rName">Mara Velez</h1>
+            <p id="rTitle">Senior Product Designer</p>
+            <p class="resume-meta">
+              <span id="rLocation">Lisbon, Portugal</span>
+              <span class="dot">·</span>
+              <a id="rEmail" href="#">mara.velez@inboxly.io</a>
+            </p>
+          </div>
+        </header>
+        <p class="resume-summary" id="rSummary"></p>
+
+        <section class="resume-block" id="rExpBlock">
+          <h3 class="resume-h">Experience</h3>
+          <div id="rExp"></div>
+        </section>
+        <section class="resume-block" id="rEduBlock">
+          <h3 class="resume-h">Education</h3>
+          <div id="rEdu"></div>
+        </section>
+        <section class="resume-block" id="rSkillBlock">
+          <h3 class="resume-h">Skills</h3>
+          <div class="resume-skills" id="rSkills"></div>
+        </section>
+        <section class="resume-block" id="rLinkBlock">
+          <h3 class="resume-h">Links</h3>
+          <div class="resume-links" id="rLinks"></div>
+        </section>
+      </article>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

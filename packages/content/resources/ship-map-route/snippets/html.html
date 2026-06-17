@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Delivery — Map Route</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app" aria-labelledby="app-title">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg>
+        </span>
+        <div>
+          <h1 id="app-title">RushPin Live</h1>
+          <p class="brand__sub">Order #RP-48217 · Marisol Vega</p>
+        </div>
+      </div>
+      <div class="status" role="status">
+        <span class="status__dot" aria-hidden="true"></span>
+        <span>On the way</span>
+      </div>
+    </header>
+
+    <section class="map-wrap" aria-label="Live route map">
+      <div class="map" id="map">
+        <div class="map__grid" aria-hidden="true"></div>
+        <div class="map__roads" aria-hidden="true">
+          <span class="road road--h" style="top:22%"></span>
+          <span class="road road--h" style="top:58%"></span>
+          <span class="road road--h" style="top:82%"></span>
+          <span class="road road--v" style="left:18%"></span>
+          <span class="road road--v" style="left:52%"></span>
+          <span class="road road--v" style="left:80%"></span>
+        </div>
+
+        <svg class="map__svg" id="route-svg" viewBox="0 0 600 400" preserveAspectRatio="none" aria-hidden="true">
+          <path id="route-shadow" class="route route--shadow"
+            d="M70 330 L70 250 Q70 230 110 230 L250 230 Q300 230 300 180 L300 110 Q300 70 360 70 L520 70" />
+          <path id="route-base" class="route route--base"
+            d="M70 330 L70 250 Q70 230 110 230 L250 230 Q300 230 300 180 L300 110 Q300 70 360 70 L520 70" />
+          <path id="route-done" class="route route--done"
+            d="M70 330 L70 250 Q70 230 110 230 L250 230 Q300 230 300 180 L300 110 Q300 70 360 70 L520 70" />
+        </svg>
+
+        <div class="pin pin--pickup" id="pin-pickup">
+          <span class="pin__head" aria-hidden="true"></span>
+          <span class="pin__label">Pickup · Ember &amp; Oak</span>
+        </div>
+        <div class="pin pin--drop" id="pin-drop">
+          <span class="pin__head" aria-hidden="true"></span>
+          <span class="pin__label">Drop · 1140 Larkspur Ave</span>
+        </div>
+
+        <div class="driver" id="driver" aria-label="Driver location">
+          <span class="driver__pulse" aria-hidden="true"></span>
+          <span class="driver__dot" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg>
+          </span>
+        </div>
+
+        <button class="recenter" id="recenter" type="button" aria-label="Recenter map on driver">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+
+        <div class="map__legend" aria-hidden="true">
+          <span><i class="lg lg--done"></i>Traveled</span>
+          <span><i class="lg lg--base"></i>Remaining</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="eta" aria-label="Estimated time of arrival">
+      <div class="eta__main">
+        <span class="eta__label">Arriving in</span>
+        <strong class="eta__time" id="eta-time">14<small>min</small></strong>
+      </div>
+      <div class="eta__meta">
+        <div class="eta__row">
+          <span class="eta__dist" id="eta-dist">2.4 mi left</span>
+          <span class="pill pill--ok" id="eta-clock">ETA 6:42 PM</span>
+        </div>
+        <div class="progress" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress">
+          <span class="progress__bar" id="progress-bar"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Playback controls">
+      <button class="btn btn--primary" id="play" type="button" aria-pressed="false">
+        <svg class="ic-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        <svg class="ic-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        <span id="play-label">Start trip</span>
+      </button>
+      <div class="speed" role="group" aria-label="Playback speed">
+        <button class="speed__btn" data-speed="1" type="button" aria-pressed="true">1×</button>
+        <button class="speed__btn" data-speed="2" type="button" aria-pressed="false">2×</button>
+        <button class="speed__btn" data-speed="4" type="button" aria-pressed="false">4×</button>
+      </div>
+      <button class="btn btn--ghost" id="reset" type="button" aria-label="Restart trip">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3"/><path d="M3 3v4h4"/></svg>
+      </button>
+    </section>
+
+    <section class="stops" aria-label="Route stops">
+      <ol class="steps" id="steps">
+        <li class="step is-done" data-at="0">
+          <span class="step__dot" aria-hidden="true"></span>
+          <div class="step__body">
+            <span class="step__title">Order picked up</span>
+            <span class="step__sub">Ember &amp; Oak Kitchen · 6:18 PM</span>
+          </div>
+          <span class="pill pill--done">Done</span>
+        </li>
+        <li class="step is-active" data-at="0.42">
+          <span class="step__dot" aria-hidden="true"></span>
+          <div class="step__body">
+            <span class="step__title">En route to drop-off</span>
+            <span class="step__sub">Crossing Larkspur Ave</span>
+          </div>
+          <span class="pill pill--track" id="step-live">In transit</span>
+        </li>
+        <li class="step" data-at="1">
+          <span class="step__dot" aria-hidden="true"></span>
+          <div class="step__body">
+            <span class="step__title">Hand to customer</span>
+            <span class="step__sub">1140 Larkspur Ave, Apt 5C</span>
+          </div>
+          <span class="pill pill--pending">Pending</span>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

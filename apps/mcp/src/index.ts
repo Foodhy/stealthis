@@ -21,8 +21,15 @@ interface ResourceEntry {
   license: string;
   createdAt: string;
   updatedAt: string;
-  snippets: Record<string, string>;
+  // Snippet bodies live in Static Assets (public/s/<slug>.json); the catalog
+  // only carries the list of available targets.
+  snippetKeys: string[];
 }
+
+// Cloudflare bindings available on the Hono context.
+type Bindings = {
+  ASSETS: { fetch: (input: Request | string | URL) => Promise<Response> };
+};
 
 interface CatalogFile {
   generatedAt: string;
@@ -215,11 +222,11 @@ function handleGetResource(args: Record<string, string>) {
   const resource = catalog.resources.find((r) => r.slug === args.slug);
   if (!resource) return `Resource '${args.slug}' not found.`;
 
-  const { snippets, ...meta } = resource;
+  const { snippetKeys, ...meta } = resource;
   return JSON.stringify(
     {
       ...meta,
-      availableSnippets: Object.keys(snippets),
+      availableSnippets: snippetKeys,
       resourceUrl: `https://stealthis.dev/r/${resource.slug}`,
       labUrl: resource.labRoute ? `https://lab.stealthis.dev${resource.labRoute}` : null,
     },
@@ -228,13 +235,33 @@ function handleGetResource(args: Record<string, string>) {
   );
 }
 
-function handleGetSnippet(args: Record<string, string>) {
+// Snippet bodies are not bundled — fetch the per-resource asset on demand.
+async function loadSnippets(
+  assets: Bindings["ASSETS"],
+  origin: string,
+  slug: string
+): Promise<Record<string, string> | null> {
+  const res = await assets.fetch(new URL(`/s/${slug}.json`, origin));
+  if (!res.ok) return null;
+  return (await res.json()) as Record<string, string>;
+}
+
+async function handleGetSnippet(
+  args: Record<string, string>,
+  assets: Bindings["ASSETS"],
+  origin: string
+) {
   const resource = catalog.resources.find((r) => r.slug === args.slug);
   if (!resource) return `Resource '${args.slug}' not found.`;
 
-  const code = resource.snippets[args.target];
+  if (!resource.snippetKeys.includes(args.target)) {
+    return `Target '${args.target}' not available for '${args.slug}'. Available: ${resource.snippetKeys.join(", ")}`;
+  }
+
+  const snippets = await loadSnippets(assets, origin, args.slug);
+  const code = snippets?.[args.target];
   if (!code) {
-    return `Target '${args.target}' not available for '${args.slug}'. Available: ${Object.keys(resource.snippets).join(", ")}`;
+    return `Snippet for '${args.slug}' (${args.target}) could not be loaded.`;
   }
 
   return `// ${resource.title} — ${args.target}\n// Source: https://stealthis.dev/r/${args.slug}\n\n${code}`;
@@ -283,14 +310,19 @@ function handleGetLab(args: Record<string, string>) {
   );
 }
 
-function callTool(name: string, args: Record<string, string>): string {
+async function callTool(
+  name: string,
+  args: Record<string, string>,
+  assets: Bindings["ASSETS"],
+  origin: string
+): Promise<string> {
   switch (name) {
     case "list_resources":
       return handleListResources(args);
     case "get_resource":
       return handleGetResource(args);
     case "get_snippet":
-      return handleGetSnippet(args);
+      return handleGetSnippet(args, assets, origin);
     case "search":
       return handleSearch(args);
     case "get_lab":
@@ -316,7 +348,7 @@ function mcpError(id: unknown, code: number, message: string) {
 // Hono app
 // -----------------------------------------------------------------------
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Bindings }>();
 
 app.use("/*", cors({ origin: "*", allowMethods: ["GET", "POST", "OPTIONS"] }));
 
@@ -364,7 +396,7 @@ app.post("/mcp", async (c) => {
       name: string;
       arguments?: Record<string, string>;
     };
-    const text = callTool(name, args);
+    const text = await callTool(name, args, c.env.ASSETS, new URL(c.req.url).origin);
     return c.json(
       mcpResponse(id, {
         content: [{ type: "text", text }],
@@ -408,8 +440,12 @@ app.get("/tools/get_resource/:slug", (c) => {
   return c.json(JSON.parse(result));
 });
 
-app.get("/tools/get_snippet/:slug/:target", (c) => {
-  const result = handleGetSnippet({ slug: c.req.param("slug"), target: c.req.param("target") });
+app.get("/tools/get_snippet/:slug/:target", async (c) => {
+  const result = await handleGetSnippet(
+    { slug: c.req.param("slug"), target: c.req.param("target") },
+    c.env.ASSETS,
+    new URL(c.req.url).origin
+  );
   if (!result.startsWith("//")) return c.json({ error: result }, 404);
   return c.text(result);
 });

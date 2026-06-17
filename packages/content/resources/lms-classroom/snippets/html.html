@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LMS — Classroom Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip" href="#player">Skip to player</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◣</span>
+      <div class="brand-text">
+        <strong>Stealthis Academy</strong>
+        <span class="course-title">Modern CSS Layout Mastery</span>
+      </div>
+    </div>
+    <div class="topbar-progress" aria-label="Course progress">
+      <div class="ring" id="courseRing" style="--p:0">
+        <svg viewBox="0 0 44 44" aria-hidden="true">
+          <circle class="ring-bg" cx="22" cy="22" r="18" />
+          <circle class="ring-fg" cx="22" cy="22" r="18" id="ringFg" />
+        </svg>
+        <span class="ring-num" id="ringNum">0%</span>
+      </div>
+      <div class="topbar-meta">
+        <span id="progressLabel">0 of 8 lessons</span>
+        <small>Course completion</small>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-pressed="false" title="Toggle study mode">
+        <span class="dot" aria-hidden="true"></span> Study mode
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage" aria-label="Lesson content">
+      <div class="player" id="player" tabindex="-1">
+        <div class="poster" id="poster">
+          <div class="poster-art" aria-hidden="true">
+            <span class="poster-grid"></span>
+            <span class="poster-glow"></span>
+          </div>
+          <div class="poster-info">
+            <span class="now-pill" id="nowModule">Module 2 · Flexbox</span>
+            <h1 id="nowTitle">Aligning items with flex utilities</h1>
+            <p id="nowDur">12:40 · Lesson 3 of 8</p>
+          </div>
+          <button class="play-btn" id="playBtn" aria-label="Play lesson">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+
+        <div class="controls" role="group" aria-label="Player controls">
+          <button class="ctrl ctrl-play" id="ctrlPlay" aria-label="Play">
+            <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+          </button>
+          <span class="time" id="curTime">0:00</span>
+          <div class="scrub" id="scrub" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+            <div class="scrub-buf"></div>
+            <div class="scrub-fill" id="scrubFill"></div>
+            <div class="scrub-knob" id="scrubKnob"></div>
+          </div>
+          <span class="time" id="durTime">12:40</span>
+          <button class="ctrl rate" id="rateBtn" aria-label="Playback speed">1×</button>
+          <button class="ctrl" id="ccBtn" aria-pressed="true" aria-label="Captions">CC</button>
+        </div>
+      </div>
+
+      <div class="lesson-bar">
+        <div class="lesson-bar-info">
+          <span class="pill level" id="barLevel">Intermediate</span>
+          <span class="lesson-bar-title" id="barTitle">Aligning items with flex utilities</span>
+        </div>
+        <div class="lesson-bar-actions">
+          <button class="btn ghost" id="prevBtn">Previous</button>
+          <button class="btn primary" id="completeBtn">Mark complete &amp; next</button>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Lesson details">
+        <button class="tab is-active" role="tab" aria-selected="true" data-tab="transcript" id="tab-transcript">Transcript</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="notes" id="tab-notes">Notes</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="resources" id="tab-resources">Resources</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="qa" id="tab-qa">Q&amp;A <span class="badge">5</span></button>
+      </div>
+
+      <div class="panels">
+        <div class="panel is-active" role="tabpanel" data-panel="transcript" aria-labelledby="tab-transcript">
+          <p class="panel-hint">Click any line to jump to that moment.</p>
+          <ul class="transcript" id="transcript"></ul>
+        </div>
+
+        <div class="panel" role="tabpanel" data-panel="notes" aria-labelledby="tab-notes" hidden>
+          <div class="notes-head">
+            <h2>Your notes</h2>
+            <span class="notes-stamp" id="notesStamp">Not saved yet</span>
+          </div>
+          <textarea id="notesArea" class="notes-area" placeholder="Jot down a key idea, a timestamp, or a question…" aria-label="Lesson notes"></textarea>
+          <div class="notes-actions">
+            <button class="btn small" id="stampBtn" type="button">+ Insert timestamp</button>
+            <button class="btn primary small" id="saveNote" type="button">Save note</button>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" data-panel="resources" aria-labelledby="tab-resources" hidden>
+          <ul class="res-list">
+            <li><span class="res-ic pdf">PDF</span><div><strong>Flexbox cheat sheet</strong><small>2 pages · 480 KB</small></div><button class="btn small ghost">Download</button></li>
+            <li><span class="res-ic zip">ZIP</span><div><strong>Starter files — lesson 3</strong><small>HTML + CSS · 1.2 MB</small></div><button class="btn small ghost">Download</button></li>
+            <li><span class="res-ic link">URL</span><div><strong>MDN: CSS Flexible Box Layout</strong><small>Reference docs</small></div><button class="btn small ghost">Open</button></li>
+          </ul>
+        </div>
+
+        <div class="panel" role="tabpanel" data-panel="qa" aria-labelledby="tab-qa" hidden>
+          <form class="qa-form" id="qaForm">
+            <input id="qaInput" class="qa-input" placeholder="Ask the class a question…" aria-label="Ask a question" />
+            <button class="btn primary small" type="submit">Post</button>
+          </form>
+          <ul class="qa-list" id="qaList">
+            <li>
+              <div class="qa-av" style="--c:#5b5bd6">PR</div>
+              <div class="qa-body">
+                <p class="qa-meta"><strong>Priya Raman</strong> · 2 days ago</p>
+                <p>Does <code>align-items</code> affect the main axis or the cross axis?</p>
+                <div class="qa-foot"><button class="qa-up" type="button">▲ 12</button> · 3 replies</div>
+              </div>
+            </li>
+            <li>
+              <div class="qa-av" style="--c:#13b981">DM</div>
+              <div class="qa-body">
+                <p class="qa-meta"><strong>Diego Morales</strong> · 5 days ago</p>
+                <p>When should I reach for <code>gap</code> vs. margins between flex children?</p>
+                <div class="qa-foot"><button class="qa-up" type="button">▲ 8</button> · 1 reply</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <aside class="curriculum" aria-label="Course curriculum">
+      <div class="cur-head">
+        <h2>Course content</h2>
+        <span id="curMeta">8 lessons · 1h 24m</span>
+      </div>
+      <div class="cur-progress">
+        <div class="bar"><i id="curBar"></i></div>
+        <span id="curPct">0% complete</span>
+      </div>
+      <div class="modules" id="modules"></div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

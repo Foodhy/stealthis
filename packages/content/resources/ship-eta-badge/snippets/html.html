@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Delivery — ETA / Countdown Badge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 13h12V5H3zM15 8h4l3 3v2h-7z" />
+            <circle cx="7" cy="18" r="2" /><circle cx="18" cy="18" r="2" />
+          </svg>
+        </span>
+        <div>
+          <strong>Rondo Express</strong>
+          <span>ETA &amp; Countdown Badges</span>
+        </div>
+      </div>
+      <button class="ghost-btn" id="resetBtn" type="button">Reset demo</button>
+    </header>
+
+    <section class="board" aria-label="Active delivery">
+      <article class="hero-card" aria-live="polite">
+        <div class="hero-map" aria-hidden="true">
+          <svg class="route" viewBox="0 0 320 180" preserveAspectRatio="none">
+            <path class="route-bg" d="M16 150 C 70 150, 80 60, 150 60 S 250 30, 304 30" />
+            <path class="route-fg" id="routeFg" d="M16 150 C 70 150, 80 60, 150 60 S 250 30, 304 30" />
+            <g id="driverMarker" class="driver-marker">
+              <circle r="11" class="dm-ring" />
+              <circle r="5" class="dm-dot" />
+            </g>
+            <g class="pin pin-end" transform="translate(304,30)">
+              <path d="M0 -14 C 8 -14, 8 -2, 0 6 C -8 -2, -8 -14, 0 -14 Z" />
+              <circle cy="-7" r="3.5" class="pin-hole" />
+            </g>
+          </svg>
+        </div>
+        <div class="hero-body">
+          <div class="hero-top">
+            <span class="badge" id="heroBadge" data-state="enroute">
+              <span class="badge-pulse" aria-hidden="true"></span>
+              <span class="badge-label" id="heroBadgeLabel">En route</span>
+            </span>
+            <span class="order-id">#RX-48217</span>
+          </div>
+          <h1 class="hero-eta">
+            <span class="hero-eta-num" id="heroCountdown">12:00</span>
+            <span class="hero-eta-cap" id="heroCountdownCap">until arrival</span>
+          </h1>
+          <p class="hero-sub" id="heroSub">Marisol G. is on the way with your order from Cedar &amp; Vine.</p>
+          <div class="hero-window">
+            <span class="window-pill" id="heroWindow">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              Window 6:10 – 6:30 PM
+            </span>
+          </div>
+          <div class="hero-actions">
+            <button class="seg-btn is-active" data-jump="enroute" type="button">Live</button>
+            <button class="seg-btn" data-jump="arriving" type="button">Arriving</button>
+            <button class="seg-btn" data-jump="delayed" type="button">Delayed</button>
+            <button class="seg-btn" data-jump="delivered" type="button">Delivered</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <h2 class="section-title">Badge states</h2>
+    <section class="grid" aria-label="Badge state gallery">
+      <div class="state-card">
+        <span class="badge" data-state="enroute">
+          <span class="badge-pulse" aria-hidden="true"></span>
+          <span class="badge-label">8:42</span>
+        </span>
+        <div class="state-meta"><strong>Live countdown</strong><span>Ticks down every second toward the ETA.</span></div>
+      </div>
+      <div class="state-card">
+        <span class="badge" data-state="arriving">
+          <span class="badge-pulse" aria-hidden="true"></span>
+          <span class="badge-label">Arriving now</span>
+        </span>
+        <div class="state-meta"><strong>Arriving pulse</strong><span>Driver is within a block — strong pulse cue.</span></div>
+      </div>
+      <div class="state-card">
+        <span class="badge" data-state="delayed">
+          <span class="badge-pulse" aria-hidden="true"></span>
+          <span class="badge-label">+9 min late</span>
+        </span>
+        <div class="state-meta"><strong>Delayed</strong><span>Amber alert state when ETA slips.</span></div>
+      </div>
+      <div class="state-card">
+        <span class="badge" data-state="delivered">
+          <span class="badge-label">Delivered 6:18 PM</span>
+        </span>
+        <div class="state-meta"><strong>Delivered</strong><span>Safety-green confirmation, pulse off.</span></div>
+      </div>
+      <div class="state-card">
+        <span class="badge" data-state="failed">
+          <span class="badge-label">Attempt failed</span>
+        </span>
+        <div class="state-meta"><strong>Failed attempt</strong><span>No-access drop, needs reschedule.</span></div>
+      </div>
+      <div class="state-card">
+        <span class="badge badge-window" data-state="window">
+          <span class="badge-label">Today, 4 – 6 PM</span>
+        </span>
+        <div class="state-meta"><strong>Time-window pill</strong><span>Scheduled deliveries without a live driver.</span></div>
+      </div>
+    </section>
+
+    <h2 class="section-title">Live order feed</h2>
+    <section class="feed" aria-label="Order feed">
+      <ul class="feed-list" id="feedList"></ul>
+    </section>
+  </div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="true"></div>
+  <script src="script.js"></script>
+</body>
+</html>

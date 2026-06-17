@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Digital Ticket — Neon Pulse Festival</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to ticket</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span class="brand-name">PulsePass</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="bright-toggle" id="brightBtn" type="button" aria-pressed="false">
+        <span class="bright-icon" aria-hidden="true">☀</span>
+        <span class="bright-label">Boost brightness</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="stage">
+    <div class="stage-head">
+      <p class="eyebrow">Your ticket is ready</p>
+      <h1 class="stage-title">Scan at the gate</h1>
+      <p class="countdown" id="countdown" aria-live="polite">Calculating time to doors…</p>
+    </div>
+
+    <div class="ticket-wrap" id="ticketWrap">
+      <button class="flip-btn" id="flipBtn" type="button" aria-pressed="false" aria-controls="ticket">
+        Flip for details
+      </button>
+
+      <div class="ticket" id="ticket">
+        <!-- FRONT -->
+        <article class="ticket-face ticket-front" aria-label="Ticket front">
+          <div class="hero" role="img" aria-label="Festival main stage photo placeholder">
+            <span class="hero-badge hero-badge--low">Final tickets</span>
+            <div class="hero-meta">
+              <p class="hero-kicker">Sat • Jul 19, 2026</p>
+              <h2 class="hero-title">Neon Pulse Festival</h2>
+              <p class="hero-venue">Harborline Arena — Lisbon</p>
+            </div>
+          </div>
+
+          <div class="stub">
+            <div class="stub-grid">
+              <div class="stub-cell">
+                <span class="stub-label">Section</span>
+                <span class="stub-value">GA Floor</span>
+              </div>
+              <div class="stub-cell">
+                <span class="stub-label">Entrance</span>
+                <span class="stub-value">Gate C</span>
+              </div>
+              <div class="stub-cell">
+                <span class="stub-label">Row</span>
+                <span class="stub-value">—</span>
+              </div>
+              <div class="stub-cell">
+                <span class="stub-label">Seat</span>
+                <span class="stub-value">Standing</span>
+              </div>
+            </div>
+
+            <div class="tier-legend" aria-hidden="true">
+              <span class="tier"><i class="dot dot--ga"></i>GA Floor</span>
+              <span class="tier"><i class="dot dot--lower"></i>Lower</span>
+              <span class="tier"><i class="dot dot--vip"></i>VIP</span>
+            </div>
+          </div>
+
+          <div class="perf" aria-hidden="true">
+            <span class="notch notch--l"></span>
+            <span class="dash"></span>
+            <span class="notch notch--r"></span>
+          </div>
+
+          <div class="qr-zone">
+            <figure class="qr" id="qr" aria-label="Entry QR code">
+              <canvas id="qrCanvas" width="220" height="220"></canvas>
+              <figcaption class="qr-cap" id="qrCap">Ticket #NPF-7K42-Q9</figcaption>
+            </figure>
+            <p class="qr-hint">Refreshes every <span id="qrTimer">15</span>s for security</p>
+            <p class="holder">Holder: <strong>Mara Velasquez</strong></p>
+          </div>
+        </article>
+
+        <!-- BACK -->
+        <article class="ticket-face ticket-back" aria-label="Ticket details" aria-hidden="true">
+          <h2 class="back-title">Event details</h2>
+          <dl class="detail-list">
+            <div class="detail-row"><dt>Doors open</dt><dd>5:30 PM WEST</dd></div>
+            <div class="detail-row"><dt>Headline set</dt><dd>9:15 PM WEST</dd></div>
+            <div class="detail-row"><dt>Order</dt><dd>#PP-2026-558109</dd></div>
+            <div class="detail-row"><dt>Price paid</dt><dd>€84.00 incl. fees</dd></div>
+            <div class="detail-row"><dt>Delivery</dt><dd>Mobile entry only</dd></div>
+          </dl>
+          <ul class="rules">
+            <li>Screenshots will not scan — use the live QR.</li>
+            <li>Re-entry permitted at Gate C until 10:00 PM.</li>
+            <li>No professional cameras or glass containers.</li>
+          </ul>
+          <p class="back-foot">Powered by PulsePass • Transfers tracked end-to-end.</p>
+        </article>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="walletBtn" type="button">
+          <span aria-hidden="true">＋</span> Add to Wallet
+        </button>
+        <button class="btn btn--ghost" id="transferBtn" type="button">
+          Transfer ticket
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Transfer modal -->
+  <div class="modal" id="transferModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="transferTitle">
+      <button class="modal-x" type="button" data-close aria-label="Close transfer dialog">✕</button>
+      <h2 id="transferTitle" class="modal-title">Transfer this ticket</h2>
+      <p class="modal-sub">Send GA Floor entry to a friend. They will get a fresh QR; yours stops working.</p>
+      <form id="transferForm" class="modal-form" novalidate>
+        <label class="field">
+          <span class="field-label">Recipient name</span>
+          <input type="text" id="recName" name="recName" placeholder="Jordan Okafor" autocomplete="name" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Email or phone</span>
+          <input type="text" id="recContact" name="recContact" placeholder="jordan@example.com" required />
+          <span class="field-error" id="recError" aria-live="polite"></span>
+        </label>
+        <div class="modal-actions">
+          <button class="btn btn--ghost" type="button" data-close>Cancel</button>
+          <button class="btn btn--primary" type="submit">Send ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

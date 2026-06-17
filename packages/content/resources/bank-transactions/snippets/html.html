@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Banking — Transactions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M12 2 21 7v2H3V7l9-5Z" fill="currentColor" />
+            <rect x="4" y="10" width="2.5" height="7" rx="0.6" fill="currentColor" />
+            <rect x="10.75" y="10" width="2.5" height="7" rx="0.6" fill="currentColor" />
+            <rect x="17.5" y="10" width="2.5" height="7" rx="0.6" fill="currentColor" />
+            <rect x="3" y="18" width="18" height="2.5" rx="0.6" fill="currentColor" />
+          </svg>
+        </span>
+        <div class="brand-meta">
+          <strong>Northvale Bank</strong>
+          <span class="verified">
+            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M8 1 14 4v4c0 3.5-2.5 6.4-6 7-3.5-.6-6-3.5-6-7V4l6-3Z" fill="currentColor"/><path d="M6.4 8 7.6 9.3 10 6.4" stroke="#fff" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Verified session
+          </span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="ghost-btn" type="button" id="exportBtn">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v8m0 0 3-3m-3 3-3-3M4 15h12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export CSV
+        </button>
+        <div class="avatar" title="Mara Ellison">ME</div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="account-card" aria-label="Account summary">
+        <div class="ac-top">
+          <div>
+            <span class="ac-label">Everyday Checking</span>
+            <div class="ac-num">•••• 4242</div>
+          </div>
+          <span class="chip lock">
+            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.4" fill="currentColor"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+            Secured
+          </span>
+        </div>
+        <div class="ac-balance">
+          <span class="ac-balance-label">Available balance</span>
+          <strong class="amount" id="availBalance">$0.00</strong>
+        </div>
+        <div class="ac-stats">
+          <div>
+            <span class="ac-stat-label">Money in</span>
+            <strong class="amount credit" id="statIn">$0.00</strong>
+          </div>
+          <div>
+            <span class="ac-stat-label">Money out</span>
+            <strong class="amount debit" id="statOut">$0.00</strong>
+          </div>
+          <div>
+            <span class="ac-stat-label">Pending</span>
+            <strong class="amount" id="statPending">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="ledger" aria-label="Transaction history">
+        <div class="controls">
+          <div class="search">
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="m14 14 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <input
+              type="search"
+              id="searchInput"
+              placeholder="Search merchant, note or amount…"
+              aria-label="Search transactions"
+              autocomplete="off"
+            />
+          </div>
+          <div class="filters" role="group" aria-label="Filters">
+            <label class="select">
+              <span>Type</span>
+              <select id="typeFilter" aria-label="Filter by type">
+                <option value="all">All</option>
+                <option value="credit">Money in</option>
+                <option value="debit">Money out</option>
+              </select>
+            </label>
+            <label class="select">
+              <span>Category</span>
+              <select id="categoryFilter" aria-label="Filter by category">
+                <option value="all">All categories</option>
+              </select>
+            </label>
+            <label class="select">
+              <span>Range</span>
+              <select id="rangeFilter" aria-label="Filter by date range">
+                <option value="all">All time</option>
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="ledger-meta">
+          <span id="resultCount">0 transactions</span>
+          <button class="link-btn" type="button" id="clearBtn" hidden>Clear filters</button>
+        </div>
+
+        <div class="tx-list" id="txList" role="list"></div>
+
+        <div class="empty" id="emptyState" hidden>
+          <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2" fill="none" opacity=".3"/><path d="M16 24h16M16 30h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <p>No transactions match your filters.</p>
+          <button class="ghost-btn" type="button" id="emptyClear">Reset filters</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

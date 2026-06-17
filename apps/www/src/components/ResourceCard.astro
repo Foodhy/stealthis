@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { getLocalePrefix, useTranslations, type Locale } from "@i18n/index";
+import { type Locale, useTranslations } from "@i18n/index";
 import { resolveResourceCollections } from "@lib/resource-collections";
 import { getResourceFilterTechTokens, getSnippetFlags } from "@lib/resource-tech";
 import { SITE_URLS } from "@lib/urls";
@@ -17,7 +17,6 @@ const { slug, title, description, category, difficulty, tags, tech, targets, lab
 const authorName = author?.name;
 const resolvedCollections = resolveResourceCollections(resource.data);
 
-const prefix = getLocalePrefix(locale);
 const difficultyClass = { easy: "badge-easy", med: "badge-med", hard: "badge-hard" }[difficulty];
 const difficultyKey = `resource.difficulty.${difficulty}` as
   | "resource.difficulty.easy"
@@ -44,48 +43,50 @@ const categoryLabel = t(categoryKey);
 const isRecommendation = resource.data.type === "recommendation";
 const recommendationKind = resource.data.recommendationKind;
 const kindLabel = recommendationKind
-  ? t(`recommendations.cat.${recommendationKind}` as
-      | "recommendations.cat.agent-frameworks"
-      | "recommendations.cat.ai-models"
-      | "recommendations.cat.creative-apps"
-      | "recommendations.cat.books"
-      | "recommendations.cat.practice-platforms"
-      | "recommendations.cat.hackathons-events"
-      | "recommendations.cat.internships"
-      | "recommendations.cat.app-builders"
-      | "recommendations.cat.payments"
-      | "recommendations.cat.libraries"
-      | "recommendations.cat.platforms"
-      | "recommendations.cat.learning"
-      | "recommendations.cat.editors"
-      | "recommendations.cat.backend"
-      | "recommendations.cat.local-ai"
-      | "recommendations.cat.vector-db"
-      | "recommendations.cat.agent-tools"
-      | "recommendations.cat.audio"
-      | "recommendations.cat.3d"
-      | "recommendations.cat.business-apps"
-      | "recommendations.cat.design-assets"
-      | "recommendations.cat.media"
-      | "recommendations.cat.mcp"
-      | "recommendations.cat.game-dev"
-      | "recommendations.cat.hosting"
-      | "recommendations.cat.design-tools"
-      | "recommendations.cat.graphics"
-      | "recommendations.cat.auth"
-      | "recommendations.cat.email"
-      | "recommendations.cat.databases"
-      | "recommendations.cat.analytics"
-      | "recommendations.cat.cms"
-      | "recommendations.cat.search"
-      | "recommendations.cat.realtime"
-      | "recommendations.cat.monitoring"
-      | "recommendations.cat.jobs"
-      | "recommendations.cat.feature-flags"
-      | "recommendations.cat.storage")
+  ? t(
+      `recommendations.cat.${recommendationKind}` as
+        | "recommendations.cat.agent-frameworks"
+        | "recommendations.cat.ai-models"
+        | "recommendations.cat.creative-apps"
+        | "recommendations.cat.books"
+        | "recommendations.cat.practice-platforms"
+        | "recommendations.cat.hackathons-events"
+        | "recommendations.cat.internships"
+        | "recommendations.cat.app-builders"
+        | "recommendations.cat.payments"
+        | "recommendations.cat.libraries"
+        | "recommendations.cat.platforms"
+        | "recommendations.cat.learning"
+        | "recommendations.cat.editors"
+        | "recommendations.cat.backend"
+        | "recommendations.cat.local-ai"
+        | "recommendations.cat.vector-db"
+        | "recommendations.cat.agent-tools"
+        | "recommendations.cat.audio"
+        | "recommendations.cat.3d"
+        | "recommendations.cat.business-apps"
+        | "recommendations.cat.design-assets"
+        | "recommendations.cat.media"
+        | "recommendations.cat.mcp"
+        | "recommendations.cat.game-dev"
+        | "recommendations.cat.hosting"
+        | "recommendations.cat.design-tools"
+        | "recommendations.cat.graphics"
+        | "recommendations.cat.auth"
+        | "recommendations.cat.email"
+        | "recommendations.cat.databases"
+        | "recommendations.cat.analytics"
+        | "recommendations.cat.cms"
+        | "recommendations.cat.search"
+        | "recommendations.cat.realtime"
+        | "recommendations.cat.monitoring"
+        | "recommendations.cat.jobs"
+        | "recommendations.cat.feature-flags"
+        | "recommendations.cat.storage"
+    )
   : "";
 // Alternatives inside this recommendation topic (used for the count + search tokens)
-const recOptions = isRecommendation ? resource.data.options ?? [] : [];
+const recOptions = isRecommendation ? (resource.data.options ?? []) : [];
 const optionNames = recOptions.map((o) => o.name);
 const searchTags = [...tags, ...optionNames];
 
@@ -152,7 +153,7 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
     <div class="flex-1 min-w-0">
       <p class="text-xs font-medium text-slate-500 mb-1">{categoryLabel}</p>
       <h2 class="font-semibold text-slate-100 leading-snug group-hover:text-white transition-colors">
-        <a href={`${prefix}/r/${slug}`} class="after:absolute after:inset-0">
+        <a href={`/r/${slug}`} class="after:absolute after:inset-0">
           {title}
         </a>
       </h2>

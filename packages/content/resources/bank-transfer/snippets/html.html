@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Banking — Send Money</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app" role="main">
+    <div class="phone" aria-live="polite">
+
+      <!-- Top bar -->
+      <header class="topbar">
+        <button class="icon-btn" id="backBtn" type="button" aria-label="Go back" hidden>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="topbar-title" id="stepTitle">Send money</div>
+        <div class="secure-badge" title="End-to-end encrypted">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 2l7 3v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V5l7-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Secure</span>
+        </div>
+      </header>
+
+      <!-- Progress -->
+      <div class="progress" aria-hidden="true">
+        <span class="dot is-active" data-dot="1"></span>
+        <span class="dot" data-dot="2"></span>
+        <span class="dot" data-dot="3"></span>
+        <span class="dot" data-dot="4"></span>
+      </div>
+
+      <!-- ====== STEP 1: Payee ====== -->
+      <section class="step is-active" data-step="1" aria-label="Choose payee">
+        <div class="scroll">
+          <label class="search">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input id="payeeSearch" type="search" placeholder="Search name, IBAN or @handle" aria-label="Search payees" autocomplete="off" />
+          </label>
+
+          <h2 class="section-h">Recent</h2>
+          <div class="avatars" id="recentRow"></div>
+
+          <h2 class="section-h">Saved payees</h2>
+          <ul class="payee-list" id="payeeList"></ul>
+
+          <button class="ghost-row" id="newPayeeBtn" type="button">
+            <span class="plus-circle" aria-hidden="true">+</span>
+            <span>Send to someone new</span>
+            <svg class="chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ====== STEP 2: Amount ====== -->
+      <section class="step" data-step="2" aria-label="Enter amount">
+        <div class="amount-head">
+          <div class="payee-chip" id="payeeChip">
+            <span class="ava" id="chipAva">AB</span>
+            <span class="chip-meta">
+              <strong id="chipName">—</strong>
+              <small id="chipSub">—</small>
+            </span>
+          </div>
+        </div>
+
+        <div class="amount-display">
+          <span class="cur">€</span>
+          <span class="amt" id="amountText">0</span>
+          <span class="cur-dec" id="amountDec">.00</span>
+        </div>
+        <p class="balance-line" id="balanceLine">Available · €8,420.55</p>
+        <p class="amount-error" id="amountError" role="alert" hidden>Amount exceeds available balance.</p>
+
+        <div class="quick-amts" id="quickAmts">
+          <button type="button" data-q="20">€20</button>
+          <button type="button" data-q="50">€50</button>
+          <button type="button" data-q="100">€100</button>
+          <button type="button" data-q="max">Max</button>
+        </div>
+
+        <div class="keypad" id="keypad" role="group" aria-label="Amount keypad">
+          <button type="button" data-k="1">1</button>
+          <button type="button" data-k="2">2</button>
+          <button type="button" data-k="3">3</button>
+          <button type="button" data-k="4">4</button>
+          <button type="button" data-k="5">5</button>
+          <button type="button" data-k="6">6</button>
+          <button type="button" data-k="7">7</button>
+          <button type="button" data-k="8">8</button>
+          <button type="button" data-k="9">9</button>
+          <button type="button" data-k=".">.</button>
+          <button type="button" data-k="0">0</button>
+          <button type="button" data-k="del" aria-label="Delete">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 6h11v12H9l-6-6 6-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 10l4 4M17 10l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <button class="cta" id="toSourceBtn" type="button" disabled>Continue</button>
+      </section>
+
+      <!-- ====== STEP 3: Source + note (review) ====== -->
+      <section class="step" data-step="3" aria-label="Review transfer">
+        <div class="scroll">
+          <div class="review-amount">
+            <small>Sending</small>
+            <div class="big" id="reviewAmount">€0.00</div>
+            <span class="to-name" id="reviewTo">to —</span>
+          </div>
+
+          <h2 class="section-h">Pay from</h2>
+          <div class="accounts" id="accounts"></div>
+
+          <h2 class="section-h">Note <small>(optional)</small></h2>
+          <input id="noteInput" class="note" type="text" maxlength="60" placeholder="e.g. Rent · June" />
+
+          <div class="review-card">
+            <div class="rrow"><span>Recipient</span><strong id="rRecipient">—</strong></div>
+            <div class="rrow"><span>Account</span><strong id="rIban">—</strong></div>
+            <div class="rrow"><span>Amount</span><strong id="rAmount" class="credit">—</strong></div>
+            <div class="rrow"><span>Fee</span><strong>€0.00</strong></div>
+            <div class="rrow"><span>Arrives</span><strong>Instantly · SEPA</strong></div>
+          </div>
+
+          <p class="fine"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg> Protected by 256-bit encryption. You'll confirm with a code.</p>
+        </div>
+        <button class="cta" id="toAuthBtn" type="button">Review &amp; confirm</button>
+      </section>
+
+      <!-- ====== STEP 4: 2FA ====== -->
+      <section class="step" data-step="4" aria-label="Two-factor verification">
+        <div class="auth-wrap">
+          <div class="auth-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/></svg>
+          </div>
+          <h2>Verify it's you</h2>
+          <p class="auth-sub">We sent a 6-digit code to <strong>•••• ••82</strong>. Enter it to release the transfer.</p>
+
+          <div class="otp" id="otp">
+            <input inputmode="numeric" maxlength="1" aria-label="Digit 1" />
+            <input inputmode="numeric" maxlength="1" aria-label="Digit 2" />
+            <input inputmode="numeric" maxlength="1" aria-label="Digit 3" />
+            <input inputmode="numeric" maxlength="1" aria-label="Digit 4" />
+            <input inputmode="numeric" maxlength="1" aria-label="Digit 5" />
+            <input inputmode="numeric" maxlength="1" aria-label="Digit 6" />
+          </div>
+          <p class="auth-hint">Demo code: <button class="link" id="autofill" type="button">tap to autofill 4 2 8 1 9 0</button></p>
+          <p class="otp-error" id="otpError" role="alert" hidden>That code didn't match. Try again.</p>
+        </div>
+        <button class="cta" id="confirmBtn" type="button" disabled>
+          <span class="spin" aria-hidden="true"></span>
+          <span class="label">Confirm &amp; send</span>
+        </button>
+      </section>
+
+      <!-- ====== SUCCESS overlay ====== -->
+      <div class="success" id="success" role="dialog" aria-modal="true" aria-label="Transfer sent" hidden>
+        <div class="check">
+          <svg viewBox="0 0 52 52" aria-hidden="true">
+            <circle class="ck-circle" cx="26" cy="26" r="24" fill="none"/>
+            <path class="ck-mark" fill="none" d="M14 27l8 8 16-17"/>
+          </svg>
+        </div>
+        <h2 id="successAmt">€0.00 sent</h2>
+        <p id="successTo">to —</p>
+        <div class="receipt">
+          <div class="rrow"><span>Reference</span><strong id="successRef">—</strong></div>
+          <div class="rrow"><span>From</span><strong id="successFrom">—</strong></div>
+          <div class="rrow"><span>Status</span><strong><span class="pill pill-ok">Cleared</span></strong></div>
+        </div>
+        <button class="cta" id="doneBtn" type="button">Done</button>
+        <button class="link center" id="againBtn" type="button">Send another</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- New payee sheet -->
+  <div class="sheet-back" id="sheetBack" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="New payee">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h3>Send to someone new</h3>
+      <label class="field"><span>Full name</span><input id="npName" type="text" placeholder="Jordan Avery" /></label>
+      <label class="field"><span>IBAN</span><input id="npIban" type="text" placeholder="DE89 3704 0044 0532 0130 00" autocomplete="off" /></label>
+      <div class="sheet-actions">
+        <button class="cta ghost" id="npCancel" type="button">Cancel</button>
+        <button class="cta" id="npSave" type="button">Add &amp; continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
