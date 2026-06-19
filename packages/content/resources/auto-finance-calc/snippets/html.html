@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auto — Finance / Lease Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell" role="main">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">RD</span>
+        <div class="brand-txt">
+          <strong>Rivetline Motors</strong>
+          <span>Finance &amp; Lease Desk</span>
+        </div>
+      </div>
+      <div class="vehicle-chip">
+        <span class="vc-photo" aria-hidden="true"></span>
+        <div class="vc-txt">
+          <strong>2024 Bishop Trail XLT</strong>
+          <span>VIN <b class="mono">1RVB24XLT0091847</b> · Stock <b class="mono">#D-2241</b></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: inputs -->
+      <section class="panel inputs" aria-label="Deal inputs">
+        <div class="tabs" role="tablist" aria-label="Financing type">
+          <button class="tab is-active" role="tab" aria-selected="true" data-mode="finance" id="tab-finance">Finance</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="lease" id="tab-lease">Lease</button>
+        </div>
+
+        <div class="field">
+          <label for="price">Vehicle price (MSRP)</label>
+          <div class="money-input">
+            <span>$</span>
+            <input id="price" class="mono" type="number" inputmode="numeric" min="0" step="100" value="42850" />
+          </div>
+          <input id="price-r" class="range" type="range" min="8000" max="120000" step="250" value="42850" aria-label="Vehicle price slider" />
+        </div>
+
+        <div class="field">
+          <label for="down">Down payment <span class="pct-tag mono" id="down-pct">21%</span></label>
+          <div class="money-input">
+            <span>$</span>
+            <input id="down" class="mono" type="number" inputmode="numeric" min="0" step="100" value="9000" />
+          </div>
+          <input id="down-r" class="range" type="range" min="0" max="60000" step="100" value="9000" aria-label="Down payment slider" />
+        </div>
+
+        <div class="field">
+          <label for="trade">Trade-in value</label>
+          <div class="money-input">
+            <span>$</span>
+            <input id="trade" class="mono" type="number" inputmode="numeric" min="0" step="100" value="6500" />
+          </div>
+          <input id="trade-r" class="range" type="range" min="0" max="60000" step="100" value="6500" aria-label="Trade-in slider" />
+        </div>
+
+        <div class="field two">
+          <div>
+            <label for="apr"><span class="lbl-finance">APR</span><span class="lbl-lease" hidden>Money factor (×2400)</span> <span class="pct-tag mono" id="apr-tag">6.40%</span></label>
+            <input id="apr-r" class="range" type="range" min="0" max="18" step="0.05" value="6.4" aria-label="APR slider" />
+          </div>
+          <div>
+            <label for="term">Term <span class="pct-tag mono" id="term-tag">72 mo</span></label>
+            <input id="term-r" class="range" type="range" min="12" max="84" step="12" value="72" aria-label="Term slider" />
+          </div>
+        </div>
+
+        <div class="field lease-only" hidden>
+          <label for="residual">Residual value <span class="pct-tag mono" id="residual-pct">58%</span></label>
+          <input id="residual-r" class="range" type="range" min="30" max="75" step="1" value="58" aria-label="Residual percent slider" />
+          <p class="hint">Estimated lease-end value of the vehicle.</p>
+        </div>
+
+        <div class="quick">
+          <span>Quick term</span>
+          <div class="chips" id="term-chips">
+            <button class="chip" data-term="36">36</button>
+            <button class="chip" data-term="48">48</button>
+            <button class="chip" data-term="60">60</button>
+            <button class="chip is-on" data-term="72">72</button>
+            <button class="chip" data-term="84">84</button>
+          </div>
+        </div>
+
+        <button class="reset" id="reset" type="button">Reset to MSRP defaults</button>
+      </section>
+
+      <!-- RIGHT: output -->
+      <section class="panel output" aria-label="Payment estimate">
+        <div class="payout">
+          <div class="payout-head">
+            <span class="status-dot" id="deal-dot"></span>
+            <span id="deal-label">Estimated monthly finance payment</span>
+          </div>
+          <div class="payout-amount">
+            <span class="cur">$</span>
+            <span class="mono" id="monthly">0</span>
+            <span class="per">/mo</span>
+          </div>
+          <div class="payout-sub" id="payout-sub">over 72 months · 6.40% APR</div>
+        </div>
+
+        <div class="bar" aria-label="Payment composition" id="composition">
+          <div class="bar-seg seg-principal" id="seg-principal" style="width:70%"></div>
+          <div class="bar-seg seg-interest" id="seg-interest" style="width:30%"></div>
+        </div>
+        <div class="legend">
+          <span><i class="sw seg-principal"></i> Principal <b class="mono" id="lg-principal">$0</b></span>
+          <span class="lbl-finance"><i class="sw seg-interest"></i> Interest <b class="mono" id="lg-interest">$0</b></span>
+          <span class="lbl-lease" hidden><i class="sw seg-interest"></i> Rent + fees <b class="mono" id="lg-rent">$0</b></span>
+        </div>
+
+        <ul class="breakdown" aria-label="Amortization summary">
+          <li><span>Amount financed</span><b class="mono" id="b-financed">$0</b></li>
+          <li><span class="lbl-finance">Total of payments</span><span class="lbl-lease" hidden>Total lease cost</span><b class="mono" id="b-total">$0</b></li>
+          <li><span class="lbl-finance">Total interest</span><span class="lbl-lease" hidden>Total rent charge</span><b class="mono" id="b-interest">$0</b></li>
+          <li><span>Due at signing</span><b class="mono" id="b-signing">$0</b></li>
+          <li class="grand"><span>Cost of credit</span><b class="mono" id="b-credit">$0</b></li>
+        </ul>
+
+        <div class="status-panels" aria-label="Deal status">
+          <div class="sp sp-on" id="sp-approved"><span>Pre-qualified</span><b class="mono">A+ tier</b></div>
+          <div class="sp" id="sp-affordable"><span>Affordability</span><b class="mono" id="sp-aff-val">—</b></div>
+        </div>
+
+        <button class="cta" id="apply" type="button">Lock this quote</button>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

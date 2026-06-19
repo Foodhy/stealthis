@@ -38,6 +38,10 @@ export const RESOURCE_COLLECTION_IDS = [
   "events",
   "nonprofit",
   "creator",
+  "hotel",
+  "airline",
+  "cowork",
+  "auto",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -77,6 +81,10 @@ export const NEW_LIBRARY_COLLECTION_IDS = [
   "events",
   "nonprofit",
   "creator",
+  "hotel",
+  "airline",
+  "cowork",
+  "auto",
 ] as const satisfies readonly ResourceCollection[];
 
 const newLibraryCollectionIdsSet = new Set<ResourceCollection>(NEW_LIBRARY_COLLECTION_IDS);
@@ -368,6 +376,34 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.creator.desc",
     accentToken: "collection-creator",
     order: 39,
+  },
+  {
+    id: "hotel",
+    titleKey: "collection.hotel.title",
+    descriptionKey: "collection.hotel.desc",
+    accentToken: "collection-hotel",
+    order: 40,
+  },
+  {
+    id: "airline",
+    titleKey: "collection.airline.title",
+    descriptionKey: "collection.airline.desc",
+    accentToken: "collection-airline",
+    order: 41,
+  },
+  {
+    id: "cowork",
+    titleKey: "collection.cowork.title",
+    descriptionKey: "collection.cowork.desc",
+    accentToken: "collection-cowork",
+    order: 42,
+  },
+  {
+    id: "auto",
+    titleKey: "collection.auto.title",
+    descriptionKey: "collection.auto.desc",
+    accentToken: "collection-auto",
+    order: 43,
   },
 ];
 

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Torque &amp; Tread — Parts Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">⛭</span>
+        <div class="brand-text">
+          <strong>Torque &amp; Tread</strong>
+          <span>Parts &amp; Inventory · Bay&nbsp;Supply</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="branch-chip">Eastside Branch · #04</span>
+        <button class="btn btn-ghost" id="exportBtn" type="button">Export CSV</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel-grid" aria-label="Inventory summary">
+        <article class="stat-card">
+          <span class="stat-label">Total SKUs</span>
+          <strong class="stat-value tnum" id="statTotal">0</strong>
+          <span class="stat-sub">across all bins</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Units On Hand</span>
+          <strong class="stat-value tnum" id="statUnits">0</strong>
+          <span class="stat-sub">countable parts</span>
+        </article>
+        <article class="stat-card stat-warn">
+          <span class="stat-label">Low Stock</span>
+          <strong class="stat-value tnum" id="statLow">0</strong>
+          <span class="stat-sub">at or below reorder pt</span>
+        </article>
+        <article class="stat-card stat-value-money">
+          <span class="stat-label">Stock Value</span>
+          <strong class="stat-value tnum" id="statValue">$0</strong>
+          <span class="stat-sub">retail · est.</span>
+        </article>
+      </section>
+
+      <section class="toolbar" aria-label="Search and filters">
+        <div class="search">
+          <span class="search-ico" aria-hidden="true">⌕</span>
+          <input
+            id="search"
+            type="search"
+            placeholder="Search SKU, part name or brand…"
+            aria-label="Search parts by SKU, name or brand"
+            autocomplete="off"
+          />
+        </div>
+        <div class="filters" role="tablist" aria-label="Filter parts">
+          <button class="chip is-active" role="tab" aria-selected="true" data-filter="all" type="button">All <span class="chip-n" id="cAll">0</span></button>
+          <button class="chip" role="tab" aria-selected="false" data-filter="low" type="button">Low <span class="chip-n" id="cLow">0</span></button>
+          <button class="chip" role="tab" aria-selected="false" data-filter="out" type="button">Out <span class="chip-n" id="cOut">0</span></button>
+          <button class="chip" role="tab" aria-selected="false" data-filter="ok" type="button">In&nbsp;Stock <span class="chip-n" id="cOk">0</span></button>
+        </div>
+      </section>
+
+      <section class="table-wrap" aria-label="Parts inventory">
+        <table class="parts">
+          <thead>
+            <tr>
+              <th scope="col" class="th-sku">SKU</th>
+              <th scope="col">Part</th>
+              <th scope="col" class="hide-sm">Brand</th>
+              <th scope="col" class="ta-c hide-sm">Bin</th>
+              <th scope="col" class="ta-c">Qty</th>
+              <th scope="col" class="ta-r hide-sm">Price</th>
+              <th scope="col" class="ta-r">Status</th>
+              <th scope="col" class="ta-r"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <p class="empty" id="empty" hidden>No parts match your search.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Part detail drawer -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-label="Part detail" aria-hidden="true" tabindex="-1">
+    <header class="drawer-head">
+      <div>
+        <span class="drawer-sku tnum" id="dSku">—</span>
+        <h2 id="dName">—</h2>
+      </div>
+      <button class="icon-btn" id="drawerClose" type="button" aria-label="Close detail">✕</button>
+    </header>
+    <div class="drawer-photo" id="dPhoto" aria-hidden="true"></div>
+    <dl class="spec">
+      <div><dt>Brand</dt><dd id="dBrand">—</dd></div>
+      <div><dt>Bin location</dt><dd class="tnum" id="dBin">—</dd></div>
+      <div><dt>Fits</dt><dd id="dFits">—</dd></div>
+      <div><dt>Unit price</dt><dd class="tnum" id="dPrice">—</dd></div>
+      <div><dt>Reorder point</dt><dd class="tnum" id="dReorder">—</dd></div>
+      <div><dt>Supplier</dt><dd id="dSupplier">—</dd></div>
+    </dl>
+    <div class="drawer-qty">
+      <span class="dq-label">On hand</span>
+      <div class="stepper" role="group" aria-label="Adjust quantity">
+        <button class="step" data-step="-1" type="button" aria-label="Decrease quantity">−</button>
+        <output class="step-val tnum" id="dQty" aria-live="polite">0</output>
+        <button class="step" data-step="1" type="button" aria-label="Increase quantity">+</button>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="dReorderBtn" type="button">Reorder from supplier</button>
+  </aside>
+
+  <div class="toast-stack" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

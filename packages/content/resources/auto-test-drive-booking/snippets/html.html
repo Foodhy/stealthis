@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Velocity Motors — Test Drive Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">VM</span>
+        <div class="brand-txt">
+          <strong>Velocity Motors</strong>
+          <span>Lakeside Dealership &middot; Bay 7 Test Drive Center</span>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <span class="dot" aria-hidden="true"></span>
+        Booking desk open &middot; closes 7:00 PM
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- Vehicle + form -->
+      <section class="col-main" aria-label="Test drive booking">
+        <h1 class="page-title">Book a Test Drive</h1>
+        <p class="page-sub">Reserve a no-obligation drive. Bring a valid driver&rsquo;s license. Sessions run ~30 minutes with a product specialist.</p>
+
+        <!-- Selected vehicle -->
+        <article class="vehicle-card" aria-label="Selected vehicle">
+          <div class="vehicle-photo" role="img" aria-label="2024 Aurora GT-Line in Midnight Steel">
+            <span class="vehicle-tag">Demo unit</span>
+            <span class="vehicle-silhouette" aria-hidden="true">&#9679;&#8212;&#9679;</span>
+          </div>
+          <div class="vehicle-body">
+            <div class="vehicle-head">
+              <div>
+                <h2>2024 Aurora GT-Line</h2>
+                <p class="vehicle-trim">2.0T AWD &middot; Midnight Steel &middot; 8-spd</p>
+              </div>
+              <div class="vehicle-price">
+                <span class="price-num" data-tabular>$38,450</span>
+                <span class="price-label">MSRP</span>
+              </div>
+            </div>
+            <dl class="spec-grid">
+              <div><dt>Stock</dt><dd data-tabular>#GT-2271</dd></div>
+              <div><dt>VIN</dt><dd data-tabular>1AUGT&middot;&middot;&middot;7K2271</dd></div>
+              <div><dt>Odometer</dt><dd data-tabular>142 mi</dd></div>
+              <div><dt>Plate</dt><dd data-tabular>DLR&middot;0427</dd></div>
+            </dl>
+            <button class="link-btn" type="button" id="changeVehicle">Change vehicle</button>
+          </div>
+        </article>
+
+        <form id="bookingForm" novalidate>
+          <!-- Date -->
+          <fieldset class="block">
+            <legend>1 &middot; Pick a date</legend>
+            <div class="date-row" id="dateRow" role="radiogroup" aria-label="Available dates"></div>
+          </fieldset>
+
+          <!-- Time slots -->
+          <fieldset class="block">
+            <legend>2 &middot; Choose a time slot</legend>
+            <div class="slot-grid" id="slotGrid" role="radiogroup" aria-label="Available time slots"></div>
+            <p class="hint" id="slotHint">Slots update for the date you select. Greyed slots are already booked.</p>
+            <p class="err" id="slotErr" role="alert" hidden>Please select an available time slot.</p>
+          </fieldset>
+
+          <!-- Contact -->
+          <fieldset class="block">
+            <legend>3 &middot; Your details</legend>
+            <div class="grid-2">
+              <label class="field">
+                <span>Full name</span>
+                <input type="text" id="name" name="name" autocomplete="name" placeholder="Jordan Avery" required />
+                <small class="field-err" data-for="name" hidden>Enter your full name.</small>
+              </label>
+              <label class="field">
+                <span>Phone</span>
+                <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="(555) 018-4420" required />
+                <small class="field-err" data-for="phone" hidden>Enter a reachable phone number.</small>
+              </label>
+              <label class="field">
+                <span>Email</span>
+                <input type="email" id="email" name="email" autocomplete="email" placeholder="you@email.com" required />
+                <small class="field-err" data-for="email" hidden>Enter a valid email address.</small>
+              </label>
+              <label class="field">
+                <span>Driver&rsquo;s license #</span>
+                <input type="text" id="license" name="license" inputmode="latin" placeholder="A-2204-8831-09" required />
+                <small class="field-err" data-for="license" hidden>License number is required to drive.</small>
+              </label>
+            </div>
+            <label class="check">
+              <input type="checkbox" id="licenseConfirm" required />
+              <span>I confirm I hold a <strong>valid driver&rsquo;s license</strong> and will present it on arrival.</span>
+            </label>
+            <small class="field-err" data-for="licenseConfirm" hidden>You must confirm a valid license to book.</small>
+          </fieldset>
+
+          <div class="actions">
+            <button type="submit" class="btn-primary" id="confirmBtn">Confirm test drive</button>
+            <span class="actions-note">No payment required &middot; Free to cancel</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- Summary sidebar -->
+      <aside class="col-side" aria-label="Booking summary">
+        <div class="summary">
+          <h3>Booking summary</h3>
+          <ul class="sum-list">
+            <li><span>Vehicle</span><strong>Aurora GT-Line</strong></li>
+            <li><span>Location</span><strong>Lakeside &middot; Bay 7</strong></li>
+            <li><span>Date</span><strong id="sumDate">&mdash;</strong></li>
+            <li><span>Time</span><strong id="sumTime" data-tabular>&mdash;</strong></li>
+            <li><span>Duration</span><strong>~30 min</strong></li>
+          </ul>
+          <div class="status-panel" id="statusPanel" data-state="waiting">
+            <span class="status-led" aria-hidden="true"></span>
+            <div>
+              <strong id="statusLabel">Awaiting confirmation</strong>
+              <small id="statusSub">Select a date and slot to continue.</small>
+            </div>
+          </div>
+          <div class="side-tips">
+            <p><strong>What to bring</strong></p>
+            <ul>
+              <li>Valid driver&rsquo;s license</li>
+              <li>Proof of insurance (optional)</li>
+              <li>Arrive 5 min early at Bay 7</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Success modal -->
+  <div class="modal-wrap" id="successModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="modal-icon" aria-hidden="true">&#10003;</div>
+      <h2 id="successTitle">Test drive confirmed</h2>
+      <p class="modal-sub">We&rsquo;ve reserved the Aurora GT-Line for your slot. A specialist will text you a reminder.</p>
+      <dl class="confirm-grid">
+        <div><dt>Confirmation</dt><dd data-tabular id="confCode">&mdash;</dd></div>
+        <div><dt>When</dt><dd id="confWhen">&mdash;</dd></div>
+        <div><dt>Where</dt><dd>Lakeside &middot; Bay 7</dd></div>
+        <div><dt>Driver</dt><dd id="confDriver">&mdash;</dd></div>
+      </dl>
+      <div class="modal-actions">
+        <button type="button" class="btn-primary" id="addCalendar">Add to calendar</button>
+        <button type="button" class="btn-ghost" id="closeModal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

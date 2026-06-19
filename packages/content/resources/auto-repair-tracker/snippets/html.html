@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auto — Repair Status Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </span>
+        <div class="brand-txt">
+          <strong>Ironwood Auto &amp; Diesel</strong>
+          <span>Service status</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="ro-pill">RO #48217</span>
+        <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh updates">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- Vehicle + ETA card -->
+      <section class="card vehicle" aria-labelledby="vehHd">
+        <div class="veh-photo" aria-hidden="true">
+          <span class="veh-badge">2019</span>
+          <svg class="veh-icon" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M3 17V12l2.5-5.5A2 2 0 0 1 7.3 5h9.4a2 2 0 0 1 1.8 1.1L21 12v5M3 17v2h3v-2M18 17v2h3v-2M5.5 12h13"/><circle cx="8" cy="17" r="1.2"/><circle cx="16" cy="17" r="1.2"/></svg>
+        </div>
+        <div class="veh-info">
+          <h1 id="vehHd">Ford F-150 XLT</h1>
+          <p class="veh-sub">Oxford White · 3.5L EcoBoost</p>
+          <dl class="veh-meta">
+            <div><dt>Plate</dt><dd class="mono">7KJ&nbsp;A92</dd></div>
+            <div><dt>VIN</dt><dd class="mono">1FTFW1E4XKF…839</dd></div>
+            <div><dt>Odometer</dt><dd class="mono">68,420 mi</dd></div>
+            <div><dt>Bay</dt><dd class="mono">Bay 4</dd></div>
+          </dl>
+        </div>
+        <div class="eta">
+          <span class="eta-label">Estimated ready</span>
+          <strong class="eta-time" id="etaTime">Today, 4:30 PM</strong>
+          <span class="eta-note" id="etaNote">On schedule · advisor Dana R.</span>
+        </div>
+      </section>
+
+      <!-- Step tracker -->
+      <section class="card tracker" aria-labelledby="trkHd">
+        <div class="card-hd">
+          <h2 id="trkHd">Repair progress</h2>
+          <span class="status-chip" id="statusChip" data-state="inrepair">In repair</span>
+        </div>
+        <ol class="steps" id="steps">
+          <li class="step done" data-step="checkin">
+            <span class="step-dot" aria-hidden="true"></span>
+            <div class="step-body"><span class="step-name">Checked in</span><span class="step-time">8:02 AM</span></div>
+          </li>
+          <li class="step done" data-step="diagnosing">
+            <span class="step-dot" aria-hidden="true"></span>
+            <div class="step-body"><span class="step-name">Diagnosing</span><span class="step-time">9:15 AM</span></div>
+          </li>
+          <li class="step done" data-step="approval">
+            <span class="step-dot" aria-hidden="true"></span>
+            <div class="step-body"><span class="step-name">Awaiting approval</span><span class="step-time">10:40 AM</span></div>
+          </li>
+          <li class="step active" data-step="repair">
+            <span class="step-dot" aria-hidden="true"></span>
+            <div class="step-body"><span class="step-name">In repair</span><span class="step-time" id="repairTime">In progress</span></div>
+          </li>
+          <li class="step" data-step="ready">
+            <span class="step-dot" aria-hidden="true"></span>
+            <div class="step-body"><span class="step-name">Ready for pickup</span><span class="step-time">—</span></div>
+          </li>
+        </ol>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="68" aria-label="Overall repair progress">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </section>
+
+      <!-- Approval banner -->
+      <section class="approval" id="approvalBanner" hidden aria-live="polite">
+        <div class="approval-txt">
+          <strong>Additional work needs your OK</strong>
+          <span id="approvalDesc">Rear brake pads at 2mm — recommend replacement. +$184.00</span>
+        </div>
+        <div class="approval-actions">
+          <button class="btn ghost" id="declineBtn" type="button">Not now</button>
+          <button class="btn primary" id="approveBtn" type="button">Approve work</button>
+        </div>
+      </section>
+
+      <!-- Updates feed -->
+      <section class="card feed" aria-labelledby="feedHd">
+        <div class="card-hd">
+          <h2 id="feedHd">Updates from the shop</h2>
+          <span class="pulse-dot" id="feedPulse" aria-hidden="true"></span>
+        </div>
+        <ul class="thread" id="thread" aria-live="polite">
+          <li class="bubble shop">
+            <span class="bub-text">Morning! We've got your F-150 checked in at Bay 4. Starting the multi-point inspection now.</span>
+            <span class="bub-time">8:04 AM</span>
+          </li>
+          <li class="bubble shop">
+            <span class="bub-text">Diagnostics found a misfire on cylinder 3 — code <b class="dtc">P0303</b>. Pulling the coil pack to confirm.</span>
+            <span class="bub-time">9:18 AM</span>
+          </li>
+          <li class="bubble me">
+            <span class="bub-text">Thanks for the heads up. Go ahead with whatever it needs.</span>
+            <span class="bub-time">9:31 AM</span>
+          </li>
+          <li class="bubble shop">
+            <span class="bub-text">Confirmed — failed ignition coil + plugs. Replacing the set. Truck's up on the lift now.</span>
+            <span class="bub-time">10:52 AM</span>
+          </li>
+        </ul>
+        <form class="composer" id="composer">
+          <input id="msgInput" type="text" autocomplete="off" placeholder="Reply to the shop…" aria-label="Reply to the shop" />
+          <button class="btn send" type="submit" aria-label="Send reply">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </form>
+      </section>
+
+      <!-- Work order summary -->
+      <section class="card order" aria-labelledby="ordHd">
+        <div class="card-hd"><h2 id="ordHd">Work order</h2></div>
+        <ul class="lines">
+          <li class="line"><span class="line-name">Diagnostic — drivability<small>1.0 hr labor</small></span><span class="line-amt mono">$140.00</span></li>
+          <li class="line"><span class="line-name">Ignition coil pack (×1)<small>parts</small></span><span class="line-amt mono">$118.40</span></li>
+          <li class="line"><span class="line-name">Spark plugs, set of 6<small>parts</small></span><span class="line-amt mono">$96.00</span></li>
+          <li class="line"><span class="line-name">R&amp;R coil + plugs<small>1.6 hr labor</small></span><span class="line-amt mono">$224.00</span></li>
+          <li class="line" id="addonLine" hidden><span class="line-name">Rear brake pads<small>approved add-on</small></span><span class="line-amt mono">$184.00</span></li>
+        </ul>
+        <div class="totals">
+          <div class="tot-row"><span>Estimate total</span><strong class="mono" id="orderTotal">$578.40</strong></div>
+          <span class="tot-note">Tax calculated at checkout · fictional figures</span>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurelia Air — Self-Check-in Kiosk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="kiosk" role="application" aria-label="Self check-in kiosk">
+    <header class="kiosk__top">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2a1 1 0 0 0-.9 1.7l4.3 3-1.6 3.5-2.4-.5a1 1 0 0 0-.9 1.7l3 2 2 3a1 1 0 0 0 1.7-.9l-.5-2.4 3.5-1.6 3 4.3a1 1 0 0 0 1.7-.9z"/></svg>
+        </span>
+        <div class="brand__name">Aurelia Air<small>Self-Check-in</small></div>
+      </div>
+      <div class="kiosk__meta">
+        <span class="dot dot--ok" aria-hidden="true"></span>
+        <span class="kiosk__status">Kiosk T2-14 · Online</span>
+        <time id="clock" class="kiosk__clock" aria-label="Current time">06:42</time>
+      </div>
+    </header>
+
+    <ol class="steps" aria-label="Progress">
+      <li class="steps__item is-active" data-step-label="1"><span>Find booking</span></li>
+      <li class="steps__item" data-step-label="2"><span>Passengers</span></li>
+      <li class="steps__item" data-step-label="3"><span>Seat</span></li>
+      <li class="steps__item" data-step-label="4"><span>Bags</span></li>
+      <li class="steps__item" data-step-label="5"><span>Boarding pass</span></li>
+    </ol>
+
+    <main class="stage">
+      <!-- STEP 1 — RETRIEVE BOOKING -->
+      <section class="panel is-active" data-step="1" aria-label="Find your booking">
+        <h1 class="panel__title">Find your booking</h1>
+        <p class="panel__sub">Scan your passport or boarding pass, or enter your details below.</p>
+
+        <button class="scan" type="button" id="scanBtn">
+          <span class="scan__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>
+          </span>
+          <span class="scan__txt"><strong>Scan document</strong><small>Tap and hold under the reader</small></span>
+        </button>
+
+        <div class="divider"><span>or enter manually</span></div>
+
+        <div class="retrieve">
+          <label class="field">
+            <span class="field__label">Booking reference</span>
+            <input id="refInput" class="field__input" type="text" inputmode="text" autocomplete="off"
+              placeholder="e.g. 7QK2RX" maxlength="6" aria-describedby="refHint" />
+          </label>
+          <label class="field">
+            <span class="field__label">Last name</span>
+            <input id="nameInput" class="field__input" type="text" autocomplete="off" placeholder="e.g. Marsh" />
+          </label>
+        </div>
+        <p id="refHint" class="hint">Try reference <button type="button" class="hint__demo" id="demoRef">7QK2RX</button> · last name <strong>Marsh</strong></p>
+        <button class="ff" type="button" id="ffBtn">
+          Use frequent flyer number instead
+        </button>
+
+        <div class="actions">
+          <button class="btn btn--lg btn--primary" type="button" id="findBtn">Find booking</button>
+        </div>
+      </section>
+
+      <!-- STEP 2 — PASSENGERS -->
+      <section class="panel" data-step="2" aria-label="Select passengers" hidden>
+        <h1 class="panel__title">Who is checking in?</h1>
+        <p class="panel__sub">Booking <strong id="bookingRef2">7QK2RX</strong> · select the passengers to check in.</p>
+
+        <div class="flightcard" id="flightCard">
+          <div class="flightcard__route">
+            <div class="airport">
+              <div class="airport__code">JFK</div>
+              <div class="airport__city">New York</div>
+              <time class="airport__time">06:42</time>
+            </div>
+            <div class="flightcard__mid">
+              <span class="flightcard__no">AU 418</span>
+              <span class="path" aria-hidden="true"><i></i><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22 12 13 5v4L3 11l-1 1 1 1 10 2v4z"/></svg><i></i></span>
+              <span class="flightcard__dur">7h 05m · Nonstop</span>
+            </div>
+            <div class="airport airport--end">
+              <div class="airport__code">LHR</div>
+              <div class="airport__city">London</div>
+              <time class="airport__time">19:47</time>
+            </div>
+          </div>
+          <div class="flightcard__foot">
+            <span class="pill pill--boarding">Boarding 06:00</span>
+            <span class="metaline">Gate B22 · Terminal 2 · 18 Jun</span>
+          </div>
+        </div>
+
+        <ul class="paxlist" id="paxList" role="group" aria-label="Passengers"></ul>
+
+        <div class="actions actions--split">
+          <button class="btn btn--ghost" type="button" data-back="1">Back</button>
+          <button class="btn btn--primary" type="button" id="paxNext" disabled>Continue</button>
+        </div>
+      </section>
+
+      <!-- STEP 3 — SEAT -->
+      <section class="panel" data-step="3" aria-label="Choose a seat" hidden>
+        <h1 class="panel__title">Choose your seat</h1>
+        <p class="panel__sub">Selecting for <strong id="seatPaxName">—</strong> · tap an open seat.</p>
+
+        <div class="seatwrap">
+          <div class="cabin">
+            <div class="cabin__nose">Front of aircraft</div>
+            <div class="seatmap" id="seatMap" role="grid" aria-label="Seat map"></div>
+            <div class="cabin__legend">
+              <span><i class="sw sw--open"></i>Available</span>
+              <span><i class="sw sw--extra"></i>Extra legroom (+$45)</span>
+              <span><i class="sw sw--taken"></i>Taken</span>
+              <span><i class="sw sw--sel"></i>Selected</span>
+            </div>
+          </div>
+          <aside class="seatpick" aria-live="polite">
+            <div class="seatpick__big" id="seatBig">—</div>
+            <div class="seatpick__desc" id="seatDesc">No seat selected</div>
+            <div class="seatpick__fee" id="seatFee"></div>
+          </aside>
+        </div>
+
+        <div class="actions actions--split">
+          <button class="btn btn--ghost" type="button" data-back="2">Back</button>
+          <button class="btn btn--primary" type="button" id="seatNext" disabled>Confirm seat</button>
+        </div>
+      </section>
+
+      <!-- STEP 4 — BAGS -->
+      <section class="panel" data-step="4" aria-label="Add bags" hidden>
+        <h1 class="panel__title">Checked bags</h1>
+        <p class="panel__sub">1 bag included with your fare. Extra bags are $60 each.</p>
+
+        <div class="bags">
+          <div class="bags__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M9 20v1M15 20v1"/></svg>
+          </div>
+          <div class="stepper" role="group" aria-label="Number of checked bags">
+            <button class="stepper__btn" type="button" id="bagMinus" aria-label="Remove a bag">−</button>
+            <div class="stepper__val"><span id="bagCount">1</span><small>bags</small></div>
+            <button class="stepper__btn" type="button" id="bagPlus" aria-label="Add a bag">+</button>
+          </div>
+          <p class="bags__note" id="bagNote">First bag included · weight limit 23 kg each</p>
+        </div>
+
+        <div class="summary" id="bagSummary"></div>
+
+        <div class="actions actions--split">
+          <button class="btn btn--ghost" type="button" data-back="3">Back</button>
+          <button class="btn btn--primary" type="button" id="bagNext">Check in &amp; print</button>
+        </div>
+      </section>
+
+      <!-- STEP 5 — PRINT / BOARDING PASS -->
+      <section class="panel panel--done" data-step="5" aria-label="Boarding pass" hidden>
+        <div class="printer" id="printer">
+          <div class="printer__head">
+            <span class="printer__led" id="printerLed"></span>
+            <span id="printerMsg">Printing boarding pass &amp; bag tags…</span>
+          </div>
+          <div class="printer__slot">
+            <div class="bpass" id="bpass">
+              <div class="bpass__main">
+                <div class="bpass__brand">
+                  <span class="bpass__logo" aria-hidden="true">✦</span> Aurelia Air
+                  <span class="pill pill--boarding bpass__pill">Boarding 06:00</span>
+                </div>
+                <div class="bpass__route">
+                  <div><div class="bpass__code">JFK</div><div class="bpass__city">New York</div></div>
+                  <svg class="bpass__plane" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M22 12 13 5v4L3 11l-1 1 1 1 10 2v4z"/></svg>
+                  <div class="ta-r"><div class="bpass__code">LHR</div><div class="bpass__city">London</div></div>
+                </div>
+                <div class="bpass__grid">
+                  <div><span>Passenger</span><strong id="bpName">—</strong></div>
+                  <div><span>Flight</span><strong>AU 418</strong></div>
+                  <div><span>Date</span><strong>18 Jun</strong></div>
+                  <div><span>Boarding</span><strong>06:00</strong></div>
+                  <div><span>Gate</span><strong>B22</strong></div>
+                  <div><span>Seat</span><strong id="bpSeat">—</strong></div>
+                  <div><span>Terminal</span><strong>2</strong></div>
+                  <div><span>Group</span><strong id="bpGroup">3</strong></div>
+                </div>
+                <div class="bpass__barcode" aria-hidden="true"></div>
+              </div>
+              <div class="bpass__stub">
+                <div class="stub__row"><span>Seat</span><strong id="bpSeat2">—</strong></div>
+                <div class="stub__row"><span>Flight</span><strong>AU 418</strong></div>
+                <div class="stub__row"><span>Bags</span><strong id="bpBags">1</strong></div>
+                <div class="stub__barcode" aria-hidden="true"></div>
+                <div class="stub__no" id="bpSeq">SEQ 042</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="done">
+          <div class="done__check" id="doneCheck" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <h2 class="done__title" id="doneTitle">Printing…</h2>
+          <p class="done__sub" id="doneSub">Please collect your boarding pass and bag tags below the screen.</p>
+          <div class="actions">
+            <button class="btn btn--lg btn--primary" type="button" id="restartBtn">Done — start over</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

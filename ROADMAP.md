@@ -1363,7 +1363,7 @@ Each landing ships with:
 
 ---
 
-## Phase 28 — Hotel / Hospitality Theme 🏨 PLAN
+## Phase 28 — Hotel / Hospitality Theme 🏨 ✅ DONE (2026-06-18)
 
 > Full hotel stack — front desk PMS, guest portal, booking flow, concierge, housekeeping, manager admin, plus themed landings (boutique, resort, hostel, business hotel, B&B).
 >
@@ -1448,6 +1448,11 @@ Each landing ships with:
 5. **Marketing** — 23 → 28.
 6. **Landings** — 34 → 38.
 7. **Admin** — 29 → 33.
+
+> **Progress (2026-06-18):** ✅ Complete. All 38 resources already built on disk (`collections: [hotel]`);
+> this pass wired the `hotel` collection into the display layer (collections.ts ×3, i18n en+es, docs
+> `collections.mdx`, `choose-your-path.mdx`) — schema/config already had it — and flipped the header
+> to DONE. No catalog change (resources were already in the 1534 catalog).
 
 ---
 
@@ -1774,7 +1779,7 @@ landings use per-variant palette overrides.
 
 ---
 
-## Phase 33 — Travel / Airline Theme ✈️ PLAN
+## Phase 33 — Travel / Airline Theme ✈️ ✅ DONE (2026-06-18)
 
 > Flight search, seat map, boarding pass, check-in, plus themed airline landings (legacy carrier, low-cost, premium boutique, regional, private charter).
 >
@@ -1786,52 +1791,52 @@ landings use per-variant palette overrides.
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `air-flight-search` | Flight Search (from · to · dates) | pages | med | [ ] |
-| 2 | `air-flight-results` | Results List (price · duration · stops) | pages | hard | [ ] |
-| 3 | `air-seat-map` | Seat Map Selector | ui-components | hard | [ ] |
-| 4 | `air-booking-flow` | Booking (pax info · extras · pay) | pages | hard | [ ] |
-| 5 | `air-checkin-flow` | Online Check-in Wizard | pages | med | [ ] |
-| 6 | `air-boarding-pass` | Boarding Pass (mobile QR) | ui-components | easy | [ ] |
-| 7 | `air-flight-status` | Flight Status Board | ui-components | med | [ ] |
-| 8 | `air-trip-itinerary` | Trip Itinerary (multi-leg) | ui-components | med | [ ] |
-| 9 | `air-loyalty-card` | Frequent Flyer Status Card | ui-components | easy | [ ] |
-| 10 | `air-baggage-tracker` | Baggage Tracker | ui-components | easy | [ ] |
+| 1 | `air-flight-search` | Flight Search (from · to · dates) | pages | med | ✅ |
+| 2 | `air-flight-results` | Results List (price · duration · stops) | pages | hard | ✅ |
+| 3 | `air-seat-map` | Seat Map Selector | ui-components | hard | ✅ |
+| 4 | `air-booking-flow` | Booking (pax info · extras · pay) | pages | hard | ✅ |
+| 5 | `air-checkin-flow` | Online Check-in Wizard | pages | med | ✅ |
+| 6 | `air-boarding-pass` | Boarding Pass (mobile QR) | ui-components | easy | ✅ |
+| 7 | `air-flight-status` | Flight Status Board | ui-components | med | ✅ |
+| 8 | `air-trip-itinerary` | Trip Itinerary (multi-leg) | ui-components | med | ✅ |
+| 9 | `air-loyalty-card` | Frequent Flyer Status Card | ui-components | easy | ✅ |
+| 10 | `air-baggage-tracker` | Baggage Tracker | ui-components | easy | ✅ |
 
 ### 33.B — Airport / Gate / Staff
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 11 | `air-gate-display` | Gate Departure Display | pages | med | [ ] |
-| 12 | `air-fids-board` | Flight Information Display (FIDS) | pages | med | [ ] |
-| 13 | `air-gate-agent` | Gate Agent Boarding UI | pages | hard | [ ] |
-| 14 | `air-checkin-kiosk` | Self-Check-in Kiosk | pages | med | [ ] |
+| 11 | `air-gate-display` | Gate Departure Display | pages | med | ✅ |
+| 12 | `air-fids-board` | Flight Information Display (FIDS) | pages | med | ✅ |
+| 13 | `air-gate-agent` | Gate Agent Boarding UI | pages | hard | ✅ |
+| 14 | `air-checkin-kiosk` | Self-Check-in Kiosk | pages | med | ✅ |
 
 ### 33.C — Marketing Pages
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 15 | `air-page-landing` | Airline Landing | pages | med | [ ] |
-| 16 | `air-page-destinations` | Destinations Page | pages | med | [ ] |
-| 17 | `air-page-fleet` | Our Fleet | pages | easy | [ ] |
-| 18 | `air-page-loyalty` | Loyalty Program | pages | easy | [ ] |
+| 15 | `air-page-landing` | Airline Landing | pages | med | ✅ |
+| 16 | `air-page-destinations` | Destinations Page | pages | med | ✅ |
+| 17 | `air-page-fleet` | Our Fleet | pages | easy | ✅ |
+| 18 | `air-page-loyalty` | Loyalty Program | pages | easy | ✅ |
 
 ### 33.D — Ops / Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 19 | `air-ops-control-center` | Ops Control Center (flights · disruptions) | pages | hard | [ ] |
-| 20 | `air-crew-schedule` | Crew Schedule (pilots · cabin) | pages | hard | [ ] |
-| 21 | `air-load-factor-report` | Load Factor & Revenue Report | pages | med | [ ] |
+| 19 | `air-ops-control-center` | Ops Control Center (flights · disruptions) | pages | hard | ✅ |
+| 20 | `air-crew-schedule` | Crew Schedule (pilots · cabin) | pages | hard | ✅ |
+| 21 | `air-load-factor-report` | Load Factor & Revenue Report | pages | med | ✅ |
 
 ### 33.E — Themed Airline Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 22 | `air-landing-legacy` | Legacy Flag Carrier | Navy + gold + white · classic serif · prestigious, established | hard | [ ] |
-| 23 | `air-landing-lowcost` | Low-Cost Carrier | Yellow + black + magenta · loud sans · cheerful, value | med | [ ] |
-| 24 | `air-landing-premium` | Premium Boutique (Emirates-style) | Deep red + cream + gold · refined serif · luxurious, hospitality | hard | [ ] |
-| 25 | `air-landing-regional` | Regional / Short-Hop | Sky blue + white + green · friendly sans · approachable, local | med | [ ] |
-| 26 | `air-landing-charter` | Private Charter / Jet Card | Black + champagne + slate · elegant serif · exclusive, discreet | hard | [ ] |
+| 22 | `air-landing-legacy` | Legacy Flag Carrier | Navy + gold + white · classic serif · prestigious, established | hard | ✅ |
+| 23 | `air-landing-lowcost` | Low-Cost Carrier | Yellow + black + magenta · loud sans · cheerful, value | med | ✅ |
+| 24 | `air-landing-premium` | Premium Boutique (Emirates-style) | Deep red + cream + gold · refined serif · luxurious, hospitality | hard | ✅ |
+| 25 | `air-landing-regional` | Regional / Short-Hop | Sky blue + white + green · friendly sans · approachable, local | med | ✅ |
+| 26 | `air-landing-charter` | Private Charter / Jet Card | Black + champagne + slate · elegant serif · exclusive, discreet | hard | ✅ |
 
 ### Build order (Phase 33)
 
@@ -1843,9 +1848,14 @@ landings use per-variant palette overrides.
 6. **Ops / admin** — 19 → 21.
 7. **Landings** — 22 → 26.
 
+> **Progress (2026-06-18):** ✅ Complete. All 26 resources built via workflow `wf_d1b3855f-e81`
+> (`docs/templates/phase33-airline.workflow.js`). New `airline` collection wired in all 6 places
+> (schema, www config, collections.ts ×3, i18n en+es, docs collections.mdx, choose-your-path.mdx).
+> MCP catalog regenerated (1560 resources).
+
 ---
 
-## Phase 34 — Coworking / Studio Rental Theme 🏢 PLAN
+## Phase 34 — Coworking / Studio Rental Theme 🏢 ✅ DONE (2026-06-18)
 
 > Desk/room booking, member portal, access control, billing — plus themed coworking landings (creative loft, corporate flex, maker space, café-style, suburban hub).
 >
@@ -1857,46 +1867,46 @@ landings use per-variant palette overrides.
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `cowork-desk-booking` | Desk Booking (floor + slot) | pages | hard | [ ] |
-| 2 | `cowork-room-booking` | Meeting Room Booking | pages | med | [ ] |
-| 3 | `cowork-member-dashboard` | Member Dashboard (today's bookings) | pages | med | [ ] |
-| 4 | `cowork-access-card` | Mobile Access Card / QR | ui-components | easy | [ ] |
-| 5 | `cowork-credits-balance` | Credits / Hours Balance | ui-components | easy | [ ] |
-| 6 | `cowork-community-feed` | Community Feed (events · members) | pages | med | [ ] |
+| 1 | `cowork-desk-booking` | Desk Booking (floor + slot) | pages | hard | ✅ |
+| 2 | `cowork-room-booking` | Meeting Room Booking | pages | med | ✅ |
+| 3 | `cowork-member-dashboard` | Member Dashboard (today's bookings) | pages | med | ✅ |
+| 4 | `cowork-access-card` | Mobile Access Card / QR | ui-components | easy | ✅ |
+| 5 | `cowork-credits-balance` | Credits / Hours Balance | ui-components | easy | ✅ |
+| 6 | `cowork-community-feed` | Community Feed (events · members) | pages | med | ✅ |
 
 ### 34.B — Operations / Front Desk
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `cowork-floor-plan` | Live Floor Plan (occupancy) | pages | hard | [ ] |
-| 8 | `cowork-checkin-kiosk` | Visitor Check-in Kiosk | pages | med | [ ] |
-| 9 | `cowork-printer-status` | Printer / Equipment Status | ui-components | easy | [ ] |
+| 7 | `cowork-floor-plan` | Live Floor Plan (occupancy) | pages | hard | ✅ |
+| 8 | `cowork-checkin-kiosk` | Visitor Check-in Kiosk | pages | med | ✅ |
+| 9 | `cowork-printer-status` | Printer / Equipment Status | ui-components | easy | ✅ |
 
 ### 34.C — Marketing Pages
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 10 | `cowork-page-landing` | Coworking Landing | pages | med | [ ] |
-| 11 | `cowork-page-spaces` | Spaces / Tour | pages | med | [ ] |
-| 12 | `cowork-page-pricing` | Membership Pricing | pages | easy | [ ] |
-| 13 | `cowork-page-events` | Events Calendar | pages | easy | [ ] |
+| 10 | `cowork-page-landing` | Coworking Landing | pages | med | ✅ |
+| 11 | `cowork-page-spaces` | Spaces / Tour | pages | med | ✅ |
+| 12 | `cowork-page-pricing` | Membership Pricing | pages | easy | ✅ |
+| 13 | `cowork-page-events` | Events Calendar | pages | easy | ✅ |
 
 ### 34.D — Admin
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 14 | `cowork-admin-occupancy` | Occupancy & Utilization Dashboard | pages | hard | [ ] |
-| 15 | `cowork-admin-billing` | Billing & Subscriptions | pages | med | [ ] |
+| 14 | `cowork-admin-occupancy` | Occupancy & Utilization Dashboard | pages | hard | ✅ |
+| 15 | `cowork-admin-billing` | Billing & Subscriptions | pages | med | ✅ |
 
 ### 34.E — Themed Coworking Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 16 | `cowork-landing-creative-loft` | Creative Loft (designers/artists) | Concrete + amber + black · industrial sans · raw, inspiring | med | [ ] |
-| 17 | `cowork-landing-corporate-flex` | Corporate Flex (WeWork-style) | Navy + white + accent green · clean sans · professional, scalable | med | [ ] |
-| 18 | `cowork-landing-maker-space` | Maker / Hardware Lab | Slate + electric yellow + steel · monospace + sans · technical, hands-on | hard | [ ] |
-| 19 | `cowork-landing-cafe-style` | Café-Style Workspace | Espresso + cream + brass · warm serif · cozy, social | med | [ ] |
-| 20 | `cowork-landing-suburban` | Suburban / Neighborhood Hub | Sage + clay + ivory · friendly serif · community, local | med | [ ] |
+| 16 | `cowork-landing-creative-loft` | Creative Loft (designers/artists) | Concrete + amber + black · industrial sans · raw, inspiring | med | ✅ |
+| 17 | `cowork-landing-corporate-flex` | Corporate Flex (WeWork-style) | Navy + white + accent green · clean sans · professional, scalable | med | ✅ |
+| 18 | `cowork-landing-maker-space` | Maker / Hardware Lab | Slate + electric yellow + steel · monospace + sans · technical, hands-on | hard | ✅ |
+| 19 | `cowork-landing-cafe-style` | Café-Style Workspace | Espresso + cream + brass · warm serif · cozy, social | med | ✅ |
+| 20 | `cowork-landing-suburban` | Suburban / Neighborhood Hub | Sage + clay + ivory · friendly serif · community, local | med | ✅ |
 
 ### Build order (Phase 34)
 
@@ -1907,9 +1917,13 @@ landings use per-variant palette overrides.
 5. **Admin** — 14, 15.
 6. **Landings** — 16 → 20.
 
+> **Progress (2026-06-18):** ✅ Complete. All 20 resources built via workflow `wf_3b70a7bb-3fd`
+> (session limit cut at 16/20; resumed to finish the 4 landings with zero rework). New `cowork`
+> collection wired in all 6 places. MCP catalog regenerated (1580 resources).
+
 ---
 
-## Phase 35 — Auto Repair / Dealership Theme 🚗 PLAN
+## Phase 35 — Auto Repair / Dealership Theme 🚗 ✅ DONE (2026-06-18)
 
 > Service bay board, parts inventory, customer portal, sales floor + themed dealership landings (luxury, EV, used cars, motorcycle, performance/tuning).
 >
@@ -1921,49 +1935,49 @@ landings use per-variant palette overrides.
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 1 | `auto-service-board` | Service Bay Board (jobs in progress) | pages | hard | [ ] |
-| 2 | `auto-work-order` | Work Order (vehicle + tasks + parts) | pages | med | [ ] |
-| 3 | `auto-diagnostic-report` | Diagnostic Report (codes + recommendations) | ui-components | med | [ ] |
-| 4 | `auto-estimate` | Repair Estimate (labor + parts) | ui-components | med | [ ] |
-| 5 | `auto-parts-inventory` | Parts Inventory (SKU search) | pages | med | [ ] |
-| 6 | `auto-tech-mobile` | Technician Mobile Job View | pages | med | [ ] |
+| 1 | `auto-service-board` | Service Bay Board (jobs in progress) | pages | hard | ✅ |
+| 2 | `auto-work-order` | Work Order (vehicle + tasks + parts) | pages | med | ✅ |
+| 3 | `auto-diagnostic-report` | Diagnostic Report (codes + recommendations) | ui-components | med | ✅ |
+| 4 | `auto-estimate` | Repair Estimate (labor + parts) | ui-components | med | ✅ |
+| 5 | `auto-parts-inventory` | Parts Inventory (SKU search) | pages | med | ✅ |
+| 6 | `auto-tech-mobile` | Technician Mobile Job View | pages | med | ✅ |
 
 ### 35.B — Customer Side
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 7 | `auto-customer-portal` | Customer Service Portal | pages | med | [ ] |
-| 8 | `auto-service-booking` | Book Service Appointment | pages | med | [ ] |
-| 9 | `auto-repair-tracker` | Repair Status Tracker (text-style updates) | ui-components | easy | [ ] |
-| 10 | `auto-quote-approval` | Quote Approval (digital sign-off) | ui-components | easy | [ ] |
+| 7 | `auto-customer-portal` | Customer Service Portal | pages | med | ✅ |
+| 8 | `auto-service-booking` | Book Service Appointment | pages | med | ✅ |
+| 9 | `auto-repair-tracker` | Repair Status Tracker (text-style updates) | ui-components | easy | ✅ |
+| 10 | `auto-quote-approval` | Quote Approval (digital sign-off) | ui-components | easy | ✅ |
 
 ### 35.C — Sales / Showroom
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 11 | `auto-inventory-grid` | Vehicle Inventory Grid (search · filter) | pages | hard | [ ] |
-| 12 | `auto-vehicle-detail` | Vehicle Detail (specs · gallery · finance) | pages | hard | [ ] |
-| 13 | `auto-finance-calc` | Finance / Lease Calculator | ui-components | med | [ ] |
-| 14 | `auto-trade-in` | Trade-In Valuation Form | ui-components | med | [ ] |
-| 15 | `auto-test-drive-booking` | Test Drive Booking | ui-components | easy | [ ] |
+| 11 | `auto-inventory-grid` | Vehicle Inventory Grid (search · filter) | pages | hard | ✅ |
+| 12 | `auto-vehicle-detail` | Vehicle Detail (specs · gallery · finance) | pages | hard | ✅ |
+| 13 | `auto-finance-calc` | Finance / Lease Calculator | ui-components | med | ✅ |
+| 14 | `auto-trade-in` | Trade-In Valuation Form | ui-components | med | ✅ |
+| 15 | `auto-test-drive-booking` | Test Drive Booking | ui-components | easy | ✅ |
 
 ### 35.D — Admin / Manager
 
 | # | Slug | Title | Category | Difficulty | Status |
 |---|---|---|---|---|---|
-| 16 | `auto-admin-dashboard` | Shop Dashboard (revenue · bay utilization) | pages | hard | [ ] |
-| 17 | `auto-admin-tech-productivity` | Technician Productivity Report | pages | med | [ ] |
-| 18 | `auto-admin-customer-db` | Customer & Vehicle Database | pages | med | [ ] |
+| 16 | `auto-admin-dashboard` | Shop Dashboard (revenue · bay utilization) | pages | hard | ✅ |
+| 17 | `auto-admin-tech-productivity` | Technician Productivity Report | pages | med | ✅ |
+| 18 | `auto-admin-customer-db` | Customer & Vehicle Database | pages | med | ✅ |
 
 ### 35.E — Themed Dealership Landings (5 variants)
 
 | # | Slug | Concept | Palette · Type · Mood | Difficulty | Status |
 |---|---|---|---|---|---|
-| 19 | `auto-landing-luxury` | Luxury Dealership (BMW/Mercedes-style) | Charcoal + champagne + chrome · refined sans · prestige, precision | hard | [ ] |
-| 20 | `auto-landing-ev` | EV / Tesla-style | White + minimal + electric blue · ultra-clean sans · futuristic, minimal | hard | [ ] |
-| 21 | `auto-landing-used` | Used Car Lot | Red + white + steel · chunky display · accessible, value-driven | med | [ ] |
-| 22 | `auto-landing-motorcycle` | Motorcycle / Harley-style | Black + chrome + oxblood · slab serif · rebellious, heritage | med | [ ] |
-| 23 | `auto-landing-performance` | Performance / Tuning Shop | Carbon + neon green + orange · technical sans · adrenaline, motorsport | hard | [ ] |
+| 19 | `auto-landing-luxury` | Luxury Dealership (BMW/Mercedes-style) | Charcoal + champagne + chrome · refined sans · prestige, precision | hard | ✅ |
+| 20 | `auto-landing-ev` | EV / Tesla-style | White + minimal + electric blue · ultra-clean sans · futuristic, minimal | hard | ✅ |
+| 21 | `auto-landing-used` | Used Car Lot | Red + white + steel · chunky display · accessible, value-driven | med | ✅ |
+| 22 | `auto-landing-motorcycle` | Motorcycle / Harley-style | Black + chrome + oxblood · slab serif · rebellious, heritage | med | ✅ |
+| 23 | `auto-landing-performance` | Performance / Tuning Shop | Carbon + neon green + orange · technical sans · adrenaline, motorsport | hard | ✅ |
 
 ### Build order (Phase 35)
 
@@ -1974,11 +1988,16 @@ landings use per-variant palette overrides.
 5. **Admin** — 16 → 18.
 6. **Landings** — 19 → 23.
 
+> **Progress (2026-06-18):** ✅ Complete. All 23 resources built via workflow `wf_fca5da17-c64`
+> (`docs/templates/phase35-auto.workflow.js`). New `auto` collection wired in all 6 places. MCP
+> catalog regenerated (1603 resources). **This completes every scoped vertical/pattern phase
+> in the ROADMAP (28–64) — no scoped phase remains in PLAN.**
+
 > Note: Phase 35 has no separate marketing section — marketing surfaces are baked into the themed landings (35.E) since dealerships are landing-first by nature. Consider adding a generic `auto-page-services` if a non-themed marketing page is needed.
 
 ---
 
-## Future verticals — scoped (Phases 36–45) 🧭 PLAN
+## Future verticals — scoped (Phases 36–45) 🧭 ✅ DONE
 
 > Second wave of transactional verticals. Same template as Phases 28–35 / 57–60: end-to-end
 > coverage across customer-facing, ops/staff and admin, plus a `*.E` themed-landing sub-section

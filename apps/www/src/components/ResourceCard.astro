@@ -134,17 +134,12 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
   data-lab-route={labRoute ?? ""}
   data-type={resource.data.type}
 >
-  <!-- Live preview (revealed only in collection-preview mode; src set lazily by FilterBar) -->
+  <!-- Live preview slot. The preview frame is created on demand by FilterBar when
+       the card enters collection-preview mode, so the page never ships 1000+ idle
+       frames. -->
   {labRoute && (
-    <div class="card-preview" data-card-preview>
+    <div class="card-preview" data-card-preview data-preview-title={`${title} live preview`}>
       <div class="card-preview-skeleton" aria-hidden="true"></div>
-      <iframe
-        class="card-preview-iframe"
-        data-card-preview-iframe
-        sandbox="allow-scripts allow-same-origin"
-        loading="lazy"
-        title={`${title} live preview`}
-      ></iframe>
     </div>
   )}
 
@@ -252,9 +247,12 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
 </article>
 
 <style>
-  /* Showcase-style live preview — hidden until the card is in collection-preview mode.
-     The lab demo renders at a desktop logical size and is scaled down to a thumbnail
-     (scale set inline by FilterBar) so the whole page is visible, not just its top. */
+  /* Live preview — hidden until the card is in collection-preview mode. The lab
+     demo is rendered at a desktop logical size and scaled DOWN (scale set inline
+     by FilterBar) so the whole page is visible as a thumbnail, filling the box.
+     NOTE: do not put `content-visibility:auto` on the card — it reports 0 width
+     while off-screen, which made the scale compute as ~0 and the preview render
+     as a tiny corner. Infinite-scroll already bounds the rendered card count. */
   .card-preview {
     display: none;
   }
@@ -263,28 +261,12 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
     display: block;
     position: relative;
     margin: -1.25rem -1.25rem 0; /* bleed over the p-5 padding to the card edge */
-    height: 210px;
+    height: 280px;
     overflow: hidden;
     background: #0b1221;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
-  }
-
-  .card-preview-iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1280px;
-    height: 900px;
-    border: 0;
-    transform-origin: top left;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  article.is-preview .card-preview.is-loaded .card-preview-iframe {
-    opacity: 1;
   }
 
   /* Shimmer placeholder shown until the iframe fires its load event */
@@ -314,7 +296,6 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
 
   @media (prefers-reduced-motion: reduce) {
     .card-preview-skeleton { animation: none; }
-    .card-preview-iframe { transition: none; }
   }
 
   .quick-action {
@@ -327,6 +308,30 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
 
   .favorite-btn.is-favorite svg {
     fill: currentColor;
+  }
+</style>
+
+<style is:global>
+  /* Created dynamically by FilterBar, so these rules must be global rather than
+     Astro-scoped or the iframe keeps its default inline layout and drifts inside
+     the thumbnail. */
+  .card-preview-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 0;
+    transform-origin: top left;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    /* width / height set inline by FilterBar so the scaled iframe fills the box */
+  }
+
+  article.is-preview .card-preview.is-loaded .card-preview-iframe {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-preview-iframe { transition: none; }
   }
 </style>
 

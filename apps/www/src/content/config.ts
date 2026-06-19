@@ -156,6 +156,9 @@ const ResourceCollectionSchema = z.enum([
   "events",
   "nonprofit",
   "creator",
+  "airline",
+  "cowork",
+  "auto",
 ]);
 
 const resources = defineCollection({

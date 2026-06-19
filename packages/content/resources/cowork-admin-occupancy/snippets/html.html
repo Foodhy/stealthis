@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loftworks — Occupancy Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Primary">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◧</span>
+        <span class="brand-name">Loftworks</span>
+      </div>
+      <nav class="nav" aria-label="Sections">
+        <a class="nav-item is-active" href="#" aria-current="page"><span class="ni-ico">▦</span> Occupancy</a>
+        <a class="nav-item" href="#"><span class="ni-ico">▥</span> Floor plan</a>
+        <a class="nav-item" href="#"><span class="ni-ico">◷</span> Bookings</a>
+        <a class="nav-item" href="#"><span class="ni-ico">◍</span> Members</a>
+        <a class="nav-item" href="#"><span class="ni-ico">⚙</span> Settings</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="live-dot" aria-hidden="true"></div>
+        <span>Live · synced 1m ago</span>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Riverside Studio · Floor 2</p>
+          <h1>Occupancy &amp; Utilization</h1>
+        </div>
+        <div class="topbar-actions">
+          <div class="seg" role="tablist" aria-label="Timeframe">
+            <button class="seg-btn is-active" role="tab" aria-selected="true" data-range="today">Today</button>
+            <button class="seg-btn" role="tab" aria-selected="false" data-range="week">Week</button>
+            <button class="seg-btn" role="tab" aria-selected="false" data-range="month">Month</button>
+          </div>
+          <div class="avatar" title="Mara Quintero, Space Manager" aria-hidden="true">MQ</div>
+        </div>
+      </header>
+
+      <!-- KPIs -->
+      <section class="kpis" aria-label="Key metrics">
+        <article class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Occupancy</span>
+            <span class="trend up" id="trendOcc">▲ 6%</span>
+          </div>
+          <div class="kpi-value"><span id="kpiOcc">72</span><span class="unit">%</span></div>
+          <div class="bar"><span class="bar-fill" id="kpiOccBar" style="width:72%"></span></div>
+          <p class="kpi-sub">112 of 156 seats in use</p>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Desk utilization</span>
+            <span class="trend up" id="trendUtil">▲ 3%</span>
+          </div>
+          <div class="kpi-value"><span id="kpiUtil">64</span><span class="unit">%</span></div>
+          <div class="bar"><span class="bar-fill plant" id="kpiUtilBar" style="width:64%"></span></div>
+          <p class="kpi-sub">Avg. across the working day</p>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Peak hour</span>
+            <span class="trend flat" id="trendPeak">— steady</span>
+          </div>
+          <div class="kpi-value"><span id="kpiPeak">11:00</span></div>
+          <div class="spark" id="kpiSpark" aria-hidden="true"></div>
+          <p class="kpi-sub">88% of seats at busiest</p>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Members checked in</span>
+            <span class="trend up" id="trendMem">▲ 12</span>
+          </div>
+          <div class="kpi-value"><span id="kpiMem">128</span></div>
+          <div class="avatars" id="kpiAvatars" aria-hidden="true"></div>
+          <p class="kpi-sub">of 214 active members</p>
+        </article>
+      </section>
+
+      <div class="grid">
+        <!-- Occupancy over day chart -->
+        <section class="panel chart-panel" aria-label="Occupancy over the day">
+          <div class="panel-head">
+            <div>
+              <h2>Occupancy over the day</h2>
+              <p class="panel-sub" id="chartSub">Live seats in use · 07:00–20:00</p>
+            </div>
+            <div class="legend">
+              <span class="lg"><i class="dot amber"></i> In use</span>
+              <span class="lg"><i class="dot line"></i> Capacity</span>
+            </div>
+          </div>
+          <div class="chart">
+            <svg id="chartSvg" viewBox="0 0 720 240" preserveAspectRatio="none" role="img" aria-label="Line chart of occupancy through the day"></svg>
+            <div class="chart-x" id="chartX"></div>
+            <div class="chart-tip" id="chartTip" hidden></div>
+          </div>
+        </section>
+
+        <!-- Underused resources -->
+        <section class="panel" aria-label="Underused resources">
+          <div class="panel-head">
+            <h2>Underused this week</h2>
+            <span class="pill warn">Review</span>
+          </div>
+          <ul class="under-list" id="underList"></ul>
+        </section>
+      </div>
+
+      <!-- Heatmap -->
+      <section class="panel heat-panel" aria-label="Occupancy heatmap by zone and hour">
+        <div class="panel-head">
+          <div>
+            <h2>Heatmap · zone × hour</h2>
+            <p class="panel-sub">Hover a cell for detail · click a zone to drill in</p>
+          </div>
+          <div class="legend heat-legend">
+            <span class="lg">Low</span>
+            <span class="scale" aria-hidden="true"></span>
+            <span class="lg">High</span>
+          </div>
+        </div>
+        <div class="heat-wrap">
+          <div class="heat" id="heat" role="grid" aria-label="Heatmap grid"></div>
+        </div>
+        <div class="drill" id="drill" hidden>
+          <button class="drill-close" id="drillClose" aria-label="Close zone detail">✕</button>
+          <h3 id="drillTitle">Zone</h3>
+          <div class="drill-stats" id="drillStats"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

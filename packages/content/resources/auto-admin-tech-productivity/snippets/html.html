@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Torque &amp; Tread — Technician Productivity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4l-2.6 2.6-1.4-.3-.3-1.4 2.6-2.6Z"/>
+          </svg>
+        </div>
+        <div class="brand-txt">
+          <span class="brand-name">Torque &amp; Tread</span>
+          <span class="brand-sub">Service Bay Ops</span>
+        </div>
+      </div>
+
+      <nav class="topnav" aria-label="Sections">
+        <a href="#" class="topnav-link">Dashboard</a>
+        <a href="#" class="topnav-link">Work Orders</a>
+        <a href="#" class="topnav-link is-active" aria-current="page">Technicians</a>
+        <a href="#" class="topnav-link">Inventory</a>
+      </nav>
+
+      <div class="topbar-right">
+        <div class="seg" role="group" aria-label="Timeframe">
+          <button class="seg-btn" data-range="day">Day</button>
+          <button class="seg-btn is-active" data-range="week" aria-pressed="true">Week</button>
+          <button class="seg-btn" data-range="month">Month</button>
+        </div>
+        <div class="avatar" title="Shop Foreman — D. Okafor">DO</div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Technician Productivity</h1>
+          <p class="page-meta">Bay performance for <span id="rangeLabel">this week</span> · 6 techs on shift · updated 9:42 AM</p>
+        </div>
+        <button class="btn btn-ghost" id="exportBtn" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+          Export
+        </button>
+      </div>
+
+      <!-- KPI strip -->
+      <section class="kpis" aria-label="Shop totals">
+        <div class="kpi">
+          <span class="kpi-label">Billed Hours</span>
+          <span class="kpi-value" id="kpiBilled">0</span>
+          <span class="kpi-foot"><i class="dot dot-ok"></i><span id="kpiBilledDelta">+0%</span> vs prior</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Shop Efficiency</span>
+          <span class="kpi-value" id="kpiEff">0%</span>
+          <span class="kpi-foot"><i class="dot dot-ok"></i>Target 90%</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Jobs Closed</span>
+          <span class="kpi-value" id="kpiJobs">0</span>
+          <span class="kpi-foot"><i class="dot dot-warn"></i><span id="kpiHold">0</span> on hold</span>
+        </div>
+        <div class="kpi kpi-rev">
+          <span class="kpi-label">Labor Revenue</span>
+          <span class="kpi-value" id="kpiRev">$0</span>
+          <span class="kpi-foot"><i class="dot dot-ok"></i>@ $145/hr ALR</span>
+        </div>
+      </section>
+
+      <div class="grid">
+        <!-- Main table -->
+        <section class="panel panel-table">
+          <div class="panel-head">
+            <h2 class="panel-title">Technician Scorecard</h2>
+            <div class="table-tools">
+              <span class="hint">Click a row to drill in</span>
+            </div>
+          </div>
+
+          <div class="table-wrap" role="region" aria-label="Technician scorecard" tabindex="0">
+            <table class="ttable" id="techTable">
+              <thead>
+                <tr>
+                  <th class="th-name" data-sort="name">Technician <span class="caret"></span></th>
+                  <th data-sort="billed">Billed <span class="caret"></span></th>
+                  <th data-sort="available">Avail <span class="caret"></span></th>
+                  <th data-sort="eff" class="is-sorted" aria-sort="descending">Eff % <span class="caret"></span></th>
+                  <th data-sort="jobs">Jobs <span class="caret"></span></th>
+                  <th data-sort="revenue">Revenue <span class="caret"></span></th>
+                </tr>
+              </thead>
+              <tbody id="techBody"><!-- JS --></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Right column -->
+        <div class="col-right">
+          <!-- Leaderboard -->
+          <section class="panel panel-board">
+            <div class="panel-head">
+              <h2 class="panel-title">Efficiency Leaderboard</h2>
+            </div>
+            <ol class="board" id="board"><!-- JS --></ol>
+          </section>
+
+          <!-- Hours chart -->
+          <section class="panel panel-chart">
+            <div class="panel-head">
+              <h2 class="panel-title">Billed vs Available Hours</h2>
+              <div class="legend">
+                <span class="lg"><i class="sw sw-billed"></i>Billed</span>
+                <span class="lg"><i class="sw sw-avail"></i>Available</span>
+              </div>
+            </div>
+            <div class="chart" id="chart" role="img" aria-label="Bar chart of billed versus available hours per technician"><!-- JS --></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Drill-in drawer -->
+  <div class="drawer-scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-label="Technician detail" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="dh-id">
+        <div class="dh-avatar" id="dAvatar">--</div>
+        <div>
+          <h3 class="dh-name" id="dName">—</h3>
+          <p class="dh-role" id="dRole">—</p>
+        </div>
+      </div>
+      <button class="icon-btn" id="drawerClose" type="button" aria-label="Close detail">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="dring-wrap">
+        <div class="dring" id="dRing">
+          <span class="dring-num" id="dEff">0%</span>
+          <span class="dring-cap">efficiency</span>
+        </div>
+        <ul class="dstats">
+          <li><span class="ds-l">Billed</span><span class="ds-v" id="dBilled">0h</span></li>
+          <li><span class="ds-l">Available</span><span class="ds-v" id="dAvail">0h</span></li>
+          <li><span class="ds-l">Jobs</span><span class="ds-v" id="dJobs">0</span></li>
+          <li><span class="ds-l">Revenue</span><span class="ds-v" id="dRev">$0</span></li>
+        </ul>
+      </div>
+
+      <h4 class="dsub">Open work orders</h4>
+      <ul class="wo-list" id="dWorkOrders"><!-- JS --></ul>
+
+      <h4 class="dsub">Certifications</h4>
+      <div class="chips" id="dCerts"><!-- JS --></div>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

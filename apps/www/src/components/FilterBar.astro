@@ -202,24 +202,49 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   // Iframes load lazily as cards scroll into view so we never fetch all at once.
   const labBaseUrl = document.querySelector<HTMLElement>("[data-lab-url]")?.dataset.labUrl ?? "";
 
-  const PREVIEW_LOGICAL_WIDTH = 1280;
+  // The demo iframe is laid out at this logical width, then scaled to cover the
+  // preview box (see sizeCardPreview). Single tunable knob: lower = content
+  // bigger / less page; higher = more page / smaller content.
+  const PREVIEW_LOGICAL_WIDTH = 600;
 
   function previewSrcFor(card: HTMLElement): string {
     const labRoute = card.dataset.labRoute ?? "";
     const slug = card.dataset.slug ?? "";
-    if (labRoute && labBaseUrl) return `${labBaseUrl}${labRoute}`;
-    return `/r/${slug}`;
+    // Trailing slash is the canonical form — without it both lab routes and /r/
+    // pages answer 308 and the iframe wastes a round-trip chasing the redirect
+    // (and logs noise to the console). Request the final URL directly.
+    let url = labRoute && labBaseUrl ? `${labBaseUrl}${labRoute}` : `/r/${slug}`;
+    if (!url.endsWith("/")) url += "/";
+    return url;
   }
 
-  // Scale the desktop-sized lab iframe down so the whole page fits the card width.
   function sizeCardPreview(card: HTMLElement) {
     const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
     const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
     if (!wrap || !iframe) return;
-    const width = wrap.clientWidth;
-    if (width <= 0) return;
-    iframe.style.transform = `scale(${width / PREVIEW_LOGICAL_WIDTH})`;
+    const w = wrap.offsetWidth;
+    const h = wrap.offsetHeight;
+    if (w <= 0 || h <= 0) return; // card not laid out yet; the ResizeObserver retries
+    // Cover-fill: render at the logical width, then scale so the iframe exactly
+    // fills the box (top-aligned). Logical height = h / scale so scaled height
+    // === box height — no dark gap below, content spans the full width.
+    const scale = w / PREVIEW_LOGICAL_WIDTH;
+    iframe.style.width = `${PREVIEW_LOGICAL_WIDTH}px`;
+    iframe.style.height = `${Math.ceil(h / scale)}px`;
+    iframe.style.transform = `scale(${scale})`;
   }
+
+  // Re-scale a preview whenever its box gets a real (or changed) width. Fires once
+  // as soon as the card is laid out, so the scale is never stuck at a stale value.
+  const previewSizeObserver =
+    "ResizeObserver" in window
+      ? new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            const card = (entry.target as HTMLElement).closest<HTMLElement>("article[data-slug]");
+            if (card) sizeCardPreview(card);
+          }
+        })
+      : null;
 
   // Throttled, lazy preview loader. Cards entering the viewport are queued; at
   // most MAX_CONCURRENT iframes load at a time so we never stampede the network
@@ -248,6 +273,10 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     } else {
       loadStatus.hidden = true;
     }
+    // Let the "Show previews" toggle reflect loading state on the button itself.
+    window.dispatchEvent(
+      new CustomEvent("stealthis:previews-loading", { detail: { remaining } })
+    );
   }
 
   const previewObserver =
@@ -266,8 +295,9 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       : null;
 
   function queuePreview(card: HTMLElement) {
-    const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
-    if (!iframe || iframe.src || loadQueue.includes(card)) return;
+    const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
+    // Already has an iframe (loading or loaded) or already queued → skip.
+    if (!wrap || wrap.querySelector("iframe") || loadQueue.includes(card)) return;
     loadQueue.push(card);
     updateLoadStatus();
     pumpQueue();
@@ -281,20 +311,36 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   }
 
   function startLoad(card: HTMLElement) {
-    const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
-    if (!iframe || iframe.src) return;
+    const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
+    if (!wrap || wrap.querySelector("iframe")) return;
     activeLoads++;
+
+    // Iframes are created here, on demand — never in the server HTML. With 1000+
+    // lab-route cards, rendering an <iframe> per card up front spawned 1000+
+    // about:blank documents (heavy, and a wall of sandbox-escape warnings).
+    // Lazy creation — not the sandbox flags — is what fixed that.
+    // sandbox needs BOTH allow-scripts and allow-same-origin: lab previews are
+    // Astro pages whose type=module scripts are fetched under CORS, and an
+    // opaque ('null') origin would get those blocked, leaving the preview blank.
+    const iframe = document.createElement("iframe");
+    iframe.className = "card-preview-iframe";
+    iframe.setAttribute("data-card-preview-iframe", "");
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+    iframe.setAttribute("loading", "lazy");
+    iframe.setAttribute("title", wrap.dataset.previewTitle ?? "Live preview");
+
     const finish = () => {
       activeLoads--;
-      const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
-      wrap?.classList.add("is-loaded");
+      wrap.classList.add("is-loaded");
       sizeCardPreview(card);
       updateLoadStatus();
       pumpQueue();
     };
     iframe.addEventListener("load", finish, { once: true });
     iframe.addEventListener("error", finish, { once: true });
+    wrap.appendChild(iframe);
     sizeCardPreview(card);
+    previewSizeObserver?.observe(wrap);
     iframe.src = previewSrcFor(card);
   }
 
@@ -305,14 +351,15 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     if (queueIdx !== -1) loadQueue.splice(queueIdx, 1);
     const wrap = card.querySelector<HTMLElement>("[data-card-preview]");
     wrap?.classList.remove("is-loaded");
-    const iframe = card.querySelector<HTMLIFrameElement>("[data-card-preview-iframe]");
-    if (iframe && iframe.src) iframe.removeAttribute("src");
+    if (wrap) previewSizeObserver?.unobserve(wrap);
+    // Destroy the iframe entirely so the off-screen card costs nothing again.
+    wrap?.querySelector("iframe")?.remove();
     updateLoadStatus();
   }
 
   function enableCardPreview(card: HTMLElement) {
     // Only cards that actually have a preview slot (i.e. a lab route) opt in.
-    if (!card.querySelector("[data-card-preview-iframe]")) return;
+    if (!card.querySelector("[data-card-preview]")) return;
     card.classList.add("is-preview");
     if (previewObserver) {
       previewObserver.observe(card);
@@ -321,18 +368,8 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     }
   }
 
-  let resizeTimer: number | undefined;
-  window.addEventListener("resize", () => {
-    if (resizeTimer) window.clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => {
-      document
-        .querySelectorAll<HTMLElement>("article.is-preview .card-preview.is-loaded")
-        .forEach((wrap) => {
-          const card = wrap.closest<HTMLElement>("article[data-slug]");
-          if (card) sizeCardPreview(card);
-        });
-    }, 150);
-  });
+  // (Per-preview ResizeObserver above handles re-scaling — no global resize
+  // listener needed.)
 
   const searchInput = document.getElementById("search-input") as HTMLInputElement | null;
   let searchTimer: number | undefined;
@@ -411,27 +448,83 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 
   let pendingScroll = false;
 
-  function applyFilters() {
-    let visible = 0;
-    const visibleSlugs = new Set<string>();
-    const previewMode = state.collection !== "all" && state.previewsEnabled;
+  // --- Infinite scroll --------------------------------------------------------
+  // 1621 cards is too many to paint at once. We compute the full match set but
+  // only reveal it in batches; a sentinel near the page bottom reveals the next
+  // batch as the user scrolls. Hidden-but-matching cards cost nothing (they are
+  // display:none) and previews only attach to revealed cards, so the iframe
+  // storm that made "Show previews" choke is bounded too.
+  const INITIAL_REVEAL = 48;
+  const REVEAL_STEP = 48;
+  let revealCount = INITIAL_REVEAL;
+  let matchedCards: HTMLElement[] = [];
+
+  const sentinel = document.getElementById("infinite-sentinel");
+  const sentinelObserver =
+    sentinel && "IntersectionObserver" in window
+      ? new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting && revealCount < matchedCards.length) {
+                revealCount += REVEAL_STEP;
+                renderReveal();
+              }
+            }
+          },
+          { rootMargin: "600px" }
+        )
+      : null;
+  if (sentinel && sentinelObserver) sentinelObserver.observe(sentinel);
+
+  // Compute which cards match, then hand off to renderReveal() for the batched
+  // display pass. resetReveal=true (the default) restarts paging from the top —
+  // every filter/search change; the sentinel calls renderReveal() directly to
+  // grow the window without recomputing matches.
+  function applyFilters(resetReveal = true) {
     // Read favorites once per pass instead of once per card.
     currentFavs = state.favoritesOnly ? getFavoriteSlugs() : currentFavs;
-    cards.forEach((card) => {
-      const show = matches(card);
-      card.style.display = show ? "" : "none";
-      if (show && previewMode) {
-        visible++;
-        visibleSlugs.add(card.dataset.slug ?? "");
-        enableCardPreview(card);
-      } else if (show) {
-        visible++;
-        visibleSlugs.add(card.dataset.slug ?? "");
-        clearCardPreview(card);
+
+    // Order by current DOM position (live query) so "first N revealed" follows
+    // what the user sees — important in "latest" mode where cards are reparented
+    // into #flat-grid in date order. Scoped to #resource-grid so discover-mode
+    // card clones (rendered in a separate container) are never touched.
+    const gridRoot = document.getElementById("resource-grid") ?? document;
+    const ordered = gridRoot.querySelectorAll<HTMLElement>("article[data-slug]");
+    matchedCards = [];
+    ordered.forEach((card) => {
+      if (matches(card)) {
+        matchedCards.push(card);
       } else {
+        card.style.display = "none";
         clearCardPreview(card);
       }
     });
+
+    if (resetReveal) revealCount = INITIAL_REVEAL;
+    renderReveal();
+  }
+
+  function renderReveal() {
+    let visible = 0;
+    const visibleSlugs = new Set<string>();
+    const previewMode = state.collection !== "all" && state.previewsEnabled;
+    const limit = Math.min(revealCount, matchedCards.length);
+
+    matchedCards.forEach((card, i) => {
+      if (i < limit) {
+        card.style.display = "";
+        visible++;
+        visibleSlugs.add(card.dataset.slug ?? "");
+        if (previewMode) enableCardPreview(card);
+        else clearCardPreview(card);
+      } else {
+        card.style.display = "none";
+        clearCardPreview(card);
+      }
+    });
+
+    // Sentinel only matters while there are more matches to reveal.
+    if (sentinel) sentinel.style.display = limit < matchedCards.length ? "" : "none";
 
     // Hide category sections with no visible cards (use slug set for reliability)
     document.querySelectorAll<HTMLElement>("[data-category-section]").forEach((section) => {
@@ -459,7 +552,11 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     if (emptyState) emptyState.classList.toggle("hidden", visible > 0);
 
     if (resultsCount) {
-      resultsCount.textContent = `${visible} resource${visible !== 1 ? "s" : ""}`;
+      const total = matchedCards.length;
+      resultsCount.textContent =
+        visible < total
+          ? `${visible} of ${total} resources`
+          : `${total} resource${total !== 1 ? "s" : ""}`;
     }
 
     // Scroll to the resource grid so filtered results are immediately visible
@@ -554,6 +651,10 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     state.previewsEnabled = !!(event as CustomEvent).detail?.enabled;
     applyFilters();
   });
+
+  // Sort toggle (grouped/latest) reparents cards — recompute the reveal window
+  // in the new DOM order. Reset paging so the user starts at the top.
+  window.addEventListener("stealthis:sort-changed", () => applyFilters());
 
   // Init count
   const params = new URLSearchParams(window.location.search);

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skyward Air — Gate Agent Boarding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app" role="application" aria-label="Gate agent boarding terminal">
+    <!-- Flight header -->
+    <header class="flight-head">
+      <div class="fh-brand">
+        <span class="fh-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L11 19v-5.5L21 16z"/></svg>
+        </span>
+        <div class="fh-air">
+          <strong>Skyward Air</strong>
+          <span class="fh-flight" id="flightNo">SK 482</span>
+        </div>
+      </div>
+
+      <div class="fh-route" aria-label="Route New York JFK to London Heathrow">
+        <div class="fh-ap">
+          <span class="fh-code">JFK</span>
+          <span class="fh-time">18:40</span>
+          <span class="fh-meta">Terminal 4 · New York</span>
+        </div>
+        <div class="fh-leg" aria-hidden="true">
+          <span class="fh-dur">7h 05m</span>
+          <span class="fh-line"><i></i><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L11 19v-5.5L21 16z"/></svg></span>
+        </div>
+        <div class="fh-ap fh-ap-arr">
+          <span class="fh-code">LHR</span>
+          <span class="fh-time">06:45</span>
+          <span class="fh-meta">Terminal 3 · London</span>
+        </div>
+      </div>
+
+      <div class="fh-stats">
+        <div class="fh-stat">
+          <span class="fh-stat-l">Gate</span>
+          <strong class="fh-stat-v">B22</strong>
+        </div>
+        <div class="fh-stat">
+          <span class="fh-stat-l">Boarded</span>
+          <strong class="fh-stat-v"><span id="boardedCount">0</span><span class="fh-stat-sub">/<span id="loadCount">186</span></span></strong>
+        </div>
+        <div class="fh-stat fh-stat-status">
+          <span class="fh-stat-l">Status</span>
+          <span class="pill pill-boarding" id="flightStatus">Boarding</span>
+        </div>
+      </div>
+
+      <div class="fh-progress" aria-hidden="true">
+        <div class="fh-progress-bar" id="boardBar" style="width:0%"></div>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- Scan panel -->
+      <section class="card scan" aria-label="Scan to board">
+        <div class="card-head">
+          <h2>Scan to Board</h2>
+          <span class="group-tag">Group <span id="activeGroupTag">2</span> open</span>
+        </div>
+
+        <div class="scan-stage" id="scanStage" aria-live="polite">
+          <div class="scan-idle" id="scanIdle">
+            <span class="scan-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/></svg>
+            </span>
+            <p>Tap <strong>Scan Pass</strong> to read the next boarding pass.</p>
+          </div>
+          <div class="scan-result" id="scanResult" hidden>
+            <div class="sr-pax">
+              <span class="sr-seat" id="srSeat">—</span>
+              <div class="sr-id">
+                <strong id="srName">—</strong>
+                <span id="srGroup">—</span>
+              </div>
+            </div>
+            <div class="sr-verdict" id="srVerdict">
+              <span class="sr-badge" id="srBadge">Accepted</span>
+              <p id="srMsg">Welcome aboard.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="scan-actions">
+          <button class="btn btn-primary btn-scan" id="scanBtn" type="button">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"/><path d="M4 12h16"/></svg>
+            Scan Pass
+          </button>
+          <button class="btn btn-ghost" id="overrideBtn" type="button">Manual override</button>
+        </div>
+
+        <div class="scan-counters">
+          <div class="sc-item"><span>Accepted</span><strong id="cAccepted">0</strong></div>
+          <div class="sc-item"><span>Standby</span><strong id="cStandby">0</strong></div>
+          <div class="sc-item"><span>Flagged</span><strong id="cFlagged">0</strong></div>
+        </div>
+      </section>
+
+      <!-- Boarding group control -->
+      <section class="card groups" aria-label="Boarding group control">
+        <div class="card-head">
+          <h2>Boarding Groups</h2>
+          <button class="btn btn-mini" id="nextGroupBtn" type="button">Open next group</button>
+        </div>
+        <ul class="group-list" id="groupList"></ul>
+        <p class="groups-note" id="groupsNote">Group 2 (Priority) now boarding. Scans outside the open group route to standby.</p>
+      </section>
+
+      <!-- Standby / upgrade queue -->
+      <section class="card queue" aria-label="Standby and upgrade queue">
+        <div class="card-head">
+          <h2>Standby &amp; Upgrades</h2>
+          <span class="queue-count"><span id="queueCount">3</span> waiting</span>
+        </div>
+        <ul class="q-list" id="queueList"></ul>
+        <button class="btn btn-ghost btn-block" id="clearStandbyBtn" type="button">Clear next standby into open seat</button>
+      </section>
+
+      <!-- Passenger manifest -->
+      <section class="card manifest" aria-label="Passenger manifest">
+        <div class="card-head">
+          <h2>Manifest</h2>
+          <div class="man-filter" role="tablist" aria-label="Filter passengers">
+            <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+            <button class="chip" data-filter="boarded" role="tab" aria-selected="false">Boarded</button>
+            <button class="chip" data-filter="not-boarded" role="tab" aria-selected="false">Not boarded</button>
+          </div>
+        </div>
+        <div class="man-search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="manSearch" placeholder="Search name or seat…" aria-label="Search passengers" />
+        </div>
+        <ul class="man-list" id="manList"></ul>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

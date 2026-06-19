@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forge & Field — Visitor Check-in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="kiosk" role="application" aria-label="Visitor check-in kiosk">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">▦</span>
+        <div class="brand-txt">
+          <strong>Forge &amp; Field</strong>
+          <span>Coworking · Atelier No. 4</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="clock" id="clock" aria-live="off">—:—</span>
+      </div>
+    </header>
+
+    <!-- progress rail -->
+    <nav class="rail" aria-label="Check-in progress">
+      <ol id="rail">
+        <li data-step="1" class="active"><span>1</span>Purpose</li>
+        <li data-step="2"><span>2</span>Host</li>
+        <li data-step="3"><span>3</span>Details</li>
+        <li data-step="4"><span>4</span>Badge</li>
+      </ol>
+    </nav>
+
+    <main class="stage">
+      <!-- STEP 1 — purpose -->
+      <section class="screen is-on" data-screen="1" aria-labelledby="t1">
+        <h1 id="t1" class="screen-title">Welcome. Why are you here today?</h1>
+        <p class="screen-sub">Tap an option to begin. This takes about a minute.</p>
+        <div class="purpose-grid" role="list">
+          <button class="purpose" role="listitem" data-purpose="Meeting" data-emoji="🤝">
+            <span class="p-emoji" aria-hidden="true">🤝</span>
+            <span class="p-name">Meeting a member</span>
+            <span class="p-sub">Scheduled or drop-in</span>
+          </button>
+          <button class="purpose" role="listitem" data-purpose="Day pass" data-emoji="🎟️">
+            <span class="p-emoji" aria-hidden="true">🎟️</span>
+            <span class="p-name">Day pass</span>
+            <span class="p-sub">Hot desk for the day</span>
+          </button>
+          <button class="purpose" role="listitem" data-purpose="Interview" data-emoji="💬">
+            <span class="p-emoji" aria-hidden="true">💬</span>
+            <span class="p-name">Interview</span>
+            <span class="p-sub">Candidate or press</span>
+          </button>
+          <button class="purpose" role="listitem" data-purpose="Delivery" data-emoji="📦">
+            <span class="p-emoji" aria-hidden="true">📦</span>
+            <span class="p-name">Delivery</span>
+            <span class="p-sub">Courier drop-off</span>
+          </button>
+          <button class="purpose" role="listitem" data-purpose="Event" data-emoji="🎤">
+            <span class="p-emoji" aria-hidden="true">🎤</span>
+            <span class="p-name">Event guest</span>
+            <span class="p-sub">Workshop or talk</span>
+          </button>
+          <button class="purpose" role="listitem" data-purpose="Tour" data-emoji="🪴">
+            <span class="p-emoji" aria-hidden="true">🪴</span>
+            <span class="p-name">Studio tour</span>
+            <span class="p-sub">Thinking of joining</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 2 — host lookup -->
+      <section class="screen" data-screen="2" aria-labelledby="t2" hidden>
+        <h1 id="t2" class="screen-title">Who are you here to see?</h1>
+        <p class="screen-sub">Search by name, team, or studio.</p>
+        <div class="search">
+          <span class="search-ic" aria-hidden="true">🔎</span>
+          <input id="hostSearch" type="text" inputmode="search" autocomplete="off"
+                 placeholder="e.g. Mara, Design, North Wing…" aria-label="Search hosts" />
+          <button class="search-clear" id="hostClear" type="button" aria-label="Clear search" hidden>✕</button>
+        </div>
+        <ul class="host-list" id="hostList" role="listbox" aria-label="Matching hosts"></ul>
+        <p class="empty" id="hostEmpty" hidden>No host found. Try a different name, or pick <button class="link" id="frontDesk" type="button">Front Desk</button>.</p>
+      </section>
+
+      <!-- STEP 3 — details -->
+      <section class="screen" data-screen="3" aria-labelledby="t3" hidden>
+        <h1 id="t3" class="screen-title">A few details</h1>
+        <p class="screen-sub">We'll print a badge and let your host know you're here.</p>
+        <div class="details">
+          <div class="d-fields">
+            <label class="field">
+              <span>Full name</span>
+              <input id="vName" type="text" autocomplete="name" placeholder="Jordan Avery" />
+            </label>
+            <label class="field">
+              <span>Company <em>(optional)</em></span>
+              <input id="vCompany" type="text" autocomplete="organization" placeholder="Northbeam Studio" />
+            </label>
+            <label class="field">
+              <span>Email <em>(for the visitor log)</em></span>
+              <input id="vEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@company.com" />
+            </label>
+            <div class="nda" id="nda" role="group" aria-labelledby="ndaLbl">
+              <div class="nda-txt">
+                <strong id="ndaLbl">Non-disclosure agreement</strong>
+                <span>Standard visitor NDA — keep what you see on-site confidential.</span>
+                <button class="link" id="ndaView" type="button">Read the NDA</button>
+              </div>
+              <button class="toggle" id="ndaToggle" role="switch" aria-checked="false" type="button">
+                <span class="knob" aria-hidden="true"></span>
+                <span class="toggle-on" aria-hidden="true">I agree</span>
+                <span class="toggle-off" aria-hidden="true">Required</span>
+              </button>
+            </div>
+          </div>
+          <aside class="badge-preview" aria-label="Badge preview">
+            <div class="badge" id="badgePrev">
+              <div class="badge-top">
+                <span class="badge-brand">FORGE &amp; FIELD</span>
+                <span class="badge-kind" id="badgeKind">VISITOR</span>
+              </div>
+              <div class="badge-photo" id="badgePhoto" role="img" aria-label="Visitor photo placeholder">
+                <span class="photo-ph" id="photoInitials">?</span>
+                <button class="photo-btn" id="photoBtn" type="button">📷 Take photo</button>
+              </div>
+              <div class="badge-meta">
+                <strong id="badgeName">Your name</strong>
+                <span id="badgeCo">Company</span>
+                <span class="badge-host" id="badgeHost">Host: —</span>
+              </div>
+              <div class="badge-foot">
+                <div class="qr" id="badgeQr" aria-hidden="true"></div>
+                <div class="badge-foot-txt">
+                  <span id="badgeDate">—</span>
+                  <span>Valid today only</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- STEP 4 — success -->
+      <section class="screen done" data-screen="4" aria-labelledby="t4" hidden>
+        <div class="check" aria-hidden="true">✓</div>
+        <h1 id="t4" class="screen-title">You're checked in!</h1>
+        <p class="screen-sub" id="doneSub">Your badge is printing now.</p>
+        <div class="printer" id="printer" aria-live="polite">
+          <div class="printer-slot"><div class="printed-badge" id="printedBadge"></div></div>
+          <span class="printer-label">Badge printer · Lobby</span>
+        </div>
+        <ul class="done-facts" id="doneFacts"></ul>
+        <button class="btn-ghost" id="finishBtn" type="button">Done — start over</button>
+      </section>
+    </main>
+
+    <footer class="actionbar">
+      <button class="btn-back" id="backBtn" type="button" hidden>← Back</button>
+      <div class="spacer"></div>
+      <button class="btn-next" id="nextBtn" type="button" disabled>Continue →</button>
+    </footer>
+  </div>
+
+  <!-- NDA modal -->
+  <div class="modal" id="ndaModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="ndaTitle">
+      <h2 id="ndaTitle">Visitor non-disclosure agreement</h2>
+      <div class="modal-body">
+        <p>By entering Forge &amp; Field you agree to keep confidential any member work, conversations, screens, or prototypes you observe during your visit.</p>
+        <p>You will not photograph members' workspaces without consent, and will follow staff direction in studio areas. Your badge is valid for today only and must be returned at the front desk on exit.</p>
+        <p class="fine">This is an illustrative demo — no agreement is recorded.</p>
+      </div>
+      <button class="btn-next" id="ndaClose" type="button">Close</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

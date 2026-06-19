@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Skyward Atlantic — Load Factor &amp; Revenue Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-5-9-3-2-6-2 7-5 1 3 3-1 4 4-2z"/></svg>
+      </span>
+      <div class="brand-text">
+        <strong>Skyward Atlantic</strong>
+        <span>Network Revenue · Load Factor Report</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="seg" role="tablist" aria-label="Timeframe">
+        <button class="seg-btn is-active" role="tab" aria-selected="true" data-tf="7d">7D</button>
+        <button class="seg-btn" role="tab" aria-selected="false" data-tf="30d">30D</button>
+        <button class="seg-btn" role="tab" aria-selected="false" data-tf="qtd">QTD</button>
+        <button class="seg-btn" role="tab" aria-selected="false" data-tf="ytd">YTD</button>
+      </div>
+      <button class="btn btn-ghost" id="exportBtn" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="kpis" aria-label="Key performance indicators">
+      <article class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Load Factor</span><span class="trend up" data-trend="lf">▲ 1.8 pts</span></div>
+        <div class="kpi-value"><span data-kpi="lf">84.6</span><small>%</small></div>
+        <div class="kpi-foot">Seats sold vs available · <span data-kpi="lf-period">last 7 days</span></div>
+        <div class="kpi-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" data-spark="lf"></svg></div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-top"><span class="kpi-label">RASK</span><span class="trend up" data-trend="rask">▲ 2.4%</span></div>
+        <div class="kpi-value"><span data-kpi="rask">7.92</span><small>¢</small></div>
+        <div class="kpi-foot">Revenue per available seat-km</div>
+        <div class="kpi-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" data-spark="rask"></svg></div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Yield</span><span class="trend down" data-trend="yield">▼ 0.6%</span></div>
+        <div class="kpi-value"><span data-kpi="yield">9.36</span><small>¢/RPK</small></div>
+        <div class="kpi-foot">Passenger revenue per km flown</div>
+        <div class="kpi-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" data-spark="yield"></svg></div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Passenger Revenue</span><span class="trend up" data-trend="rev">▲ 5.1%</span></div>
+        <div class="kpi-value"><small class="cur">$</small><span data-kpi="rev">48.2</span><small>M</small></div>
+        <div class="kpi-foot">Net of taxes &amp; ancillary</div>
+        <div class="kpi-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none" data-spark="rev"></svg></div>
+      </article>
+    </section>
+
+    <section class="grid-main">
+      <article class="card chart-card">
+        <div class="card-head">
+          <div>
+            <h2>Load Factor by Route</h2>
+            <p class="sub">Tap a bar to drill into route detail</p>
+          </div>
+          <span class="legend"><i class="dot ok"></i> ≥85% &nbsp;<i class="dot warn"></i> 70–85% &nbsp;<i class="dot low"></i> &lt;70%</span>
+        </div>
+        <div class="bars" id="routeBars" role="list"></div>
+      </article>
+
+      <article class="card chart-card">
+        <div class="card-head">
+          <div>
+            <h2>Revenue Trend</h2>
+            <p class="sub" id="trendSub">Daily passenger revenue ($M)</p>
+          </div>
+          <span class="pill pill-ok" id="trendTotal">+5.1%</span>
+        </div>
+        <div class="line-wrap">
+          <svg viewBox="0 0 480 200" preserveAspectRatio="none" id="lineChart" role="img" aria-label="Revenue trend line chart"></svg>
+          <div class="line-axis" id="lineAxis"></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid-lower">
+      <article class="card table-card">
+        <div class="card-head">
+          <div><h2>Route Performance</h2><p class="sub">Top &amp; bottom by load factor</p></div>
+        </div>
+        <div class="table-scroll">
+          <table class="rtable">
+            <thead>
+              <tr>
+                <th>Route</th><th>Flight</th><th class="num">Load</th><th class="num">Rev</th><th class="num">RASK</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="routeTable"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card mix-card">
+        <div class="card-head"><div><h2>Cabin Mix</h2><p class="sub">Revenue share by cabin</p></div></div>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 120 120" id="donut" role="img" aria-label="Cabin revenue mix donut chart"></svg>
+          <div class="donut-center"><strong id="donutPct">—</strong><span>of revenue</span></div>
+        </div>
+        <ul class="mix-legend" id="mixLegend"></ul>
+      </article>
+    </section>
+  </main>
+
+  <!-- Route drill drawer -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-scrim" data-close></div>
+    <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drTitle">
+      <header class="drawer-head">
+        <div>
+          <span class="drawer-route" id="drRoute">—</span>
+          <h3 id="drTitle">Route detail</h3>
+        </div>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </header>
+      <div class="drawer-body" id="drBody"></div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

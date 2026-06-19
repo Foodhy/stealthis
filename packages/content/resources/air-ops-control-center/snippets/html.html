@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cirrus Air — Ops Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M2 16l9-3 3-9 1.5.5-2 7.5 6-2 .8 1.6-6.2 2.7L13 21l-1.4-.3-.2-5.2L4.3 17.5 2 16z" fill="currentColor"/></svg>
+        </span>
+        <div class="brand-text">
+          <strong>Cirrus Air</strong>
+          <span>Ops Control Center</span>
+        </div>
+      </div>
+
+      <div class="hub-clock">
+        <div class="clock-block">
+          <span class="clock-label">HUB · CIR-OCC</span>
+          <span class="clock-time" id="clock">--:--:--</span>
+        </div>
+        <span class="net-dot" id="netDot" title="Live feed"></span>
+      </div>
+
+      <div class="top-actions">
+        <label class="refresh-toggle">
+          <input type="checkbox" id="autoRefresh" checked />
+          <span>Auto-refresh</span>
+        </label>
+        <button class="btn btn-ghost" id="refreshBtn" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M4 12a8 8 0 0 1 13.7-5.6M20 12A8 8 0 0 1 6.3 17.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 3v4h-4M7 21v-4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Refresh now
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI strip -->
+    <section class="kpis" aria-label="Operational KPIs">
+      <article class="kpi" data-tone="ok">
+        <span class="kpi-label">On-time performance</span>
+        <span class="kpi-value" id="kpiOntime">—</span>
+        <span class="kpi-trend" id="kpiOntimeTrend">vs target 82%</span>
+      </article>
+      <article class="kpi" data-tone="warn">
+        <span class="kpi-label">Active delays</span>
+        <span class="kpi-value" id="kpiDelays">—</span>
+        <span class="kpi-trend">avg <strong id="kpiAvgDelay">—</strong> min</span>
+      </article>
+      <article class="kpi" data-tone="danger">
+        <span class="kpi-label">Cancellations today</span>
+        <span class="kpi-value" id="kpiCancel">—</span>
+        <span class="kpi-trend">of <span id="kpiTotal">—</span> flights</span>
+      </article>
+      <article class="kpi" data-tone="sky">
+        <span class="kpi-label">Aircraft utilization</span>
+        <span class="kpi-value" id="kpiUtil">—</span>
+        <span class="kpi-trend"><span id="kpiAirborne">—</span> airborne now</span>
+      </article>
+    </section>
+
+    <main class="grid">
+      <!-- Flight board -->
+      <section class="panel board" aria-label="Live flight board">
+        <div class="panel-head">
+          <h2>Live Flight Board</h2>
+          <div class="filters" role="tablist" aria-label="Filter by status">
+            <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+            <button class="chip" data-filter="ontime" role="tab" aria-selected="false">On time</button>
+            <button class="chip" data-filter="boarding" role="tab" aria-selected="false">Boarding</button>
+            <button class="chip" data-filter="delayed" role="tab" aria-selected="false">Delayed</button>
+            <button class="chip" data-filter="departed" role="tab" aria-selected="false">Departed</button>
+            <button class="chip" data-filter="cancelled" role="tab" aria-selected="false">Cancelled</button>
+          </div>
+        </div>
+
+        <div class="board-scroll">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th>Flight</th>
+                <th>Route</th>
+                <th class="num">Sched</th>
+                <th class="num">Est</th>
+                <th>Gate</th>
+                <th>Aircraft</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="boardBody"><!-- rows injected --></tbody>
+          </table>
+          <p class="empty" id="boardEmpty" hidden>No flights match this filter.</p>
+        </div>
+      </section>
+
+      <!-- Right column -->
+      <div class="side">
+        <!-- Route status teaser -->
+        <section class="panel routes" aria-label="Network route status">
+          <div class="panel-head">
+            <h2>Network Status</h2>
+            <span class="muted-tag">6 corridors</span>
+          </div>
+          <div class="route-map" aria-hidden="true">
+            <svg viewBox="0 0 320 150" preserveAspectRatio="none">
+              <defs>
+                <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse">
+                  <circle cx="2" cy="2" r="1" fill="rgba(19,35,59,0.08)"/>
+                </pattern>
+              </defs>
+              <rect width="320" height="150" fill="url(#dots)"/>
+              <g id="routeArcs"></g>
+              <g id="routeNodes"></g>
+            </svg>
+          </div>
+          <ul class="route-list" id="routeList"></ul>
+        </section>
+
+        <!-- Disruption alert feed -->
+        <section class="panel alerts" aria-label="Disruption alert feed">
+          <div class="panel-head">
+            <h2>Disruption Feed</h2>
+            <span class="badge" id="alertCount">0</span>
+          </div>
+          <ul class="alert-list" id="alertList"></ul>
+        </section>
+      </div>
+
+      <!-- Aircraft rotation gantt -->
+      <section class="panel rotation" aria-label="Aircraft rotation timeline">
+        <div class="panel-head">
+          <h2>Aircraft Rotation</h2>
+          <div class="rot-legend">
+            <span><i class="sw sw-flight"></i> Flight</span>
+            <span><i class="sw sw-ground"></i> Ground</span>
+            <span><i class="sw sw-now"></i> Now</span>
+          </div>
+        </div>
+        <div class="rot-hours" id="rotHours"></div>
+        <div class="rot-grid" id="rotGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Rotation drill drawer -->
+  <div class="drawer-overlay" id="overlay" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Rotation detail">
+    <div class="drawer-head">
+      <div>
+        <span class="drawer-eyebrow" id="drawerTail">—</span>
+        <h3 id="drawerTitle">Rotation detail</h3>
+      </div>
+      <button class="icon-btn" id="drawerClose" aria-label="Close detail">✕</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Looms Coworking — Billing &amp; Subscriptions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◖</span>
+        <div class="brand-text">
+          <strong>Looms</strong>
+          <small>Coworking · Admin</small>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Admin sections">
+        <a href="#" class="nav-link">Overview</a>
+        <a href="#" class="nav-link active" aria-current="page">Billing &amp; Subscriptions</a>
+        <a href="#" class="nav-link">Members</a>
+        <a href="#" class="nav-link">Floor plan</a>
+        <a href="#" class="nav-link">Settings</a>
+      </nav>
+      <div class="side-card">
+        <span class="plant" aria-hidden="true">🌿</span>
+        <p>Billing cycle closes in <strong>4 days</strong>. Run dunning before then.</p>
+        <button class="btn btn-ghost btn-sm" id="runDunning">Run dunning sweep</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Billing &amp; Subscriptions</h1>
+          <p class="sub">Mira Studio · June 2026 cycle</p>
+        </div>
+        <div class="topbar-actions">
+          <span class="cycle-pill">Cycle: <strong>Jun 1 – Jun 30</strong></span>
+          <button class="btn btn-amber" id="newInvoiceBtn">+ New invoice</button>
+        </div>
+      </header>
+
+      <!-- Revenue summary -->
+      <section class="summary" aria-label="Revenue summary">
+        <article class="stat">
+          <span class="stat-label">Monthly recurring revenue</span>
+          <strong class="stat-value" id="mrrValue">$0</strong>
+          <span class="stat-trend up">▲ 8.2% vs May</span>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Active members</span>
+          <strong class="stat-value" id="activeValue">0</strong>
+          <span class="stat-trend">of <span id="totalMembers">0</span> total</span>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Outstanding</span>
+          <strong class="stat-value warn" id="outstandingValue">$0</strong>
+          <span class="stat-trend" id="overdueCount">0 overdue</span>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Collected this cycle</span>
+          <strong class="stat-value ok" id="collectedValue">$0</strong>
+          <span class="stat-trend up">▲ on track</span>
+        </article>
+      </section>
+
+      <div class="grid">
+        <!-- Members table -->
+        <section class="panel members-panel">
+          <div class="panel-head">
+            <h2>Members</h2>
+            <div class="filters" role="group" aria-label="Filter members">
+              <label class="field">
+                <span class="sr-only">Search members</span>
+                <input type="search" id="memberSearch" placeholder="Search member or email…" />
+              </label>
+              <label class="field">
+                <span class="sr-only">Filter by plan</span>
+                <select id="planFilter" aria-label="Filter by plan">
+                  <option value="all">All plans</option>
+                  <option value="Hot Desk">Hot Desk</option>
+                  <option value="Resident">Resident</option>
+                  <option value="Studio">Studio</option>
+                  <option value="Team">Team</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="sr-only">Filter by status</span>
+                <select id="statusFilter" aria-label="Filter by status">
+                  <option value="all">All status</option>
+                  <option value="active">Active</option>
+                  <option value="past_due">Past due</option>
+                  <option value="paused">Paused</option>
+                  <option value="canceled">Canceled</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="members" aria-label="Members billing table">
+              <thead>
+                <tr>
+                  <th scope="col">Member</th>
+                  <th scope="col">Plan</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" class="num">MRR</th>
+                  <th scope="col">Next invoice</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="membersBody"><!-- rendered --></tbody>
+            </table>
+            <p class="empty" id="emptyRow" hidden>No members match these filters.</p>
+          </div>
+          <footer class="panel-foot">
+            <span id="memberCount">0 members</span>
+            <span>Filtered MRR: <strong id="filteredMrr">$0</strong></span>
+          </footer>
+        </section>
+
+        <!-- Invoices -->
+        <section class="panel invoices-panel">
+          <div class="panel-head">
+            <h2>Recent invoices</h2>
+            <span class="hint">Tap a row for detail</span>
+          </div>
+          <ul class="invoices" id="invoiceList" aria-label="Recent invoices"><!-- rendered --></ul>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Invoice detail drawer -->
+  <div class="drawer-scrim" id="drawerScrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Invoice detail" role="dialog" tabindex="-1">
+    <div class="drawer-head">
+      <h2 id="drawerTitle">Invoice</h2>
+      <button class="icon-btn" id="drawerClose" aria-label="Close invoice detail">✕</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"><!-- rendered --></div>
+  </aside>
+
+  <!-- Change plan dialog -->
+  <div class="modal-scrim" id="modalScrim" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Change plan</h2>
+      <p class="modal-sub" id="modalMember">—</p>
+      <label class="field block">
+        <span>New plan</span>
+        <select id="modalPlan">
+          <option value="Hot Desk">Hot Desk — $180/mo</option>
+          <option value="Resident">Resident — $340/mo</option>
+          <option value="Studio">Studio — $620/mo</option>
+          <option value="Team">Team — $1,450/mo</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+        <button class="btn btn-amber" id="modalSave">Save change</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

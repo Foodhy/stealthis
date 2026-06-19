@@ -432,7 +432,14 @@ const discoverI18n = {
       </aside>
 
       <!-- Resource grid -->
-      <div class="flex-1 min-w-0" id="resource-grid">
+      <div class="flex-1 min-w-0 relative" id="resource-grid">
+
+        <!-- Sort overlay: covers the grid while cards are being reordered so the
+             brief main-thread block isn't seen as frozen UI. -->
+        <div id="sort-overlay" hidden>
+          <span class="infinite-spinner"></span>
+          <span class="sort-overlay-text"></span>
+        </div>
 
         <!-- Preview toggle (opt-in; previews load only after activating) -->
         <div class="flex items-center gap-2 mb-4">
@@ -443,10 +450,11 @@ const discoverI18n = {
             title={previewsLabel}
             class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-slate-400 hover:text-slate-200 hover:border-white/14 transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 previews-toggle-eye">
               <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
               <circle cx="12" cy="12" r="3"/>
             </svg>
+            <span class="previews-toggle-spinner shrink-0" aria-hidden="true"></span>
             {previewsLabel}
           </button>
         </div>
@@ -464,9 +472,20 @@ const discoverI18n = {
               previewsToggle.classList.toggle("border-sky-400/50", enabled);
               const svg = previewsToggle.querySelector("svg");
               if (svg) svg.setAttribute("fill", enabled ? "currentColor" : "none");
+              // Show the loading state immediately so the click feels responsive
+              // while the (slow) iframe previews start fetching. Cleared by the
+              // previews-loading event once the queue drains.
+              previewsToggle.classList.toggle("is-loading", enabled);
               window.dispatchEvent(
                 new CustomEvent("stealthis:previews-toggle", { detail: { enabled } })
               );
+            });
+
+            // FilterBar reports how many previews are still loading; spin the
+            // button until none remain (or until previews are turned off).
+            window.addEventListener("stealthis:previews-loading", (event) => {
+              const remaining = (event as CustomEvent).detail?.remaining ?? 0;
+              previewsToggle.classList.toggle("is-loading", enabled && remaining > 0);
             });
           }
         </script>
@@ -475,8 +494,8 @@ const discoverI18n = {
         {SHOW_SORT_BAR && (
         <div class="flex items-center gap-2 mb-6">
           <span class="text-xs text-slate-500 shrink-0">{t("library.sort.grouped").split(" ")[0]}:</span>
-          <button id="sort-grouped" class="chip chip--active">{t("library.sort.grouped")}</button>
-          <button id="sort-latest" class="chip">{t("library.sort.latest")}</button>
+          <button id="sort-grouped" class="chip chip--active sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.grouped")}</button>
+          <button id="sort-latest" class="chip sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.latest")}</button>
         </div>
         )}
 
@@ -564,6 +583,13 @@ const discoverI18n = {
           );
         })}
 
+        <!-- Infinite-scroll sentinel: reveals the next batch of cards when it
+             scrolls into view (wired in FilterBar.astro). Hidden once the full
+             match set is shown. -->
+        <div id="infinite-sentinel" class="flex items-center justify-center py-10" aria-hidden="true">
+          <span class="infinite-spinner"></span>
+        </div>
+
         <!-- Empty state -->
         <p class="hidden text-center text-slate-500 py-16" id="empty-state">
           {t("library.noResults")}
@@ -584,47 +610,54 @@ const discoverI18n = {
   const sortGrouped  = document.getElementById("sort-grouped") as HTMLButtonElement;
   const sortLatest   = document.getElementById("sort-latest") as HTMLButtonElement;
 
-  // Store each card's original parent grid and use a persistent anchor comment
+  // Store each card's original parent grid and use a persistent anchor comment.
+  // Parse createdAt ONCE here (not on every sort comparison — that was 1600×log
+  // worth of Date parsing per click, a big chunk of the jank).
   type CardOrigin = { parent: Element; anchor: Comment };
   const origins = new Map<Element, CardOrigin>();
+  const createdAtMs = new Map<Element, number>();
   document.querySelectorAll<HTMLElement>("article[data-slug]").forEach((card) => {
     const anchor = document.createComment("card-anchor");
     card.parentElement!.insertBefore(anchor, card);
     origins.set(card, { parent: card.parentElement!, anchor });
+    createdAtMs.set(card, new Date(card.dataset.createdAt ?? "").getTime() || 0);
   });
 
+  // Cards pre-sorted newest-first once; reused on every switch to "latest".
+  const cardsByDate = [...origins.keys()].sort(
+    (a, b) => (createdAtMs.get(b) ?? 0) - (createdAtMs.get(a) ?? 0)
+  );
+
   let sortMode: "grouped" | "latest" = "grouped";
+  let sortBusy = false;
 
   function activateLatest() {
-    if (sortMode === "latest") return;
     sortMode = "latest";
     sortGrouped.classList.remove("chip--active");
     sortLatest.classList.add("chip--active");
 
-    // Collect all cards, sort newest first
-    const cards = [...origins.keys()] as HTMLElement[];
-    cards.sort((a, b) => {
-      const tA = new Date(a.dataset.createdAt ?? "").getTime();
-      const tB = new Date(b.dataset.createdAt ?? "").getTime();
-      return tB - tA;
-    });
+    // Move every card into the flat grid in one shot via a fragment — a single
+    // DOM insertion + reflow instead of 1600 individual appendChild calls.
+    const frag = document.createDocumentFragment();
+    for (const card of cardsByDate) frag.appendChild(card);
+    flatGrid.replaceChildren(frag);
 
-    flatGrid.innerHTML = "";
-    for (const card of cards) flatGrid.appendChild(card);
-
-    // Hide category groups, clear any inline display override, then show flat grid
+    // Hide category groups; show the flat grid.
     document.querySelectorAll<HTMLElement>("[data-category-group]").forEach((g) => (g.style.display = "none"));
     flatGrid.style.display = "";
     flatGrid.classList.remove("hidden");
+
+    // FilterBar recomputes its reveal window (and section/group visibility) in
+    // the new order so infinite scroll keeps working.
+    window.dispatchEvent(new CustomEvent("stealthis:sort-changed"));
   }
 
   function activateGrouped() {
-    if (sortMode === "grouped") return;
     sortMode = "grouped";
     sortLatest.classList.remove("chip--active");
     sortGrouped.classList.add("chip--active");
 
-    // Restore each card right after its persistent anchor comment
+    // Restore each card right after its persistent anchor comment.
     for (const [card, { parent, anchor }] of origins.entries()) {
       parent.insertBefore(card, anchor.nextSibling);
     }
@@ -632,24 +665,37 @@ const discoverI18n = {
     flatGrid.classList.add("hidden");
     flatGrid.style.display = "";
 
-    // Re-evaluate section visibility based on each card's current display state
-    // (FilterBar already applied filters while cards were in flat-grid).
-    document.querySelectorAll<HTMLElement>("[data-category-section]").forEach((section) => {
-      const hasVisible = [...section.querySelectorAll<HTMLElement>("article[data-slug]")]
-        .some((c) => c.style.display !== "none");
-      section.style.display = hasVisible ? "" : "none";
-    });
+    // Section/group visibility is recomputed by FilterBar's renderReveal below —
+    // no need to walk every section/group here (that was redundant work).
+    window.dispatchEvent(new CustomEvent("stealthis:sort-changed"));
+  }
 
-    // Re-evaluate group visibility based on whether any of its sections are visible.
-    document.querySelectorAll<HTMLElement>("[data-category-group]").forEach((g) => {
-      const hasVisible = [...g.querySelectorAll<HTMLElement>("[data-category-section]")]
-        .some((s) => s.style.display !== "none");
-      g.style.display = hasVisible ? "" : "none";
+  const sortOverlay = document.getElementById("sort-overlay") as HTMLElement | null;
+  const sortOverlayText = sortOverlay?.querySelector(".sort-overlay-text") as HTMLElement | null;
+
+  // Show spinner + cover the grid, then run the heavy reparent on a later frame
+  // so the loading state actually paints before the main thread blocks. The
+  // overlay hides the (briefly) frozen cards. Guards against double-clicks.
+  function runSort(btn: HTMLButtonElement, targetMode: "grouped" | "latest", fn: () => void) {
+    if (sortBusy || sortMode === targetMode) return;
+    sortBusy = true;
+    btn.classList.add("is-loading");
+    if (sortOverlay) {
+      if (sortOverlayText) sortOverlayText.textContent = btn.textContent?.trim() ?? "";
+      sortOverlay.hidden = false;
+    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        fn();
+        btn.classList.remove("is-loading");
+        if (sortOverlay) sortOverlay.hidden = true;
+        sortBusy = false;
+      });
     });
   }
 
-  sortLatest.addEventListener("click", activateLatest);
-  sortGrouped.addEventListener("click", activateGrouped);
+  sortLatest.addEventListener("click", () => runSort(sortLatest, "latest", activateLatest));
+  sortGrouped.addEventListener("click", () => runSort(sortGrouped, "grouped", activateGrouped));
 
   document.getElementById("export-favorites")?.addEventListener("click", exportFavorites);
 
@@ -1412,3 +1458,81 @@ const discoverI18n = {
     switchMode(modeParam);
   }
 </script>
+
+<style>
+  /* Infinite-scroll loading spinner (sentinel). Hidden by FilterBar once the
+     full match set is on screen. */
+  .infinite-spinner {
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    border: 2px solid rgba(255, 255, 255, 0.14);
+    border-top-color: rgba(255, 255, 255, 0.55);
+    animation: infinite-spin 0.7s linear infinite;
+  }
+  @keyframes infinite-spin {
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .infinite-spinner { animation: none; }
+  }
+
+  /* "Show previews" button loading state: swap the eye icon for a spinner. */
+  .previews-toggle-spinner {
+    display: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    opacity: 0.85;
+    animation: infinite-spin 0.7s linear infinite;
+  }
+  #previews-toggle.is-loading .previews-toggle-eye {
+    display: none;
+  }
+  #previews-toggle.is-loading .previews-toggle-spinner {
+    display: inline-block;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .previews-toggle-spinner { animation: none; }
+  }
+
+  /* Sort chips ("By category" / "Latest added") loading spinner. */
+  .sort-chip { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .sort-chip-spinner {
+    display: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    opacity: 0.85;
+    animation: infinite-spin 0.7s linear infinite;
+  }
+  .sort-chip.is-loading .sort-chip-spinner { display: inline-block; }
+  @media (prefers-reduced-motion: reduce) {
+    .sort-chip-spinner { animation: none; }
+  }
+
+  /* Sort overlay: dims + covers the card grid during a reorder. */
+  #sort-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding-top: 6rem;
+    background: rgba(8, 11, 20, 0.78);
+    backdrop-filter: blur(2px);
+    border-radius: 0.75rem;
+  }
+  #sort-overlay[hidden] { display: none; }
+  .sort-overlay-text {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+  }
+</style>
