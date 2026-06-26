@@ -999,7 +999,9 @@ Páginas completas que aprovechan los 225+ componentes existentes. Cada página 
 
 ---
 
-## Phase 25 — Accessibility, RTL & Inclusive Web
+## Phase 25 — Accessibility, RTL & Inclusive Web ✅ DONE (2026-06-22) · 30/30
+
+> **Progress (2026-06-22):** Las 30 recursos (RTL, contraste WCAG, ARIA APG, navegación por teclado, diseño inclusivo) están construidos en `packages/content/resources/` con snippets completos. Checkboxes actualizados.
 
 Fase dedicada a accesibilidad profunda, soporte RTL, contraste WCAG, lectores de pantalla, navegación por teclado y diseño inclusivo. Complementa los 6 componentes básicos de Phase 16 (Accessibility & Inclusive Design).
 
@@ -1009,60 +1011,62 @@ Fase dedicada a accesibilidad profunda, soporte RTL, contraste WCAG, lectores de
 
 | Slug | Description | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `rtl-layout` | Layout completo RTL con sidebar, nav y contenido | css (logical properties) | med | [ ] |
-| `rtl-form` | Formulario RTL con validación y labels | css, vanilla-js | med | [ ] |
-| `rtl-card-grid` | Grid de cards con flip automático LTR↔RTL | css (logical properties) | easy | [ ] |
-| `rtl-navigation` | Navbar + breadcrumb con soporte bidireccional | css, vanilla-js | med | [ ] |
-| `rtl-data-table` | Tabla de datos con columnas RTL-aware | vanilla-js, css | med | [ ] |
-| `rtl-text-mixed` | Manejo de texto bidi (árabe + inglés mezclado) | css, unicode-bidi | easy | [ ] |
+| `rtl-layout` | Layout completo RTL con sidebar, nav y contenido | css (logical properties) | med | ✅ |
+| `rtl-form` | Formulario RTL con validación y labels | css, vanilla-js | med | ✅ |
+| `rtl-card-grid` | Grid de cards con flip automático LTR↔RTL | css (logical properties) | easy | ✅ |
+| `rtl-navigation` | Navbar + breadcrumb con soporte bidireccional | css, vanilla-js | med | ✅ |
+| `rtl-data-table` | Tabla de datos con columnas RTL-aware | vanilla-js, css | med | ✅ |
+| `rtl-text-mixed` | Manejo de texto bidi (árabe + inglés mezclado) | css, unicode-bidi | easy | ✅ |
 
 ### Color & Contrast (WCAG)
 
 | Slug | Description | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `color-contrast-checker` | Herramienta que verifica ratio WCAG AA/AAA en tiempo real | vanilla-js, css | med | [ ] |
-| `palette-accessible` | Generador de paletas que cumple WCAG 2.1 contrast ratios | vanilla-js | med | [ ] |
-| `theme-high-contrast` | Theme system con modo alto contraste (Windows HC compatible) | css (forced-colors, prefers-contrast) | med | [ ] |
-| `theme-color-blind` | Modos para protanopia, deuteranopia, tritanopia | css custom properties, vanilla-js | hard | [ ] |
-| `dark-light-accessible` | Dark/light toggle que mantiene ratio AA en ambos modos | css, vanilla-js | med | [ ] |
-| `color-token-system` | Sistema de design tokens con contraste garantizado | css custom properties | med | [ ] |
+| `color-contrast-checker` | Herramienta que verifica ratio WCAG AA/AAA en tiempo real | vanilla-js, css | med | ✅ |
+| `palette-accessible` | Generador de paletas que cumple WCAG 2.1 contrast ratios | vanilla-js | med | ✅ |
+| `theme-high-contrast` | Theme system con modo alto contraste (Windows HC compatible) | css (forced-colors, prefers-contrast) | med | ✅ |
+| `theme-color-blind` | Modos para protanopia, deuteranopia, tritanopia | css custom properties, vanilla-js | hard | ✅ |
+| `dark-light-accessible` | Dark/light toggle que mantiene ratio AA en ambos modos | css, vanilla-js | med | ✅ |
+| `color-token-system` | Sistema de design tokens con contraste garantizado | css custom properties | med | ✅ |
 
 ### Screen Readers & Semantic HTML
 
 | Slug | Description | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `aria-live-regions` | Patrones de live regions (polite, assertive, status) | vanilla-js, aria | easy | [ ] |
-| `aria-tabs-pattern` | Tabs con ARIA roles completos (tablist, tab, tabpanel) | vanilla-js, aria | med | [ ] |
-| `aria-modal-pattern` | Modal con focus trap, escape, y anuncio a screen reader | vanilla-js, aria | med | [ ] |
-| `aria-combobox` | Combobox/autocomplete accesible (ARIA 1.2 pattern) | vanilla-js, aria | hard | [ ] |
-| `aria-tree-view` | Tree view con navegación por teclado y ARIA | vanilla-js, aria | hard | [ ] |
-| `aria-carousel` | Carousel accesible con controles, pausa, y anuncio | vanilla-js, aria | med | [ ] |
-| `semantic-landmarks` | Demo de landmarks semánticos (main, nav, aside, etc.) | html, css | easy | [ ] |
-| `sr-only-utilities` | Clases .sr-only y patrones de texto solo para lectores | css | easy | [ ] |
+| `aria-live-regions` | Patrones de live regions (polite, assertive, status) | vanilla-js, aria | easy | ✅ |
+| `aria-tabs-pattern` | Tabs con ARIA roles completos (tablist, tab, tabpanel) | vanilla-js, aria | med | ✅ |
+| `aria-modal-pattern` | Modal con focus trap, escape, y anuncio a screen reader | vanilla-js, aria | med | ✅ |
+| `aria-combobox` | Combobox/autocomplete accesible (ARIA 1.2 pattern) | vanilla-js, aria | hard | ✅ |
+| `aria-tree-view` | Tree view con navegación por teclado y ARIA | vanilla-js, aria | hard | ✅ |
+| `aria-carousel` | Carousel accesible con controles, pausa, y anuncio | vanilla-js, aria | med | ✅ |
+| `semantic-landmarks` | Demo de landmarks semánticos (main, nav, aside, etc.) | html, css | easy | ✅ |
+| `sr-only-utilities` | Clases .sr-only y patrones de texto solo para lectores | css | easy | ✅ |
 
 ### Keyboard Navigation
 
 | Slug | Description | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `keyboard-nav-menu` | Menú navegable 100% por teclado (arrows, home, end) | vanilla-js | med | [ ] |
-| `keyboard-roving-tabindex` | Roving tabindex pattern para listas y toolbars | vanilla-js | med | [ ] |
-| `keyboard-shortcuts-overlay` | Overlay de atajos de teclado (estilo GitHub `?`) | vanilla-js, css | easy | [ ] |
-| `focus-management` | Focus management en SPAs (route changes, dynamic content) | vanilla-js | med | [ ] |
+| `keyboard-nav-menu` | Menú navegable 100% por teclado (arrows, home, end) | vanilla-js | med | ✅ |
+| `keyboard-roving-tabindex` | Roving tabindex pattern para listas y toolbars | vanilla-js | med | ✅ |
+| `keyboard-shortcuts-overlay` | Overlay de atajos de teclado (estilo GitHub `?`) | vanilla-js, css | easy | ✅ |
+| `focus-management` | Focus management en SPAs (route changes, dynamic content) | vanilla-js | med | ✅ |
 
 ### Inclusive Design Patterns
 
 | Slug | Description | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `dyslexia-friendly` | Modo dyslexia (OpenDyslexic font, spacing, line height) | css, vanilla-js | easy | [ ] |
-| `reading-guide` | Línea guía de lectura que sigue el cursor/scroll | vanilla-js, css | easy | [ ] |
-| `text-spacing-control` | Control de letter-spacing, word-spacing, line-height | vanilla-js, css | easy | [ ] |
-| `media-captions` | Video player con captions/subtítulos accesibles | vanilla-js, html5 | med | [ ] |
-| `cognitive-load-reducer` | Modo simplificado que reduce animaciones, colores, elementos | vanilla-js, css | med | [ ] |
-| `touch-target-demo` | Demo de touch targets mínimos 44x44px (WCAG 2.5.5) | css | easy | [ ] |
+| `dyslexia-friendly` | Modo dyslexia (OpenDyslexic font, spacing, line height) | css, vanilla-js | easy | ✅ |
+| `reading-guide` | Línea guía de lectura que sigue el cursor/scroll | vanilla-js, css | easy | ✅ |
+| `text-spacing-control` | Control de letter-spacing, word-spacing, line-height | vanilla-js, css | easy | ✅ |
+| `media-captions` | Video player con captions/subtítulos accesibles | vanilla-js, html5 | med | ✅ |
+| `cognitive-load-reducer` | Modo simplificado que reduce animaciones, colores, elementos | vanilla-js, css | med | ✅ |
+| `touch-target-demo` | Demo de touch targets mínimos 44x44px (WCAG 2.5.5) | css | easy | ✅ |
 
 ---
 
-## Phase 26 — Plugins (AI Coding Tools)
+## Phase 26 — Plugins (AI Coding Tools) ✅ DONE (2026-06-22) · 50/50
+
+> **Progress (2026-06-22):** Construidos los 33 `plugin-*` (directorios/marketplaces, `type: component`, card HTML informativa) + 17 `skill-*` (dev skills, `type: skill`, cheatsheet markdown) vía workflow multi-agente `wf_f613b7e7-98c`. Catálogo MCP regenerado → 1658 recursos.
 
 Nueva categoría `plugins` — directorios, marketplaces y colecciones curadas de plugins, extensiones y MCP servers para herramientas de código con IA (Claude Code, OpenCode, Cursor, Copilot, etc.).
 
@@ -1125,23 +1129,23 @@ updatedAt: "2026-03-28"
 
 | Slug | Title | Tech | Difficulty | Status |
 |---|---|---|---|---|
-| `skill-git-rebase` | Git rebase interactivo | bash | med | [ ] |
-| `skill-git-cherry-pick` | Git cherry-pick | bash | easy | [ ] |
-| `skill-git-bisect` | Git bisect (find bug) | bash | med | [ ] |
-| `skill-git-worktree` | Git worktree (multi-branch) | bash | med | [ ] |
-| `skill-git-stash` | Git stash patterns | bash | easy | [ ] |
-| `skill-git-hooks` | Git hooks setup | bash | easy | [ ] |
-| `skill-vim-basics` | Vim basics (navigation, edit) | vim | easy | [ ] |
-| `skill-vim-advanced` | Vim macros & registers | vim | med | [ ] |
-| `skill-tmux` | Tmux workflow (sessions, panes) | tmux | med | [ ] |
-| `skill-fzf` | Fuzzy finder (fzf + rg) | bash | med | [ ] |
-| `skill-aliases` | Useful shell aliases | bash | easy | [ ] |
-| `skill-debug-console` | Browser console tricks | javascript | easy | [ ] |
-| `skill-debug-network` | Network tab debugging | devtools | easy | [ ] |
-| `skill-debug-react` | React DevTools debugging | react | med | [ ] |
-| `skill-debug-performance` | Performance profiling | devtools | med | [ ] |
-| `skill-review-pr` | PR review checklist | markdown | easy | [ ] |
-| `skill-review-patterns` | Code review patterns | markdown | easy | [ ] |
+| `skill-git-rebase` | Git rebase interactivo | bash | med | ✅ |
+| `skill-git-cherry-pick` | Git cherry-pick | bash | easy | ✅ |
+| `skill-git-bisect` | Git bisect (find bug) | bash | med | ✅ |
+| `skill-git-worktree` | Git worktree (multi-branch) | bash | med | ✅ |
+| `skill-git-stash` | Git stash patterns | bash | easy | ✅ |
+| `skill-git-hooks` | Git hooks setup | bash | easy | ✅ |
+| `skill-vim-basics` | Vim basics (navigation, edit) | vim | easy | ✅ |
+| `skill-vim-advanced` | Vim macros & registers | vim | med | ✅ |
+| `skill-tmux` | Tmux workflow (sessions, panes) | tmux | med | ✅ |
+| `skill-fzf` | Fuzzy finder (fzf + rg) | bash | med | ✅ |
+| `skill-aliases` | Useful shell aliases | bash | easy | ✅ |
+| `skill-debug-console` | Browser console tricks | javascript | easy | ✅ |
+| `skill-debug-network` | Network tab debugging | devtools | easy | ✅ |
+| `skill-debug-react` | React DevTools debugging | react | med | ✅ |
+| `skill-debug-performance` | Performance profiling | devtools | med | ✅ |
+| `skill-review-pr` | PR review checklist | markdown | easy | ✅ |
+| `skill-review-patterns` | Code review patterns | markdown | easy | ✅ |
 
 ### Existing Resources ✅
 
@@ -1154,84 +1158,84 @@ updatedAt: "2026-03-28"
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-claude-official-plugins` | Claude Code Official Plugin Directory | [github.com/anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | [ ] |
-| `plugin-claude-marketplace-docs` | Claude Code Plugin Marketplace Docs | [code.claude.com/docs/en/plugin-marketplaces](https://code.claude.com/docs/en/plugin-marketplaces) | [ ] |
-| `plugin-claude-skills-docs` | Claude Code Skills (Slash Commands, Hooks, Agents) | [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills) | [ ] |
+| `plugin-claude-official-plugins` | Claude Code Official Plugin Directory | [github.com/anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | ✅ |
+| `plugin-claude-marketplace-docs` | Claude Code Plugin Marketplace Docs | [code.claude.com/docs/en/plugin-marketplaces](https://code.claude.com/docs/en/plugin-marketplaces) | ✅ |
+| `plugin-claude-skills-docs` | Claude Code Skills (Slash Commands, Hooks, Agents) | [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills) | ✅ |
 
 ### Claude Code — Community
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-awesome-claude-code` | awesome-claude-code — Skills, Hooks, Slash Commands | [github.com/hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | [ ] |
-| `plugin-awesome-claude-plugins` | awesome-claude-code-plugins | [github.com/ccplugins/awesome-claude-code-plugins](https://github.com/ccplugins/awesome-claude-code-plugins) | [ ] |
-| `plugin-awesome-slash` | awesome-slash — Plugins, Agents & Skills (Claude + OpenCode + Codex) | [github.com/avifenesh/awesome-slash](https://github.com/avifenesh/awesome-slash) | [ ] |
-| `plugin-claude-skills-collection` | 192+ Claude Code Skills & Agent Plugins | [github.com/alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | [ ] |
-| `plugin-claude-hooks-mastery` | Claude Code Hooks Mastery (Python) | [github.com/disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) | [ ] |
-| `plugin-claude-marketplaces` | claudemarketplaces.com — Curated Directory | [claudemarketplaces.com](https://claudemarketplaces.com/) | [ ] |
-| `plugin-claude-plugins-dev` | claude-plugins.dev — Agent Skills Directory | [claude-plugins.dev/skills](https://claude-plugins.dev/skills) | [ ] |
+| `plugin-awesome-claude-code` | awesome-claude-code — Skills, Hooks, Slash Commands | [github.com/hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | ✅ |
+| `plugin-awesome-claude-plugins` | awesome-claude-code-plugins | [github.com/ccplugins/awesome-claude-code-plugins](https://github.com/ccplugins/awesome-claude-code-plugins) | ✅ |
+| `plugin-awesome-slash` | awesome-slash — Plugins, Agents & Skills (Claude + OpenCode + Codex) | [github.com/avifenesh/awesome-slash](https://github.com/avifenesh/awesome-slash) | ✅ |
+| `plugin-claude-skills-collection` | 192+ Claude Code Skills & Agent Plugins | [github.com/alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | ✅ |
+| `plugin-claude-hooks-mastery` | Claude Code Hooks Mastery (Python) | [github.com/disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) | ✅ |
+| `plugin-claude-marketplaces` | claudemarketplaces.com — Curated Directory | [claudemarketplaces.com](https://claudemarketplaces.com/) | ✅ |
+| `plugin-claude-plugins-dev` | claude-plugins.dev — Agent Skills Directory | [claude-plugins.dev/skills](https://claude-plugins.dev/skills) | ✅ |
 
 ### OpenCode
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-opencode` | OpenCode — Open Source AI Coding Agent | [opencode.ai](https://opencode.ai/) | [ ] |
-| `plugin-opencode-cafe` | opencode.cafe — Community Marketplace for OpenCode | [opencode.cafe](https://www.opencode.cafe/) | [ ] |
-| `plugin-awesome-opencode` | awesome-opencode — Plugins, Themes, Agents | [github.com/awesome-opencode/awesome-opencode](https://github.com/awesome-opencode/awesome-opencode) | [ ] |
+| `plugin-opencode` | OpenCode — Open Source AI Coding Agent | [opencode.ai](https://opencode.ai/) | ✅ |
+| `plugin-opencode-cafe` | opencode.cafe — Community Marketplace for OpenCode | [opencode.cafe](https://www.opencode.cafe/) | ✅ |
+| `plugin-awesome-opencode` | awesome-opencode — Plugins, Themes, Agents | [github.com/awesome-opencode/awesome-opencode](https://github.com/awesome-opencode/awesome-opencode) | ✅ |
 
 ### Cursor
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-cursor-marketplace` | Cursor Official Plugin Marketplace | [cursor.com/marketplace](https://cursor.com/marketplace) | [ ] |
-| `plugin-cursor-directory` | cursor.directory — Community Rules, MCP & Plugins | [cursor.directory](https://cursor.directory/) | [ ] |
+| `plugin-cursor-marketplace` | Cursor Official Plugin Marketplace | [cursor.com/marketplace](https://cursor.com/marketplace) | ✅ |
+| `plugin-cursor-directory` | cursor.directory — Community Rules, MCP & Plugins | [cursor.directory](https://cursor.directory/) | ✅ |
 
 ### Windsurf
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-windsurf` | Windsurf Plugins | [windsurf.com/plugins](https://windsurf.com/plugins) | [ ] |
+| `plugin-windsurf` | Windsurf Plugins | [windsurf.com/plugins](https://windsurf.com/plugins) | ✅ |
 
 ### Cline
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-cline-marketplace` | Cline MCP Marketplace — One-Click Install | [cline.bot/mcp-marketplace](https://cline.bot/mcp-marketplace) | [ ] |
+| `plugin-cline-marketplace` | Cline MCP Marketplace — One-Click Install | [cline.bot/mcp-marketplace](https://cline.bot/mcp-marketplace) | ✅ |
 
 ### GitHub Copilot
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-copilot-extensions` | GitHub Copilot Extensions Marketplace | [github.com/marketplace?type=apps&copilot_app=true](https://github.com/marketplace?type=apps&copilot_app=true) | [ ] |
-| `plugin-awesome-copilot` | Awesome GitHub Copilot — Plugins, Agents & Skills | [awesome-copilot.github.com/tools](https://awesome-copilot.github.com/tools/) | [ ] |
+| `plugin-copilot-extensions` | GitHub Copilot Extensions Marketplace | [github.com/marketplace?type=apps&copilot_app=true](https://github.com/marketplace?type=apps&copilot_app=true) | ✅ |
+| `plugin-awesome-copilot` | Awesome GitHub Copilot — Plugins, Agents & Skills | [awesome-copilot.github.com/tools](https://awesome-copilot.github.com/tools/) | ✅ |
 
 ### Continue.dev
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-continue-dev` | Continue.dev — Open Source AI Assistant (VS Code + JetBrains) | [continue.dev](https://www.continue.dev/) | [ ] |
+| `plugin-continue-dev` | Continue.dev — Open Source AI Assistant (VS Code + JetBrains) | [continue.dev](https://www.continue.dev/) | ✅ |
 
 ### MCP Directories (Model Context Protocol)
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-mcp-registry` | Official MCP Registry | [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io/) | [ ] |
-| `plugin-smithery` | Smithery.ai — Largest MCP Server Marketplace (2,880+) | [smithery.ai](https://smithery.ai/) | [ ] |
-| `plugin-glama-mcp` | Glama.ai — MCP Server Registry with Security Scanning | [glama.ai/mcp/servers](https://glama.ai/mcp/servers) | [ ] |
-| `plugin-pulsemcp` | PulseMCP — Daily-Updated Directory (12,870+ servers) | [pulsemcp.com/servers](https://www.pulsemcp.com/servers) | [ ] |
-| `plugin-mcp-so` | mcp.so — Community Directory (19,000+ servers) | [mcp.so](https://mcp.so/) | [ ] |
-| `plugin-mcp-run` | mcp.run — Portable & Secure MCP Server Hosting | [mcp.run](https://www.mcp.run/) | [ ] |
-| `plugin-mcpmarket` | MCPMarket — MCP Servers & Clients Directory | [mcpmarket.com](https://mcpmarket.com/) | [ ] |
-| `plugin-lobehub-mcp` | LobeHub MCP — Categorized Server Marketplace | [lobehub.com/mcp](https://lobehub.com/mcp) | [ ] |
-| `plugin-awesome-mcp-servers` | awesome-mcp-servers (wong2) — Curated List | [github.com/wong2/awesome-mcp-servers](https://github.com/wong2/awesome-mcp-servers) | [ ] |
-| `plugin-awesome-remote-mcp` | awesome-remote-mcp-servers — Remote/Cloud MCP Servers | [github.com/jaw9c/awesome-remote-mcp-servers](https://github.com/jaw9c/awesome-remote-mcp-servers) | [ ] |
+| `plugin-mcp-registry` | Official MCP Registry | [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io/) | ✅ |
+| `plugin-smithery` | Smithery.ai — Largest MCP Server Marketplace (2,880+) | [smithery.ai](https://smithery.ai/) | ✅ |
+| `plugin-glama-mcp` | Glama.ai — MCP Server Registry with Security Scanning | [glama.ai/mcp/servers](https://glama.ai/mcp/servers) | ✅ |
+| `plugin-pulsemcp` | PulseMCP — Daily-Updated Directory (12,870+ servers) | [pulsemcp.com/servers](https://www.pulsemcp.com/servers) | ✅ |
+| `plugin-mcp-so` | mcp.so — Community Directory (19,000+ servers) | [mcp.so](https://mcp.so/) | ✅ |
+| `plugin-mcp-run` | mcp.run — Portable & Secure MCP Server Hosting | [mcp.run](https://www.mcp.run/) | ✅ |
+| `plugin-mcpmarket` | MCPMarket — MCP Servers & Clients Directory | [mcpmarket.com](https://mcpmarket.com/) | ✅ |
+| `plugin-lobehub-mcp` | LobeHub MCP — Categorized Server Marketplace | [lobehub.com/mcp](https://lobehub.com/mcp) | ✅ |
+| `plugin-awesome-mcp-servers` | awesome-mcp-servers (wong2) — Curated List | [github.com/wong2/awesome-mcp-servers](https://github.com/wong2/awesome-mcp-servers) | ✅ |
+| `plugin-awesome-remote-mcp` | awesome-remote-mcp-servers — Remote/Cloud MCP Servers | [github.com/jaw9c/awesome-remote-mcp-servers](https://github.com/jaw9c/awesome-remote-mcp-servers) | ✅ |
 
 ### Other AI Coding Tools
 
 | Slug | Title | Source | Status |
 |---|---|---|---|
-| `plugin-devin-mcp` | Devin MCP Marketplace | [app.devin.ai/settings/mcp-marketplace](https://app.devin.ai/settings/mcp-marketplace) | [ ] |
-| `plugin-kiro` | Kiro IDE (AWS) — Agentic IDE with "Kiro Powers" | [kiro.dev](https://kiro.dev/) | [ ] |
-| `plugin-composio` | Composio — 1000+ Toolkits for AI Agents | [composio.dev](https://composio.dev/) | [ ] |
+| `plugin-devin-mcp` | Devin MCP Marketplace | [app.devin.ai/settings/mcp-marketplace](https://app.devin.ai/settings/mcp-marketplace) | ✅ |
+| `plugin-kiro` | Kiro IDE (AWS) — Agentic IDE with "Kiro Powers" | [kiro.dev](https://kiro.dev/) | ✅ |
+| `plugin-composio` | Composio — 1000+ Toolkits for AI Agents | [composio.dev](https://composio.dev/) | ✅ |
 
 ---
 
@@ -4008,6 +4012,124 @@ Videos informativos y promocionales para clínicas con Remotion.
 
 ---
 
+## Service Vertical Bundles (Phases 74–77) 🧭 ✅ DONE (2026-06-22)
+
+> Four professional-services verticals built via workflow `wf_1bce3675-37e` (80 resources, 20 each).
+> Each follows the standard vertical shape: service/customer flows + admin dashboards + 5 themed
+> landings. New collections `legal`, `insurance`, `construction`, `vet` wired in all 6 places
+> (schema, content config, collections.ts ×3, i18n en+es, docs collections.mdx + choose-your-path).
+> MCP catalog regenerated → 1738 resources.
+
+## Phase 74 — Legal / Law Firm Theme ⚖️ ✅ DONE (2026-06-22) · 20/20
+
+> Collection: `legal`. Navy + gold + serif, trust-first. Naming `legal-<slug>`.
+
+| Slug | Description | Cat | Difficulty | Status |
+|---|---|---|---|---|
+| `legal-practice-areas` | Practice areas grid + filter | pages | med | ✅ |
+| `legal-attorney-roster` | Searchable attorney roster | pages | med | ✅ |
+| `legal-attorney-detail` | Attorney profile + consult CTA | pages | med | ✅ |
+| `legal-case-results` | Case results / outcomes | pages | med | ✅ |
+| `legal-consultation-booking` | Book a consultation flow | pages | med | ✅ |
+| `legal-client-intake` | Multi-step client intake form | ui-components | med | ✅ |
+| `legal-case-tracker` | Matter status tracker | pages | hard | ✅ |
+| `legal-document-vault` | Client document vault | pages | med | ✅ |
+| `legal-billing-invoice` | Legal invoice (time entries) | ui-components | med | ✅ |
+| `legal-testimonials` | Client testimonials carousel | ui-components | easy | ✅ |
+| `legal-faq` | Legal FAQ accordion | ui-components | easy | ✅ |
+| `legal-contact-office` | Contact & offices | ui-components | easy | ✅ |
+| `legal-client-portal` | Client portal dashboard | pages | hard | ✅ |
+| `legal-admin-dashboard` | Firm dashboard | pages | hard | ✅ |
+| `legal-fee-estimator` | Fee estimator | ui-components | med | ✅ |
+| `legal-landing-corporate` | Corporate law landing | pages | hard | ✅ |
+| `legal-landing-criminal` | Criminal defense landing | pages | hard | ✅ |
+| `legal-landing-family` | Family law landing | pages | med | ✅ |
+| `legal-landing-injury` | Personal injury landing | pages | hard | ✅ |
+| `legal-landing-boutique` | Boutique firm landing | pages | med | ✅ |
+
+## Phase 75 — Insurance Theme 🛡️ ✅ DONE (2026-06-22) · 20/20
+
+> Collection: `insurance`. Calm blue + green, clarity-driven. Naming `insurance-<slug>`.
+
+| Slug | Description | Cat | Difficulty | Status |
+|---|---|---|---|---|
+| `insurance-quote-calculator` | Live quote calculator | ui-components | med | ✅ |
+| `insurance-plan-comparison` | Plan tier comparison | pages | med | ✅ |
+| `insurance-coverage-detail` | Coverage detail + riders | pages | med | ✅ |
+| `insurance-claim-filing` | File-a-claim wizard | pages | hard | ✅ |
+| `insurance-claim-tracker` | Claim status tracker | ui-components | med | ✅ |
+| `insurance-agent-finder` | Find an agent | pages | med | ✅ |
+| `insurance-policy-dashboard` | Policyholder dashboard | pages | hard | ✅ |
+| `insurance-policy-detail` | Single policy detail | pages | med | ✅ |
+| `insurance-faq` | Insurance FAQ | ui-components | easy | ✅ |
+| `insurance-testimonials` | Customer stories | ui-components | easy | ✅ |
+| `insurance-get-quote-form` | Get-a-quote lead form | ui-components | easy | ✅ |
+| `insurance-coverage-selector` | Coverage builder | ui-components | med | ✅ |
+| `insurance-admin-dashboard` | Carrier dashboard | pages | hard | ✅ |
+| `insurance-claims-queue` | Adjuster claims queue | pages | hard | ✅ |
+| `insurance-premium-breakdown` | Premium breakdown | ui-components | med | ✅ |
+| `insurance-landing-auto` | Auto insurance landing | pages | hard | ✅ |
+| `insurance-landing-home` | Home insurance landing | pages | med | ✅ |
+| `insurance-landing-life` | Life insurance landing | pages | med | ✅ |
+| `insurance-landing-health` | Health insurance landing | pages | hard | ✅ |
+| `insurance-landing-business` | Business insurance landing | pages | med | ✅ |
+
+## Phase 76 — Construction / Trades Theme 🏗️ ✅ DONE (2026-06-22) · 20/20
+
+> Collection: `construction`. Hi-vis yellow + steel + concrete, rugged. Naming `construction-<slug>`.
+
+| Slug | Description | Cat | Difficulty | Status |
+|---|---|---|---|---|
+| `construction-services` | Services + process | pages | med | ✅ |
+| `construction-project-portfolio` | Project gallery + filter | pages | med | ✅ |
+| `construction-project-detail` | Project detail | pages | med | ✅ |
+| `construction-estimate-request` | Instant estimate request | ui-components | med | ✅ |
+| `construction-project-tracker` | Build progress tracker | pages | hard | ✅ |
+| `construction-crew-schedule` | Crew schedule board | pages | hard | ✅ |
+| `construction-before-after` | Before/after slider | ui-components | easy | ✅ |
+| `construction-reviews` | Customer reviews | ui-components | easy | ✅ |
+| `construction-quote-builder` | Line-item quote builder | ui-components | hard | ✅ |
+| `construction-safety-checklist` | Site safety checklist | ui-components | easy | ✅ |
+| `construction-contact` | Contact & quote | ui-components | easy | ✅ |
+| `construction-client-portal` | Homeowner portal | pages | hard | ✅ |
+| `construction-admin-dashboard` | Contractor dashboard | pages | hard | ✅ |
+| `construction-materials-list` | Materials & inventory | pages | med | ✅ |
+| `construction-faq` | Construction FAQ | ui-components | easy | ✅ |
+| `construction-landing-general` | General contractor landing | pages | hard | ✅ |
+| `construction-landing-plumber` | Plumber landing | pages | med | ✅ |
+| `construction-landing-electrician` | Electrician landing | pages | med | ✅ |
+| `construction-landing-roofing` | Roofing landing | pages | med | ✅ |
+| `construction-landing-remodel` | Home remodel landing | pages | med | ✅ |
+
+## Phase 77 — Veterinary / Pet Care Theme 🐾 ✅ DONE (2026-06-22) · 20/20
+
+> Collection: `vet`. Friendly teal + warm coral, approachable. Naming `vet-<slug>`.
+
+| Slug | Description | Cat | Difficulty | Status |
+|---|---|---|---|---|
+| `vet-appointment-booking` | Book an appointment flow | pages | med | ✅ |
+| `vet-services` | Services + filter | pages | med | ✅ |
+| `vet-pet-profiles` | Pet profiles (owner) | pages | med | ✅ |
+| `vet-pet-detail` | Pet record + tabs | pages | med | ✅ |
+| `vet-medical-records` | Medical records timeline | pages | med | ✅ |
+| `vet-staff` | Our veterinarians | pages | med | ✅ |
+| `vet-pharmacy-store` | Online pharmacy/store + cart | pages | hard | ✅ |
+| `vet-emergency-info` | Emergency info component | ui-components | easy | ✅ |
+| `vet-vaccination-tracker` | Vaccination tracker | ui-components | med | ✅ |
+| `vet-testimonials` | Happy clients carousel | ui-components | easy | ✅ |
+| `vet-faq` | Vet FAQ | ui-components | easy | ✅ |
+| `vet-contact` | Contact & location | ui-components | easy | ✅ |
+| `vet-client-portal` | Pet owner portal | pages | hard | ✅ |
+| `vet-admin-dashboard` | Clinic dashboard | pages | hard | ✅ |
+| `vet-appointment-queue` | Front-desk daily schedule | pages | hard | ✅ |
+| `vet-landing-general` | General vet clinic landing | pages | hard | ✅ |
+| `vet-landing-emergency` | Emergency vet landing | pages | med | ✅ |
+| `vet-landing-mobile` | Mobile vet landing | pages | med | ✅ |
+| `vet-landing-specialty` | Specialty/surgery landing | pages | med | ✅ |
+| `vet-landing-exotic` | Exotic pets vet landing | pages | med | ✅ |
+
+---
+
 ## Phase index (planned families) 🗂️
 
 > Quick map of the planned/future phase families for navigation. ✅ = shipped phases tracked in their own sections above.
@@ -4021,4 +4143,5 @@ Videos informativos y promocionales para clínicas con Remotion.
 | Vertical bundles (II) | 57–60 | E-commerce · SaaS · Crypto/Web3 · Nonprofit |
 | Pattern & system collections | 61–64 | Onboarding/Empty · Pricing/Paywall · Forms · Dashboards |
 | Video & motion (Remotion II) | 65–73 | Ads · Explainer · Music · Data · News · Events · SaaS · Shorts · Clinic |
+| Service verticals | 74–77 | Legal · Insurance · Construction/Trades · Veterinary |
 

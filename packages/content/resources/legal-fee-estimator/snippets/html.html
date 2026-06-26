@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fee Estimator — Harrow &amp; Vance LLP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="estimator" aria-labelledby="est-title">
+      <header class="estimator__head">
+        <p class="estimator__firm">Harrow &amp; Vance LLP</p>
+        <h1 id="est-title">Fee Estimator</h1>
+        <p class="estimator__lede">
+          Get an indicative range for your matter in under a minute. Adjust the
+          details below and your estimate updates instantly.
+        </p>
+        <span class="rule" aria-hidden="true"></span>
+      </header>
+
+      <div class="estimator__grid">
+        <!-- ============ CONTROLS ============ -->
+        <form class="panel form" id="fee-form" novalidate>
+          <fieldset class="field">
+            <legend>Practice area</legend>
+            <label class="select">
+              <span class="sr-only">Select a practice area</span>
+              <select id="service" name="service">
+                <option value="estate" data-base="1850">
+                  Estate planning &amp; wills
+                </option>
+                <option value="business" data-base="3200">
+                  Business formation
+                </option>
+                <option value="contract" data-base="2400" selected>
+                  Contract review &amp; drafting
+                </option>
+                <option value="ip" data-base="4100">
+                  Trademark &amp; IP filing
+                </option>
+                <option value="employment" data-base="2900">
+                  Employment dispute
+                </option>
+                <option value="injury" data-base="0">
+                  Personal injury claim
+                </option>
+              </select>
+            </label>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend>Billing model</legend>
+            <div class="segmented" role="radiogroup" aria-label="Billing model">
+              <label class="seg">
+                <input type="radio" name="model" value="hourly" checked />
+                <span>Hourly</span>
+              </label>
+              <label class="seg">
+                <input type="radio" name="model" value="flat" />
+                <span>Flat fee</span>
+              </label>
+              <label class="seg">
+                <input type="radio" name="model" value="contingency" />
+                <span>Contingency</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- HOURLY inputs -->
+          <div class="model-block" data-block="hourly">
+            <div class="field">
+              <div class="field__row">
+                <label for="hours">Estimated hours</label>
+                <output id="hours-out" for="hours">12 hrs</output>
+              </div>
+              <input
+                type="range"
+                id="hours"
+                name="hours"
+                min="2"
+                max="80"
+                step="1"
+                value="12"
+              />
+            </div>
+
+            <div class="field">
+              <div class="field__row">
+                <label for="rate">Senior hourly rate</label>
+                <output id="rate-out" for="rate">$425/hr</output>
+              </div>
+              <input
+                type="range"
+                id="rate"
+                name="rate"
+                min="225"
+                max="750"
+                step="25"
+                value="425"
+              />
+            </div>
+
+            <div class="field">
+              <div class="field__row">
+                <label for="complexity">Matter complexity</label>
+                <output id="complexity-out" for="complexity">Standard</output>
+              </div>
+              <input
+                type="range"
+                id="complexity"
+                name="complexity"
+                min="0"
+                max="2"
+                step="1"
+                value="0"
+              />
+            </div>
+          </div>
+
+          <!-- FLAT inputs -->
+          <div class="model-block" data-block="flat" hidden>
+            <div class="field">
+              <div class="field__row">
+                <label for="scope">Scope of engagement</label>
+                <output id="scope-out" for="scope">Standard package</output>
+              </div>
+              <input
+                type="range"
+                id="scope"
+                name="scope"
+                min="0"
+                max="2"
+                step="1"
+                value="1"
+              />
+            </div>
+            <p class="hint">
+              Flat fees are quoted once we confirm scope. The figure shown is the
+              firm's typical fixed price for this matter.
+            </p>
+          </div>
+
+          <!-- CONTINGENCY inputs -->
+          <div class="model-block" data-block="contingency" hidden>
+            <div class="field">
+              <label for="recovery">Expected recovery</label>
+              <div class="money">
+                <span aria-hidden="true">$</span>
+                <input
+                  type="number"
+                  id="recovery"
+                  name="recovery"
+                  min="0"
+                  step="1000"
+                  value="120000"
+                  inputmode="numeric"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <div class="field__row">
+                <label for="pct">Contingency rate</label>
+                <output id="pct-out" for="pct">33%</output>
+              </div>
+              <input
+                type="range"
+                id="pct"
+                name="pct"
+                min="25"
+                max="40"
+                step="1"
+                value="33"
+              />
+            </div>
+            <p class="hint">
+              You owe nothing unless we recover on your behalf. Court costs may
+              still apply.
+            </p>
+          </div>
+
+          <label class="check">
+            <input type="checkbox" id="filing" name="filing" />
+            <span>Include filing &amp; court costs (est. $640)</span>
+          </label>
+        </form>
+
+        <!-- ============ SUMMARY ============ -->
+        <aside class="panel summary" aria-live="polite" aria-label="Estimate">
+          <p class="summary__label">Estimated total</p>
+          <p class="summary__total" id="total">$5,100</p>
+          <span class="summary__badge" id="model-badge">Hourly billing</span>
+
+          <ul class="breakdown" id="breakdown">
+            <!-- populated by JS -->
+          </ul>
+
+          <p class="summary__note" id="note">
+            Based on 12 hours at $425/hr.
+          </p>
+
+          <button type="button" class="cta" id="cta">
+            Book a free consultation
+          </button>
+          <p class="disclaimer">
+            This estimate is for informational purposes only. It is not legal
+            advice and does not constitute a binding quote or an attorney–client
+            relationship.
+          </p>
+        </aside>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

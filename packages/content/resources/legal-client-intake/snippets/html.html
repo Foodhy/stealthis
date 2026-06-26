@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Law Firm — Client Intake Form</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="intake" aria-labelledby="intake-title">
+    <header class="intake__head">
+      <p class="intake__firm">Whitfield &amp; Crane LLP</p>
+      <h1 id="intake-title">New Client Intake</h1>
+      <p class="intake__sub">Confidential — complete all four steps to request a consultation.</p>
+    </header>
+
+    <!-- Progress indicator -->
+    <ol class="steps" aria-label="Intake progress">
+      <li class="steps__item is-active" data-step="0">
+        <span class="steps__dot">1</span><span class="steps__label">Your info</span>
+      </li>
+      <li class="steps__item" data-step="1">
+        <span class="steps__dot">2</span><span class="steps__label">Matter details</span>
+      </li>
+      <li class="steps__item" data-step="2">
+        <span class="steps__dot">3</span><span class="steps__label">Conflict check</span>
+      </li>
+      <li class="steps__item" data-step="3">
+        <span class="steps__dot">4</span><span class="steps__label">Review &amp; submit</span>
+      </li>
+    </ol>
+    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1">
+      <span class="progress__fill" style="width:25%"></span>
+    </div>
+
+    <form id="intakeForm" novalidate>
+      <!-- Step 1: Your info -->
+      <section class="panel is-current" data-panel="0" aria-label="Your info">
+        <h2 class="panel__title">Your information</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="fullName">Full legal name <span class="req">*</span></label>
+            <input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="e.g. Margaret A. Donnelly" />
+            <p class="error" data-for="fullName"></p>
+          </div>
+          <div class="field">
+            <label for="email">Email <span class="req">*</span></label>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
+            <p class="error" data-for="email"></p>
+          </div>
+          <div class="field">
+            <label for="phone">Phone <span class="req">*</span></label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(415) 555-0182" />
+            <p class="error" data-for="phone"></p>
+          </div>
+          <div class="field">
+            <label for="contactMethod">Preferred contact</label>
+            <select id="contactMethod" name="contactMethod">
+              <option value="Email">Email</option>
+              <option value="Phone call">Phone call</option>
+              <option value="Text message">Text message</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Matter details -->
+      <section class="panel" data-panel="1" aria-label="Matter details" hidden>
+        <h2 class="panel__title">Matter details</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="matterType">Matter type <span class="req">*</span></label>
+            <select id="matterType" name="matterType">
+              <option value="">Select a practice area…</option>
+              <option value="Family law">Family law</option>
+              <option value="Estate planning">Estate planning</option>
+              <option value="Business / contracts">Business / contracts</option>
+              <option value="Real estate">Real estate</option>
+              <option value="Civil litigation">Civil litigation</option>
+              <option value="Personal injury">Personal injury</option>
+            </select>
+            <p class="error" data-for="matterType"></p>
+          </div>
+          <div class="field">
+            <label for="urgency">Urgency</label>
+            <select id="urgency" name="urgency">
+              <option value="Standard">Standard — within 2 weeks</option>
+              <option value="Soon">Soon — within a few days</option>
+              <option value="Urgent">Urgent — a deadline is near</option>
+            </select>
+          </div>
+          <div class="field field--full" id="litigationBlock" hidden>
+            <label for="opposingParty">Opposing party name <span class="req">*</span></label>
+            <input id="opposingParty" name="opposingParty" type="text" placeholder="Name of the other party in the dispute" />
+            <p class="hint">Required for litigation matters so we can screen for conflicts.</p>
+            <p class="error" data-for="opposingParty"></p>
+          </div>
+          <div class="field field--full">
+            <label for="summary">Brief description <span class="req">*</span></label>
+            <textarea id="summary" name="summary" rows="4" placeholder="Tell us what happened and what outcome you are hoping for."></textarea>
+            <p class="error" data-for="summary"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Conflict check -->
+      <section class="panel" data-panel="2" aria-label="Conflict check" hidden>
+        <h2 class="panel__title">Conflict of interest check</h2>
+        <p class="panel__lead">
+          We screen every prospective matter against our current and former clients. List anyone else
+          involved so we can confirm we are free to represent you.
+        </p>
+        <div class="grid">
+          <div class="field field--full">
+            <label for="relatedParties">Other parties involved</label>
+            <input id="relatedParties" name="relatedParties" type="text" placeholder="e.g. Harlow Ventures, Dennis Park" />
+            <p class="hint">Separate multiple names with commas.</p>
+          </div>
+          <div class="field field--full">
+            <label class="check">
+              <input id="priorRep" name="priorRep" type="checkbox" />
+              <span>I have previously been represented by this firm.</span>
+            </label>
+          </div>
+          <div class="field field--full">
+            <button type="button" id="runConflict" class="btn btn--ghost">Run conflict screen</button>
+            <div id="conflictResult" class="conflict" role="status" aria-live="polite"></div>
+          </div>
+          <div class="field field--full">
+            <label class="check">
+              <input id="attest" name="attest" type="checkbox" />
+              <span>I attest the information above is accurate to the best of my knowledge. <span class="req">*</span></span>
+            </label>
+            <p class="error" data-for="attest"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Review & submit -->
+      <section class="panel" data-panel="3" aria-label="Review and submit" hidden>
+        <h2 class="panel__title">Review &amp; submit</h2>
+        <p class="panel__lead">Please confirm the details below before submitting your request.</p>
+        <dl class="review" id="reviewList"></dl>
+        <p class="disclaimer">
+          Submitting this form does not create an attorney–client relationship. A member of our
+          intake team will follow up within one business day.
+        </p>
+      </section>
+
+      <!-- Nav -->
+      <div class="nav">
+        <button type="button" id="backBtn" class="btn btn--ghost" hidden>Back</button>
+        <div class="nav__spacer"></div>
+        <button type="button" id="nextBtn" class="btn btn--primary">Continue</button>
+        <button type="submit" id="submitBtn" class="btn btn--primary" hidden>Submit request</button>
+      </div>
+    </form>
+
+    <div id="done" class="done" hidden role="status" aria-live="polite">
+      <span class="done__seal">✓</span>
+      <h2>Request received</h2>
+      <p>Thank you. Our intake team will contact you within one business day.</p>
+    </div>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

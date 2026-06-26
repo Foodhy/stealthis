@@ -11,7 +11,6 @@ import {
 import {
   SHOW_ARCADE_HEADER,
   SHOW_BUILD_BUTTON,
-  SHOW_DBVIZ,
   SHOW_STYLEFORGE_STUDIO,
 } from "@lib/constant";
 import { SITE_URLS } from "@lib/urls";
@@ -80,7 +79,7 @@ const navLinks = [
     href: `${prefix}/library`,
     label: t("nav.library"),
     external: false,
-    badge: "New!",
+    badge: "",
   },
   {
     key: "showcase",
@@ -88,7 +87,7 @@ const navLinks = [
     label: t("nav.showcase"),
     external: false,
   },
-  { key: "docs", href: SITE_URLS.docs, label: t("nav.docs"), external: true, badge: "New!" },
+  { key: "docs", href: SITE_URLS.docs, label: t("nav.docs"), external: true, badge: "" },
   { key: "lab", href: SITE_URLS.lab, label: t("nav.lab"), external: true, badge: "" },
   { key: "build", href: SITE_URLS.build, label: t("nav.build"), external: true, badge: "" },
   {
@@ -105,6 +104,13 @@ const navLinks = [
     external: true,
     badge: "New!",
   },
+  {
+    key: "applications",
+    href: `${prefix}/applications`,
+    label: t("nav.applications"),
+    external: false,
+    badge: "New!",
+  },
 ];
 
 const visibleNavLinks = navLinks.filter(
@@ -113,37 +119,6 @@ const visibleNavLinks = navLinks.filter(
     (link.key !== "build" || SHOW_BUILD_BUTTON) &&
     (link.key !== "arcade" || SHOW_ARCADE_HEADER)
 );
-
-type AppLink = {
-  key: string;
-  href: string;
-  label: string;
-  desc: string;
-  badge?: string;
-  trigger?: "dbviz";
-};
-
-const applicationLinks: AppLink[] = [
-  {
-    key: "dbviz",
-    href: SITE_URLS.dbviz,
-    label: t("nav.dbviz"),
-    desc: t("nav.dbviz.desc"),
-    trigger: "dbviz",
-  },
-  {
-    key: "zenpomodoro",
-    href: SITE_URLS.zenpomodoro,
-    label: t("nav.zenpomodoro"),
-    desc: t("nav.zenpomodoro.desc"),
-  },
-];
-
-const visibleApplicationLinks = applicationLinks.filter(
-  (link) => link.key !== "dbviz" || SHOW_DBVIZ
-);
-const showApplications = visibleApplicationLinks.length > 0;
-const applicationsLabel = t("nav.applications");
 
 const menuLabels: Record<Locale, { open: string; close: string; title: string }> = {
   en: { open: "Open menu", close: "Close menu", title: "Navigation" },
@@ -190,76 +165,6 @@ const menuTitle = menuLabels[locale].title;
           {link.badge && <span class="nav-badge">{link.badge}</span>}
         </a>
       ))}
-
-      {showApplications && (
-        <div class="nav-dropdown" data-nav-dropdown>
-          <button
-            type="button"
-            class="nav-link nav-dropdown__trigger"
-            aria-expanded="false"
-            aria-haspopup="true"
-            aria-controls="applications-dropdown"
-            data-nav-dropdown-trigger
-          >
-            {applicationsLabel}
-            <svg
-              class="nav-dropdown__chevron"
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-          <ul
-            id="applications-dropdown"
-            class="nav-dropdown__menu"
-            data-nav-dropdown-menu
-            role="menu"
-          >
-            {visibleApplicationLinks.map((link) => (
-              <li role="none">
-                <a
-                  href={link.href}
-                  class="nav-dropdown__link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  role="menuitem"
-                  {...(link.trigger === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
-                >
-                  <span class="nav-dropdown__icon" aria-hidden="true">
-                    {link.key === "dbviz" && (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                        <path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"></path>
-                        <path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"></path>
-                      </svg>
-                    )}
-                    {link.key === "zenpomodoro" && (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="13" r="8"></circle>
-                        <path d="M12 9v4l2 2"></path>
-                        <path d="M9 2h6"></path>
-                      </svg>
-                    )}
-                  </span>
-                  <span class="nav-dropdown__content">
-                    <span class="nav-dropdown__title">
-                      {link.label}
-                      {link.badge && <span class="nav-badge">{link.badge}</span>}
-                    </span>
-                    <span class="nav-dropdown__desc">{link.desc}</span>
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </nav>
 
     <div class="flex items-center gap-2">
@@ -388,44 +293,6 @@ const menuTitle = menuLabels[locale].title;
           <span aria-hidden="true">↗</span>
         </a>
       ))}
-
-      {showApplications && (
-        <div class="mobile-drawer__group">
-          <p class="mobile-drawer__group-label">{applicationsLabel}</p>
-          {visibleApplicationLinks.map((link) => (
-            <a
-              href={link.href}
-              class="mobile-drawer__link"
-              target="_blank"
-              rel="noopener noreferrer"
-              data-mobile-close
-              {...(link.trigger === "dbviz" ? { "data-dbviz-trigger": "" } : {})}
-            >
-              <span class="mobile-drawer__link-main">
-                <span class="mobile-drawer__icon" aria-hidden="true">
-                  {link.key === "dbviz" && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                      <path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"></path>
-                      <path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"></path>
-                    </svg>
-                  )}
-                  {link.key === "zenpomodoro" && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="13" r="8"></circle>
-                      <path d="M12 9v4l2 2"></path>
-                      <path d="M9 2h6"></path>
-                    </svg>
-                  )}
-                </span>
-                <span>{link.label}</span>
-                {link.badge && <span class="nav-badge">{link.badge}</span>}
-              </span>
-              <span aria-hidden="true">↗</span>
-            </a>
-          ))}
-        </div>
-      )}
       <a
         href="https://github.com/Foodhy/stealthis"
         target="_blank"
@@ -594,6 +461,31 @@ const menuTitle = menuLabels[locale].title;
     transform: translateY(0);
   }
 
+  .nav-dropdown__footer {
+    margin-block-start: 0.3rem;
+    padding-block-start: 0.3rem;
+    border-block-start: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-dropdown__viewall {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 0.6rem;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgb(188 214 255);
+    transition: background 160ms ease, color 160ms ease;
+  }
+
+  .nav-dropdown__viewall:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgb(255 255 255);
+  }
+
   .nav-dropdown__link {
     display: flex;
     align-items: flex-start;
@@ -674,7 +566,9 @@ const menuTitle = menuLabels[locale].title;
   }
 
   .nav-badge {
+    position: relative;
     display: inline-block;
+    overflow: hidden;
     font-size: 0.5rem;
     font-weight: 800;
     letter-spacing: 0.04em;
@@ -687,6 +581,53 @@ const menuTitle = menuLabels[locale].title;
     transform-origin: center;
     vertical-align: middle;
     margin-bottom: 2px;
+    animation: nav-badge-glow 1.8s ease-in-out infinite;
+  }
+
+  /* Shine sweep across the badge */
+  .nav-badge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.85) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    animation: nav-badge-shine 2.6s ease-in-out infinite;
+  }
+
+  @keyframes nav-badge-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 10px 2px rgba(239, 68, 68, 0.9);
+    }
+  }
+
+  @keyframes nav-badge-shine {
+    0% {
+      transform: translateX(-120%);
+    }
+    /* sweep, then long pause before next */
+    35%,
+    100% {
+      transform: translateX(120%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-badge {
+      animation: none;
+    }
+    .nav-badge::after {
+      animation: none;
+      display: none;
+    }
   }
 
   .mobile-menu-trigger {

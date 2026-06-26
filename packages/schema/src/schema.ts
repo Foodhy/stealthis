@@ -108,6 +108,10 @@ export const ResourceCollectionSchema = z.enum([
   "airline",
   "cowork",
   "auto",
+  "legal",
+  "insurance",
+  "construction",
+  "vet",
 ]);
 
 // Sub-kind / bucket for a recommendation topic (drives the card badge label)

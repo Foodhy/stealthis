@@ -42,6 +42,10 @@ export const RESOURCE_COLLECTION_IDS = [
   "airline",
   "cowork",
   "auto",
+  "legal",
+  "insurance",
+  "construction",
+  "vet",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -85,6 +89,10 @@ export const NEW_LIBRARY_COLLECTION_IDS = [
   "airline",
   "cowork",
   "auto",
+  "legal",
+  "insurance",
+  "construction",
+  "vet",
 ] as const satisfies readonly ResourceCollection[];
 
 const newLibraryCollectionIdsSet = new Set<ResourceCollection>(NEW_LIBRARY_COLLECTION_IDS);
@@ -404,6 +412,34 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.auto.desc",
     accentToken: "collection-auto",
     order: 43,
+  },
+  {
+    id: "legal",
+    titleKey: "collection.legal.title",
+    descriptionKey: "collection.legal.desc",
+    accentToken: "collection-legal",
+    order: 44,
+  },
+  {
+    id: "insurance",
+    titleKey: "collection.insurance.title",
+    descriptionKey: "collection.insurance.desc",
+    accentToken: "collection-insurance",
+    order: 45,
+  },
+  {
+    id: "construction",
+    titleKey: "collection.construction.title",
+    descriptionKey: "collection.construction.desc",
+    accentToken: "collection-construction",
+    order: 46,
+  },
+  {
+    id: "vet",
+    titleKey: "collection.vet.title",
+    descriptionKey: "collection.vet.desc",
+    accentToken: "collection-vet",
+    order: 47,
   },
 ];
 
