@@ -1,5 +1,7 @@
 # StealThis.dev
 
+![StealThis.dev — open-source library of copy-paste web snippets, demos & full pages, with an MCP server](./assets/hero.png)
+
 StealThis.dev is a Bun-workspace monorepo for an open-source resource library of reusable web implementations:
 
 - Showcase site (`www`) for browsing and copying resources

@@ -9,10 +9,14 @@ const prefix = getLocalePrefix(locale);
 const canonicalPath = `${prefix}/applications`;
 const alternateLinks = getAlternateLinks("/applications/");
 
-const labels =
-  locale === "es"
-    ? { demo: "Abrir demo", repo: "Ver repo", demoShort: "Demo", repoShort: "Repo" }
-    : { demo: "Open demo", repo: "View repo", demoShort: "Demo", repoShort: "Repo" };
+const labels = { demo: t("apps.demo"), repo: t("apps.repo") };
+
+// Localized cards: app description comes from i18n (apps.<slug>.desc), falling
+// back to the English desc in the data module if a key is ever missing.
+const cards = APPLICATIONS.map((app) => ({
+  ...app,
+  desc: t(`apps.${app.slug}.desc` as Parameters<typeof t>[0]) || app.desc,
+}));
 
 // Inline icon paths (stroke="currentColor"), keyed by AppEntry.icon.
 const ICONS: Record<AppIcon, string> = {
@@ -32,6 +36,7 @@ const ICONS: Record<AppIcon, string> = {
 <Base
   title={t("apps.page.title")}
   description={t("apps.page.desc")}
+  image="/og/applications.webp"
   canonicalPath={canonicalPath}
   alternateLinks={alternateLinks}
 >
@@ -42,7 +47,7 @@ const ICONS: Record<AppIcon, string> = {
     </div>
 
     <section class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {APPLICATIONS.map((app) => {
+      {cards.map((app) => {
         const primary = app.demoHref ?? app.repoHref;
         return (
           <article class="app-card group flex flex-col overflow-hidden rounded-xl border border-white/6 bg-surface-950 transition-colors hover:border-brand-400/40">

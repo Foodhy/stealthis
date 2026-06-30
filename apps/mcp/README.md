@@ -1,5 +1,7 @@
 # StealThis MCP Server
 
+![StealThis.dev MCP Server — 1738 copy-paste web resources piped into any AI (Claude Code, Claude Desktop, Cursor) via the Model Context Protocol](./assets/hero.png)
+
 REST API + MCP server for the StealThis.dev resource library.
 
 - **Production:** `https://mcp.stealthis.dev`
