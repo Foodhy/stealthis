@@ -45,6 +45,19 @@ export default defineConfig({
           ],
         },
         {
+          label: "Playbooks",
+          badge: "New",
+          items: [
+            { label: "Start Here", link: "/playbooks/" },
+            { label: "Algorithms & Data Structures", autogenerate: { directory: "playbooks/algorithms" } },
+            { label: "Runtime & Concurrency", autogenerate: { directory: "playbooks/runtime" } },
+            { label: "Frontend Performance", autogenerate: { directory: "playbooks/frontend-performance" } },
+            { label: "Backend & Data", autogenerate: { directory: "playbooks/backend-data" } },
+            { label: "Platform Choice", autogenerate: { directory: "playbooks/platform-choice" } },
+            { label: "Mobile & Native", autogenerate: { directory: "playbooks/mobile-native" } },
+          ],
+        },
+        {
           label: "Library Guide",
           badge: "New",
           items: [
