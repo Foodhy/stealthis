@@ -66,6 +66,13 @@ async function processAll(rows: Row[], onProgress: (done: number) => void) {
 }
 ```
 
+Don't take our word for it — this demo **really blocks this page's main thread** for 2
+seconds. Watch the ball and the fps counter, and try clicking during each mode:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-block></pb-block>
+
 **Worker** — a real second thread; the main thread only posts input and receives the
 result. See the full pattern with code in
 [A CPU-bound task blocks everything](/playbooks/runtime/case-blocking-cpu/) — that case

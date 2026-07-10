@@ -67,6 +67,13 @@ function handleFile(text: string) {
 In Node the same shape is `worker_threads`; for a server, prefer a small pool (e.g.
 piscina) over spawning per request — threads are ~MBs each and take ms to start.
 
+Feel the difference — the "Block 2s" button **really freezes this page** (that's the
+point), the worker button runs the identical work off-thread:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-block></pb-block>
+
 **The honest cost:** `postMessage` **copies** the data (structured clone). Shipping a
 100MB object to a worker and back can cost more than the computation you saved. Mitigate
 by sending the raw input (a `File`/`ArrayBuffer` — buffers are *transferable*, moved not

@@ -64,6 +64,19 @@ const enriched = orders.map((order) => ({
 With 5,000 × 2,000 you go from ~10M operations to ~7,000. In practice: from seconds to
 milliseconds.
 
+Watch the shape of both algorithms — each red flash on the left is one wasted comparison:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-race
+  title="Join 12 orders with 14 users"
+  left-label="O(n·m) — users.find() inside orders.map()"
+  left-sub="every order re-scans the users array from the start"
+  right-label="O(n+m) — build usersById once, then Map.get()"
+  right-sub="one pass to index (dark fill), one flash per O(1) lookup"
+  note="Same story at scale: 5,000 × 2,000 ≈ 10,000,000 comparisons vs ~7,000 operations.">
+</pb-race>
+
 **When does it matter?** Be honest with yourself before refactoring:
 - **n·m < ~100,000** (e.g. 300 × 300): the difference is microseconds. Keep it readable.
 - **n·m between 10⁵ and 10⁶:** starts to be perceptible (tens of ms). Worth the Map if

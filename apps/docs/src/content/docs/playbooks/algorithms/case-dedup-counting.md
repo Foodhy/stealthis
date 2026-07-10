@@ -71,6 +71,20 @@ for (const item of items) {
 With 50,000 items you go from ~10⁹ comparisons to ~10⁵ operations: from seconds to
 single-digit milliseconds.
 
+Watch both dedup strategies process the same items — the left re-scans everything it
+has accumulated for every new item:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-race
+  title="Dedup 12 items against 14 seen values"
+  left-label="O(n²) — unique.some() per incoming item"
+  left-sub="every item re-scans the accumulated array"
+  right-label="O(n) — Set.has() per incoming item"
+  right-sub="build the Set as you go (dark fill), O(1) membership check"
+  note="Same story at scale: 50,000 items ≈ 1,250,000,000 comparisons vs ~100,000 operations.">
+</pb-race>
+
 **When does it matter?**
 - **n < ~1,000:** the O(n²) version costs microseconds-to-a-few-ms. If
   `.some()` reads clearer to your team, it's fine.

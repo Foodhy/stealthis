@@ -66,7 +66,14 @@ const virtualizer = useVirtualizer({
 ```
 
 10,000 rows → ~25 mounted at any time. Initial render and scroll cost stop depending on
-n entirely. (Vanilla JS / other frameworks: same technique, e.g. TanStack Virtual core;
+n entirely.
+
+Try it — both lists below hold the same 5,000 rows; check the DOM-node counters and the
+build times, then scroll each:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-vlist rows="5000"></pb-vlist> (Vanilla JS / other frameworks: same technique, e.g. TanStack Virtual core;
 mobile lists have their own case →
 [Long lists on mobile](/playbooks/mobile-native/case-long-lists-mobile/).)
 

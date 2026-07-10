@@ -76,6 +76,13 @@ hand-roll if you'd rather avoid the dependency. Note `allSettled` instead of `al
 partial failure is the normal case at n = 300, so collect failures and retry those,
 don't discard 299 successes.
 
+Watch the three shapes run the same 12 requests — sequential is a staircase, unbounded
+is a wall, bounded is lanes refilling:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-lanes></pb-lanes>
+
 Picking k: for a third-party API, whatever its rate limit implies (often 5–20). For your
 own backend, what its capacity tolerates. Browsers cap ~6 HTTP/1.1 connections per host
 anyway (HTTP/2 multiplexes past that).
