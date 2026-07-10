@@ -194,6 +194,19 @@ const en = {
   "home.categories.desc.3dInteractions": "Interactive 3D experiences and controls",
   "home.categories.desc.plugins": "Skills, MCP servers & AI tool extensions",
   "home.categories.desc.recommendations": "Tools, models, apps, books & programs",
+  // TODO: translate home.playbooks.* for the remaining 16 locales (falls back to en at runtime)
+  "home.playbooks.title": "When you're stuck",
+  "home.playbooks.lead":
+    "Playbooks start from the symptom, not the technology: diagnosis, a grounded recommendation, and the trade-offs of what was ruled out.",
+  "home.playbooks.viewAll": "Browse all playbooks",
+  "home.playbooks.card1.title": "Your 10,000-item list is slow",
+  "home.playbooks.card1.desc": "Virtualization, pagination, or windowing — and when each applies",
+  "home.playbooks.card2.title": "Your endpoint takes 3 seconds",
+  "home.playbooks.card2.desc": "N+1 queries, missing indexes, EXPLAIN — find the multiplication",
+  "home.playbooks.card3.title": "Web, PWA or native app?",
+  "home.playbooks.card3.desc": "A decision tree driven by constraints, not hype",
+  "home.playbooks.card4.title": "The UI freezes",
+  "home.playbooks.card4.desc": "Chunk the work or move it off the main thread",
   "home.manifesto.eyebrow": "Build with control",
   "home.manifesto.title": "Take what works. Ship what you want.",
   "home.manifesto.lead":
@@ -496,6 +509,30 @@ const en = {
   "collection.vet.title": "Veterinary & Pet Care",
   "collection.vet.desc":
     "Veterinary clinic stack — appointment booking, services, pet profiles, medical records, staff/vets, online pharmacy/store, emergency info, testimonials, and themed clinic landings. Friendly teal + warm accents, soft rounded, approachable.",
+  "collection.photography.title": "Photography Studio",
+  "collection.photography.desc":
+    "Photography studio stack — full-bleed portfolio galleries, session/package pricing, booking flow, client proofing gallery, print store, about/bio, testimonials, and themed studio landings (wedding, portrait, product, real-estate, editorial). Gallery-black + warm film neutrals, image-first layout, minimal chrome.",
+  "collection.dental.title": "Dental Clinic",
+  "collection.dental.desc":
+    "Dental practice stack — appointment booking, treatments/services, dentist profiles, patient portal, insurance & financing, before/after smile gallery, new-patient intake, emergency info, reviews, and themed practice landings (family, cosmetic, orthodontics, pediatric). Clean clinical blue + mint, trust-first, rounded and reassuring.",
+  "collection.wedding.title": "Wedding Planner",
+  "collection.wedding.desc":
+    "Wedding planner & event stack — elegant hero, services/packages, real-wedding gallery, planning timeline, vendor directory, RSVP form, guest details, budget tracker, testimonials, and themed celebration landings. Blush + gold + serif, editorial and romantic.",
+  "collection.podcast.title": "Podcast Network",
+  "collection.podcast.desc":
+    "Podcast network stack — multi-show hub, episode grid, custom audio player with transcript, show detail, host bios, subscribe/platform CTAs, latest-episodes feed, newsletter, and themed network landings. Bold dark UI + vibrant waveform accents, audio-first.",
+  "collection.dating.title": "Dating & Social App",
+  "collection.dating.desc":
+    "Dating & social app stack — swipe/discovery deck, profile cards, match modal, chat/messages, edit-profile, filters/preferences, onboarding, safety center, premium upsell, and themed app landings. Playful coral+violet gradients, rounded, mobile-first app feel.",
+  "collection.coach.title": "Fitness Coach",
+  "collection.coach.desc":
+    "Personal-trainer & coaching stack — coach hero, programs/plans, 1-on-1 booking, workout builder, progress tracker, nutrition plan, client dashboard, transformations gallery, pricing, testimonials, and themed coach landings. Energetic electric-lime + charcoal, bold motivational display.",
+  "collection.interior.title": "Interior Design Studio",
+  "collection.interior.desc":
+    "Interior design & architecture studio stack — project portfolio, case-study detail, moodboard, services, room visualizer, quote request, process timeline, materials/finishes, team, and themed studio landings. Warm bone + clay + walnut, editorial serif, architectural whitespace.",
+  "collection.video.title": "Videographer & Film Studio",
+  "collection.video.desc":
+    "Videographer & film studio stack — showreel hero player, portfolio grid, video packages, booking, project pipeline, testimonials, gear/services, before/after grade, and themed studio landings (wedding, commercial, music-video, documentary). Cinematic black + amber, letterbox framing, film-forward.",
   "resource.copy": "Copy",
   "resource.copied": "Copied!",
   "resource.copiedPasteGemini": "Copied! Opening Gemini in 3s — paste when ready.",
@@ -1000,6 +1037,30 @@ const es = {
   "collection.vet.title": "Veterinaria y Mascotas",
   "collection.vet.desc":
     "Stack de clínica veterinaria — reserva de citas, servicios, perfiles de mascotas, expedientes médicos, equipo/veterinarios, farmacia/tienda online, info de emergencias, testimonios y landings temáticas. Teal amigable + acentos cálidos, redondeado suave, cercano.",
+  "collection.photography.title": "Estudio de Fotografía",
+  "collection.photography.desc":
+    "Stack de estudio fotográfico — galerías de portafolio a sangre completa, precios de sesiones/paquetes, flujo de reserva, galería de revisión de cliente, tienda de impresiones, sobre/bio, testimonios y landings temáticas (boda, retrato, producto, inmobiliaria, editorial). Negro galería + neutros cálidos de película, layout centrado en imagen.",
+  "collection.dental.title": "Clínica Dental",
+  "collection.dental.desc":
+    "Stack de consultorio dental — reserva de citas, tratamientos/servicios, perfiles de dentistas, portal del paciente, seguros y financiamiento, galería de sonrisas antes/después, intake de nuevo paciente, info de emergencias, reseñas y landings temáticas (familiar, cosmética, ortodoncia, pediátrica). Azul clínico limpio + menta, prioriza confianza, redondeado y tranquilizador.",
+  "collection.wedding.title": "Wedding Planner",
+  "collection.wedding.desc":
+    "Stack de wedding planner y eventos — hero elegante, servicios/paquetes, galería de bodas reales, timeline de planificación, directorio de proveedores, formulario RSVP, detalles de invitados, tracker de presupuesto, testimonios y landings temáticas. Blush + dorado + serif, editorial y romántico.",
+  "collection.podcast.title": "Red de Podcasts",
+  "collection.podcast.desc":
+    "Stack de red de podcasts — hub multi-show, grid de episodios, reproductor de audio custom con transcripción, detalle de show, bios de hosts, CTAs de suscripción/plataformas, feed de últimos episodios, newsletter y landings temáticas. UI oscuro audaz + acentos de waveform vibrantes, centrado en audio.",
+  "collection.dating.title": "App de Citas y Social",
+  "collection.dating.desc":
+    "Stack de app de citas y social — deck de swipe/discovery, tarjetas de perfil, modal de match, chat/mensajes, editar perfil, filtros/preferencias, onboarding, centro de seguridad, upsell premium y landings temáticas. Gradientes coral+violeta juguetones, redondeado, feel de app mobile-first.",
+  "collection.coach.title": "Coach Fitness",
+  "collection.coach.desc":
+    "Stack de entrenador personal y coaching — hero de coach, programas/planes, reserva 1-a-1, constructor de rutinas, tracker de progreso, plan nutricional, dashboard de clientes, galería de transformaciones, precios, testimonios y landings temáticas. Verde lima eléctrico + carbón, display motivacional audaz.",
+  "collection.interior.title": "Estudio de Diseño Interior",
+  "collection.interior.desc":
+    "Stack de diseño interior y arquitectura — portafolio de proyectos, detalle de caso, moodboard, servicios, visualizador de ambientes, solicitud de cotización, timeline de proceso, materiales/acabados, equipo y landings temáticas. Bone cálido + arcilla + nogal, serif editorial, whitespace arquitectónico.",
+  "collection.video.title": "Videógrafo y Estudio de Cine",
+  "collection.video.desc":
+    "Stack de videógrafo y estudio de cine — hero con reproductor de showreel, grid de portafolio, paquetes de video, reserva, pipeline de proyectos, testimonios, equipo/servicios, before/after de color y landings temáticas (boda, comercial, videoclip, documental). Negro cinemático + ámbar, encuadre letterbox.",
   "collection.wiki.title": "Wiki y Base de Conocimiento",
   "collection.wiki.desc":
     "Artículos de wiki, páginas de documentación, referencias de API y tutoriales, primitivos de conocimiento reutilizables (infobox, TOC fijo, árbol de navegación, callouts, selector de versión, historial de revisiones, notas al pie), búsqueda facetada y command-K, un editor de artículos y panel de KB, más landings temáticas de enciclopedia/dev-docs/fandom/manual/soporte.",
