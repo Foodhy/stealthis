@@ -71,6 +71,12 @@ const results = indexed.filter((e) => e.text.includes(q)).map((e) => e.item)
 Pair it with a debounced input so you filter ~4 times per second instead of on every
 keystroke (see [The input lags while typing](/playbooks/frontend-performance/case-janky-input/)).
 
+Feel it live — both boxes search the same 40,000 records on your machine:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-search></pb-search>
+
 **If it's a quality problem:** you need scored, typo-tolerant matching — that's a fuzzy
 search index (see alternatives below), not a faster `.filter()`.
 

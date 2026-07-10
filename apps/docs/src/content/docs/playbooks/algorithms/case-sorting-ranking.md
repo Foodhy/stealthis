@@ -70,6 +70,12 @@ Same O(n log n) shape, but the constant factor drops dramatically when the key
 extraction was the expensive part (dates, locale-aware strings — for those, use
 `Intl.Collator` once instead of `localeCompare` in the comparator).
 
+Measure it on your own machine — the demo really sorts 60,000 rows both ways:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-sortcost></pb-sortcost>
+
 **When does it matter?**
 - **n < ~10,000 with a cheap comparator:** `sort()` runs in single-digit ms. Don't
   optimize; just don't re-run it needlessly (memoize in React with `useMemo`).

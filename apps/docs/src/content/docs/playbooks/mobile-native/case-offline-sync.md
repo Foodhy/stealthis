@@ -101,6 +101,12 @@ async function flushOutbox() {
 Design sync as **idempotent** (client-generated IDs, upserts) — retries after ambiguous
 failures then become harmless.
 
+Play with the outbox — create reports offline, then reconnect:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-outbox></pb-outbox>
+
 **When does it matter?** Users in genuinely disconnected contexts (field work,
 travel, emerging-market networks) or any form whose loss costs real work: yes, and
 from the start — retrofitting inverts the whole data layer. An office dashboard: a

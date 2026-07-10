@@ -68,6 +68,12 @@ app.get('/api/catalog', async (req, res) => {
 })
 ```
 
+Watch the same 12 requests hit each version:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-cache></pb-cache>
+
 Reads drop from `traffic × query` to `instances × (1 per TTL)`. Rules that keep this
 honest:
 

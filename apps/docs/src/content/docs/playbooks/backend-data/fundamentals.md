@@ -53,6 +53,12 @@ What indexes cost: every `INSERT`/`UPDATE` also updates each index (write
 amplification), and each index takes disk/cache space. That's why you index the columns
 your queries filter/join/sort by — not everything.
 
+Watch both access paths hunt the same row:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-btree></pb-btree>
+
 Two multiplication traps sit on top of this model:
 
 - **N+1 queries:** one query for the list, then one query *per row* for its relations.

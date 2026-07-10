@@ -15,6 +15,10 @@ app or a native app?") and leave with:
 
 The technology is the *consequence* of the recommendation, never the starting point.
 
+<script src="/playbooks-demos.js"></script>
+
+<pb-flow></pb-flow>
+
 ## How to use this section
 
 Each area opens with a **Fundamentals** page — the mental model explained from zero, with

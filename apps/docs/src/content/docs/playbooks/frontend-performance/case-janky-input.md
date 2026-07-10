@@ -77,6 +77,12 @@ Debounce also cuts *how often* the work runs (essential when each keystroke woul
 network request); `useDeferredValue` keeps results as fresh as the machine allows with
 no tuning constant. They compose: debounce the fetch, defer the render.
 
+Feel the difference — the left input really burns 80ms per keystroke:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-input></pb-input>
+
 **When does it matter?**
 - Reaction **< ~20ms** total: nothing needed — you won't beat "already instant".
 - **~20–100ms:** perceptible under fast typing. Debounce is two lines; do it.

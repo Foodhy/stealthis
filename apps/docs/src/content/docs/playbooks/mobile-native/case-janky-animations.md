@@ -78,6 +78,13 @@ const pan = Gesture.Pan().onChange((e) => { offset.value += e.changeX }) // also
 
 Finger-to-pixel with no JS round trip — the sheet tracks the finger even mid-mount.
 
+The same physics, demonstrated in your browser (rAF = JS-driven Animated; CSS
+transform = native driver / Reanimated):
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-threads></pb-threads>
+
 **When does it matter?** `useNativeDriver: true` costs nothing when applicable — it's
 just correct; use it always. Reanimated is a real dependency with a learning curve:
 adopt it when gestures drive animation, when you must animate layout smoothly, or when

@@ -63,6 +63,12 @@ app.use(async (req, res, next) => {
 })
 ```
 
+Try scaling the wrong tier first — the simulator won't let you cheat:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-bottleneck></pb-bottleneck>
+
 **Step 3 — scale what's actually saturated:**
 - **App tier:** make it **stateless** (sessions in Redis/JWT, uploads in object
   storage, no local files or in-memory session state), then run N instances behind a

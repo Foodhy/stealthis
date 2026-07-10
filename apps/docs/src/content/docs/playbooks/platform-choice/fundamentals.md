@@ -79,6 +79,12 @@ that stops being true — games, heavy media, custom rendering).
 (Cost multipliers are order-of-magnitude honesty, not quotes — the point is the *shape*:
 native's cost is a second codebase forever, not a one-time fee.)
 
+Explore the trade-offs interactively:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-spectrum></pb-spectrum>
+
 ## How this connects to the cases
 
 - [Web, PWA, hybrid or native?](/playbooks/platform-choice/case-new-product/) — "I'm

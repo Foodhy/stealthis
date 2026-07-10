@@ -59,6 +59,12 @@ Does the core product require device APIs the web can't reach
             market, consumer expectations) → HYBRID now, or WEB + wrap later
 ```
 
+Or walk it interactively — answer for *your* product:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-tree title="Where should your product live?" config='{"start":{"crumb":"device APIs","q":"Does the core product require device APIs the web cannot reach (background location, BLE/HealthKit, widgets, watch)?","yes":"team","no":"disc"},"team":{"crumb":"one codebase","q":"Must one codebase cover iOS + Android with a web-skilled team?","yes":"r_hybrid","no":"r_native"},"disc":{"crumb":"discovery","q":"Is discovery mainly search/links, or is iteration speed critical (pre-product-market-fit)?","noLabel":"No — store presence is itself required","yes":"daily","no":"r_store"},"daily":{"crumb":"daily return","q":"Do users return daily, want home-screen presence, or need light offline?","yes":"r_pwa","no":"r_web"},"r_hybrid":{"result":"<b>Hybrid (React Native / Flutter).</b> Real apps in both stores from ~one codebase. Your next read: <a href=/playbooks/mobile-native/fundamentals/>Mobile &amp; Native fundamentals</a>."},"r_native":{"result":"<b>Native (Swift + Kotlin).</b> The product IS the platform integration — pay for two codebases with open eyes, and only with the team to sustain them."},"r_store":{"result":"<b>Hybrid now, or web + wrap later.</b> Store presence as a business requirement without hard native APIs rarely justifies two native codebases."},"r_pwa":{"result":"<b>Web, enhanced to a PWA.</b> Same codebase plus manifest + service worker. Check the iOS caveats before promising offline: <a href=/playbooks/mobile-native/case-offline-sync/>It must work offline</a>."},"r_web":{"result":"<b>Web.</b> One codebase, deploys in minutes, URLs as distribution. Revisit with real usage data — write down the trigger condition now."}}'></pb-tree>
+
 Why web is the default and not just a preference: one codebase, deploys in minutes with
 no review gate, URLs make every marketing channel work, and every user on every device
 is reachable today. While the product is still changing weekly, those properties

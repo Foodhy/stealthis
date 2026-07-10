@@ -69,6 +69,12 @@ const orders = await Order.findAll({
 })
 ```
 
+Watch the round trips — each bar is one query crossing the network:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-nplus1></pb-nplus1>
+
 **Index the filter/sort columns** the remaining queries actually use:
 ```sql
 EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42 ORDER BY created_at DESC LIMIT 20;

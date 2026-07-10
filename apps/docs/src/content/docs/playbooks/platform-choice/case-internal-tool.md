@@ -65,6 +65,12 @@ And the corresponding freedom — actively *don't* spend on: custom branding, an
 polish, mobile-first layouts (unless the users are literally in the field), cross-
 browser archaeology, marketing pages.
 
+Walk the build-vs-assemble decision for your tool:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-tree title="How much should you build?" config='{"start":{"crumb":"assemble","q":"Does an admin framework or internal-tool builder cover the need (CRUD + roles + tables + export)?","yes":"r_assemble","no":"q2"},"q2":{"crumb":"field use","q":"Are the users physically mobile or offline in the field (warehouse scanning, on-site inspections)?","yes":"r_field","no":"q3"},"q3":{"crumb":"scale","q":"Will 100+ people live in it hours per day, or will it face customers/partners soon?","yes":"r_product","no":"r_boring"},"r_assemble":{"result":"<b>Assemble it.</b> Retool / Appsmith / Django admin — days, not months. Migrate off only when concrete friction demands it. SSO, roles, and an audit log are still non-negotiable."},"r_field":{"result":"<b>Mobile app for the field flow.</b> Offline forms + scanning beat a browser there. See <a href=/playbooks/mobile-native/case-offline-sync/>It must work offline</a>."},"r_product":{"result":"<b>Treat it as a product.</b> At that usage it has an internal market — product-grade stack and bar are justified. If it faces external users, re-enter <a href=/playbooks/platform-choice/case-new-product/>the platform decision</a> with a higher security bar."},"r_boring":{"result":"<b>Boring web stack, optimized for change speed.</b> Server-rendered pages or a plain SPA + component library. SSO, viewer/operator/admin roles, audit log on mutations — and nothing else fancy."}}'></pb-tree>
+
 **When does it matter?** The trade-off flips with headcount-hours: a tool 3 people use
 weekly should be assembled in days; a tool 200 support agents live in 8h/day justifies
 product-grade investment — at that point it *is* a product, with an internal market.

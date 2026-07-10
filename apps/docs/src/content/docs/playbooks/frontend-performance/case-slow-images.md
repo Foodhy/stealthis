@@ -68,6 +68,13 @@ The rules, in priority order:
 4. **`loading="lazy"` below the fold only** — never on the LCP image; that *adds*
    delay. Give the hero `fetchpriority="high"` instead.
 
+Watch what `width`/`height` alone buys — same slow images, with and without reserved
+space:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-images></pb-images>
+
 **When does it matter?** A text-heavy page with 3 small images already sub-100KB won't
 feel different — check the Network tab before engineering. Where it always matters:
 image-led pages (commerce, galleries, landings), mobile networks, and any LCP > 2.5s

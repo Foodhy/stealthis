@@ -53,6 +53,12 @@ Key consequences:
   change makes the browser compute layout *right now*, mid-task ("layout thrashing" when
   done in a loop).
 
+See which stages each kind of change actually triggers:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-pipeline></pb-pipeline>
+
 **Where React fits:** React re-runs component functions (**render**) to compute what
 changed, then touches only those DOM nodes (**commit**). A parent re-render re-renders
 all children by default. Render is usually cheap per component — the problems are

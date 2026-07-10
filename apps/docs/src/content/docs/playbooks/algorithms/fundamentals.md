@@ -66,6 +66,12 @@ A modern machine does tens of millions of simple operations per ~100ms on the ma
 thread. O(n²) crosses that line at n in the low thousands. O(n) crosses it around
 tens of millions. That's the whole reason the distinction matters in practice.
 
+Drag the slider — watch which classes explode and which stay flat:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-growth></pb-growth>
+
 ## Reference table: what JS operations cost
 
 | Operation | Structure | Complexity | Notes |

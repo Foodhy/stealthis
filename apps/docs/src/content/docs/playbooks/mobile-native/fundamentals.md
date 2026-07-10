@@ -65,6 +65,12 @@ Three rules that explain the cases:
 3. **Crossing threads costs; crossing per-frame costs × 60.** One `onScroll` state
    update per frame = 60 round trips/second competing with everything else JS does.
 
+See the two-thread model live (in browser terms — same physics):
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-threads></pb-threads>
+
 **The mobile multiplier:** the same JS that hits 16ms budgets comfortably on your dev
 machine runs on phone CPUs several times slower, with thermal throttling. Mobile is
 where main-thread discipline (see [Runtime fundamentals](/playbooks/runtime/fundamentals/)

@@ -86,6 +86,12 @@ different data* — item-local `useState` that assumes "fresh mount per item" wi
 state between rows. Cheap items + recycling routinely takes a janky feed to 60fps on
 mid-range hardware.
 
+See the blank-cell race for yourself — flick-scroll hard:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-blank></pb-blank>
+
 **When does it matter?** A 30-row settings list needs none of this. It matters for
 feeds/catalogs of hundreds+ of items with images, on the devices your users actually
 own. Blank-cell reports from the field are the unambiguous trigger. And measure on a

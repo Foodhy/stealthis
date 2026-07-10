@@ -78,6 +78,12 @@ Node's loop adds phases (timers, poll, check/`setImmediate`) and
 one at a time on one thread; blocking it blocks *every* request the process is serving,
 not just one user's.
 
+Step through one full turn of the loop yourself:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-eventloop></pb-eventloop>
+
 ## Reference table
 
 | You write | It's queued as | When it runs |

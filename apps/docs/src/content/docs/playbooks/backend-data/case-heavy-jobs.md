@@ -70,6 +70,13 @@ new Worker('email', async (job) => {
 })
 ```
 
+Watch both shapes handle the same five signups — including the two that blow the
+timeout:
+
+<script src="/playbooks-demos.js"></script>
+
+<pb-queue></pb-queue>
+
 What the queue buys beyond latency: **retries with backoff** (SMTP hiccup ≠ lost
 email), **persistence** (deploys and crashes don't lose accepted work), **isolation**
 (heavy work can't starve the API), and **backpressure** (1,000 export requests become a
