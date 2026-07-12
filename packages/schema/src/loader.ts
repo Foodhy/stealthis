@@ -5,8 +5,13 @@ import matter from "gray-matter";
 import { ChallengeMetaSchema, LessonSchema, PathSchema, ResourceMetaSchema } from "./schema.js";
 import type { ChallengeMetaOutput, LessonOutput, PathOutput, ResourceMetaOutput } from "./schema.js";
 
+// fast-glob only accepts forward slashes in patterns; node:path join() emits
+// backslashes on Windows, which silently matches zero files there.
+const globPattern = (contentDir: string, subpath: string) =>
+  fg.convertPathToPattern(join(contentDir, subpath));
+
 export async function loadResources(contentDir: string): Promise<ResourceMetaOutput[]> {
-  const pattern = join(contentDir, "resources/*/index.mdx");
+  const pattern = globPattern(contentDir, "resources/*/index.mdx");
   const files = await fg(pattern, { onlyFiles: true });
 
   const resources: ResourceMetaOutput[] = [];
@@ -74,7 +79,7 @@ export function readSnippet(contentDir: string, slug: string, target: string): s
 // ---------------------------------------------------------------------------
 
 export async function loadChallenges(contentDir: string): Promise<ChallengeMetaOutput[]> {
-  const pattern = join(contentDir, "challenges/**/index.mdx");
+  const pattern = globPattern(contentDir, "challenges/**/index.mdx");
   const files = await fg(pattern, { onlyFiles: true });
 
   const challenges: ChallengeMetaOutput[] = [];
@@ -96,7 +101,7 @@ export async function loadChallenges(contentDir: string): Promise<ChallengeMetaO
 }
 
 export async function loadLessons(contentDir: string): Promise<LessonOutput[]> {
-  const pattern = join(contentDir, "challenges/_lessons/**/*.yaml");
+  const pattern = globPattern(contentDir, "challenges/_lessons/**/*.yaml");
   const files = await fg(pattern, { onlyFiles: true });
 
   const lessons: LessonOutput[] = [];
@@ -119,7 +124,7 @@ export async function loadLessons(contentDir: string): Promise<LessonOutput[]> {
 }
 
 export async function loadPaths(contentDir: string): Promise<PathOutput[]> {
-  const pattern = join(contentDir, "challenges/_paths/**/*.yaml");
+  const pattern = globPattern(contentDir, "challenges/_paths/**/*.yaml");
   const files = await fg(pattern, { onlyFiles: true });
 
   const paths: PathOutput[] = [];

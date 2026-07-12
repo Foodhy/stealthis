@@ -242,7 +242,7 @@ const structuredData = [
       <div class="hero-cta-shell mx-auto max-w-5xl px-5 py-9 sm:px-10 sm:py-12">
         <h1 class="hero-anim-item text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] mb-6 hero-title-gradient min-w-0">
           <span class="block">{t("hero.titlePrefix").trim()}</span>
-          <span class="block">
+          <span class="block hero-rotating-line">
             <span
               class="hero-rotating-wrap inline-block align-baseline overflow-hidden"
               data-words={JSON.stringify(rotatingWords)}
@@ -992,6 +992,16 @@ const structuredData = [
       background-clip: text;
       color: transparent;
     }
+    .hero-title-gradient > span.hero-rotating-line {
+      /* This line's visible text comes from the per-word gradients below. On
+         Windows, Chromium paints an ancestor's background-clip:text mask using
+         every descendant glyph WITHOUT honoring the rotating wrap's overflow
+         clip, so the off-screen words ghost over the hero. */
+      background: none;
+      -webkit-background-clip: border-box;
+      background-clip: border-box;
+      color: inherit;
+    }
     .hero-title-gradient > span.hero-suffix-line {
       background: linear-gradient(to bottom, rgb(148 163 184), rgb(100 116 139));
       -webkit-background-clip: text;
@@ -1006,6 +1016,10 @@ const structuredData = [
       vertical-align: baseline;
       isolation: isolate;
       text-align: center;
+      /* Belt-and-suspenders with overflow:hidden — clip-path also clips
+         composited layers, which Windows Chromium sometimes paints outside
+         an overflow clip. */
+      clip-path: inset(0);
     }
     .hero-rotating-word {
       height: var(--hero-word-height);

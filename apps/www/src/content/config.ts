@@ -1,4 +1,3 @@
-import { fileURLToPath } from "node:url";
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
@@ -176,7 +175,9 @@ const ResourceCollectionSchema = z.enum([
 const resources = defineCollection({
   loader: glob({
     pattern: "*/index.mdx",
-    base: fileURLToPath(new URL("../../../../packages/content/resources", import.meta.url)),
+    // Relative to the app root; resolved by Astro as a URL, so it works on
+    // Windows too (an absolute C:\ path is rejected as a non-file: scheme).
+    base: "../../packages/content/resources",
   }),
   schema: z.object({
     slug: z.string(),
