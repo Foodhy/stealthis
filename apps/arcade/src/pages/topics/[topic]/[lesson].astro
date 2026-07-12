@@ -1,0 +1,774 @@
+---
+import { join } from "node:path";
+import { loadChallenges, loadLessons } from "@schema";
+import Chrome from "../../../components/Chrome.astro";
+import StoryBeat from "../../../components/StoryBeat.astro";
+import AnimationRunner from "../../../components/runners/AnimationRunner.astro";
+import CompleteRunner from "../../../components/runners/CompleteRunner.astro";
+import FixRunner from "../../../components/runners/FixRunner.astro";
+import IdentifyRunner from "../../../components/runners/IdentifyRunner.astro";
+import QuizRunner from "../../../components/runners/QuizRunner.astro";
+import Base from "../../../layouts/Base.astro";
+import { codeTabsForChallenge } from "../../../lib/code-tabs";
+import { isGeneratedChallenge } from "../../../lib/content";
+import { topicPath } from "../../../lib/paths";
+
+export async function getStaticPaths() {
+  const contentDir = join(process.cwd(), "..", "..", "packages", "content");
+  const [challenges, lessons] = await Promise.all([
+    loadChallenges(contentDir),
+    loadLessons(contentDir),
+  ]);
+
+  return Promise.all(
+    lessons.map(async (lesson) => {
+      const ordered = lesson.challenges
+        .map((slug) => challenges.find((c) => c.slug === slug))
+        .filter((c): c is NonNullable<typeof c> => Boolean(c));
+
+      const codeTabsMap: Record<string, Awaited<ReturnType<typeof codeTabsForChallenge>>> = {};
+      for (const c of ordered) {
+        codeTabsMap[c.slug] = await codeTabsForChallenge(c);
+      }
+
+      const topicLessons = lessons
+        .filter((l) => l.topic === lesson.topic)
+        .sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+      const chapterIndex = topicLessons.findIndex((l) => l.slug === lesson.slug) + 1;
+
+      return {
+        params: { topic: lesson.topic, lesson: lesson.slug },
+        props: {
+          lesson,
+          challenges: ordered,
+          codeTabsMap,
+          chapterIndex,
+          chapterTotal: topicLessons.length,
+        },
+      };
+    })
+  );
+}
+
+const { topic, lesson: lessonSlug } = Astro.params;
+const { lesson, challenges, codeTabsMap, chapterIndex, chapterTotal } = Astro.props;
+
+const runnerProps = challenges.map((c, i) => ({
+  challenge: c,
+  index: i,
+  codeTabs: codeTabsMap[c.slug] ?? [],
+  isGenerated: isGeneratedChallenge(c),
+}));
+---
+
+<Base title={`Arcade · ${lesson.title}`} hideHeader fullBleed>
+  <Chrome
+    topic={topic!}
+    lessonTitle={lesson.title}
+    total={challenges.length}
+    difficulties={challenges.map((c) => c.difficulty)}
+  />
+
+  <div
+    class="mx-auto max-w-3xl px-4 pb-24 sm:px-6"
+    data-runner
+    data-topic={topic}
+    data-lesson={lessonSlug}
+    data-chapter-index={chapterIndex}
+    data-chapter-total={chapterTotal}
+  >
+    <StoryBeat
+      topic={topic!}
+      lessonTitle={lesson.title}
+      description={lesson.description}
+      chapterIndex={chapterIndex}
+      chapterTotal={chapterTotal}
+    />
+
+    {runnerProps.map(({ challenge: c, index, codeTabs, isGenerated }) => {
+      if (c.type === "quiz") return <QuizRunner challenge={c} index={index} codeTabs={codeTabs} isGenerated={isGenerated} />;
+      if (c.type === "complete") return <CompleteRunner challenge={c} index={index} codeTabs={codeTabs} isGenerated={isGenerated} />;
+      if (c.type === "fix") return <FixRunner challenge={c} index={index} codeTabs={codeTabs} isGenerated={isGenerated} />;
+      if (c.type === "identify") return <IdentifyRunner challenge={c} index={index} codeTabs={codeTabs} isGenerated={isGenerated} />;
+      if (c.type === "animation") return <AnimationRunner challenge={c} index={index} codeTabs={codeTabs} isGenerated={isGenerated} />;
+      return (
+        <article
+          class="challenge-slide hidden flex-col gap-4 py-10"
+          data-challenge
+          data-slug={c.slug}
+          data-type={c.type}
+          data-index={index}
+        >
+          <span class="text-xs uppercase tracking-wider text-white/40">{c.topic} · {c.type}</span>
+          <h2 class="text-2xl font-medium text-white">{c.title}</h2>
+          <p class="text-white/50">This challenge type isn't implemented yet. Skipping.</p>
+          <div class="flex justify-end">
+            <button
+              type="button"
+              class="rounded-lg bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-300"
+              data-next
+            >
+              Skip
+            </button>
+          </div>
+        </article>
+      );
+    })}
+
+    <section class="result-screen hidden flex-col items-center gap-6 py-16 text-center" data-result-screen>
+      <div class="confetti-wrap pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true"></div>
+      <div data-result-mascot class="relative">
+        <svg width="80" height="80" viewBox="0 0 80 80" class="mascot-celebrate" aria-hidden="true">
+          <ellipse cx="40" cy="44" rx="28" ry="26" fill="#34d399" />
+          <circle cx="30" cy="36" rx="4" ry="5" fill="#0a0a0a" />
+          <circle cx="50" cy="36" rx="4" ry="5" fill="#0a0a0a" />
+          <path d="M32 52 Q40 60 48 52" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+      </div>
+      <h2 class="text-3xl font-semibold text-white">Lesson complete</h2>
+      <p class="text-white/60">
+        <span data-result-correct>0</span> / <span data-result-total>{challenges.length}</span> correct
+      </p>
+      <p class="text-sm font-medium text-emerald-300" data-result-xp hidden></p>
+      <p class="text-xs text-orange-300/90" data-result-streak hidden></p>
+      <div class="flex flex-wrap items-center justify-center gap-3 pt-4">
+        <a
+          href={topicPath(topic!)}
+          class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/14"
+        >
+          Back to {topic}
+        </a>
+        <button
+          type="button"
+          class="rounded-lg bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-emerald-950 hover:bg-emerald-300"
+          data-retry
+        >
+          Retry lesson
+        </button>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style is:global>
+  .challenge-slide {
+    display: none;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 180ms ease-out,
+      transform 180ms ease-out;
+  }
+  .challenge-slide[data-active="true"] {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .quiz-option[data-selected="true"] {
+    @apply border-white/40 bg-white/14;
+  }
+  .quiz-option[data-result="correct"] {
+    @apply border-emerald-400/70 bg-emerald-400/14 text-white;
+  }
+  .quiz-option[data-result="incorrect"] {
+    @apply border-rose-400/70 bg-rose-400/14 text-white;
+  }
+  .result-screen {
+    position: relative;
+  }
+  .confetti-bit {
+    position: absolute;
+    top: -8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: confetti-fall 1.2s ease-out forwards;
+  }
+  @keyframes confetti-fall {
+    0% {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(280px) rotate(540deg);
+    }
+  }
+  .mascot-celebrate {
+    animation: mascot-bounce 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes mascot-bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-6px); }
+  }
+</style>
+
+<script>
+  import { buildSrcdoc } from "../../../lib/sandbox";
+  import { domEqual } from "../../../lib/dom-compare";
+  import { writeProgress, writeSession, clearSession } from "../../../lib/progress";
+  import { awardChallengeComplete, awardLessonComplete } from "../../../lib/profile";
+  import { showAwardFeedback } from "../../../lib/gamification-feedback";
+  import {
+    allBlanksFilled,
+    gradeBlanks,
+    lockBlankSlots,
+    wireBlankInteractions,
+  } from "../../../lib/challenge-wire";
+  import { refreshCompletePreview } from "../../../lib/complete-preview-client";
+
+  const runner = document.querySelector<HTMLElement>("[data-runner]");
+  if (!runner) throw new Error("runner root missing");
+
+  const topic = runner.dataset.topic!;
+  const lessonSlug = runner.dataset.lesson!;
+  const slides = Array.from(runner.querySelectorAll<HTMLElement>("[data-challenge]"));
+  const resultScreen = runner.querySelector<HTMLElement>("[data-result-screen]");
+  const progressText = document.querySelector<HTMLElement>("[data-progress-text]");
+  const progressBar = document.querySelector<HTMLElement>("[data-progress-bar]");
+  const storyBeat = document.querySelector<HTMLElement>("[data-story-beat]");
+  const total = slides.length;
+
+  let stepIndex = 0;
+  let correctCount = 0;
+  let storyDismissed = false;
+
+  const difficulties: number[] = JSON.parse(progressText?.dataset.difficulties || "[]");
+  const pips = Array.from(document.querySelectorAll<HTMLElement>("[data-pip]"));
+  const urlParams = new URLSearchParams(window.location.search);
+  const pathSlug = urlParams.get("path") ?? undefined;
+  const unitParam = urlParams.get("unit");
+  const unitIndex = unitParam != null && !Number.isNaN(Number(unitParam)) ? Number(unitParam) : undefined;
+  const fromExplore = urlParams.get("from") === "explore";
+
+  function spawnConfetti(root: HTMLElement) {
+    const wrap = root.querySelector(".confetti-wrap");
+    if (!wrap) return;
+    const colors = ["#34d399", "#a78bfa", "#fbbf24", "#60a5fa", "#fb7185"];
+    for (let i = 0; i < 24; i++) {
+      const bit = document.createElement("span");
+      bit.className = "confetti-bit";
+      bit.style.background = colors[i % colors.length]!;
+      bit.style.left = `${Math.random() * 100}%`;
+      bit.style.animationDelay = `${Math.random() * 0.4}s`;
+      wrap.appendChild(bit);
+    }
+  }
+
+  function revealCode(slug: string) {
+    document.dispatchEvent(
+      new CustomEvent("arcade:reveal-code", { detail: { panelId: `code-${slug}` } })
+    );
+    const slide = slides.find((s) => s.dataset.slug === slug);
+    slide?.querySelector<HTMLElement>("[data-resource-link]")?.classList.remove("hidden");
+  }
+
+  function persistSession() {
+    writeSession(topic, lessonSlug, stepIndex);
+  }
+
+  function setStep(i: number) {
+    stepIndex = i;
+    slides.forEach((s, idx) => {
+      s.dataset.active = idx === i ? "true" : "false";
+    });
+    if (progressText) {
+      progressText.textContent = `${Math.min(i + 1, total)} / ${total}`;
+    }
+    if (progressBar) {
+      progressBar.style.width = `${((i + 1) / total) * 100}%`;
+    }
+    const diff = difficulties[i] ?? 1;
+    pips.forEach((pip, idx) => {
+      const filled = idx < diff;
+      pip.classList.toggle("bg-emerald-400", filled);
+      pip.classList.toggle("bg-white/14", !filled);
+    });
+    persistSession();
+    const active = slides[i];
+    if (active) {
+      const focusable = active.querySelector<HTMLElement>(
+        "input, button[data-check], .quiz-option, textarea"
+      );
+      focusable?.focus({ preventScroll: true });
+    }
+  }
+
+  function showResult() {
+    slides.forEach((s) => (s.dataset.active = "false"));
+    clearSession(topic);
+    const lessonAward = awardLessonComplete({
+      correctCount,
+      total,
+      pathSlug,
+      unitIndex,
+    });
+    showAwardFeedback(lessonAward);
+    if (resultScreen) {
+      resultScreen.classList.remove("hidden");
+      resultScreen.classList.add("flex");
+      const correctEl = resultScreen.querySelector("[data-result-correct]");
+      if (correctEl) correctEl.textContent = String(correctCount);
+      const xpEl = resultScreen.querySelector<HTMLElement>("[data-result-xp]");
+      const streakEl = resultScreen.querySelector<HTMLElement>("[data-result-streak]");
+      if (xpEl) {
+        xpEl.textContent = `+${lessonAward.xpGained} XP${lessonAward.gemsGained ? ` · +${lessonAward.gemsGained} 💎` : ""}`;
+        xpEl.hidden = false;
+      }
+      if (streakEl && lessonAward.streak.current > 0) {
+        streakEl.textContent = `🔥 ${lessonAward.streak.current}-day streak`;
+        streakEl.hidden = false;
+      }
+      spawnConfetti(resultScreen);
+    }
+    if (progressBar) progressBar.style.width = "100%";
+    if (progressText) progressText.textContent = `${total} / ${total}`;
+  }
+
+  function advance(wasCorrect: boolean) {
+    if (wasCorrect) correctCount += 1;
+    stepIndex += 1;
+    if (stepIndex >= total) {
+      showResult();
+    } else {
+      setStep(stepIndex);
+    }
+  }
+
+  function getActiveSlide(): HTMLElement | null {
+    return slides.find((s) => s.dataset.active === "true") ?? null;
+  }
+
+  function afterCheck(slide: HTMLElement, slug: string, wasCorrect: boolean) {
+    writeProgress(slug, wasCorrect);
+    const diff = difficulties[stepIndex] ?? 1;
+    const award = awardChallengeComplete({
+      slug,
+      correct: wasCorrect,
+      difficulty: diff,
+      challengeType: slide.dataset.type,
+      fromExplore,
+    });
+    showAwardFeedback(award);
+    revealCode(slug);
+  }
+
+  slides.forEach((slide) => {
+    const type = slide.dataset.type;
+    const slug = slide.dataset.slug!;
+
+    if (type === "quiz") wireQuiz(slide, slug);
+    else if (type === "complete") wireComplete(slide, slug);
+    else if (type === "fix") wireFix(slide, slug);
+    else if (type === "identify") wireIdentify(slide, slug);
+    else if (type === "animation") wireAnimation(slide, slug);
+    else wireUnimplemented(slide, slug);
+  });
+
+  function wireQuiz(slide: HTMLElement, slug: string) {
+    const answer = Number(slide.dataset.answer);
+    const options = Array.from(slide.querySelectorAll<HTMLButtonElement>(".quiz-option"));
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    const explanation = slide.querySelector<HTMLElement>("[data-explanation]");
+    let picked: number | null = null;
+
+    options.forEach((opt) => {
+      opt.addEventListener("click", () => {
+        if (slide.dataset.checked === "true") return;
+        picked = Number(opt.dataset.optionIndex);
+        options.forEach((o) => {
+          o.dataset.selected = o === opt ? "true" : "false";
+        });
+        checkBtn.disabled = false;
+      });
+    });
+
+    checkBtn.addEventListener("click", () => {
+      if (picked == null || slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      options.forEach((o, i) => {
+        o.disabled = true;
+        if (i === answer) o.dataset.result = "correct";
+        else if (i === picked) o.dataset.result = "incorrect";
+      });
+      if (explanation) explanation.classList.remove("hidden");
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      const wasCorrect = picked === answer;
+      afterCheck(slide, slug, wasCorrect);
+      nextBtn.dataset.wasCorrect = String(wasCorrect);
+      nextBtn.focus();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      advance(nextBtn.dataset.wasCorrect === "true");
+    });
+  }
+
+  function wireComplete(slide: HTMLElement, slug: string) {
+    const answers: Record<string, string> = JSON.parse(slide.dataset.answers || "{}");
+    const caseSensitive = slide.dataset.caseSensitive === "true";
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    const explanation = slide.querySelector<HTMLElement>("[data-explanation]");
+
+    function syncCheckable() {
+      checkBtn.disabled = !allBlanksFilled(slide);
+      refreshCompletePreview(slide);
+    }
+
+    wireBlankInteractions(slide, syncCheckable);
+    syncCheckable();
+
+    checkBtn.addEventListener("click", () => {
+      if (slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      const { allCorrect, results } = gradeBlanks(slide, answers, caseSensitive);
+      lockBlankSlots(slide, results);
+      if (explanation) explanation.classList.remove("hidden");
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      afterCheck(slide, slug, allCorrect);
+      nextBtn.dataset.wasCorrect = String(allCorrect);
+      nextBtn.focus();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      advance(nextBtn.dataset.wasCorrect === "true");
+    });
+  }
+
+  function wireFix(slide: HTMLElement, slug: string) {
+    const editor = slide.querySelector<HTMLTextAreaElement>("[data-editor]")!;
+    const preview = slide.querySelector<HTMLIFrameElement>("[data-preview]")!;
+    const solution = slide.querySelector<HTMLIFrameElement>("[data-solution]")!;
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    const status = slide.querySelector<HTMLElement>("[data-status]")!;
+    const explanation = slide.querySelector<HTMLElement>("[data-explanation]");
+    const lineNumbers = slide.querySelector<HTMLElement>("[data-line-numbers]");
+    const pickInfo = slide.querySelector<HTMLElement>("[data-pick-info]");
+    const criterion = (slide.dataset.criterion || "dom-equal") as "dom-equal" | "regex" | "visual";
+    const regexPattern = slide.dataset.regex || "";
+    const solutionSource = solution.dataset.solutionSource ?? "";
+    const hints: Array<{ label: string; search?: string; insert: string }> = JSON.parse(
+      slide.dataset.hints || "[]"
+    );
+
+    function updateLineNumbers() {
+      if (!lineNumbers) return;
+      const count = editor.value.split("\n").length;
+      lineNumbers.textContent = Array.from({ length: count }, (_, i) => String(i + 1)).join("\n");
+    }
+
+    function syncScroll() {
+      if (lineNumbers) lineNumbers.scrollTop = editor.scrollTop;
+    }
+
+    function updatePreview() {
+      preview.srcdoc = buildSrcdoc(editor.value, { pickMode: true });
+    }
+
+    function applyHint(search: string, insert: string) {
+      if (search && editor.value.includes(search)) {
+        editor.value = editor.value.replace(search, insert);
+      } else if (!editor.value.includes(insert)) {
+        if (editor.value.includes("<style>")) {
+          editor.value = editor.value.replace("<style>", `<style>\n  ${insert}`);
+        } else {
+          editor.value = `${insert}\n${editor.value}`;
+        }
+      }
+      updatePreview();
+      updateLineNumbers();
+    }
+
+    slide.querySelectorAll<HTMLButtonElement>("[data-hint-index]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (slide.dataset.checked === "true") return;
+        applyHint(btn.dataset.hintSearch ?? "", btn.dataset.hintInsert ?? "");
+      });
+    });
+
+    function waitForLoad(frame: HTMLIFrameElement): Promise<void> {
+      if (frame.contentDocument?.readyState === "complete") return Promise.resolve();
+      return new Promise((resolve) => {
+        frame.addEventListener("load", () => resolve(), { once: true });
+      });
+    }
+
+    async function compareNow(): Promise<boolean> {
+      if (criterion === "regex") {
+        if (!regexPattern) return false;
+        try {
+          return new RegExp(regexPattern).test(editor.value);
+        } catch {
+          return false;
+        }
+      }
+      preview.srcdoc = buildSrcdoc(editor.value);
+      solution.srcdoc = buildSrcdoc(solutionSource);
+      await Promise.all([waitForLoad(preview), waitForLoad(solution)]);
+      const userDoc = preview.contentDocument;
+      const solDoc = solution.contentDocument;
+      if (!userDoc || !solDoc) return false;
+      return domEqual(userDoc, solDoc);
+    }
+
+    window.addEventListener("message", (e) => {
+      if (e.data?.type !== "arcade-pick") return;
+      if (slide.dataset.active !== "true") return;
+      const { tag, className, text } = e.data;
+      if (pickInfo) {
+        pickInfo.textContent = `Selected: <${tag}${className ? `.${className.split(" ").join(".")}` : ""}>${text ? ` — "${text}"` : ""}`;
+        pickInfo.classList.remove("hidden");
+      }
+      if (hints.length > 0 && hints[0]) {
+        status.textContent = `Try: ${hints[0].label}`;
+      }
+    });
+
+    editor.addEventListener("input", () => {
+      updatePreview();
+      updateLineNumbers();
+    });
+    editor.addEventListener("scroll", syncScroll);
+
+    solution.srcdoc = buildSrcdoc(solutionSource);
+    updatePreview();
+    updateLineNumbers();
+
+    checkBtn.addEventListener("click", async () => {
+      if (slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      status.textContent = "Checking…";
+      const ok = await compareNow();
+      status.textContent = ok ? "Looks right." : "Not quite — keep tweaking.";
+      status.classList.toggle("text-emerald-400", ok);
+      status.classList.toggle("text-rose-400", !ok);
+      editor.disabled = true;
+      slide.querySelectorAll<HTMLButtonElement>("[data-hint-index]").forEach((b) => {
+        b.disabled = true;
+      });
+      if (explanation) explanation.classList.remove("hidden");
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      afterCheck(slide, slug, ok);
+      nextBtn.dataset.wasCorrect = String(ok);
+      nextBtn.focus();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      advance(nextBtn.dataset.wasCorrect === "true");
+    });
+  }
+
+  function wireIdentify(slide: HTMLElement, slug: string) {
+    const mode = slide.dataset.mode;
+    const answerRaw = slide.dataset.answer ?? "";
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    const explanation = slide.querySelector<HTMLElement>("[data-explanation]");
+    let picked: number | null = null;
+
+    if (mode === "line") {
+      const lines = Array.from(slide.querySelectorAll<HTMLButtonElement>(".identify-line-btn"));
+      lines.forEach((line) => {
+        line.addEventListener("click", () => {
+          if (slide.dataset.checked === "true") return;
+          picked = Number(line.dataset.lineIndex);
+          lines.forEach((l) => {
+            l.dataset.selected = l === line ? "true" : "false";
+          });
+          checkBtn.disabled = false;
+        });
+      });
+    } else {
+      const opts = Array.from(slide.querySelectorAll<HTMLButtonElement>(".quiz-option"));
+      opts.forEach((opt) => {
+        opt.addEventListener("click", () => {
+          if (slide.dataset.checked === "true") return;
+          picked = Number(opt.dataset.optionIndex);
+          opts.forEach((o) => {
+            o.dataset.selected = o === opt ? "true" : "false";
+          });
+          checkBtn.disabled = false;
+        });
+      });
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (picked == null || slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      const expected = Number(answerRaw);
+      const wasCorrect = picked === expected;
+
+      if (mode === "line") {
+        const lines = Array.from(slide.querySelectorAll<HTMLButtonElement>(".identify-line-btn"));
+        lines.forEach((line, i) => {
+          line.disabled = true;
+          if (i === expected) line.dataset.result = "correct";
+          else if (i === picked) line.dataset.result = "incorrect";
+        });
+      } else {
+        const opts = Array.from(slide.querySelectorAll<HTMLButtonElement>(".quiz-option"));
+        opts.forEach((o, i) => {
+          o.disabled = true;
+          if (i === expected) o.dataset.result = "correct";
+          else if (i === picked) o.dataset.result = "incorrect";
+        });
+      }
+      if (explanation) explanation.classList.remove("hidden");
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      afterCheck(slide, slug, wasCorrect);
+      nextBtn.dataset.wasCorrect = String(wasCorrect);
+      nextBtn.focus();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      advance(nextBtn.dataset.wasCorrect === "true");
+    });
+  }
+
+  function wireAnimation(slide: HTMLElement, slug: string) {
+    const hasFollowUp = slide.dataset.hasFollowup === "true";
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    const explanation = slide.querySelector<HTMLElement>("[data-explanation]");
+
+    if (hasFollowUp) {
+      const answer = Number(slide.dataset.answer);
+      const opts = Array.from(slide.querySelectorAll<HTMLButtonElement>(".quiz-option"));
+      let picked: number | null = null;
+
+      opts.forEach((opt) => {
+        opt.addEventListener("click", () => {
+          if (slide.dataset.checked === "true") return;
+          picked = Number(opt.dataset.optionIndex);
+          opts.forEach((o) => {
+            o.dataset.selected = o === opt ? "true" : "false";
+          });
+          checkBtn.disabled = false;
+        });
+      });
+
+      checkBtn.addEventListener("click", () => {
+        if (picked == null || slide.dataset.checked === "true") return;
+        slide.dataset.checked = "true";
+        opts.forEach((o, i) => {
+          o.disabled = true;
+          if (i === answer) o.dataset.result = "correct";
+          else if (i === picked) o.dataset.result = "incorrect";
+        });
+        const wasCorrect = picked === answer;
+        if (explanation) explanation.classList.remove("hidden");
+        checkBtn.classList.add("hidden");
+        nextBtn.classList.remove("hidden");
+        afterCheck(slide, slug, wasCorrect);
+        nextBtn.dataset.wasCorrect = String(wasCorrect);
+        nextBtn.focus();
+      });
+    } else {
+      const reflectionInput = slide.querySelector<HTMLInputElement>("[data-animation-reflection]");
+      const minChars = 12;
+      const syncCheckable = () => {
+        checkBtn.disabled = (reflectionInput?.value.trim() ?? "").length < minChars;
+      };
+      reflectionInput?.addEventListener("input", syncCheckable);
+      syncCheckable();
+
+      checkBtn.addEventListener("click", () => {
+        if (slide.dataset.checked === "true" || !reflectionInput) return;
+        if (reflectionInput.value.trim().length < minChars) return;
+        slide.dataset.checked = "true";
+        reflectionInput.disabled = true;
+        if (explanation) explanation.classList.remove("hidden");
+        checkBtn.classList.add("hidden");
+        nextBtn.classList.remove("hidden");
+        afterCheck(slide, slug, true);
+        nextBtn.dataset.wasCorrect = "true";
+        nextBtn.focus();
+      });
+    }
+
+    nextBtn.addEventListener("click", () => {
+      advance(nextBtn.dataset.wasCorrect === "true");
+    });
+  }
+
+  function wireUnimplemented(slide: HTMLElement, slug: string) {
+    slide.querySelector<HTMLButtonElement>("[data-next]")?.addEventListener("click", () => {
+      writeProgress(slug, false);
+      advance(false);
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (storyBeat && !storyDismissed) {
+      if (e.key === "Enter") return;
+    }
+    const active = getActiveSlide();
+    if (!active) return;
+
+    const target = e.target as HTMLElement | null;
+    const inField = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+
+    if (e.key === "Enter") {
+      if (target?.tagName === "TEXTAREA" && !(e.metaKey || e.ctrlKey)) return;
+      e.preventDefault();
+      const nextBtn = active.querySelector<HTMLButtonElement>("[data-next]:not(.hidden)");
+      if (nextBtn) {
+        nextBtn.click();
+        return;
+      }
+      const checkBtn = active.querySelector<HTMLButtonElement>("[data-check]:not(.hidden)");
+      if (checkBtn && !checkBtn.disabled) checkBtn.click();
+      return;
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      writeProgress(active.dataset.slug!, false);
+      advance(false);
+      return;
+    }
+
+    if (inField) return;
+
+    if (active.dataset.type === "quiz" && /^[1-9]$/.test(e.key)) {
+      active
+        .querySelector<HTMLButtonElement>(`.quiz-option[data-option-index="${Number(e.key) - 1}"]`)
+        ?.click();
+    }
+  });
+
+  runner.querySelector<HTMLButtonElement>("[data-retry]")?.addEventListener("click", () => {
+    window.location.reload();
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const startParam = params.get("start");
+  const initialStart =
+    startParam && !Number.isNaN(Number(startParam)) ? Number(startParam) : 0;
+
+  function beginLesson(startAt: number) {
+    storyDismissed = true;
+    storyBeat?.classList.add("hidden");
+    setStep(Math.min(Math.max(startAt, 0), total - 1));
+  }
+
+  storyBeat?.addEventListener("storybeat:dismiss", () => beginLesson(initialStart));
+
+  if (storyBeat) {
+    slides.forEach((s) => (s.dataset.active = "false"));
+    if (initialStart > 0) {
+      storyBeat.classList.add("hidden");
+      beginLesson(initialStart);
+    }
+  } else {
+    beginLesson(initialStart);
+  }
+</script>

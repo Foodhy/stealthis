@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scroll-Driven Reveal — CSS animation-timeline demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- scroll(root block) progress bar -->
+    <div class="scroll-progress" role="progressbar" aria-label="Page scroll progress" aria-valuemin="0" aria-valuemax="100">
+      <span class="scroll-progress__fill"></span>
+    </div>
+
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand__dot" aria-hidden="true"></span>
+        <span class="brand__name">scroll-driven-reveal</span>
+      </div>
+      <div class="support" id="support" data-state="checking">
+        <span class="support__led" aria-hidden="true"></span>
+        <span class="support__label">Checking support…</span>
+      </div>
+    </header>
+
+    <!-- Sticky control strip -->
+    <section class="controls" aria-label="Reveal controls">
+      <div class="controls__group" role="radiogroup" aria-label="Reveal effect">
+        <span class="controls__legend">Effect</span>
+        <div class="segmented" id="effect">
+          <button class="seg" role="radio" aria-checked="true" data-effect="fade">Fade</button>
+          <button class="seg" role="radio" aria-checked="false" data-effect="slide">Slide</button>
+          <button class="seg" role="radio" aria-checked="false" data-effect="scale">Scale</button>
+          <button class="seg" role="radio" aria-checked="false" data-effect="blur">Blur</button>
+        </div>
+      </div>
+
+      <div class="controls__group">
+        <label class="controls__legend" for="range">Enter range</label>
+        <input id="range" type="range" min="0" max="60" value="15" step="5" />
+        <output id="rangeOut" class="controls__out">cover 15%→45%</output>
+      </div>
+
+      <button class="btn" id="replay" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path
+            d="M4 4v5h.582A7 7 0 1 1 5 15"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Replay
+      </button>
+    </section>
+
+    <main>
+      <!-- Intro -->
+      <section class="hero reveal" data-reveal>
+        <p class="eyebrow">CSS Scroll-Driven Animations</p>
+        <h1>Elements that animate to the beat of your scroll.</h1>
+        <p class="lede">
+          Every motion below is declared in CSS and bound to a
+          <code>scroll()</code> or <code>view()</code> timeline — no scroll listeners, no
+          <code>requestAnimationFrame</code>. Scroll down to see each technique labeled and explained.
+        </p>
+      </section>
+
+      <!-- BLOCK 1 — Reveal on enter (view timeline) -->
+      <section class="block" aria-labelledby="b1">
+        <div class="block__head reveal" data-reveal>
+          <span class="tag">01 · view()</span>
+          <h2 id="b1">Reveal on enter</h2>
+          <p>
+            Each card owns an <code>animation-timeline: view()</code>. The keyframes play across the
+            <code>animation-range</code> as the card crosses the viewport — driven by geometry, not time.
+          </p>
+        </div>
+        <div class="grid" id="revealGrid">
+          <!-- cards injected by script -->
+        </div>
+      </section>
+
+      <!-- BLOCK 2 — Progress rings driven by scroll() -->
+      <section class="block block--progress" aria-labelledby="b2">
+        <div class="block__head reveal" data-reveal>
+          <span class="tag">02 · scroll()</span>
+          <h2 id="b2">Progress from scroll()</h2>
+          <p>
+            The top bar and this dial share the anonymous <code>scroll()</code> timeline of the page
+            root. Their fill is a keyframe animation scrubbed 0→100% by the scroll position.
+          </p>
+        </div>
+        <div class="dial reveal" data-reveal>
+          <div class="dial__ring" aria-hidden="true"></div>
+          <div class="dial__meta">
+            <strong>scroll(root block)</strong>
+            <span>Animation is paused; scroll advances its timeline.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCK 3 — Staggered list (view timeline + per-item range) -->
+      <section class="block" aria-labelledby="b3">
+        <div class="block__head reveal" data-reveal>
+          <span class="tag">03 · stagger</span>
+          <h2 id="b3">Staggered rows</h2>
+          <p>
+            Same <code>view()</code> timeline, but each row nudges its <code>animation-range</code>
+            start a little later, so they cascade in as the group scrolls up.
+          </p>
+        </div>
+        <ol class="stagger" id="stagger"></ol>
+      </section>
+
+      <!-- BLOCK 4 — Parallax band (view timeline, layered ranges) -->
+      <section class="block" aria-labelledby="b4">
+        <div class="block__head reveal" data-reveal>
+          <span class="tag">04 · parallax</span>
+          <h2 id="b4">Layered parallax</h2>
+          <p>
+            One <code>view()</code> timeline drives three layers at different translate rates over the
+            <code>cover</code> range — depth without a single scroll event.
+          </p>
+        </div>
+        <div class="parallax" role="img" aria-label="Layered parallax scene of stars, mountains and a foreground title">
+          <span class="parallax__layer parallax__stars" aria-hidden="true"></span>
+          <span class="parallax__layer parallax__mid" aria-hidden="true"></span>
+          <span class="parallax__layer parallax__fore" aria-hidden="true"></span>
+          <span class="parallax__title">view()</span>
+        </div>
+      </section>
+
+      <footer class="foot reveal" data-reveal>
+        <p>
+          Built with <code>animation-timeline</code>, <code>scroll()</code> and <code>view()</code>.
+          Where unsupported, an <code>IntersectionObserver</code> fallback reveals every block.
+        </p>
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

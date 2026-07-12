@@ -1,6 +1,6 @@
 # Stealthis — Roadmap
 
-> Last updated: 2026-02-28
+> Last updated: 2026-07-01
 
 ---
 
@@ -555,10 +555,10 @@ Categorías nuevas enfocadas en herramientas para devs, UI de IA y patrones avan
 | Slug | Description | Tech | Difficulty | Status |
 |---|---|---|---|---|
 | `code-block` | Syntax-highlighted code block with copy | vanilla-js, css | easy | ✅ |
-| `code-block-rc` | Syntax-highlighted code block with copy | tailwind, react | easy |  |
+| `code-block-rc` | Syntax-highlighted code block with copy | tailwind, react | easy | ✅ |
 | `terminal-ui` | Terminal / CLI output display | css | easy | ✅ |
 | `diff-viewer` | Side-by-side code diff viewer | vanilla-js, css | med | ✅ |
-| `diff-viewer-rc` | Side-by-side code diff viewer | tailwind, react | med |  |
+| `diff-viewer-rc` | Side-by-side code diff viewer | tailwind, react | med | ✅ |
 | `json-viewer` | Collapsible JSON tree viewer | vanilla-js, css | med | ✅ |
 | `log-viewer` | Scrollable log output with filters | vanilla-js, css | med | ✅ |
 | `keyboard-shortcut` | Keyboard shortcut cheat sheet | css | easy | ✅ |
@@ -4130,12 +4130,326 @@ Videos informativos y promocionales para clínicas con Remotion.
 
 ---
 
+## Phase 78 — Photography Studio Theme 📷 ✅ DONE (2026-07-01)
+
+Collection: `photography`. Gallery-black + warm film neutrals, image-first, minimal chrome.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `photography-hero-landing` | Full-bleed studio hero | pages | med | ✅ |
+| `photography-portfolio-gallery` | Filterable masonry portfolio | pages | med | ✅ |
+| `photography-gallery-lightbox` | Lightbox with keyboard nav | ui-components | med | ✅ |
+| `photography-pricing-packages` | Session package pricing | pages | easy | ✅ |
+| `photography-booking-flow` | Multi-step session booking | pages | hard | ✅ |
+| `photography-client-proofing` | Proofing gallery (select/favorite) | pages | hard | ✅ |
+| `photography-print-store` | Print shop grid + cart | pages | med | ✅ |
+| `photography-about-bio` | Photographer about/bio | pages | easy | ✅ |
+| `photography-testimonials` | Client testimonials section | ui-components | easy | ✅ |
+| `photography-session-types` | Session type cards | ui-components | easy | ✅ |
+| `photography-contact-inquiry` | Inquiry form | pages | med | ✅ |
+| `photography-before-after` | Retouch before/after slider | ui-components | med | ✅ |
+| `photography-instagram-feed` | IG-style feed grid | ui-components | easy | ✅ |
+| `photography-fullscreen-slideshow` | Auto fullscreen slideshow | ui-components | med | ✅ |
+| `photography-image-grid-hover` | Hover-reveal caption grid | ui-components | easy | ✅ |
+| `photography-landing-wedding` | Wedding photographer landing | pages | med | ✅ |
+| `photography-landing-portrait` | Portrait photographer landing | pages | med | ✅ |
+| `photography-landing-product` | Product photographer landing | pages | med | ✅ |
+| `photography-landing-realestate` | Real-estate photographer landing | pages | med | ✅ |
+| `photography-landing-editorial` | Editorial/fashion landing | pages | med | ✅ |
+
+---
+
+## Phase 79 — Dental Clinic Theme 🦷 ✅ DONE (2026-07-01)
+
+Collection: `dental`. Clean clinical blue + mint, trust-first, rounded and reassuring.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `dental-hero-landing` | Practice hero landing | pages | med | ✅ |
+| `dental-appointment-booking` | Appointment booking flow | pages | hard | ✅ |
+| `dental-services-list` | Treatments/services | pages | easy | ✅ |
+| `dental-dentist-profiles` | Dentist team profiles | pages | easy | ✅ |
+| `dental-patient-portal` | Patient portal dashboard | pages | hard | ✅ |
+| `dental-insurance-financing` | Insurance & financing | pages | med | ✅ |
+| `dental-smile-gallery` | Before/after smile gallery | ui-components | med | ✅ |
+| `dental-new-patient-intake` | New-patient intake form | pages | med | ✅ |
+| `dental-treatment-detail` | Single treatment detail | pages | med | ✅ |
+| `dental-emergency-info` | Emergency info banner/card | ui-components | easy | ✅ |
+| `dental-reviews-testimonials` | Patient reviews | ui-components | easy | ✅ |
+| `dental-appointment-card` | Appointment card component | ui-components | easy | ✅ |
+| `dental-cost-estimator` | Treatment cost estimator | ui-components | med | ✅ |
+| `dental-office-tour` | Office photo tour | ui-components | easy | ✅ |
+| `dental-faq-accordion` | FAQ accordion | ui-components | easy | ✅ |
+| `dental-tooth-chart` | Interactive tooth chart | ui-components | hard | ✅ |
+| `dental-landing-family` | Family dentistry landing | pages | med | ✅ |
+| `dental-landing-cosmetic` | Cosmetic dentistry landing | pages | med | ✅ |
+| `dental-landing-orthodontics` | Orthodontics landing | pages | med | ✅ |
+| `dental-landing-pediatric` | Pediatric dentistry landing | pages | med | ✅ |
+
+---
+
+## Phase 80 — Wedding Planner Theme 💍 ✅ DONE (2026-07-01)
+
+Collection: `wedding`. Blush + gold + serif, editorial and romantic.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `wedding-hero-landing` | Planner hero landing | pages | med | ✅ |
+| `wedding-services-packages` | Services/packages | pages | easy | ✅ |
+| `wedding-real-gallery` | Real-weddings gallery | pages | med | ✅ |
+| `wedding-planning-timeline` | Countdown + planning timeline | ui-components | med | ✅ |
+| `wedding-vendor-directory` | Vendor directory | pages | med | ✅ |
+| `wedding-rsvp-form` | RSVP form | pages | med | ✅ |
+| `wedding-guest-list` | Guest list management | ui-components | med | ✅ |
+| `wedding-budget-tracker` | Budget tracker | ui-components | med | ✅ |
+| `wedding-seating-chart` | Drag seating chart | ui-components | hard | ✅ |
+| `wedding-registry` | Gift registry | pages | med | ✅ |
+| `wedding-story-about` | Couple story/about | pages | easy | ✅ |
+| `wedding-testimonials` | Couple testimonials | ui-components | easy | ✅ |
+| `wedding-countdown-hero` | Save-the-date countdown | ui-components | easy | ✅ |
+| `wedding-schedule-day` | Day-of schedule | ui-components | easy | ✅ |
+| `wedding-photo-gallery-lightbox` | Photo gallery + lightbox | ui-components | med | ✅ |
+| `wedding-invitation-card` | Animated invitation card | ui-components | med | ✅ |
+| `wedding-landing-elegant` | Elegant celebration landing | pages | med | ✅ |
+| `wedding-landing-rustic` | Rustic celebration landing | pages | med | ✅ |
+| `wedding-landing-modern` | Modern celebration landing | pages | med | ✅ |
+| `wedding-landing-destination` | Destination wedding landing | pages | med | ✅ |
+
+---
+
+## Phase 81 — Podcast Network Theme 🎙️ ✅ DONE (2026-07-01)
+
+Collection: `podcast`. Bold dark UI + vibrant waveform accents, audio-first.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `podcast-hero-landing` | Network hero landing | pages | med | ✅ |
+| `podcast-show-hub` | Multi-show hub grid | pages | med | ✅ |
+| `podcast-episode-grid` | Episode grid | pages | easy | ✅ |
+| `podcast-audio-player` | Full player with waveform | ui-components | hard | ✅ |
+| `podcast-episode-detail` | Episode detail + transcript | pages | med | ✅ |
+| `podcast-show-detail` | Show detail page | pages | med | ✅ |
+| `podcast-host-bios` | Host bios section | ui-components | easy | ✅ |
+| `podcast-subscribe-cta` | Platform subscribe buttons | ui-components | easy | ✅ |
+| `podcast-latest-feed` | Latest episodes feed | ui-components | easy | ✅ |
+| `podcast-newsletter-signup` | Newsletter signup | ui-components | easy | ✅ |
+| `podcast-transcript-viewer` | Synced transcript viewer | ui-components | med | ✅ |
+| `podcast-mini-player` | Sticky mini player | ui-components | med | ✅ |
+| `podcast-guest-spotlight` | Guest spotlight card | ui-components | easy | ✅ |
+| `podcast-stats-dashboard` | Creator analytics dashboard | pages | hard | ✅ |
+| `podcast-clip-share` | Audiogram clip share | ui-components | med | ✅ |
+| `podcast-search-episodes` | Search + filter episodes | ui-components | med | ✅ |
+| `podcast-landing-interview` | Interview show landing | pages | med | ✅ |
+| `podcast-landing-comedy` | Comedy show landing | pages | med | ✅ |
+| `podcast-landing-truecrime` | True-crime show landing | pages | med | ✅ |
+| `podcast-landing-business` | Business show landing | pages | med | ✅ |
+
+---
+
+## Phase 82 — Modern CSS / Web Platform 🧬 ✅ DONE (2026-07-01)
+
+Category `ui-components`. Cutting-edge platform features shipped after the roadmap was written.
+
+| Slug | Description | Tech | Diff | Status |
+|---|---|---|---|---|
+| `scroll-driven-reveal` | Scroll-driven animations (animation-timeline: view()) | css | med | ✅ |
+| `view-transitions-gallery` | View Transitions API gallery | vanilla-js, css | med | ✅ |
+| `popover-api-menu` | Native Popover API menu/tooltip | vanilla-js, css | easy | ✅ |
+| `anchor-positioning-tooltip` | CSS anchor positioning | css | med | ✅ |
+| `container-query-cards` | @container responsive cards | css | easy | ✅ |
+| `css-scope-theming` | @scope scoped theming | css | med | ✅ |
+| `scroll-snap-carousel` | Pure CSS scroll-snap carousel | css | easy | ✅ |
+| `text-wrap-typography` | text-wrap balance/pretty demo | css | easy | ✅ |
+| `color-mix-theming` | color-mix() theme generator | css, vanilla-js | med | ✅ |
+| `has-selector-interactions` | :has() parent-state interactions | css | med | ✅ |
+
+---
+
+## Phase 83 — WebGL / Shader / Canvas 🎨 ✅ DONE (2026-07-01)
+
+Category `ui-components`. GPU/canvas visual effects.
+
+| Slug | Description | Tech | Diff | Status |
+|---|---|---|---|---|
+| `shader-gradient-bg` | Animated fragment-shader gradient | webgl, vanilla-js | hard | ✅ |
+| `particle-field-cursor` | Canvas particle field + cursor | canvas, vanilla-js | med | ✅ |
+| `card-3d-tilt` | Pointer 3D tilt with glare | vanilla-js, css | med | ✅ |
+| `generative-blob-bg` | Canvas metaball blob background | canvas, vanilla-js | hard | ✅ |
+| `dot-grid-wave` | Canvas dot-grid ripple | canvas, vanilla-js | med | ✅ |
+| `image-dissolve-shader` | WebGL image dissolve on hover | webgl, vanilla-js | hard | ✅ |
+| `noise-flow-field` | Canvas flow-field animation | canvas, vanilla-js | hard | ✅ |
+| `text-scramble-canvas` | Canvas glitch/scramble text | canvas, vanilla-js | med | ✅ |
+
+---
+
+## Phase 84 — AI-app UI (2026) 🤖 ✅ DONE (2026-07-01)
+
+Category `ui-components`. UI patterns for modern AI/agent apps.
+
+| Slug | Description | Tech | Diff | Status |
+|---|---|---|---|---|
+| `agent-trace-viewer` | Collapsible agent step/trace timeline | vanilla-js, css | med | ✅ |
+| `tool-call-card` | LLM tool-call request/response card | vanilla-js, css | med | ✅ |
+| `streaming-markdown` | Streaming markdown renderer + cursor | vanilla-js, css | med | ✅ |
+| `model-comparison-panel` | Side-by-side model output compare | vanilla-js, css | med | ✅ |
+| `prompt-playground` | Prompt editor + params + token meter | vanilla-js, css | hard | ✅ |
+| `rag-source-panel` | Retrieved sources with citations | vanilla-js, css | med | ✅ |
+| `chat-branching` | Conversation branch/regenerate tree | vanilla-js, css | hard | ✅ |
+| `thinking-trace-collapsible` | Reasoning/thinking collapsible block | vanilla-js, css | easy | ✅ |
+
+---
+
+## Phase 85 — Dating / Social App Theme 💘 ✅ DONE (2026-07-02)
+
+Collection: `dating`. Playful coral+violet gradients, rounded, mobile-first app feel.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `dating-hero-landing` | App hero landing | pages | med | ✅ |
+| `dating-swipe-deck` | Swipe/discovery card deck | ui-components | hard | ✅ |
+| `dating-profile-card` | Profile card component | ui-components | easy | ✅ |
+| `dating-match-modal` | "It's a match" modal | ui-components | easy | ✅ |
+| `dating-chat-messages` | Chat / messages | pages | med | ✅ |
+| `dating-discovery-grid` | Browse profiles grid | pages | med | ✅ |
+| `dating-edit-profile` | Edit profile | pages | med | ✅ |
+| `dating-filters-preferences` | Filters & preferences | ui-components | med | ✅ |
+| `dating-onboarding-flow` | Signup onboarding steps | pages | hard | ✅ |
+| `dating-safety-center` | Safety center | pages | easy | ✅ |
+| `dating-premium-upsell` | Premium paywall | ui-components | med | ✅ |
+| `dating-likes-you` | Who-liked-you grid | ui-components | easy | ✅ |
+| `dating-profile-detail` | Full profile view | pages | med | ✅ |
+| `dating-icebreakers` | Icebreaker prompt cards | ui-components | easy | ✅ |
+| `dating-video-date` | Video-date call UI | ui-components | med | ✅ |
+| `dating-notifications` | Notifications feed | ui-components | easy | ✅ |
+| `dating-landing-serious` | Relationship-focused landing | pages | med | ✅ |
+| `dating-landing-casual` | Casual dating landing | pages | med | ✅ |
+| `dating-landing-lgbtq` | LGBTQ+ dating landing | pages | med | ✅ |
+| `dating-landing-professionals` | Professionals dating landing | pages | med | ✅ |
+
+---
+
+## Phase 86 — Fitness Coach Theme 🏋️ ✅ DONE (2026-07-02)
+
+Collection: `coach`. Energetic electric-lime + charcoal, bold motivational display.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `coach-hero-landing` | Coach hero landing | pages | med | ✅ |
+| `coach-programs-list` | Programs/plans list | pages | easy | ✅ |
+| `coach-booking-1on1` | 1-on-1 session booking | pages | hard | ✅ |
+| `coach-workout-builder` | Drag workout builder | ui-components | hard | ✅ |
+| `coach-progress-tracker` | Progress charts tracker | ui-components | med | ✅ |
+| `coach-nutrition-plan` | Nutrition plan | pages | med | ✅ |
+| `coach-client-dashboard` | Client dashboard | pages | hard | ✅ |
+| `coach-transformations` | Before/after transformations | ui-components | med | ✅ |
+| `coach-pricing-plans` | Pricing plans | pages | easy | ✅ |
+| `coach-testimonials` | Testimonials | ui-components | easy | ✅ |
+| `coach-exercise-library` | Exercise library | pages | med | ✅ |
+| `coach-workout-timer` | Interval/HIIT timer | ui-components | med | ✅ |
+| `coach-meal-log` | Calorie/meal log | ui-components | med | ✅ |
+| `coach-check-in-form` | Weekly check-in form | pages | med | ✅ |
+| `coach-habit-tracker` | Habit tracker | ui-components | easy | ✅ |
+| `coach-video-lesson` | Video lesson + steps | ui-components | med | ✅ |
+| `coach-landing-weightloss` | Weight-loss coach landing | pages | med | ✅ |
+| `coach-landing-strength` | Strength coach landing | pages | med | ✅ |
+| `coach-landing-yoga` | Yoga coach landing | pages | med | ✅ |
+| `coach-landing-online` | Online coaching landing | pages | med | ✅ |
+
+---
+
+## Phase 87 — Interior Design Studio Theme 🛋️ ✅ DONE (2026-07-02)
+
+Collection: `interior`. Warm bone + clay + walnut, editorial serif, architectural whitespace.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `interior-hero-landing` | Studio hero landing | pages | med | ✅ |
+| `interior-portfolio-grid` | Project portfolio grid | pages | med | ✅ |
+| `interior-project-detail` | Project case-study | pages | med | ✅ |
+| `interior-moodboard` | Draggable moodboard | ui-components | hard | ✅ |
+| `interior-services` | Services | pages | easy | ✅ |
+| `interior-room-visualizer` | Room palette/material visualizer | ui-components | hard | ✅ |
+| `interior-quote-request` | Quote request form | pages | med | ✅ |
+| `interior-process-timeline` | Process timeline | ui-components | easy | ✅ |
+| `interior-materials-finishes` | Materials/finishes swatches | ui-components | med | ✅ |
+| `interior-team` | Team page | pages | easy | ✅ |
+| `interior-before-after` | Before/after slider | ui-components | med | ✅ |
+| `interior-testimonials` | Testimonials | ui-components | easy | ✅ |
+| `interior-style-quiz` | Find-your-style quiz | ui-components | med | ✅ |
+| `interior-pricing-packages` | Pricing packages | pages | easy | ✅ |
+| `interior-lookbook` | Magazine lookbook gallery | ui-components | med | ✅ |
+| `interior-consultation-booking` | Consultation booking | pages | med | ✅ |
+| `interior-landing-residential` | Residential landing | pages | med | ✅ |
+| `interior-landing-commercial` | Commercial landing | pages | med | ✅ |
+| `interior-landing-luxury` | Luxury landing | pages | med | ✅ |
+| `interior-landing-minimal` | Minimalist landing | pages | med | ✅ |
+
+---
+
+## Phase 88 — Videographer / Film Studio Theme 🎥 ✅ DONE (2026-07-02)
+
+Collection: `video`. Cinematic black + amber, letterbox framing, film-forward.
+
+| Slug | Description | Cat | Diff | Status |
+|---|---|---|---|---|
+| `video-hero-showreel` | Showreel player hero | pages | med | ✅ |
+| `video-portfolio-grid` | Portfolio grid | pages | med | ✅ |
+| `video-project-detail` | Project detail | pages | med | ✅ |
+| `video-packages` | Video packages | pages | easy | ✅ |
+| `video-booking` | Booking flow | pages | hard | ✅ |
+| `video-player-custom` | Cinematic custom player | ui-components | hard | ✅ |
+| `video-reel-carousel` | Reel carousel | ui-components | med | ✅ |
+| `video-pipeline-tracker` | Project pipeline stages | ui-components | med | ✅ |
+| `video-testimonials` | Testimonials | ui-components | easy | ✅ |
+| `video-services-gear` | Services & gear | pages | easy | ✅ |
+| `video-grade-before-after` | Color-grade before/after | ui-components | med | ✅ |
+| `video-pricing` | Pricing | pages | easy | ✅ |
+| `video-vimeo-grid` | Hover-preview video grid | ui-components | med | ✅ |
+| `video-storyboard` | Storyboard frames | ui-components | med | ✅ |
+| `video-contact-brief` | Project brief form | pages | med | ✅ |
+| `video-landing-wedding` | Wedding film landing | pages | med | ✅ |
+| `video-landing-commercial` | Commercial landing | pages | med | ✅ |
+| `video-landing-musicvideo` | Music-video landing | pages | med | ✅ |
+| `video-landing-documentary` | Documentary landing | pages | med | ✅ |
+| `video-landing-realestate` | Real-estate video landing | pages | med | ✅ |
+
+---
+
+## Phase 89 — Advanced Motion / WebGPU 🌀 ✅ DONE (2026-07-02)
+
+Category `ui-components`. High-end motion + GPU compute.
+
+| Slug | Description | Tech | Diff | Status |
+|---|---|---|---|---|
+| `webgpu-compute-particles` | WebGPU compute-shader particles (WebGL fallback) | webgpu, vanilla-js | hard | ✅ |
+| `spring-physics-cards` | Spring/inertia drag with rubber-band | vanilla-js, css | med | ✅ |
+| `flip-layout-animation` | FLIP grid reflow animation | vanilla-js, css | med | ✅ |
+| `scroll-linked-3d` | Scroll-driven 3D scene | vanilla-js, css | hard | ✅ |
+| `morph-shape-transition` | SVG path morph transitions | vanilla-js, svg | med | ✅ |
+| `magnetic-cursor-elements` | Magnetic buttons + custom cursor | vanilla-js, css | med | ✅ |
+| `elastic-nav-indicator` | Shared-element elastic nav indicator | vanilla-js, css | med | ✅ |
+| `parallax-depth-scene` | Multi-layer parallax scene | vanilla-js, css | med | ✅ |
+
+---
+
 ## Phase index (planned families) 🗂️
 
 > Quick map of the planned/future phase families for navigation. ✅ = shipped phases tracked in their own sections above.
 
 | Family | Phases | Theme |
 |---|---|---|
+| Library foundation | 1 | Author field · Library UX · Card fixes |
+| Component libraries | 2, 6, 7 | UI Components · shadcn gap fill · Deep cut (DaisyUI/Flowbite/Ant/Radix/Headless) |
+| Motion & concept | 3, 4 | Web Animations (`lg`) · Concept Pages (`lgc`) |
+| React primitives | 5 | Hooks & components (`rc`) |
+| App & SaaS systems | 8, 9 | SaaS/Enterprise · App Shell & Navigation |
+| Data & mobile | 10, 11 | Data Visualization · Mobile-First / Touch |
+| Pages & comms | 12, 13, 14 | Full Page Templates · Email/Notifications · Integration Patterns |
+| Widgets & advanced | 15, 16 | Widgets/Media/Interactive · Dev Tools/AI UI |
+| Prompts & structure | 17, 19, 20 | AI Prompts · Architectures · Boilerplates (18 merged→26) |
+| Styles & native | 21, 22, 23, 24 | Remotion I · Design Styles · React Native/Expo · Templates (Extended) |
+| A11y & plugins | 25, 26 | Accessibility/RTL · Plugins (AI Coding Tools) |
+| Restaurant | 27 | Restaurant Theme |
 | Vertical bundles (I) | 28–35 | Hotel · Clinic · Gym · Salon · Real Estate · Airline · Coworking · Auto |
 | Future verticals (scoped, PLAN) | 36–45 | Banking · LMS · Ticketing · Streaming · Job Board · Delivery · Agency · Creator · D2C · AI Product — full A–E specs + market-value build order |
 | Editorial & content (I) | 46–49 | Newspaper/Magazine · Science · Museum · Game Dev |
@@ -4144,4 +4458,8 @@ Videos informativos y promocionales para clínicas con Remotion.
 | Pattern & system collections | 61–64 | Onboarding/Empty · Pricing/Paywall · Forms · Dashboards |
 | Video & motion (Remotion II) | 65–73 | Ads · Explainer · Music · Data · News · Events · SaaS · Shorts · Clinic |
 | Service verticals | 74–77 | Legal · Insurance · Construction/Trades · Veterinary |
+| Lifestyle verticals | 78–81 | Photography · Dental · Wedding · Podcast |
+| Modern web & AI components | 82–84 | Modern CSS/platform · WebGL/Shader/Canvas · AI-app UI |
+| Lifestyle verticals (II) | 85–88 | Dating/Social · Fitness Coach · Interior Design · Videographer/Film |
+| Advanced motion | 89 | Advanced Motion / WebGPU |
 

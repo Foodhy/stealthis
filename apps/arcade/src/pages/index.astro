@@ -1,101 +1,143 @@
 ---
-import { join } from "node:path";
-import { loadChallenges, loadLessons } from "@schema";
-import TopicIcon from "../components/TopicIcon.astro";
+import ProfileBar from "../components/ProfileBar.astro";
+import MascotDialogue from "../components/mascot/MascotDialogue.astro";
+import LearningPathCard from "../components/LearningPathCard.astro";
+import ContinueCard from "../components/ContinueCard.astro";
 import Base from "../layouts/Base.astro";
+import { loadArcadeData } from "../lib/content";
+import { enrichPaths, loadArcadePaths } from "../lib/paths-content";
 
-const contentDir = join(process.cwd(), "..", "..", "packages", "content");
-
-const [challenges, lessons] = await Promise.all([
-  loadChallenges(contentDir),
-  loadLessons(contentDir),
-]);
-
-const published = challenges.filter((c) => c.quality === "published");
-
-const topics = new Map<
-  string,
-  { topic: string; challenges: number; lessons: number; slugs: string[] }
->();
-for (const c of published) {
-  const t = topics.get(c.topic) ?? { topic: c.topic, challenges: 0, lessons: 0, slugs: [] };
-  t.challenges += 1;
-  t.slugs.push(c.slug);
-  topics.set(c.topic, t);
-}
-for (const l of lessons) {
-  const t = topics.get(l.topic) ?? { topic: l.topic, challenges: 0, lessons: 0, slugs: [] };
-  t.lessons += 1;
-  topics.set(l.topic, t);
-}
-
-const topicList = [...topics.values()].sort((a, b) => a.topic.localeCompare(b.topic));
+const paths = await loadArcadePaths();
+const { lessons } = await loadArcadeData();
+const enriched = enrichPaths(paths, lessons, {});
+const sorted = [...enriched].sort((a, b) => a.order - b.order);
+const firstPath = sorted[0];
 ---
 
-<Base title="Arcade — Topics">
-  <section class="space-y-2">
-    <h1 class="text-3xl font-semibold tracking-tight text-white">Arcade</h1>
-    <p class="text-white/60">Quick challenges to practice tech topics.</p>
+<Base title="Arcade — Learn by fixing">
+  <div id="arcade-home-data" hidden data-paths={JSON.stringify(sorted)} data-lessons={JSON.stringify(lessons)}></div>
+
+  <ProfileBar sticky />
+
+  <section class="mb-8" data-home-mascot-wrap>
+    <MascotDialogue
+      message={firstPath?.mascotIntro ?? "Pick a learning path and fix real bugs — one challenge at a time."}
+      mood="idle"
+    />
   </section>
 
-  <section class="mt-10">
-    {topicList.length === 0 ? (
-      <p class="text-white/50">No topics yet — add a challenge under
-        <code class="rounded bg-white/8 px-1.5 py-0.5 text-sm">packages/content/challenges/</code>.</p>
-    ) : (
-      <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {topicList.map((t) => (
-          <li>
-            <a
-              href={`/${t.topic}/`}
-              class="block rounded-xl border border-white/8 bg-white/6 p-5 transition hover:border-white/14 hover:bg-white/8"
-              data-topic-card
-              data-topic={t.topic}
-              data-slugs={JSON.stringify(t.slugs)}
-            >
-              <div class="flex items-center gap-3">
-                <span class="grid h-9 w-9 place-items-center rounded-lg border border-white/8 bg-white/6 text-white/70">
-                  <TopicIcon topic={t.topic} size={20} />
-                </span>
-                <h2 class="text-lg font-medium text-white">{t.topic}</h2>
-              </div>
-              <p class="mt-3 text-sm text-white/50">
-                <span data-progress-summary>
-                  {t.challenges} challenge{t.challenges === 1 ? "" : "s"}
-                </span>
-                <span class="mx-1">·</span>
-                {t.lessons} lesson{t.lessons === 1 ? "" : "s"}
-              </p>
-            </a>
-          </li>
-        ))}
-      </ul>
-    )}
+  <section class="mb-10 hidden" data-continue-section>
+    <ContinueCard title="Continue learning" subtitle="Pick up where you left off" href="#" label="Continue" />
+  </section>
+
+  <section class="space-y-4">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-white">Learning paths</h1>
+        <p class="text-sm text-white/55">Curated roadmaps — unlock units as you progress.</p>
+      </div>
+      <a
+        href="/explore"
+        class="rounded-lg border border-white/8 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 transition hover:border-white/14 hover:bg-white/8"
+      >
+        Explore all topics →
+      </a>
+    </div>
+
+    <ul class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {sorted.map((p) => (
+        <li>
+          <LearningPathCard path={p} />
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="mt-12 rounded-2xl border border-white/8 bg-white/4 p-6 text-center">
+    <p class="text-sm text-white/50">Want something specific?</p>
+    <a href="/random" class="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300">
+      Try a random challenge
+    </a>
   </section>
 </Base>
 
 <script>
-  type ProgressEntry = { correct: boolean; completedAt: number };
-  let progress: Record<string, ProgressEntry> = {};
-  try {
-    progress = JSON.parse(localStorage.getItem("arcade:progress") || "{}");
-  } catch {
-    progress = {};
+  import { readProgress, readSession } from "../lib/progress";
+  import { readProfile } from "../lib/profile";
+  import { buildPathNodes, enrichPaths } from "../lib/paths-unlock";
+  import { lessonPath } from "../lib/paths";
+
+  const dataEl = document.getElementById("arcade-home-data");
+  const paths = JSON.parse(dataEl?.dataset.paths || "[]");
+  const lessons = JSON.parse(dataEl?.dataset.lessons || "[]");
+
+  function hydrateHome() {
+    const progress = readProgress();
+    const session = readSession();
+    const profile = readProfile();
+    const enriched = enrichPaths(paths, lessons, progress);
+
+    document.querySelectorAll<HTMLElement>("[data-path-card]").forEach((card) => {
+      const slug = card.dataset.pathCard;
+      const p = enriched.find((x: { slug: string }) => x.slug === slug);
+      if (!p) return;
+      card.dataset.progress = String(p.progressPct);
+      const pctEl = card.querySelector(".tabular-nums");
+      if (pctEl) pctEl.textContent = `${p.progressPct}%`;
+      const ring = card.querySelector("circle.text-emerald-400");
+      if (ring instanceof SVGCircleElement) ring.setAttribute("stroke-dasharray", `${p.progressPct} 100`);
+    });
+
+    const mascot = document.querySelector("[data-home-mascot-wrap] p");
+    if (mascot) {
+      const streak = profile.streak.current;
+      const active = enriched.find((p: { progressPct: number }) => p.progressPct > 0 && p.progressPct < 100);
+      if (streak >= 3) {
+        mascot.textContent = `${streak}-day streak! ${active ? `Let's keep going with ${active.title}.` : "You're on fire — pick a path."}`;
+      } else if (active) {
+        mascot.textContent = active.mascotIntro;
+      }
+    }
+
+    let continueHref: string | null = null;
+    let title = "Continue learning";
+    let subtitle = "Pick up where you left off";
+
+    for (const [topic, entry] of Object.entries(session)) {
+      if (entry && typeof entry === "object" && "lesson" in entry) {
+        const e = entry as { lesson: string; stepIndex: number };
+        continueHref = lessonPath(topic, e.lesson, e.stepIndex);
+        title = topic;
+        subtitle = `${e.lesson} · step ${e.stepIndex + 1}`;
+        break;
+      }
+    }
+
+    if (!continueHref) {
+      for (const p of enriched) {
+        const nodes = buildPathNodes(p, lessons, progress);
+        const next = nodes.find((n) => n.state === "in_progress" || n.state === "available");
+        if (next && next.state !== "locked") {
+          continueHref = next.href;
+          title = p.title;
+          subtitle = next.lessonTitle;
+          break;
+        }
+      }
+    }
+
+    const section = document.querySelector<HTMLElement>("[data-continue-section]");
+    const card = document.querySelector<HTMLAnchorElement>("[data-continue-card]");
+    if (continueHref && section && card) {
+      section.classList.remove("hidden");
+      card.href = continueHref;
+      const titleEl = card.querySelector("h2");
+      const subEl = card.querySelector("p.truncate.text-sm");
+      if (titleEl) titleEl.textContent = title;
+      if (subEl) subEl.textContent = subtitle;
+    }
   }
 
-  const cards = document.querySelectorAll<HTMLElement>("[data-topic-card]");
-  cards.forEach((card) => {
-    const slugsAttr = card.dataset.slugs;
-    if (!slugsAttr) return;
-    const slugs: string[] = JSON.parse(slugsAttr);
-    const total = slugs.length;
-    const done = slugs.filter((s) => progress[s]).length;
-    const correct = slugs.filter((s) => progress[s]?.correct).length;
-    const summary = card.querySelector<HTMLElement>("[data-progress-summary]");
-    if (!summary || total === 0) return;
-    summary.textContent =
-      done === 0
-        ? `${total} challenge${total === 1 ? "" : "s"}`
-        : `${correct}/${total} correct`;
-  });
+  hydrateHome();
+  document.addEventListener("arcade:profile-updated", hydrateHome);
 </script>

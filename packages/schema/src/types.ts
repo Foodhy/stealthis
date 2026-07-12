@@ -176,6 +176,7 @@ interface ChallengeBase {
   resourceSlug?: string;
   estimatedSeconds: number;
   quality: ChallengeQuality;
+  realWorldHook?: string;
   tags: string[];
   createdAt: string;
   updatedAt: string;
@@ -189,12 +190,24 @@ export interface QuizChallenge extends ChallengeBase {
   explanation?: string;
 }
 
+export interface BlankInteraction {
+  mode: "select" | "type" | "bank" | "drag";
+  options?: string[];
+}
+
 export interface CompleteChallenge extends ChallengeBase {
   type: "complete";
   template: string;
   answers: Record<string, string>;
   caseSensitive: boolean;
+  interaction?: Record<string, BlankInteraction>;
   explanation?: string;
+}
+
+export interface FixHint {
+  label: string;
+  search?: string;
+  insert: string;
 }
 
 export interface FixChallenge extends ChallengeBase {
@@ -203,6 +216,7 @@ export interface FixChallenge extends ChallengeBase {
   solution: string;
   criterion: "dom-equal" | "regex" | "visual";
   regexPattern?: string;
+  hints?: FixHint[];
   explanation?: string;
 }
 
@@ -240,4 +254,23 @@ export interface Lesson {
   description?: string;
   order: number;
   challenges: string[];
+}
+
+export interface PathUnit {
+  title: string;
+  preview: string;
+  topic: string;
+  lessons: string[];
+}
+
+export type PathAccent = "emerald" | "sky" | "violet" | "amber" | "rose" | "cyan";
+
+export interface LearningPath {
+  slug: string;
+  title: string;
+  tagline: string;
+  mascotIntro?: string;
+  order: number;
+  accent: PathAccent;
+  units: PathUnit[];
 }

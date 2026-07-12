@@ -1,0 +1,517 @@
+:root {
+  --bg: #0c0d10;
+  --surface: #15161b;
+  --surface-2: #1d1f27;
+  --ink: #e9eaf0;
+  --muted: #9a9cab;
+  --accent: #8b5cf6;
+  --accent-2: #22d3ee;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-2: rgba(255, 255, 255, 0.18);
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(139, 92, 246, 0.14), transparent 60%),
+    radial-gradient(1000px 600px at 110% 10%, rgba(34, 211, 238, 0.1), transparent 55%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.86em;
+  color: var(--accent-2);
+  background: rgba(34, 211, 238, 0.08);
+  padding: 0.1em 0.4em;
+  border-radius: 6px;
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 40px) 48px;
+}
+
+.page__head {
+  max-width: 720px;
+}
+
+.eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin: 0 0 12px;
+}
+
+.page__head h1 {
+  margin: 0 0 12px;
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.lede {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: clamp(15px, 2.2vw, 17px);
+  max-width: 62ch;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+}
+
+.legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+}
+.dot--compact {
+  background: var(--warn);
+}
+.dot--stacked {
+  background: var(--accent);
+}
+.dot--wide {
+  background: var(--accent-2);
+}
+
+.nosupport {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: var(--r-md);
+  color: var(--warn);
+  font-size: 13.5px;
+}
+
+/* ---- Stage & panels ---- */
+
+.stage {
+  margin-top: clamp(28px, 4vw, 44px);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.panel {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 12px 12px 14px;
+  box-shadow: 0 24px 60px -40px rgba(0, 0, 0, 0.9);
+  /* width is set inline by JS; this is the constrained resizable box */
+  max-width: 100%;
+  transition: border-color 0.18s ease;
+}
+
+.panel:focus-within {
+  border-color: var(--line-2);
+}
+
+.panel__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 4px 10px;
+  font-size: 12px;
+}
+
+.panel__name {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.panel__w {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel__body {
+  /* THE container context */
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* Resize handle on the right edge */
+.panel__handle {
+  position: absolute;
+  top: 44px;
+  bottom: 12px;
+  right: -7px;
+  width: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+  display: grid;
+  place-items: center;
+  touch-action: none;
+  z-index: 3;
+}
+
+.panel__grip {
+  width: 6px;
+  align-self: stretch;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(var(--accent), var(--accent-2));
+  opacity: 0.55;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.panel__handle:hover .panel__grip,
+.panel__handle:active .panel__grip {
+  opacity: 1;
+  transform: scaleX(1.35);
+}
+
+.panel__handle:focus-visible {
+  outline: none;
+}
+.panel__handle:focus-visible .panel__grip {
+  opacity: 1;
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+.panel.is-dragging {
+  user-select: none;
+}
+.panel.is-dragging .panel__grip {
+  opacity: 1;
+  transform: scaleX(1.35);
+}
+
+/* ---- The card (default = stacked) ---- */
+
+.card {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.card:hover {
+  border-color: var(--line-2);
+  box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.9);
+}
+
+.card:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.35);
+}
+
+.card__media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.card__art {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120px 120px at 30% 25%, rgba(255, 255, 255, 0.22), transparent 60%),
+    conic-gradient(from 210deg at 65% 60%, var(--accent), var(--accent-2), var(--accent));
+  filter: saturate(1.05);
+}
+
+.card__art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.16) 0 2px,
+      transparent 2px 9px
+    );
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+}
+
+.card__badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(12, 13, 16, 0.72);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--line-2);
+  font-size: 11px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+
+.card__layout {
+  color: var(--accent-2);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.card__cw {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.card__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.card__eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ok);
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.rating {
+  font-size: 13px;
+  color: var(--warn);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.card__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.card__desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  font-size: 11.5px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.price__now {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.price__was {
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.buy {
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0c0d10;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: 0;
+  border-radius: var(--r-sm);
+  padding: 9px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.buy:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 10px 24px -12px rgba(139, 92, 246, 0.9);
+}
+.buy:active {
+  transform: translateY(1px) scale(0.98);
+}
+.buy:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+.buy.is-added {
+  background: linear-gradient(135deg, var(--ok), #10b981);
+}
+
+.page__foot {
+  margin-top: 30px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* =========================================================
+   CONTAINER QUERIES — the whole point.
+   The card reacts to the width of .panel__body, not the page.
+   ========================================================= */
+
+@supports (container-type: inline-size) {
+  /* COMPACT: tiny containers → thumbnail + title only */
+  @container card (max-width: 239px) {
+    .card__media {
+      aspect-ratio: 1 / 1;
+    }
+    .card__desc,
+    .card__meta,
+    .rating,
+    .price__was {
+      display: none;
+    }
+    .card__body {
+      padding: 12px;
+      gap: 8px;
+    }
+    .card__title {
+      font-size: 15px;
+    }
+    .card__foot {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .buy {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  /* STACKED is the default (240–479px) — nothing extra needed,
+     but we nudge type up a touch once there is room */
+  @container card (min-width: 340px) {
+    .card__title {
+      font-size: 21px;
+    }
+  }
+
+  /* HORIZONTAL: wide containers → media beside copy, editorial */
+  @container card (min-width: 480px) {
+    .card {
+      grid-template-columns: minmax(200px, 42%) 1fr;
+      align-items: stretch;
+    }
+    .card__media {
+      aspect-ratio: auto;
+      min-height: 100%;
+    }
+    .card__body {
+      padding: 22px 24px;
+      gap: 14px;
+      justify-content: center;
+    }
+    .card__title {
+      font-size: 24px;
+    }
+    .card__desc {
+      font-size: 15px;
+    }
+  }
+}
+
+/* ---- Responsive page chrome ---- */
+@media (max-width: 520px) {
+  .panel__handle {
+    right: -6px;
+  }
+  .legend {
+    gap: 6px 12px;
+  }
+}

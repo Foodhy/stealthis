@@ -8,6 +8,9 @@ export default defineConfig({
   site: "https://arcade.stealthis.dev",
   adapter: cloudflare(),
   server: { port: 4329 },
+  markdown: {
+    shikiConfig: { theme: "github-dark-dimmed" },
+  },
   integrations: [tailwind({ applyBaseStyles: false })],
   vite: {
     resolve: {

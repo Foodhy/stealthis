@@ -1,0 +1,78 @@
+---
+import { MASCOT_SKINS } from "../../data/skins";
+
+interface Props {
+  mood?: "idle" | "happy" | "think" | "celebrate";
+  skinId?: string;
+  size?: number;
+  class?: string;
+}
+
+const { mood = "idle", skinId = "default", size = 80, class: className = "" } = Astro.props;
+
+const skin = MASCOT_SKINS.find((s) => s.id === skinId) ?? MASCOT_SKINS[0];
+const primary = skin.primary;
+const secondary = skin.secondary;
+const accent = skin.accent;
+
+const eyeY = mood === "happy" || mood === "celebrate" ? 38 : 36;
+const mouthPath =
+  mood === "happy" || mood === "celebrate"
+    ? "M32 52 Q40 60 48 52"
+    : mood === "think"
+      ? "M34 54 L46 54"
+      : "M34 54 Q40 58 46 54";
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 80 80"
+  class:list={["mascot-svg", mood === "celebrate" && "mascot-celebrate", className]}
+  role="img"
+  aria-label="Patch mascot"
+  style={`--mascot-primary: ${primary}; --mascot-secondary: ${secondary}; --mascot-accent: ${accent}`}
+>
+  <ellipse cx="40" cy="44" rx="28" ry="26" fill={primary} />
+  <ellipse cx="40" cy="48" rx="22" ry="18" fill={secondary} opacity="0.5" />
+  <circle cx="28" cy="28" r="8" fill={primary} />
+  <circle cx="52" cy="28" r="8" fill={primary} />
+  <circle cx="28" cy="28" r="4" fill={accent} opacity="0.6" />
+  <circle cx="52" cy="28" r="4" fill={accent} opacity="0.6" />
+  <ellipse cx="30" cy={eyeY} rx="4" ry="5" fill="#0a0a0a" />
+  <ellipse cx="50" cy={eyeY} rx="4" ry="5" fill="#0a0a0a" />
+  {mood === "happy" && (
+    <>
+      <circle cx="22" cy="46" r="3" fill="#fb7185" opacity="0.5" />
+      <circle cx="58" cy="46" r="3" fill="#fb7185" opacity="0.5" />
+    </>
+  )}
+  <path d={mouthPath} fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" />
+  {mood === "celebrate" && (
+    <>
+      <circle cx="12" cy="20" r="2" fill="#fbbf24" class="mascot-spark" />
+      <circle cx="68" cy="16" r="2" fill="#a78bfa" class="mascot-spark mascot-spark-delay" />
+      <circle cx="64" cy="64" r="2" fill="#34d399" class="mascot-spark" />
+    </>
+  )}
+</svg>
+
+<style>
+  .mascot-celebrate {
+    animation: mascot-bounce 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes mascot-bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-4px); }
+  }
+  .mascot-spark {
+    animation: spark-pulse 1s ease-in-out infinite;
+  }
+  .mascot-spark-delay {
+    animation-delay: 0.3s;
+  }
+  @keyframes spark-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.4); }
+  }
+</style>

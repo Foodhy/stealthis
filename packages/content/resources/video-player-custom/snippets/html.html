@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cinematic Custom Video Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="stage">
+    <header class="masthead">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">&#9654;</span>
+        <div>
+          <p class="brand-kicker">Aperture Cut</p>
+          <h1 class="brand-title">Custom Player</h1>
+        </div>
+      </div>
+      <div class="masthead-meta">
+        <span class="chip">4K &middot; HDR</span>
+        <span class="chip chip-mono" id="fpsChip">24 fps</span>
+      </div>
+    </header>
+
+    <!-- PLAYER -->
+    <section class="player" id="player" aria-label="Video player">
+      <div class="bars bars-top" aria-hidden="true"></div>
+
+      <video
+        id="video"
+        class="video"
+        playsinline
+        preload="metadata"
+        poster="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1280&q=80"
+      >
+        <source src="https://cdn.jsdelivr.net/gh/mediaelement/mediaelement-files@master/big_buck_bunny.mp4" type="video/mp4" />
+      </video>
+
+      <!-- Center big play -->
+      <button class="big-play" id="bigPlay" type="button" aria-label="Play video">
+        <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+      </button>
+
+      <!-- Skip flash indicators -->
+      <div class="skip-flash skip-left" id="skipLeft" aria-hidden="true">&#8722;10s</div>
+      <div class="skip-flash skip-right" id="skipRight" aria-hidden="true">+10s</div>
+
+      <!-- Title overlay -->
+      <div class="title-overlay">
+        <span class="rec-dot" aria-hidden="true"></span>
+        <span class="title-text">Reel 04 &mdash; Golden Hour, Take 2</span>
+      </div>
+
+      <div class="bars bars-bottom" aria-hidden="true"></div>
+
+      <!-- Controls -->
+      <div class="controls" id="controls">
+        <!-- Scrub -->
+        <div class="scrub" id="scrub" role="slider" tabindex="0"
+             aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="scrub-buffered" id="buffered"></div>
+          <div class="scrub-played" id="played"></div>
+          <div class="scrub-thumb" id="thumb"></div>
+          <div class="scrub-bubble scrub-bubble-mono" id="bubble">00:00</div>
+          <div class="scrub-markers" id="markers"></div>
+        </div>
+
+        <div class="control-row">
+          <div class="ctl-group">
+            <button class="ctl ctl-play" id="playBtn" type="button" aria-label="Play" aria-pressed="false">
+              <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+              <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>
+            </button>
+            <button class="ctl" id="backBtn" type="button" aria-label="Back 10 seconds">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7V4L5 9l6 5v-3a6 6 0 1 1-6 6H3a8 8 0 1 0 8-8z" fill="currentColor"/></svg>
+            </button>
+            <button class="ctl" id="fwdBtn" type="button" aria-label="Forward 10 seconds">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 7V4l6 5-6 5v-3a6 6 0 1 0 6 6h2a8 8 0 1 1-8-8z" fill="currentColor"/></svg>
+            </button>
+
+            <div class="vol" id="vol">
+              <button class="ctl" id="muteBtn" type="button" aria-label="Mute" aria-pressed="false">
+                <svg class="ic-vol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4zm12.5 3a4 4 0 0 0-2.5-3.7v7.4a4 4 0 0 0 2.5-3.7zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+                <svg class="ic-mute" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4zm15.5-.5-1.4-1.4L15.7 9.5 13.3 7.1l-1.4 1.4L14.3 11l-2.4 2.4 1.4 1.4 2.4-2.4 2.4 2.4 1.4-1.4L17.1 11z" fill="currentColor"/></svg>
+              </button>
+              <input class="vol-range" id="volRange" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume" />
+            </div>
+
+            <span class="timecode" id="timecode">
+              <span id="current">00:00</span>
+              <span class="tc-sep">/</span>
+              <span id="duration" class="tc-dim">00:00</span>
+            </span>
+          </div>
+
+          <div class="ctl-group">
+            <div class="menu" id="chapMenu">
+              <button class="ctl ctl-text" id="chapBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v2H4zm0 6h10v2H4zm0 6h16v2H4z" fill="currentColor"/></svg>
+                <span>Chapters</span>
+              </button>
+              <ul class="menu-panel" id="chapPanel" role="menu"></ul>
+            </div>
+
+            <div class="menu" id="speedMenu">
+              <button class="ctl ctl-text" id="speedBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                <span class="speed-mono" id="speedLabel">1.0&times;</span>
+              </button>
+              <ul class="menu-panel menu-panel-narrow" id="speedPanel" role="menu"></ul>
+            </div>
+
+            <button class="ctl" id="pipBtn" type="button" aria-label="Picture in picture">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3V5zm2 2v10h14V7H5zm7 4h5v4h-5z" fill="currentColor"/></svg>
+            </button>
+            <button class="ctl" id="fsBtn" type="button" aria-label="Fullscreen">
+              <svg class="ic-fs" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z" fill="currentColor"/></svg>
+              <svg class="ic-fs-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h2v4H6V6H4V4h4zm10 0h-2v2h-2v2h4V4zM4 14h4v4h-2v-2H4v-2zm12 2v2h2v-2h2v-2h-4v2z" fill="currentColor"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter rail -->
+    <section class="rail" aria-label="Chapter list">
+      <div class="rail-head">
+        <h2>Chapters</h2>
+        <span class="rail-count" id="railCount">6 marks</span>
+      </div>
+      <ul class="rail-list" id="railList"></ul>
+    </section>
+
+    <!-- Shortcut legend -->
+    <section class="legend" aria-label="Keyboard shortcuts">
+      <span class="legend-title">Shortcuts</span>
+      <div class="keys">
+        <kbd>Space</kbd><span>play</span>
+        <kbd>J</kbd><kbd>L</kbd><span>&plusmn;10s</span>
+        <kbd>&larr;</kbd><kbd>&rarr;</kbd><span>&plusmn;5s</span>
+        <kbd>&uarr;</kbd><kbd>&darr;</kbd><span>volume</span>
+        <kbd>M</kbd><span>mute</span>
+        <kbd>F</kbd><span>full</span>
+        <kbd>0</kbd>&ndash;<kbd>9</kbd><span>seek</span>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

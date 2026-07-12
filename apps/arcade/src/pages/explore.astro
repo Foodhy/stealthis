@@ -1,0 +1,135 @@
+---
+import PlayButton from "../components/PlayButton.astro";
+import ProfileBar from "../components/ProfileBar.astro";
+import TopicIcon from "../components/TopicIcon.astro";
+import Base from "../layouts/Base.astro";
+import { buildArcadeTopics, loadArcadeData } from "../lib/content";
+import { getTopicsInPaths, loadArcadePaths } from "../lib/paths-content";
+import { topicPath } from "../lib/paths";
+
+const { published, lessons } = await loadArcadeData();
+const topicList = buildArcadeTopics(published, lessons);
+const paths = await loadArcadePaths();
+const inRoadmap = getTopicsInPaths(paths);
+---
+
+<Base title="Arcade — Explore topics">
+  <ProfileBar sticky />
+
+  <section class="space-y-2">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight text-white">Explore</h1>
+        <p class="text-white/60">All {topicList.length} topics — search or browse the full catalog.</p>
+      </div>
+      <a
+        href="/"
+        class="rounded-lg border border-white/8 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 transition hover:border-white/14 hover:bg-white/8"
+      >
+        Learning paths
+      </a>
+    </div>
+    <input
+      type="search"
+      placeholder="Filter topics…"
+      class="mt-4 w-full max-w-md rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/35 focus:border-emerald-400/50 focus:outline-none"
+      data-topic-search
+    />
+  </section>
+
+  <section class="mt-10">
+    {topicList.length === 0 ? (
+      <p class="text-white/50">No topics yet.</p>
+    ) : (
+      <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-topic-grid>
+        {topicList.map((t) => (
+          <li class="group relative" data-topic-item={t.topic} data-topic-name={t.topic.toLowerCase()}>
+            <a
+              href={topicPath(t.topic)}
+              class="block rounded-xl border border-white/8 bg-white/6 p-5 pr-16 transition hover:border-white/14 hover:bg-white/8"
+              data-topic-card
+              data-topic={t.topic}
+              data-slugs={JSON.stringify(t.challengeSlugs)}
+              data-lessons={JSON.stringify(t.lessonSlugs)}
+            >
+              <div class="flex items-center gap-3">
+                <span class="grid h-9 w-9 place-items-center rounded-lg border border-white/8 bg-white/6 text-white/70">
+                  <TopicIcon topic={t.topic} size={20} />
+                </span>
+                <div class="min-w-0">
+                  <h2 class="truncate text-lg font-medium text-white">{t.topic}</h2>
+                  {inRoadmap.has(t.topic) && (
+                    <span class="mt-0.5 inline-block rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-emerald-300/90">
+                      In roadmap
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p class="mt-3 text-sm text-white/50">
+                <span data-progress-summary>
+                  {t.challenges} challenge{t.challenges === 1 ? "" : "s"}
+                </span>
+                <span class="mx-1">·</span>
+                {t.lessons} lesson{t.lessons === 1 ? "" : "s"}
+              </p>
+            </a>
+            <a
+              href={topicPath(t.topic)}
+              class="absolute right-4 top-1/2 -translate-y-1/2"
+              data-play-link
+              data-topic={t.topic}
+              aria-label={`Play ${t.topic}`}
+            >
+              <PlayButton size="sm" label={`Play ${t.topic}`} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Base>
+
+<script>
+  import { getResumeLabel, readProgress, readSession } from "../lib/progress";
+  import { lessonPath, topicPath } from "../lib/paths";
+
+  const progress = readProgress();
+  const session = readSession();
+
+  document.querySelectorAll<HTMLElement>("[data-topic-card]").forEach((card) => {
+    const slugsAttr = card.dataset.slugs;
+    if (!slugsAttr) return;
+    const slugs: string[] = JSON.parse(slugsAttr);
+    const total = slugs.length;
+    const correct = slugs.filter((s) => progress[s]?.correct).length;
+    const summary = card.querySelector<HTMLElement>("[data-progress-summary]");
+    if (!summary || total === 0) return;
+    summary.textContent =
+      correct === 0 ? `${total} challenge${total === 1 ? "" : "s"}` : `${correct}/${total} correct`;
+  });
+
+  document.querySelectorAll<HTMLAnchorElement>("[data-play-link]").forEach((link) => {
+    const topic = link.dataset.topic;
+    if (!topic) return;
+    const card = link.closest("li")?.querySelector<HTMLElement>("[data-topic-card]");
+    const slugsAttr = card?.dataset.slugs;
+    if (!slugsAttr) return;
+    const slugs: string[] = JSON.parse(slugsAttr);
+    const sessionEntry = session[topic];
+    if (sessionEntry) {
+      link.href = lessonPath(topic, sessionEntry.lesson, sessionEntry.stepIndex);
+    } else {
+      link.href = topicPath(topic);
+    }
+    link.setAttribute("aria-label", `${getResumeLabel(slugs, progress)} ${topic}`);
+  });
+
+  const search = document.querySelector<HTMLInputElement>("[data-topic-search]");
+  search?.addEventListener("input", () => {
+    const q = search.value.trim().toLowerCase();
+    document.querySelectorAll<HTMLElement>("[data-topic-item]").forEach((item) => {
+      const name = item.dataset.topicName ?? "";
+      item.classList.toggle("hidden", q.length > 0 && !name.includes(q));
+    });
+  });
+</script>

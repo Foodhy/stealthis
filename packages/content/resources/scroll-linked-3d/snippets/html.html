@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scroll-Linked 3D Scene</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot" aria-hidden="true"></span>
+      <span>Scroll-Linked <strong>3D</strong> Scene</span>
+    </div>
+    <p class="hint">Scroll the page to scrub the assembly &middot; sticky viewport below</p>
+  </header>
+
+  <main>
+    <!-- Intro -->
+    <section class="lede">
+      <h1>Scrub a 3D exploded view with your scroll</h1>
+      <p>
+        The viewport stays pinned while a tall track drives a normalized progress
+        value <code>0 &rarr; 1</code>. That single number rotates the cluster, explodes
+        the layers along&nbsp;Z, and stages the captions — pure CSS 3D transforms,
+        no WebGL.
+      </p>
+      <div class="scroll-cue" aria-hidden="true">
+        <span>Scroll</span>
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </section>
+
+    <!-- The tall scroll track. The sticky stage lives inside. -->
+    <section class="track" id="track" aria-label="Scroll-linked 3D assembly">
+      <div class="sticky">
+        <!-- Controls -->
+        <div class="controls" role="group" aria-label="Scene controls">
+          <button type="button" id="modeBtn" class="ctrl" aria-pressed="true" data-mode="explode">
+            <span class="ctrl-key">Mode</span><span class="ctrl-val" id="modeVal">Explode</span>
+          </button>
+          <button type="button" id="driftBtn" class="ctrl" aria-pressed="true">
+            <span class="ctrl-key">Idle drift</span><span class="ctrl-val" id="driftVal">On</span>
+          </button>
+          <button type="button" id="assembleBtn" class="ctrl ctrl-accent">
+            Snap to assembled
+          </button>
+        </div>
+
+        <!-- 3D stage -->
+        <div class="stage" id="stage" aria-hidden="false">
+          <div class="scene" id="scene">
+            <div class="layer" data-layer="0">
+              <div class="panel panel-base">
+                <div class="grid-face"></div>
+                <span class="tag">Substrate</span>
+              </div>
+            </div>
+            <div class="layer" data-layer="1">
+              <div class="panel panel-board">
+                <div class="traces"></div>
+                <span class="tag">Logic board</span>
+              </div>
+            </div>
+            <div class="layer" data-layer="2">
+              <div class="panel panel-cells">
+                <div class="cells"></div>
+                <span class="tag">Cells</span>
+              </div>
+            </div>
+            <div class="layer" data-layer="3">
+              <div class="panel panel-screen">
+                <div class="ui-mock">
+                  <div class="ui-bar"></div>
+                  <div class="ui-row"></div>
+                  <div class="ui-row short"></div>
+                  <div class="ui-chip"></div>
+                </div>
+                <span class="tag">Display</span>
+              </div>
+            </div>
+            <div class="layer" data-layer="4">
+              <div class="panel panel-glass">
+                <div class="glass-glint"></div>
+                <span class="tag">Cover glass</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage caption, staged by progress -->
+        <div class="captions" aria-live="polite">
+          <p class="cap" data-cap="0">01 &middot; Layers stacked flat, awaiting assembly.</p>
+          <p class="cap" data-cap="1">02 &middot; Cluster tilts into perspective view.</p>
+          <p class="cap" data-cap="2">03 &middot; Panels explode apart along the Z axis.</p>
+          <p class="cap" data-cap="3">04 &middot; Fully separated — inspect every layer.</p>
+        </div>
+
+        <!-- Reduced-motion fallback -->
+        <div class="rm-fallback" id="rmFallback" hidden>
+          <div class="rm-card" data-rm="0"><span>Substrate</span></div>
+          <div class="rm-card" data-rm="1"><span>Logic board</span></div>
+          <div class="rm-card" data-rm="2"><span>Cells</span></div>
+          <div class="rm-card" data-rm="3"><span>Display + glass</span></div>
+          <p class="rm-note">Reduced-motion: layers crossfade instead of moving in 3D.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Outro -->
+    <section class="outro">
+      <h2>How it works</h2>
+      <p>
+        A clamped ratio of how far the sticky stage has travelled through its track
+        becomes <code>p</code>. Transforms are interpolated from <code>p</code> and
+        applied once per frame inside <code>requestAnimationFrame</code> — the scroll
+        handler only stores the latest position, so there is no per-event layout thrash.
+      </p>
+    </section>
+  </main>
+
+  <!-- Fixed progress rail -->
+  <aside class="rail" aria-hidden="true">
+    <div class="rail-track"><span class="rail-fill" id="railFill"></span></div>
+    <div class="rail-meta">
+      <span class="rail-pct" id="railPct">0%</span>
+      <span class="rail-stage" id="railStage">idle</span>
+    </div>
+  </aside>
+
+  <div class="sr-progress" role="status" aria-live="off" id="srProgress"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

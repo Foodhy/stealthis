@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ChallengeMetaSchema } from "../packages/schema/src/schema";
+import { buildSelectOptions } from "./lib/blank-distractors";
 
 type ResourceMeta = {
   slug: string;
@@ -70,12 +71,36 @@ function toMdxFrontmatter(challenge: GeneratedChallenge): string {
     }
 
     if (Array.isArray(value)) {
+      if (key === "hints" && value.length > 0 && typeof value[0] === "object") {
+        lines.push(`${key}:`);
+        for (const item of value as Record<string, unknown>[]) {
+          lines.push("  - label: " + yamlScalar(item.label));
+          if (item.search !== undefined && item.search !== "") {
+            lines.push("    search: " + yamlScalar(item.search));
+          }
+          lines.push("    insert: " + yamlScalar(item.insert));
+        }
+        continue;
+      }
       lines.push(`${key}:`);
       for (const item of value) lines.push(`  - ${yamlScalar(item)}`);
       continue;
     }
 
     if (value && typeof value === "object") {
+      if (key === "interaction") {
+        lines.push("interaction:");
+        for (const [blankKey, cfg] of Object.entries(value as Record<string, unknown>)) {
+          lines.push(`  ${blankKey}:`);
+          const c = cfg as Record<string, unknown>;
+          lines.push(`    mode: ${yamlScalar(c.mode)}`);
+          if (Array.isArray(c.options)) {
+            lines.push("    options:");
+            for (const opt of c.options) lines.push(`      - ${yamlScalar(opt)}`);
+          }
+        }
+        continue;
+      }
       lines.push(`${key}:`);
       for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
         lines.push(`  ${k}: ${yamlScalar(v)}`);
@@ -160,6 +185,13 @@ function removeCssPropertyStrategy(
     criterion: "dom-equal",
     starter: makeDocument(html, removed.join("\n"), js),
     solution: makeDocument(html, css, js),
+    hints: [
+      {
+        label: `Restore ${decl.prop}: ${decl.value}`,
+        search: decl.prop,
+        insert: `${decl.prop}: ${decl.value};`,
+      },
+    ],
     explanation: `The declaration \`${decl.prop}: ${decl.value};\` was removed from the stylesheet. Add it back to recover the expected layout/behavior.`,
   };
 
@@ -190,6 +222,12 @@ function blankIdentifierStrategy(meta: ResourceMeta, css: string): StrategyResul
     template,
     answers: { BLANK_1: decl.prop },
     caseSensitive: false,
+    interaction: {
+      BLANK_1: {
+        mode: "select",
+        options: buildSelectOptions(decl.prop, 4),
+      },
+    },
     explanation: `Use the property name that should set the value \`${decl.value}\` in this rule.`,
   };
 
@@ -226,6 +264,13 @@ function deleteClosingTagStrategy(
     criterion: "dom-equal",
     starter: makeDocument(broken.join("\n"), css, js),
     solution: makeDocument(html, css, js),
+    hints: [
+      {
+        label: "Restore closing tag",
+        search: "",
+        insert: lines[lineIdx].match(/<\/[a-zA-Z][^>]*>/)?.[0] ?? "",
+      },
+    ],
     explanation:
       "A required closing tag was removed. Restore valid nesting so the output matches the expected structure.",
   };

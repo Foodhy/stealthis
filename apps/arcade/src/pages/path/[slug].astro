@@ -1,0 +1,57 @@
+---
+import { join } from "node:path";
+import ProfileBar from "../../components/ProfileBar.astro";
+import MascotDialogue from "../../components/mascot/MascotDialogue.astro";
+import PathMap from "../../components/PathMap.astro";
+import Base from "../../layouts/Base.astro";
+import { loadArcadeData } from "../../lib/content";
+import { buildPathNodes, loadArcadePaths } from "../../lib/paths-content";
+
+export async function getStaticPaths() {
+  const paths = await loadArcadePaths();
+  return paths.map((path) => ({ params: { slug: path.slug }, props: { path } }));
+}
+
+const { path } = Astro.props;
+const { lessons } = await loadArcadeData();
+const nodes = buildPathNodes(path, lessons, {});
+---
+
+<Base title={`Arcade · ${path.title}`}>
+  <div id="arcade-path-data" hidden data-slug={path.slug} data-paths={JSON.stringify([path])} data-lessons={JSON.stringify(lessons)}></div>
+
+  <ProfileBar sticky />
+
+  <a href="/" class="mb-6 inline-block text-sm text-white/50 hover:text-white">← All paths</a>
+
+  <MascotDialogue message={path.mascotIntro} mood="think" />
+
+  <header class="mt-8 mb-4 text-center">
+    <h1 class="text-3xl font-semibold text-white">{path.title}</h1>
+    <p class="mt-2 text-white/55">{path.tagline}</p>
+  </header>
+
+  <PathMap path={path} nodes={nodes} lessons={lessons} />
+</Base>
+
+<script>
+  import { readProgress } from "../../lib/progress";
+  import { enrichPaths } from "../../lib/paths-unlock";
+
+  const dataEl = document.getElementById("arcade-path-data");
+  const pathSlug = dataEl?.dataset.slug;
+  const paths = JSON.parse(dataEl?.dataset.paths || "[]");
+  const lessons = JSON.parse(dataEl?.dataset.lessons || "[]");
+
+  function updatePathMeta() {
+    if (!pathSlug) return;
+    const progress = readProgress();
+    const enriched = enrichPaths(paths, lessons, progress);
+    const p = enriched.find((x: { slug: string }) => x.slug === pathSlug);
+    if (!p) return;
+    document.title = `Arcade · ${p.title} (${p.progressPct}%)`;
+  }
+
+  updatePathMeta();
+  document.addEventListener("arcade:profile-updated", updatePathMeta);
+</script>

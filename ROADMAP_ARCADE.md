@@ -181,9 +181,77 @@ See [`PLAN_ARCADE.md`](./PLAN_ARCADE.md) for the architecture decisions, content
 
 ---
 
+## Phase 8 — Play & Learn UX
+
+**Status: complete (2026-07-01)**
+
+**Goal:** Make Arcade feel playable across many topics, with resume/story flow, Shiki code learning panels, and click-to-tweak fix challenges.
+
+**Scope:**
+- ☑ `scripts/publish-challenges.ts` + `scripts/generate-lessons.ts` — auto-publish generated challenges and wire `_lessons/<topic>/practice.yaml` (79 topics).
+- ☑ `apps/arcade/src/lib/content.ts`, `progress.ts`, `code-tabs.ts` — shared loaders, session resume, resource snippet tabs.
+- ☑ Play affordance: `PlayButton.astro`, topic grid + topic page Continue/Play CTAs.
+- ☑ Story intro: `StoryBeat.astro` before each lesson; resume via `?start=N` + `arcade:session` localStorage.
+- ☑ Quick routes: `/random`, `/c/<slug>` single-challenge mode.
+- ☑ Shiki code viewer: `CodePanel.astro` with HTML/CSS/JS tabs from `resourceSlug`; reveals after Check.
+- ☑ Click-to-tweak: sandbox `pickMode` postMessage + `TweakPanel.astro` hint chips; optional `hints` on fix schema.
+
+**Exit criteria:**
+- ☑ Homepage lists ≥15 playable topics with lessons.
+- ☑ `bun run build:arcade` green.
+- ☐ Manual playthrough of css-grid + 2 auto-generated topics. (Pending eyes-on test.)
+
+---
+
+## Phase 9 — Duolingo Gamification
+
+**Status: complete (2026-07-01)**
+
+**Goal:** Curated learning paths, mascot guide, XP/streak/gems/achievements in localStorage, and `/explore` for the full topic catalog.
+
+**Scope:**
+- ☑ `apps/arcade/src/lib/profile.ts` — `arcade:profile` (XP, level, gems, streak, achievements, skins, path progress).
+- ☑ Mascot SVG (`Mascot.astro`, `MascotDialogue.astro`) on homepage, story beat, result screen.
+- ☑ `PathSchema` + `loadPaths()` + 6 curated paths in `packages/content/challenges/_paths/`.
+- ☑ Homepage redesign: `ProfileBar`, `ContinueCard`, `LearningPathCard`; path map at `/path/[slug]`.
+- ☑ `/explore` — full topic grid with search and “In roadmap” badge.
+- ☑ `/profile` — stats, skins, achievements, export/import JSON.
+- ☑ `awardChallengeComplete` / `awardLessonComplete` wired in lesson + `/c/` runners.
+- ☑ Optional `realWorldHook` on challenges + `scripts/enrich-challenges.ts`.
+- ☑ Multi-lesson topics: `navigation`, `accessibility`, `restaurant`.
+
+**Exit criteria:**
+- ☑ `/` shows paths first; `/explore` lists all topics.
+- ☑ Lesson completion awards XP and updates streak.
+- ☑ `bun run build:arcade` green.
+
+---
+
+## Phase 10 — Intuitive Interactions
+
+**Status: complete (2026-07-02)**
+
+**Goal:** Fix broken complete-challenge blanks, add split preview layout, and support multiple interaction modes (dropdown, word bank, drag-and-drop) across all runners.
+
+**Scope:**
+- ☑ Segment-based code renderer (`complete-segments.ts`, `renderSegmentedTemplate`) — no Shiki on blank placeholders.
+- ☑ `BlankSlot`, `WordBank`, `ChallengeShell`, `PreviewPane` components.
+- ☑ `interaction` field on `CompleteChallengeSchema` + heuristics in `blank-interaction.ts`.
+- ☑ Live preview for resource-backed complete challenges (`complete-preview.ts`).
+- ☑ `challenge-wire.ts` — shared blank collection, grading, bank/drag wiring.
+- ☑ All 5 runners wrapped in `ChallengeShell` split layout.
+- ☑ Generator + `scripts/enrich-complete-interactions.ts` for select + distractors on blank-identifier challenges.
+
+**Exit criteria:**
+- ☑ `/topics/500/practice` — blank renders as dropdown (not raw `arcadeBlank0` text).
+- ☑ Preview pane updates when blank value changes.
+- ☑ `bun run build:arcade` green.
+
+---
+
 ## Post-MVP / v2 (not scheduled)
 
-- ☐ Accounts (Cloudflare D1 or external auth). Streaks, XP, hearts.
+- ☐ Cloud sync for profile (accounts / D1).
 - ☐ Daily challenge + spaced repetition.
 - ☐ Leaderboards.
 - ☐ User-submitted challenges (with moderation).

@@ -1,0 +1,203 @@
+---
+import ProfileBar from "../components/ProfileBar.astro";
+import Mascot from "../components/mascot/Mascot.astro";
+import Base from "../layouts/Base.astro";
+import { ACHIEVEMENTS } from "../data/achievements";
+import { MASCOT_SKINS } from "../data/skins";
+---
+
+<Base title="Arcade — Profile">
+  <ProfileBar />
+
+  <div class="grid gap-10 lg:grid-cols-[1fr_2fr]">
+    <aside class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/4 p-6 text-center">
+      <Mascot mood="happy" size={96} data-profile-mascot />
+      <div>
+        <p class="text-xs uppercase tracking-wider text-white/40">Level</p>
+        <p class="text-3xl font-bold tabular-nums text-white" data-profile-level>1</p>
+      </div>
+      <div class="grid w-full grid-cols-2 gap-3 text-sm">
+        <div class="rounded-xl bg-white/6 p-3">
+          <p class="text-white/40">Total XP</p>
+          <p class="font-semibold tabular-nums text-emerald-300" data-profile-xp>0</p>
+        </div>
+        <div class="rounded-xl bg-white/6 p-3">
+          <p class="text-white/40">Best streak</p>
+          <p class="font-semibold tabular-nums text-orange-300" data-profile-longest>0</p>
+        </div>
+        <div class="rounded-xl bg-white/6 p-3">
+          <p class="text-white/40">Gems</p>
+          <p class="font-semibold tabular-nums text-violet-300" data-profile-gems>0</p>
+        </div>
+        <div class="rounded-xl bg-white/6 p-3">
+          <p class="text-white/40">Perfect lessons</p>
+          <p class="font-semibold tabular-nums text-amber-300" data-profile-perfect>0</p>
+        </div>
+      </div>
+    </aside>
+
+    <div class="space-y-10">
+      <section>
+        <h2 class="mb-4 text-lg font-semibold text-white">Mascot skins</h2>
+        <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4" data-skins-grid>
+          {MASCOT_SKINS.map((skin) => (
+            <li
+              class="rounded-xl border border-white/10 bg-white/4 p-3 text-center"
+              data-skin-item={skin.id}
+            >
+              <Mascot skinId={skin.id} size={56} />
+              <p class="mt-2 text-xs font-medium text-white">{skin.name}</p>
+              <button
+                type="button"
+                class="mt-2 w-full rounded-lg bg-white/8 px-2 py-1.5 text-[11px] font-medium text-white/80 hover:bg-white/14 disabled:opacity-40"
+                data-skin-action={skin.id}
+                data-skin-cost={skin.unlock.type === "gems" ? String(skin.unlock.value) : ""}
+              >
+                Equip
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="mb-4 text-lg font-semibold text-white">Achievements</h2>
+        <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {ACHIEVEMENTS.map((a) => (
+            <li
+              class="flex items-start gap-3 rounded-xl border border-white/8 bg-white/4 p-3 opacity-40"
+              data-achievement={a.id}
+            >
+              <span class="text-xl">{a.icon}</span>
+              <div>
+                <p class="text-sm font-medium text-white">{a.title}</p>
+                <p class="text-xs text-white/45">{a.description}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="rounded-xl border border-white/8 bg-white/4 p-4">
+        <h2 class="mb-2 text-sm font-semibold text-white">Backup profile</h2>
+        <p class="mb-3 text-xs text-white/45">Export or import your local progress (JSON).</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-lg bg-emerald-400/15 px-3 py-1.5 text-xs font-medium text-emerald-300 ring-1 ring-emerald-400/30" data-export-profile>
+            Export JSON
+          </button>
+          <label class="cursor-pointer rounded-lg bg-white/8 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/12">
+            Import JSON
+            <input type="file" accept="application/json" class="hidden" data-import-profile />
+          </label>
+        </div>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { ACHIEVEMENTS } from "../data/achievements";
+  import { MASCOT_SKINS } from "../data/skins";
+  import {
+    equipSkin,
+    exportProfileJson,
+    importProfileJson,
+    purchaseSkin,
+    readProfile,
+    xpProgressInLevel,
+  } from "../lib/profile";
+
+  function hydrateProfile() {
+    const profile = readProfile();
+    const xp = xpProgressInLevel(profile.xp, profile.level);
+
+    const level = document.querySelector("[data-profile-level]");
+    const xpEl = document.querySelector("[data-profile-xp]");
+    const longest = document.querySelector("[data-profile-longest]");
+    const gems = document.querySelector("[data-profile-gems]");
+    const perfect = document.querySelector("[data-profile-perfect]");
+    const mascot = document.querySelector("[data-profile-mascot]");
+
+    if (level) level.textContent = String(profile.level);
+    if (xpEl) xpEl.textContent = String(profile.xp);
+    if (longest) longest.textContent = String(profile.streak.longest);
+    if (gems) gems.textContent = String(profile.gems);
+    if (perfect) perfect.textContent = String(profile.stats.lessonsPerfect);
+    if (mascot) mascot.setAttribute("data-skin-id", profile.equipped.mascotSkin);
+
+    document.querySelectorAll<HTMLElement>("[data-achievement]").forEach((el) => {
+      const id = el.dataset.achievement!;
+      const unlocked = profile.achievements.some((a) => a.id === id);
+      el.classList.toggle("opacity-40", !unlocked);
+      el.classList.toggle("border-emerald-500/30", unlocked);
+      el.classList.toggle("opacity-100", unlocked);
+    });
+
+    document.querySelectorAll<HTMLButtonElement>("[data-skin-action]").forEach((btn) => {
+      const id = btn.dataset.skinAction!;
+      const skin = MASCOT_SKINS.find((s) => s.id === id);
+      const unlocked = profile.unlockedSkins.includes(id);
+      const equipped = profile.equipped.mascotSkin === id;
+
+      if (equipped) {
+        btn.textContent = "Equipped";
+        btn.disabled = true;
+      } else if (unlocked) {
+        btn.textContent = "Equip";
+        btn.disabled = false;
+      } else if (skin?.unlock.type === "gems") {
+        btn.textContent = `Buy (${skin.unlock.value} 💎)`;
+        btn.disabled = profile.gems < Number(skin.unlock.value);
+      } else {
+        btn.textContent = "Locked";
+        btn.disabled = true;
+      }
+    });
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-skin-action]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.skinAction!;
+      const profile = readProfile();
+      if (profile.unlockedSkins.includes(id)) {
+        equipSkin(id);
+        window.location.reload();
+      } else if (purchaseSkin(id)) {
+        window.location.reload();
+      }
+    });
+  });
+
+  document.querySelector<HTMLButtonElement>("[data-export-profile]")?.addEventListener("click", () => {
+    const blob = new Blob([exportProfileJson()], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "arcade-profile.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.querySelector<HTMLInputElement>("[data-import-profile]")?.addEventListener("change", async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    if (importProfileJson(text)) hydrateProfile();
+  });
+
+  hydrateProfile();
+  document.addEventListener("arcade:profile-updated", hydrateProfile);
+</script>
+
+<style is:global>
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 12px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+</style>

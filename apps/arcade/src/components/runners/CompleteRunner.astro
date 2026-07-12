@@ -1,32 +1,39 @@
 ---
 import type { CompleteChallenge } from "@schema";
+import type { CodeTab } from "../../lib/code-tabs";
+import { hintForMode, resolveAllBlanks, usesWordBank } from "../../lib/blank-interaction";
+import {
+  buildBrokenPreviewSrcdoc,
+  buildCompletePreviewSrcdoc,
+  loadResourceHtml,
+} from "../../lib/complete-preview";
+import { renderSegmentedTemplate } from "../../lib/highlight";
+import BlankSlot from "../blanks/BlankSlot.astro";
+import WordBank from "../blanks/WordBank.astro";
+import ChallengeShell from "../ChallengeShell.astro";
+import CodePanel from "../CodePanel.astro";
+import PreviewPane from "../PreviewPane.astro";
 
 interface Props {
   challenge: CompleteChallenge;
   index: number;
+  codeTabs?: CodeTab[];
+  isGenerated?: boolean;
 }
 
-const { challenge, index } = Astro.props;
+const { challenge, index, codeTabs = [], isGenerated = false } = Astro.props;
 
-// Split the template by {{BLANK_X}} markers, keeping the markers as separate segments
-// so we can render an <input> in place of each.
-const parts: Array<{ kind: "text"; value: string } | { kind: "blank"; key: string }> = [];
-const regex = /\{\{(BLANK_[A-Za-z0-9_]+)\}\}/g;
-let cursor = 0;
-let match = regex.exec(challenge.template);
-while (match !== null) {
-  if (match.index > cursor) {
-    parts.push({ kind: "text", value: challenge.template.slice(cursor, match.index) });
-  }
-  parts.push({ kind: "blank", key: match[1] });
-  cursor = match.index + match[0].length;
-  match = regex.exec(challenge.template);
-}
-if (cursor < challenge.template.length) {
-  parts.push({ kind: "text", value: challenge.template.slice(cursor) });
-}
-
+const resolvedBlanks = resolveAllBlanks(challenge);
+const { segments, lang } = await renderSegmentedTemplate(challenge.template);
+const resourceHtml = challenge.resourceSlug ? loadResourceHtml(challenge.resourceSlug) : null;
+const showPreview = Boolean(resourceHtml);
+const previewBody = resourceHtml?.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? "";
+const previewId = `preview-${challenge.slug}`;
+const brokenSrcdoc = showPreview ? buildBrokenPreviewSrcdoc(challenge, resourceHtml) : "";
+const initialSrcdoc = brokenSrcdoc ?? "";
+const hint = hintForMode(resolvedBlanks[0]?.mode ?? "type");
 const answersJson = JSON.stringify(challenge.answers);
+const blanksJson = JSON.stringify(resolvedBlanks);
 ---
 
 <article
@@ -37,28 +44,53 @@ const answersJson = JSON.stringify(challenge.answers);
   data-answers={answersJson}
   data-case-sensitive={String(challenge.caseSensitive)}
   data-index={index}
+  data-difficulty={challenge.difficulty}
+  data-resource-slug={challenge.resourceSlug ?? ""}
+  data-blanks-config={blanksJson}
+  data-template={challenge.template}
+  data-preview-body={previewBody}
 >
   <div class="space-y-2">
-    <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+      {isGenerated && (
+        <span class="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/45">
+          Auto-generated
+        </span>
+      )}
+    </div>
     <h2 class="text-2xl font-medium leading-snug text-white">{challenge.title}</h2>
+    {challenge.realWorldHook && (
+      <p class="text-sm italic text-white/50">{challenge.realWorldHook}</p>
+    )}
   </div>
 
-  <pre
-    class="overflow-x-auto rounded-xl border border-white/8 bg-white/6 p-4 font-mono text-sm leading-relaxed text-white/80"
-  ><code>{parts.map((p) =>
-    p.kind === "text" ? p.value : (
-      <input
-        type="text"
-        autocomplete="off"
-        autocapitalize="off"
-        autocorrect="off"
-        spellcheck="false"
-        class="complete-blank inline-block min-w-[5ch] rounded-md border-b-2 border-white/40 bg-white/14 px-1.5 py-0.5 align-baseline font-mono text-white outline-none focus:border-emerald-400"
-        data-blank-key={p.key}
-        size={Math.max(challenge.answers[p.key]?.length || 6, 4)}
-      />
-    )
-  )}</code></pre>
+  <ChallengeShell previewId={previewId} showPreview={showPreview} showPreviewToggle={showPreview}>
+    {showPreview && (
+      <PreviewPane slot="preview" id={previewId} srcdoc={initialSrcdoc} title={`Preview: ${challenge.title}`} />
+    )}
+
+    <div class="space-y-3">
+      <div class="arcade-code-block complete-code overflow-x-auto rounded-xl border border-white/10 bg-[#0d1117] shadow-inner shadow-black/40">
+        <div class="flex items-center justify-between border-b border-white/8 px-4 py-2">
+          <span class="text-[10px] font-semibold uppercase tracking-widest text-emerald-400/80">{lang}</span>
+          <span class="text-[10px] text-white/35">{hint}</span>
+        </div>
+        <div class="shiki shiki-complete m-0 max-h-[55vh] overflow-y-auto overflow-x-auto whitespace-pre-wrap p-4 font-mono text-[13px] leading-6">
+          {segments.map((seg) => {
+            if (seg.type === "code") {
+              return <span class="inline" set:html={seg.html} />;
+            }
+            const blank = resolvedBlanks.find((b) => b.key === seg.key);
+            if (!blank) return null;
+            return <BlankSlot blank={blank} />;
+          })}
+        </div>
+      </div>
+
+      {usesWordBank(resolvedBlanks) && <WordBank blanks={resolvedBlanks} />}
+    </div>
+  </ChallengeShell>
 
   {challenge.explanation && (
     <div
@@ -69,7 +101,11 @@ const answersJson = JSON.stringify(challenge.answers);
     </div>
   )}
 
-  <div class="flex items-center justify-end gap-3 pt-2">
+  {codeTabs.length > 0 && (
+    <CodePanel tabs={codeTabs} panelId={`code-${challenge.slug}`} collapsed={true} lang={lang} />
+  )}
+
+  <div class="sticky bottom-0 z-20 -mx-1 flex items-center justify-end gap-3 border-t border-white/8 bg-[#0a0a0a]/90 px-1 py-3 backdrop-blur">
     <button
       type="button"
       class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"
@@ -89,10 +125,45 @@ const answersJson = JSON.stringify(challenge.answers);
 </article>
 
 <style>
-  .complete-blank[data-result="correct"] {
-    @apply border-emerald-400 bg-emerald-400/14 text-white;
+  .shiki-complete :global(.blank-slot[data-result="correct"]),
+  .shiki-complete :global(.complete-blank[data-result="correct"]) {
+    @apply border-emerald-400 bg-emerald-400/20 text-white;
   }
-  .complete-blank[data-result="incorrect"] {
-    @apply border-rose-400 bg-rose-400/14 text-white;
+  .shiki-complete :global(.blank-slot[data-result="incorrect"]),
+  .shiki-complete :global(.complete-blank[data-result="incorrect"]) {
+    @apply border-rose-400 bg-rose-400/20 text-white;
+  }
+  .shiki-complete :global(.blank-select) {
+    vertical-align: baseline;
+  }
+  .shiki-complete :global(.blank-drop[data-active="true"]) {
+    @apply ring-2 ring-emerald-400/50;
+  }
+  .arcade-code-block :global(.shiki) {
+    background: transparent !important;
+  }
+  .arcade-code-block :global(.shiki span) {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   }
 </style>
+
+<script define:vars={{ brokenSrcdoc: initialSrcdoc }}>
+  // broken srcdoc available for preview toggle
+  document.querySelectorAll("[data-challenge][data-type='complete']").forEach((slide) => {
+    if (!(slide instanceof HTMLElement)) return;
+    const iframe = slide.querySelector<HTMLIFrameElement>("[data-preview-iframe]");
+    if (!iframe) return;
+
+    slide.querySelectorAll<HTMLButtonElement>("[data-preview-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        slide.querySelectorAll("[data-preview-mode]").forEach((b) => b.setAttribute("data-active", "false"));
+        btn.setAttribute("data-active", "true");
+        if (btn.dataset.previewMode === "fixed") {
+          iframe.srcdoc = brokenSrcdoc;
+        } else {
+          slide.dispatchEvent(new CustomEvent("arcade:preview-refresh"));
+        }
+      });
+    });
+  });
+</script>

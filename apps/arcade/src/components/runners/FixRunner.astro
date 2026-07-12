@@ -1,13 +1,21 @@
 ---
 import type { FixChallenge } from "@schema";
+import type { CodeTab } from "../../lib/code-tabs";
 import { IFRAME_SANDBOX } from "../../lib/sandbox";
+import ChallengeShell from "../ChallengeShell.astro";
+import CodePanel from "../CodePanel.astro";
+import TweakPanel from "../TweakPanel.astro";
 
 interface Props {
   challenge: FixChallenge;
   index: number;
+  codeTabs?: CodeTab[];
+  isGenerated?: boolean;
 }
 
-const { challenge, index } = Astro.props;
+const { challenge, index, codeTabs = [], isGenerated = false } = Astro.props;
+const panelId = `code-${challenge.slug}`;
+const hintsJson = JSON.stringify(challenge.hints ?? []);
 ---
 
 <article
@@ -16,19 +24,40 @@ const { challenge, index } = Astro.props;
   data-slug={challenge.slug}
   data-type="fix"
   data-index={index}
+  data-difficulty={challenge.difficulty}
   data-criterion={challenge.criterion}
   data-regex={challenge.regexPattern ?? ""}
+  data-hints={hintsJson}
+  data-generated={String(isGenerated)}
 >
   <div class="space-y-2">
-    <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+      {isGenerated && (
+        <span class="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/45">
+          Auto-generated
+        </span>
+      )}
+    </div>
     <h2 class="text-2xl font-medium leading-snug text-white">{challenge.title}</h2>
+    {challenge.realWorldHook && (
+      <p class="text-sm italic text-white/50">{challenge.realWorldHook}</p>
+    )}
   </div>
 
-  <div class="grid gap-4 md:grid-cols-2">
-    <label class="flex flex-col gap-2">
-      <span class="text-xs uppercase tracking-wider text-white/40">Your code</span>
+  <ChallengeShell previewId={`preview-${challenge.slug}`} showPreview={true} interactionLabel="Your fix">
+    <iframe
+      slot="preview"
+      class="preview-pane h-[55vh] min-h-[16rem] w-full rounded-xl border border-white/8 bg-white"
+      sandbox={IFRAME_SANDBOX}
+      srcdoc=""
+      data-preview
+      title="What users see"
+    ></iframe>
+
+    <div class="space-y-3">
       <div
-        class="fix-editor-shell relative flex min-h-[14rem] overflow-hidden rounded-xl border border-white/8 bg-[#070707] font-mono text-sm leading-relaxed text-white focus-within:border-emerald-400"
+        class="fix-editor-shell relative flex min-h-[16rem] overflow-hidden rounded-xl border border-white/8 bg-[#070707] font-mono text-sm leading-relaxed text-white focus-within:border-emerald-400"
         data-editor-shell
       >
         <pre
@@ -37,7 +66,7 @@ const { challenge, index } = Astro.props;
           data-line-numbers
         ></pre>
         <textarea
-          class="fix-editor min-h-[14rem] flex-1 resize-y bg-transparent py-3 pl-3 pr-3 outline-none"
+          class="fix-editor max-h-[55vh] min-h-[16rem] flex-1 resize-y bg-transparent py-3 pl-3 pr-3 outline-none"
           spellcheck="false"
           autocomplete="off"
           autocapitalize="off"
@@ -46,21 +75,10 @@ const { challenge, index } = Astro.props;
           data-editor
         >{challenge.starter}</textarea>
       </div>
-    </label>
-
-    <div class="flex flex-col gap-2">
-      <span class="text-xs uppercase tracking-wider text-white/40">Preview</span>
-      <iframe
-        class="min-h-[14rem] rounded-xl border border-white/8 bg-white"
-        sandbox={IFRAME_SANDBOX}
-        srcdoc=""
-        data-preview
-        title="Your output"
-      ></iframe>
+      <TweakPanel hints={challenge.hints} panelId={`tweak-${challenge.slug}`} />
     </div>
-  </div>
+  </ChallengeShell>
 
-  <!-- Hidden solution iframe; only used for the DOM comparison. -->
   <iframe
     class="hidden"
     sandbox={IFRAME_SANDBOX}
@@ -80,8 +98,25 @@ const { challenge, index } = Astro.props;
     </div>
   )}
 
-  <div class="flex items-center justify-between gap-3 pt-2">
-    <p class="text-xs text-white/40" data-status>Edit the code on the left.</p>
+  {codeTabs.length > 0 && (
+    <CodePanel tabs={codeTabs} panelId={panelId} collapsed={true} />
+  )}
+
+  {challenge.resourceSlug && (
+    <p class="hidden text-sm text-white/50" data-resource-link>
+      <a
+        href={`https://stealthis.dev/r/${challenge.resourceSlug}`}
+        class="text-emerald-400 hover:text-emerald-300"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View full example in Library →
+      </a>
+    </p>
+  )}
+
+  <div class="sticky bottom-0 z-20 -mx-1 flex items-center justify-between gap-3 border-t border-white/8 bg-[#0a0a0a]/90 px-1 py-3 backdrop-blur">
+    <p class="text-xs text-white/40" data-status>Edit your code or use hint chips. Preview updates live.</p>
     <div class="flex items-center gap-3">
       <button
         type="button"

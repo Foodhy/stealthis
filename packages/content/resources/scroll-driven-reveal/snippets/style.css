@@ -1,0 +1,680 @@
+:root {
+  --bg: #0c0d10;
+  --surface: #15161b;
+  --surface-2: #1d1f27;
+  --ink: #e9eaf0;
+  --muted: #9a9cab;
+  --accent: #8b5cf6;
+  --accent-2: #22d3ee;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-2: rgba(255, 255, 255, 0.18);
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+
+  /* live-tuned by JS */
+  --enter-start: 15%;
+  --enter-end: 45%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(139, 92, 246, 0.14), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(34, 211, 238, 0.1), transparent 55%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 0.08em 0.4em;
+  border-radius: 6px;
+  color: var(--accent-2);
+}
+
+/* ---------- Scroll progress bar : scroll() timeline ---------- */
+.scroll-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--line);
+  z-index: 50;
+}
+.scroll-progress__fill {
+  display: block;
+  height: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+
+  animation: grow-progress linear;
+  animation-timeline: scroll(root block);
+}
+@keyframes grow-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky;
+  top: 4px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px clamp(16px, 5vw, 48px);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.brand__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, var(--accent), var(--accent-2), var(--accent));
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
+}
+.brand__name {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
+}
+.support {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+.support__led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 8px currentColor;
+}
+.support[data-state="native"] {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 40%, var(--line));
+}
+.support[data-state="native"] .support__led {
+  background: var(--ok);
+}
+.support[data-state="fallback"] {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
+}
+.support[data-state="fallback"] .support__led {
+  background: var(--warn);
+}
+
+/* ---------- Controls ---------- */
+.controls {
+  position: sticky;
+  top: 62px;
+  z-index: 35;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 22px;
+  padding: 14px clamp(16px, 5vw, 48px);
+  margin: 0 auto;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.controls__group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.controls__legend {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  gap: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+.seg {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+.seg:hover {
+  color: var(--ink);
+}
+.seg[aria-checked="true"] {
+  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 80%, #000));
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(139, 92, 246, 0.35);
+}
+.controls__out {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--accent-2);
+  min-width: 12ch;
+}
+input[type="range"] {
+  accent-color: var(--accent);
+  width: 130px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+.btn:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+:where(.seg, .btn, input):focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* ---------- Layout ---------- */
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 5vw, 48px) 120px;
+}
+.hero {
+  padding: 96px 0 40px;
+}
+.eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--accent-2);
+  margin: 0 0 14px;
+}
+.hero h1 {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 18px;
+  max-width: 16ch;
+}
+.lede {
+  color: var(--muted);
+  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  max-width: 60ch;
+  margin: 0;
+}
+
+.block {
+  padding: 72px 0;
+  border-top: 1px solid var(--line);
+}
+.block__head {
+  margin-bottom: 30px;
+}
+.tag {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.block__head h2 {
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+.block__head p {
+  color: var(--muted);
+  max-width: 62ch;
+  margin: 0;
+}
+
+/* ---------- Reveal grid ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.card:hover {
+  border-color: var(--line-2);
+  transform: translateY(-3px);
+}
+.card__icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
+  color: var(--accent-2);
+  margin-bottom: 16px;
+  font-size: 1.2rem;
+}
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Stagger list ---------- */
+.stagger {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.stagger li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+.stagger .idx {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--accent);
+  font-weight: 600;
+  min-width: 2ch;
+}
+.stagger .txt {
+  flex: 1;
+}
+.stagger .txt strong {
+  display: block;
+}
+.stagger .txt span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.stagger .pill {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--accent-2);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ---------- Progress dial ---------- */
+.block--progress .dial {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.dial__ring {
+  --size: 96px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  flex: none;
+  background: conic-gradient(var(--accent) var(--p, 0%), var(--surface-2) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px));
+
+  animation: dial-fill linear both;
+  animation-timeline: scroll(root block);
+}
+@keyframes dial-fill {
+  from {
+    --p: 0%;
+  }
+  to {
+    --p: 100%;
+  }
+}
+@property --p {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+.dial__meta strong {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--accent-2);
+  margin-bottom: 4px;
+}
+.dial__meta span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Parallax ---------- */
+.parallax {
+  position: relative;
+  height: 340px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #10131f, #0a0b12);
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+}
+.parallax__layer {
+  position: absolute;
+  inset: -20% 0;
+  will-change: transform;
+}
+.parallax__stars {
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 70% 60%, #cbd5ff, transparent),
+    radial-gradient(1px 1px at 40% 80%, #fff, transparent),
+    radial-gradient(2px 2px at 85% 25%, #a5b4fc, transparent),
+    radial-gradient(1px 1px at 55% 15%, #fff, transparent);
+  animation: drift-slow linear both;
+  animation-timeline: view();
+  animation-range: cover;
+}
+.parallax__mid {
+  background: radial-gradient(120% 90% at 50% 130%, var(--accent) 0%, transparent 55%);
+  opacity: 0.55;
+  animation: drift-mid linear both;
+  animation-timeline: view();
+  animation-range: cover;
+}
+.parallax__fore {
+  background:
+    radial-gradient(90% 60% at 15% 120%, var(--accent-2) 0%, transparent 60%),
+    radial-gradient(80% 60% at 90% 120%, var(--accent) 0%, transparent 60%);
+  opacity: 0.5;
+  animation: drift-fast linear both;
+  animation-timeline: view();
+  animation-range: cover;
+}
+.parallax__title {
+  position: relative;
+  z-index: 2;
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(2.5rem, 10vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 8px 40px rgba(139, 92, 246, 0.5);
+  animation: drift-title linear both;
+  animation-timeline: view();
+  animation-range: cover;
+}
+@keyframes drift-slow {
+  from {
+    transform: translateY(6%);
+  }
+  to {
+    transform: translateY(-6%);
+  }
+}
+@keyframes drift-mid {
+  from {
+    transform: translateY(18%);
+  }
+  to {
+    transform: translateY(-18%);
+  }
+}
+@keyframes drift-fast {
+  from {
+    transform: translateY(34%);
+  }
+  to {
+    transform: translateY(-34%);
+  }
+}
+@keyframes drift-title {
+  from {
+    transform: translateY(40%) scale(0.9);
+    opacity: 0.2;
+  }
+  to {
+    transform: translateY(-24%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ---------- Footer ---------- */
+.foot {
+  padding: 60px 0 0;
+  color: var(--muted);
+  text-align: center;
+}
+.foot p {
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   REVEAL ANIMATIONS — driven by view() where supported
+   ========================================================= */
+[data-reveal],
+.card {
+  animation: var(--reveal-name, reveal-fade) linear both;
+  animation-timeline: view();
+  animation-range: entry var(--enter-start) cover var(--enter-end);
+}
+
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes reveal-slide {
+  from {
+    opacity: 0;
+    transform: translateY(48px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes reveal-blur {
+  from {
+    opacity: 0;
+    filter: blur(14px);
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* Effect switch via data attr on <html> */
+html[data-effect="fade"] {
+  --reveal-name: reveal-fade;
+}
+html[data-effect="slide"] {
+  --reveal-name: reveal-slide;
+}
+html[data-effect="scale"] {
+  --reveal-name: reveal-scale;
+}
+html[data-effect="blur"] {
+  --reveal-name: reveal-blur;
+}
+
+/* Replay: briefly clear the timeline binding so animations re-run */
+html[data-replay="1"] [data-reveal],
+html[data-replay="1"] .card {
+  animation: none;
+}
+
+/* =========================================================
+   FALLBACK — no scroll-driven timelines.
+   IntersectionObserver toggles .is-in (see script.js).
+   ========================================================= */
+@supports not (animation-timeline: view()) {
+  [data-reveal],
+  .card {
+    animation: none;
+    opacity: 0;
+    transform: translateY(28px);
+    filter: blur(6px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.6s ease,
+      filter 0.6s ease;
+  }
+  [data-reveal].is-in,
+  .card.is-in {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .scroll-progress__fill {
+    animation: none;
+    transform: scaleX(var(--js-progress, 0));
+  }
+  .dial__ring {
+    animation: none;
+    background: conic-gradient(var(--accent) calc(var(--js-progress, 0) * 100%), var(--surface-2) 0);
+  }
+  .parallax__layer,
+  .parallax__title {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  [data-reveal],
+  .card {
+    animation-range: entry 0% entry 1%;
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 520px) {
+  .controls {
+    top: 58px;
+    gap: 12px 16px;
+  }
+  .btn {
+    margin-left: 0;
+  }
+  input[type="range"] {
+    width: 100px;
+  }
+  .hero {
+    padding: 72px 0 24px;
+  }
+  .block {
+    padding: 56px 0;
+  }
+  .block--progress .dial {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+}

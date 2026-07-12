@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SVG Path Morph</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <p class="eyebrow">UI Components · Motion</p>
+      <h1>SVG Path Morph</h1>
+      <p class="lede">
+        Smoothly interpolate between SVG shapes by tweening normalized path point sets.
+        No libraries — just matched coordinates, easing, and <code>requestAnimationFrame</code>.
+      </p>
+    </header>
+
+    <section class="stage-card" aria-label="Morph preview">
+      <div class="stage">
+        <svg
+          class="morph-svg"
+          viewBox="0 0 200 200"
+          role="img"
+          aria-labelledby="morphTitle"
+        >
+          <title id="morphTitle">Morphing shape</title>
+          <defs>
+            <linearGradient id="morphGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#8b5cf6" />
+              <stop offset="100%" stop-color="#22d3ee" />
+            </linearGradient>
+            <filter id="morphGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="6" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <path
+            id="morphPath"
+            fill="url(#morphGrad)"
+            filter="url(#morphGlow)"
+            d=""
+          />
+        </svg>
+
+        <div class="stage-meta" aria-live="polite">
+          <span class="pair" id="pairLabel">heart → star</span>
+          <span class="pct" id="pctLabel">0%</span>
+        </div>
+        <div class="progress" role="presentation">
+          <span class="progress-fill" id="progressFill"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Morph controls">
+      <div class="row targets" role="group" aria-label="Morph to shape">
+        <span class="row-label">Target</span>
+        <div class="target-btns" id="targetBtns"></div>
+      </div>
+
+      <div class="row transport">
+        <button id="playBtn" class="btn btn-primary" aria-pressed="true">
+          <span class="ico" aria-hidden="true">❚❚</span>
+          <span class="txt">Pause</span>
+        </button>
+        <button id="stepBtn" class="btn">
+          <span class="ico" aria-hidden="true">⤳</span>
+          <span class="txt">Next</span>
+        </button>
+
+        <label class="field">
+          <span>Speed</span>
+          <input id="speed" type="range" min="0.4" max="3" step="0.1" value="1" />
+          <output id="speedOut">1.0×</output>
+        </label>
+
+        <label class="field">
+          <span>Easing</span>
+          <select id="easing">
+            <option value="easeInOut">Ease in-out</option>
+            <option value="easeOut">Ease out</option>
+            <option value="easeIn">Ease in</option>
+            <option value="linear">Linear</option>
+            <option value="elastic">Elastic</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <footer class="explain">
+      <h2>How it works</h2>
+      <p>
+        Every shape is authored with the <strong>same path command structure</strong> and an equal
+        number of control points. To morph, the engine reads the numeric coordinates of the
+        <em>from</em> and <em>to</em> paths, linearly interpolates each matched pair by an eased
+        <code>t</code>, and rebuilds the <code>d</code> attribute each frame. Because the layouts
+        line up, no external morphing library is needed. Reduced-motion users get an instant snap.
+      </p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

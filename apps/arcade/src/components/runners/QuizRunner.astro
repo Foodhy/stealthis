@@ -1,12 +1,21 @@
 ---
 import type { QuizChallenge } from "@schema";
+import type { CodeTab } from "../../lib/code-tabs";
+import { buildResourcePreviewSrcdoc } from "../../lib/complete-preview";
+import ChallengeShell from "../ChallengeShell.astro";
+import CodePanel from "../CodePanel.astro";
+import PreviewPane from "../PreviewPane.astro";
 
 interface Props {
   challenge: QuizChallenge;
   index: number;
+  codeTabs?: CodeTab[];
+  isGenerated?: boolean;
 }
 
-const { challenge, index } = Astro.props;
+const { challenge, index, codeTabs = [], isGenerated = false } = Astro.props;
+const previewSrcdoc = challenge.resourceSlug ? buildResourcePreviewSrcdoc(challenge.resourceSlug) : null;
+const showPreview = Boolean(previewSrcdoc);
 ---
 
 <article
@@ -16,28 +25,47 @@ const { challenge, index } = Astro.props;
   data-answer={challenge.answer}
   data-type="quiz"
   data-index={index}
+  data-difficulty={challenge.difficulty}
 >
-  <div class="space-y-2">
-    <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
-    <h2 class="text-2xl font-medium leading-snug text-white">{challenge.question}</h2>
-  </div>
+  <ChallengeShell previewId={`preview-${challenge.slug}`} showPreview={showPreview} interactionLabel="Pick an answer">
+    {showPreview && previewSrcdoc && (
+      <PreviewPane slot="preview" id={`preview-${challenge.slug}`} srcdoc={previewSrcdoc} title="Component preview" />
+    )}
 
-  <ul class="grid gap-3">
-    {challenge.options.map((opt, i) => (
-      <li>
-        <button
-          type="button"
-          class="quiz-option flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/6 px-4 py-3 text-left text-white transition hover:border-white/14 hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-70"
-          data-option-index={i}
-        >
-          <span class="grid h-6 w-6 place-items-center rounded-md border border-white/14 text-xs tabular-nums text-white/60">
-            {i + 1}
-          </span>
-          <span class="flex-1 text-sm">{opt}</span>
-        </button>
-      </li>
-    ))}
-  </ul>
+    <div class="space-y-4">
+      <div class="space-y-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+          {isGenerated && (
+            <span class="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/45">
+              Auto-generated
+            </span>
+          )}
+        </div>
+        <h2 class="text-xl font-medium leading-snug text-white sm:text-2xl">{challenge.question}</h2>
+        {challenge.realWorldHook && (
+          <p class="text-sm italic text-white/50">{challenge.realWorldHook}</p>
+        )}
+      </div>
+
+      <ul class="grid gap-3">
+        {challenge.options.map((opt, i) => (
+          <li>
+            <button
+              type="button"
+              class="quiz-option flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/6 px-4 py-4 text-left text-white transition hover:border-white/14 hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-70"
+              data-option-index={i}
+            >
+              <span class="grid h-7 w-7 place-items-center rounded-md border border-white/14 text-xs tabular-nums text-white/60">
+                {i + 1}
+              </span>
+              <span class="flex-1 text-sm">{opt}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </ChallengeShell>
 
   {challenge.explanation && (
     <div
@@ -48,7 +76,11 @@ const { challenge, index } = Astro.props;
     </div>
   )}
 
-  <div class="flex items-center justify-end gap-3 pt-2">
+  {codeTabs.length > 0 && (
+    <CodePanel tabs={codeTabs} panelId={`code-${challenge.slug}`} collapsed={true} />
+  )}
+
+  <div class="sticky bottom-0 z-20 -mx-1 flex items-center justify-end gap-3 border-t border-white/8 bg-[#0a0a0a]/90 px-1 py-3 backdrop-blur">
     <button
       type="button"
       class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"

@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
-import { ChallengeMetaSchema, LessonSchema, ResourceMetaSchema } from "./schema.js";
-import type { ChallengeMetaOutput, LessonOutput, ResourceMetaOutput } from "./schema.js";
+import { ChallengeMetaSchema, LessonSchema, PathSchema, ResourceMetaSchema } from "./schema.js";
+import type { ChallengeMetaOutput, LessonOutput, PathOutput, ResourceMetaOutput } from "./schema.js";
 
 export async function loadResources(contentDir: string): Promise<ResourceMetaOutput[]> {
   const pattern = join(contentDir, "resources/*/index.mdx");
@@ -116,4 +116,26 @@ export async function loadLessons(contentDir: string): Promise<LessonOutput[]> {
   }
 
   return lessons.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+}
+
+export async function loadPaths(contentDir: string): Promise<PathOutput[]> {
+  const pattern = join(contentDir, "challenges/_paths/**/*.yaml");
+  const files = await fg(pattern, { onlyFiles: true });
+
+  const paths: PathOutput[] = [];
+
+  for (const file of files) {
+    const raw = readFileSync(file, "utf-8");
+    const parsed = matter(`---\n${raw}\n---\n`);
+
+    const result = PathSchema.safeParse(parsed.data);
+    if (!result.success) {
+      console.warn(`[schema] Invalid path at ${file}:`, result.error.flatten());
+      continue;
+    }
+
+    paths.push(result.data);
+  }
+
+  return paths.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 }

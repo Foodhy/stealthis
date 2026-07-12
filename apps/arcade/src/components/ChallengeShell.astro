@@ -1,0 +1,48 @@
+---
+interface Props {
+  previewId: string;
+  showPreview?: boolean;
+  showPreviewToggle?: boolean;
+  previewLabel?: string;
+  interactionLabel?: string;
+}
+
+const {
+  previewId,
+  showPreview = true,
+  showPreviewToggle = false,
+  previewLabel = "What users see",
+  interactionLabel = "Your fix",
+} = Astro.props;
+---
+
+<div
+  class:list={[
+    "challenge-shell grid gap-6",
+    showPreview ? "lg:grid-cols-2" : "grid-cols-1",
+  ]}
+  data-challenge-shell
+>
+  {showPreview && (
+    <div class="flex flex-col gap-2 lg:sticky lg:top-16 lg:max-h-[calc(100vh-8rem)] lg:self-start">
+      <div class="flex items-center justify-between">
+        <span class="text-xs uppercase tracking-wider text-white/40">{previewLabel}</span>
+        {showPreviewToggle && (
+        <div class="flex gap-1 rounded-lg border border-white/8 bg-white/4 p-0.5 text-[10px]" data-preview-toggle>
+          <button type="button" class="preview-toggle-btn rounded-md px-2 py-1 text-white/50 data-[active=true]:bg-white/10 data-[active=true]:text-white" data-preview-mode="live" data-active="true">
+            Live
+          </button>
+          <button type="button" class="preview-toggle-btn rounded-md px-2 py-1 text-white/50 data-[active=true]:bg-white/10 data-[active=true]:text-white" data-preview-mode="fixed">
+            Broken
+          </button>
+        </div>
+        )}
+      </div>
+      <slot name="preview" />
+    </div>
+  )}
+  <div class="flex flex-col gap-4">
+    <span class="text-xs uppercase tracking-wider text-white/40">{interactionLabel}</span>
+    <slot />
+  </div>
+</div>

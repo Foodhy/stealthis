@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Native Popover API Menu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="masthead">
+      <div class="masthead__tag">Web Platform · No JS positioning</div>
+      <h1>Native Popover API Menu</h1>
+      <p class="lede">
+        Three overlay patterns — a dropdown menu, a tooltip, and a modal-style dialog — built with
+        nothing but the <code>popover</code> attribute and <code>popovertarget</code>. The browser
+        owns the top layer, light-dismiss and Escape. An <code>@supports</code> block adds CSS
+        Anchor Positioning where available.
+      </p>
+      <div class="support" id="support" aria-live="polite"></div>
+    </header>
+
+    <section class="grid">
+      <!-- ============ 1. Dropdown menu (auto + anchor) ============ -->
+      <article class="panel">
+        <div class="panel__head">
+          <h2>Dropdown menu</h2>
+          <span class="pill">popover="auto"</span>
+        </div>
+        <p class="panel__note">
+          Declarative trigger via <code>popovertarget</code>. Click outside or press
+          <kbd>Esc</kbd> to light-dismiss. Anchored to the button with CSS anchor positioning
+          when supported.
+        </p>
+
+        <div class="anchor-scope">
+          <button
+            class="btn btn--primary menu-trigger"
+            popovertarget="account-menu"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            id="account-btn"
+          >
+            <span class="avatar" aria-hidden="true">RM</span>
+            Rosa Márquez
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+
+          <div id="account-menu" popover="auto" class="menu" role="menu" aria-label="Account">
+            <div class="menu__id">
+              <span class="avatar avatar--lg" aria-hidden="true">RM</span>
+              <div>
+                <strong>Rosa Márquez</strong>
+                <small>rosa@stealthis.dev</small>
+              </div>
+            </div>
+            <hr class="menu__sep" />
+            <button class="menu__item" role="menuitem" type="button">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 13c0-2.5 2.2-4 5-4s5 1.5 5 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Profile
+              <kbd class="menu__kbd">P</kbd>
+            </button>
+            <button class="menu__item" role="menuitem" type="button">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v3M8 11v3M2 8h3M11 8h3M4 4l2 2M10 10l2 2M12 4l-2 2M6 10l-2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+              Settings
+              <kbd class="menu__kbd">,</kbd>
+            </button>
+            <button class="menu__item" role="menuitem" type="button">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3H3v10h3M6 8h7M13 8l-2.5-2.5M13 8l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Billing
+            </button>
+            <hr class="menu__sep" />
+            <button class="menu__item menu__item--danger" role="menuitem" type="button" id="signout">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3H3v10h7M9 8h5M14 8l-2.5-2.5M14 8l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Sign out
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ 2. Tooltip (auto, imperative hover) ============ -->
+      <article class="panel">
+        <div class="panel__head">
+          <h2>Hint tooltip</h2>
+          <span class="pill">showPopover()</span>
+        </div>
+        <p class="panel__note">
+          Same API, driven imperatively. Hover or focus the field label to reveal help text in the
+          top layer — no <code>z-index</code>, no clipping by overflow.
+        </p>
+
+        <label class="field-label" for="api-key">
+          API secret key
+          <button
+            class="hint-trigger"
+            id="hint-btn"
+            aria-describedby="key-tip"
+            aria-label="What is this field?"
+            type="button"
+          >?</button>
+        </label>
+        <input class="input" id="api-key" type="text" value="sk_live_9f2b•••••••••••" readonly />
+        <div id="key-tip" popover="auto" class="tooltip" role="tooltip">
+          Your secret key authenticates server-side requests. Never expose it in client code —
+          rotate it if it leaks.
+        </div>
+      </article>
+
+      <!-- ============ 3. Modal-style dialog (manual) ============ -->
+      <article class="panel panel--wide">
+        <div class="panel__head">
+          <h2>Confirmation dialog</h2>
+          <span class="pill">popover="manual"</span>
+        </div>
+        <p class="panel__note">
+          A <code>manual</code> popover ignores light-dismiss, so it behaves like a modal. It still
+          rides the top layer and gets a styled <code>::backdrop</code>. Close only via its buttons.
+        </p>
+        <button class="btn btn--danger" popovertarget="confirm-dialog" popovertargetaction="show">
+          Delete workspace…
+        </button>
+
+        <div id="confirm-dialog" popover="manual" class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+          <div class="dialog__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.01M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3 id="dlg-title">Delete “Aurora” workspace?</h3>
+          <p>
+            This permanently removes 42 resources and 3 members. This action cannot be undone.
+          </p>
+          <div class="dialog__actions">
+            <button class="btn btn--ghost" popovertarget="confirm-dialog" popovertargetaction="hide">Cancel</button>
+            <button class="btn btn--danger" popovertarget="confirm-dialog" popovertargetaction="hide" id="confirm-delete">Yes, delete it</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ 4. Imperative controls ============ -->
+      <article class="panel panel--wide">
+        <div class="panel__head">
+          <h2>Imperative control</h2>
+          <span class="pill">.togglePopover()</span>
+        </div>
+        <p class="panel__note">
+          The JS API mirrors the attributes. These buttons script the dropdown directly and every
+          state change is logged from the <code>toggle</code> event.
+        </p>
+        <div class="toolbar">
+          <button class="btn btn--soft" data-act="show">showPopover()</button>
+          <button class="btn btn--soft" data-act="hide">hidePopover()</button>
+          <button class="btn btn--soft" data-act="toggle">togglePopover()</button>
+        </div>
+        <div class="log" id="log" aria-live="polite" aria-label="Event log">
+          <div class="log__row log__row--muted">Interact with any popover to see events…</div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="foot">
+      <span class="dot"></span>
+      Every overlay here is a native popover. View source — there is no positioning library.
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

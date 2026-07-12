@@ -1,0 +1,27 @@
+---
+slug: image-dissolve-shader
+title: "Image Dissolve Shader"
+description: "A WebGL hover effect that dissolves one image into another through a hand-written GLSL fragment shader — a fractal noise map displaces and reveals the second texture while a chromatic RGB-shift tears along the transition edge, all driven by a single hover-tracked u_progress uniform with an eased spring and a graceful canvas fallback."
+category: ui-components
+type: component
+tags: [webgl, shader, hover]
+tech: [webgl, vanilla-js]
+difficulty: hard
+targets: [html]
+collections: []
+labRoute: /ui-components/image-dissolve-shader
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-01
+updatedAt: 2026-07-01
+---
+
+# Image Dissolve Shader
+
+A GPU-driven image transition rendered with raw **WebGL**. Two textures are uploaded to the GPU and a hand-written GLSL fragment shader mixes between them per-pixel: a fractal-Brownian-motion noise field defines a dissolve threshold, so as `u_progress` climbs from 0 to 1 the second image bleeds through in an organic, cloud-like wipe rather than a flat crossfade. Along the moving edge the shader applies a chromatic **RGB-shift**, offsetting the red and blue channels to tear the boundary apart with a prismatic fringe.
+
+Hovering the card animates `u_progress` toward 1 with an eased spring in the `requestAnimationFrame` loop; leaving reverses it — every frame reads the current value as a uniform so the reveal feels physical and interruptible. A control panel lets you scrub progress by hand, change the dissolve **edge softness** and **RGB-shift** strength, switch between three curated texture pairs (loaded cross-origin from Unsplash, with a generated canvas gradient as an offline backup), and toggle a live overlay of the noise map that drives the effect.
+
+This demonstrates the low-level **WebGL** pipeline end to end — shader compilation, texture uploads with `UNPACK_FLIP_Y`, uniform plumbing, and a rAF render loop — while degrading gracefully: if `getContext("webgl")` fails or images cannot decode, a CSS crossfade stands in and the panel reports the fallback. All controls are keyboard-operable with visible focus rings, and the hover animation honours `prefers-reduced-motion`.

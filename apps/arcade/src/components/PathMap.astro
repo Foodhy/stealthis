@@ -1,0 +1,129 @@
+---
+import type { PathOutput } from "@schema";
+import type { UnitNode } from "../lib/paths-unlock";
+import Mascot from "./mascot/Mascot.astro";
+
+interface Props {
+  path: PathOutput;
+  nodes: UnitNode[];
+  lessons?: import("@schema").LessonOutput[];
+  accent?: string;
+}
+
+const { path, nodes, lessons = [], accent = "emerald" } = Astro.props;
+
+const accentRing: Record<string, string> = {
+  emerald: "ring-emerald-400/60 border-emerald-400/40",
+  sky: "ring-sky-400/60 border-sky-400/40",
+  violet: "ring-violet-400/60 border-violet-400/40",
+  amber: "ring-amber-400/60 border-amber-400/40",
+  rose: "ring-rose-400/60 border-rose-400/40",
+  cyan: "ring-cyan-400/60 border-cyan-400/40",
+};
+
+const activeRing = accentRing[path.accent] ?? accentRing.emerald;
+
+let lastUnit = -1;
+---
+
+<div
+  class="path-map mx-auto flex max-w-md flex-col items-center py-8"
+  data-path-map={path.slug}
+  data-path-json={JSON.stringify(path)}
+  data-lessons-json={JSON.stringify(lessons)}
+>
+  {nodes.map((node, i) => {
+    const showHeader = node.unitIndex !== lastUnit;
+    if (showHeader) lastUnit = node.unitIndex;
+    const unit = path.units[node.unitIndex];
+    const side = i % 2 === 0 ? "self-start pl-4" : "self-end pr-4";
+    return (
+      <>
+        {showHeader && (
+          <div class="mb-6 mt-4 w-full text-center">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-white/70">{unit.title}</h3>
+            <p class="mt-1 text-xs italic text-white/40">"{unit.preview}"</p>
+          </div>
+        )}
+        <div class:list={["relative mb-8 flex w-full items-center gap-4", side]} data-path-node data-state={node.state} data-href={node.href}>
+          {i > 0 && (
+            <div class="absolute -top-8 left-1/2 h-8 w-px -translate-x-1/2 bg-white/10" aria-hidden="true"></div>
+          )}
+          <a
+            href={node.state === "locked" ? undefined : node.href}
+            class:list={[
+              "path-node group flex items-center gap-3 rounded-2xl border bg-white/4 px-4 py-3 transition",
+              node.state === "locked" ? "pointer-events-none opacity-45" : "hover:bg-white/8",
+              node.state === "in_progress" || node.state === "available" ? `ring-2 ${activeRing}` : "",
+            ]}
+            aria-disabled={node.state === "locked"}
+          >
+            <span
+              class:list={[
+                "grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 text-lg font-bold shadow-inner",
+                node.state === "locked" && "border-white/10 bg-white/5 text-white/30",
+                node.state === "available" && "border-white/20 bg-white/8 text-white/70",
+                node.state === "in_progress" && "border-emerald-400/60 bg-emerald-400/15 text-emerald-300",
+                node.state === "completed" && "border-emerald-500/50 bg-emerald-500/20 text-emerald-300",
+                node.state === "perfect" && "border-amber-400/60 bg-amber-400/15 text-amber-200",
+              ]}
+              data-node-icon
+            >
+              {node.state === "locked" ? "🔒" : node.state === "perfect" ? "★" : node.state === "completed" ? "✓" : "●"}
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-medium text-white">{node.lessonTitle}</span>
+              <span class="block text-xs text-white/45">{node.topic}</span>
+            </span>
+          </a>
+          {(node.state === "in_progress" || node.state === "available") && i === nodes.findIndex((n) => n.state !== "locked" && n.state !== "completed" && n.state !== "perfect") && (
+            <div class="absolute -right-2 top-1/2 -translate-y-1/2 sm:-right-14">
+              <Mascot mood="happy" size={48} />
+            </div>
+          )}
+        </div>
+      </>
+    );
+  })}
+</div>
+
+<script>
+  import { readProgress } from "../lib/progress";
+  import { buildPathNodes } from "../lib/paths-unlock";
+
+  const map = document.querySelector<HTMLElement>("[data-path-map]");
+  if (!map) throw new Error("path map missing");
+
+  const pathSlug = map.dataset.pathMap!;
+  const pathData = JSON.parse(map.dataset.pathJson || "{}");
+  const lessons = JSON.parse(map.dataset.lessonsJson || "[]");
+
+  function hydrate() {
+    const progress = readProgress();
+    const nodes = buildPathNodes(pathData, lessons, progress);
+    const nodeEls = map.querySelectorAll<HTMLElement>("[data-path-node]");
+    nodeEls.forEach((el, i) => {
+      const node = nodes[i];
+      if (!node) return;
+      el.dataset.state = node.state;
+      const link = el.querySelector<HTMLAnchorElement>("a");
+      const icon = el.querySelector<HTMLElement>("[data-node-icon]");
+      if (link) {
+        if (node.state === "locked") {
+          link.removeAttribute("href");
+          link.setAttribute("aria-disabled", "true");
+        } else {
+          link.href = node.href;
+          link.removeAttribute("aria-disabled");
+        }
+      }
+      if (icon) {
+        icon.textContent =
+          node.state === "locked" ? "🔒" : node.state === "perfect" ? "★" : node.state === "completed" ? "✓" : "●";
+      }
+    });
+  }
+
+  hydrate();
+  document.addEventListener("arcade:profile-updated", hydrate);
+</script>

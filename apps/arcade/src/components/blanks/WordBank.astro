@@ -1,0 +1,31 @@
+---
+import type { ResolvedBlankInteraction } from "../../lib/blank-interaction";
+
+interface Props {
+  blanks: ResolvedBlankInteraction[];
+}
+
+const { blanks } = Astro.props;
+const bankBlanks = blanks.filter((b) => b.mode === "bank" || b.mode === "drag");
+if (bankBlanks.length === 0) {
+  return null;
+}
+
+const allOptions = [...new Set(bankBlanks.flatMap((b) => b.options))];
+---
+
+<div class="word-bank mt-4 rounded-xl border border-white/8 bg-white/4 p-4" data-word-bank>
+  <p class="mb-3 text-[10px] font-semibold uppercase tracking-widest text-white/40">Word bank</p>
+  <div class="flex flex-wrap gap-2">
+    {allOptions.map((opt) => (
+      <button
+        type="button"
+        class="word-chip cursor-grab rounded-lg border border-white/10 bg-white/8 px-3 py-1.5 font-mono text-xs text-white/85 transition hover:border-emerald-400/40 hover:bg-emerald-400/10 active:cursor-grabbing"
+        data-chip-value={opt}
+        draggable="true"
+      >
+        {opt}
+      </button>
+    ))}
+  </div>
+</div>

@@ -1,0 +1,55 @@
+---
+import type { ResolvedBlankInteraction } from "../../lib/blank-interaction";
+
+interface Props {
+  blank: ResolvedBlankInteraction;
+}
+
+const { blank } = Astro.props;
+const optionsJson = JSON.stringify(blank.options);
+---
+
+{blank.mode === "select" && (
+  <select
+    class="blank-slot blank-select complete-blank inline-block min-w-[8ch] max-w-[14ch] cursor-pointer rounded border border-emerald-400/50 bg-emerald-400/10 px-2 py-0.5 align-baseline font-mono text-[13px] text-emerald-100 outline-none transition focus:border-emerald-400 focus:bg-emerald-400/20"
+    data-blank-key={blank.key}
+    data-blank-mode="select"
+    aria-label={`Blank ${blank.key}`}
+  >
+    <option value="">…</option>
+    {blank.options.map((opt) => (
+      <option value={opt}>{opt}</option>
+    ))}
+  </select>
+)}
+
+{blank.mode === "type" && (
+  <input
+    type="text"
+    autocomplete="off"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck="false"
+    class="blank-slot complete-blank inline-block min-w-[5ch] rounded border border-emerald-400/50 bg-emerald-400/10 px-2 py-0.5 align-baseline font-mono text-[13px] text-emerald-100 outline-none transition focus:border-emerald-400 focus:bg-emerald-400/20"
+    data-blank-key={blank.key}
+    data-blank-mode="type"
+    size={blank.size}
+    aria-label={`Blank ${blank.key}`}
+  />
+)}
+
+{(blank.mode === "bank" || blank.mode === "drag") && (
+  <span
+    class="blank-slot blank-drop inline-flex min-h-[1.75rem] min-w-[8ch] cursor-pointer items-center justify-center rounded border border-dashed border-emerald-400/50 bg-emerald-400/8 px-2 py-0.5 align-baseline font-mono text-[13px] text-emerald-200/70 transition data-[filled=true]:border-solid data-[filled=true]:border-emerald-400/60 data-[filled=true]:bg-emerald-400/15 data-[filled=true]:text-emerald-100"
+    data-blank-key={blank.key}
+    data-blank-mode={blank.mode}
+    data-blank-options={optionsJson}
+    data-filled="false"
+    tabindex="0"
+    role="button"
+    aria-label={`Blank ${blank.key}`}
+  >
+    <span data-blank-display>drop here</span>
+    <input type="hidden" class="complete-blank blank-value" data-blank-key={blank.key} value="" />
+  </span>
+)}

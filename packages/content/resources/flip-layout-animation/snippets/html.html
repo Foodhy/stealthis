@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FLIP Layout Animation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div class="head__title">
+        <h1>FLIP Layout Animation</h1>
+        <p class="sub">
+          A reflowing grid where every item glides between layouts using the
+          <strong>First&nbsp;·&nbsp;Last&nbsp;·&nbsp;Invert&nbsp;·&nbsp;Play</strong> technique —
+          only <code>transform</code> and <code>opacity</code> are animated.
+        </p>
+      </div>
+      <label class="switch" title="Snap instantly, no motion">
+        <input type="checkbox" id="reduce" />
+        <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+        <span class="switch__label">Reduced motion</span>
+      </label>
+    </header>
+
+    <section class="toolbar" aria-label="Layout controls">
+      <div class="toolbar__group" role="group" aria-label="Rearrange">
+        <button class="btn btn--accent" data-act="shuffle" type="button">Shuffle</button>
+        <button class="btn" data-act="sort-name" type="button">Sort A–Z</button>
+        <button class="btn" data-act="sort-weight" type="button">Sort by weight</button>
+      </div>
+
+      <div class="toolbar__group" role="group" aria-label="Filter by category">
+        <span class="toolbar__label">Filter</span>
+        <div class="chips" id="chips" role="tablist" aria-label="Category filter"></div>
+      </div>
+
+      <div class="toolbar__group" role="group" aria-label="Add or remove">
+        <button class="btn" data-act="add" type="button">+ Add card</button>
+        <button class="btn btn--ghost" data-act="remove" type="button">− Remove last</button>
+      </div>
+    </section>
+
+    <p class="status" id="status" role="status" aria-live="polite">Ready.</p>
+
+    <ul class="grid" id="grid" aria-label="Animated card grid"></ul>
+
+    <section class="note" aria-label="How FLIP works">
+      <h2 class="note__title">How the FLIP technique works</h2>
+      <ol class="flip-steps">
+        <li class="flip-step">
+          <span class="flip-step__k">F</span>
+          <span class="flip-step__body">
+            <strong>First</strong> — before touching the DOM, record every item's current
+            bounding box with <code>getBoundingClientRect()</code>.
+          </span>
+        </li>
+        <li class="flip-step">
+          <span class="flip-step__k">L</span>
+          <span class="flip-step__body">
+            <strong>Last</strong> — mutate the DOM (reorder, filter, add) and let the browser
+            reflow to the final layout. Measure the new boxes.
+          </span>
+        </li>
+        <li class="flip-step">
+          <span class="flip-step__k">I</span>
+          <span class="flip-step__body">
+            <strong>Invert</strong> — apply a <code>transform</code> that offsets each item back
+            to where it started, so visually nothing moved yet.
+          </span>
+        </li>
+        <li class="flip-step">
+          <span class="flip-step__k">P</span>
+          <span class="flip-step__body">
+            <strong>Play</strong> — on the next frame, clear the transform with a transition.
+            The GPU composites the slide — no layout thrash, no jank.
+          </span>
+        </li>
+      </ol>
+      <p class="note__foot">
+        Because only <code>transform</code> / <code>opacity</code> animate, the work stays on the
+        compositor thread. Animating <code>top</code>/<code>left</code>/<code>width</code> instead
+        would trigger layout on every frame.
+      </p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

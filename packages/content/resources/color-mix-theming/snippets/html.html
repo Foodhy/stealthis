@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>color-mix() Theme Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app" id="app">
+    <header class="app__head">
+      <div class="app__title">
+        <h1>color-mix() Theme Generator</h1>
+        <p>
+          One base hue &rarr; a whole palette, derived live in CSS with
+          <code>color-mix()</code> in <code>oklch</code>.
+        </p>
+      </div>
+      <div class="mode" role="group" aria-label="Generation engine">
+        <span class="mode__label">Engine</span>
+        <div class="seg" id="engineSeg">
+          <button type="button" class="seg__btn is-active" data-engine="mix" aria-pressed="true">
+            color-mix()
+          </button>
+          <button type="button" class="seg__btn" data-engine="relative" aria-pressed="false">
+            relative color
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Controls -->
+      <section class="panel controls" aria-label="Theme controls">
+        <div class="field">
+          <div class="field__row">
+            <label for="baseColor">Base color</label>
+            <output id="baseHex" class="mono">#8b5cf6</output>
+          </div>
+          <div class="picker">
+            <input type="color" id="baseColor" value="#8b5cf6" aria-label="Base color picker" />
+            <div class="swatch-preview" id="basePreview" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field__row">
+            <label for="hue">Hue</label>
+            <output id="hueVal" class="mono">262&deg;</output>
+          </div>
+          <input type="range" id="hue" min="0" max="360" step="1" value="262" aria-describedby="hueVal" />
+        </div>
+
+        <div class="field">
+          <div class="field__row">
+            <label for="intensity">Tint / shade intensity</label>
+            <output id="intensityVal" class="mono">100%</output>
+          </div>
+          <input type="range" id="intensity" min="40" max="140" step="1" value="100" aria-describedby="intensityVal" />
+        </div>
+
+        <div class="field">
+          <span class="field__label">Presets</span>
+          <div class="presets" id="presets" role="group" aria-label="Color presets">
+            <button type="button" class="preset" data-color="#8b5cf6" style="--p:#8b5cf6" aria-label="Violet"></button>
+            <button type="button" class="preset" data-color="#22d3ee" style="--p:#22d3ee" aria-label="Cyan"></button>
+            <button type="button" class="preset" data-color="#34d399" style="--p:#34d399" aria-label="Emerald"></button>
+            <button type="button" class="preset" data-color="#fbbf24" style="--p:#fbbf24" aria-label="Amber"></button>
+            <button type="button" class="preset" data-color="#f87171" style="--p:#f87171" aria-label="Rose"></button>
+            <button type="button" class="preset" data-color="#f472b6" style="--p:#f472b6" aria-label="Pink"></button>
+            <button type="button" class="preset" data-color="#60a5fa" style="--p:#60a5fa" aria-label="Blue"></button>
+          </div>
+        </div>
+
+        <p class="support" id="support" aria-live="polite"></p>
+      </section>
+
+      <!-- Preview -->
+      <section class="panel preview" id="preview" aria-label="Themed UI preview">
+        <div class="preview__scope" id="scope">
+          <div class="ramp" id="ramp" aria-label="Generated color ramp">
+            <span class="ramp__cell" data-tok="tint-strong"><i></i><b>tint-strong</b></span>
+            <span class="ramp__cell" data-tok="tint"><i></i><b>tint</b></span>
+            <span class="ramp__cell" data-tok="soft"><i></i><b>soft</b></span>
+            <span class="ramp__cell" data-tok="base"><i></i><b>base</b></span>
+            <span class="ramp__cell" data-tok="hover"><i></i><b>hover</b></span>
+            <span class="ramp__cell" data-tok="active"><i></i><b>active</b></span>
+            <span class="ramp__cell" data-tok="shade"><i></i><b>shade</b></span>
+          </div>
+
+          <div class="demo-card">
+            <div class="demo-card__top">
+              <span class="badge">New</span>
+              <span class="demo-card__meta">Themed component</span>
+            </div>
+            <h3>Deploy pipeline</h3>
+            <p class="demo-card__body">
+              Every accent below is mixed from your single base color — no extra variables authored by hand.
+            </p>
+            <div class="progress" role="progressbar" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100" aria-label="Build progress">
+              <span class="progress__bar" style="width:68%"></span>
+            </div>
+            <div class="btns">
+              <button type="button" class="btn btn--solid">Primary action</button>
+              <button type="button" class="btn btn--soft">Secondary</button>
+              <button type="button" class="btn btn--ghost">Ghost</button>
+            </div>
+            <div class="field-demo">
+              <label for="demoInput">Focusable input</label>
+              <input type="text" id="demoInput" placeholder="Tab here to see the focus ring" />
+            </div>
+            <div class="chips">
+              <span class="chip is-on">active</span>
+              <span class="chip">draft</span>
+              <span class="chip">queued</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Generated CSS -->
+    <section class="panel code" aria-label="Generated CSS">
+      <div class="code__head">
+        <span class="code__title">Generated CSS <span class="code__engine" id="codeEngine">color-mix()</span></span>
+        <button type="button" class="copy" id="copyBtn">Copy</button>
+      </div>
+      <pre class="code__pre"><code id="codeOut"></code></pre>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

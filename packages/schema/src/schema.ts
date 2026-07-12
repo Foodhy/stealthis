@@ -112,6 +112,14 @@ export const ResourceCollectionSchema = z.enum([
   "insurance",
   "construction",
   "vet",
+  "photography",
+  "dental",
+  "wedding",
+  "podcast",
+  "dating",
+  "coach",
+  "interior",
+  "video",
 ]);
 
 // Sub-kind / bucket for a recommendation topic (drives the card badge label)
@@ -242,6 +250,7 @@ const ChallengeBase = {
   resourceSlug: z.string().optional(),
   estimatedSeconds: z.number().int().positive().default(30),
   quality: ChallengeQualitySchema.default("published"),
+  realWorldHook: z.string().optional(),
   tags: z.array(z.string()).default([]),
   createdAt: z
     .union([z.string(), z.date()])
@@ -260,13 +269,25 @@ export const QuizChallengeSchema = z.object({
   explanation: z.string().optional(),
 });
 
+export const BlankInteractionSchema = z.object({
+  mode: z.enum(["select", "type", "bank", "drag"]).default("type"),
+  options: z.array(z.string()).optional(),
+});
+
 export const CompleteChallengeSchema = z.object({
   ...ChallengeBase,
   type: z.literal("complete"),
   template: z.string().min(1),
   answers: z.record(z.string(), z.string()),
   caseSensitive: z.boolean().default(false),
+  interaction: z.record(z.string(), BlankInteractionSchema).optional(),
   explanation: z.string().optional(),
+});
+
+export const FixHintSchema = z.object({
+  label: z.string().min(1),
+  search: z.string().optional(),
+  insert: z.string().min(1),
 });
 
 export const FixChallengeSchema = z.object({
@@ -276,6 +297,7 @@ export const FixChallengeSchema = z.object({
   solution: z.string().min(1),
   criterion: z.enum(["dom-equal", "regex", "visual"]).default("dom-equal"),
   regexPattern: z.string().optional(),
+  hints: z.array(FixHintSchema).optional(),
   explanation: z.string().optional(),
 });
 
@@ -313,6 +335,26 @@ export const ChallengeMetaSchema = z.discriminatedUnion("type", [
 
 export type ChallengeMetaInput = z.input<typeof ChallengeMetaSchema>;
 export type ChallengeMetaOutput = z.output<typeof ChallengeMetaSchema>;
+
+export const PathUnitSchema = z.object({
+  title: z.string().min(1),
+  preview: z.string().min(1),
+  topic: z.string().min(1),
+  lessons: z.array(z.string().min(1)).min(1),
+});
+
+export const PathSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  tagline: z.string().min(1),
+  mascotIntro: z.string().optional(),
+  order: z.number().int().min(0).default(0),
+  accent: z.enum(["emerald", "sky", "violet", "amber", "rose", "cyan"]).default("emerald"),
+  units: z.array(PathUnitSchema).min(1),
+});
+
+export type PathInput = z.input<typeof PathSchema>;
+export type PathOutput = z.output<typeof PathSchema>;
 
 export const LessonSchema = z.object({
   slug: z.string().min(1),

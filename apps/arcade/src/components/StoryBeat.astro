@@ -1,0 +1,66 @@
+---
+import MascotDialogue from "./mascot/MascotDialogue.astro";
+
+interface Props {
+  topic: string;
+  lessonTitle: string;
+  description?: string;
+  chapterIndex: number;
+  chapterTotal: number;
+  mascotIntro?: string;
+}
+
+const { topic, lessonTitle, description, chapterIndex, chapterTotal, mascotIntro } = Astro.props;
+const message =
+  mascotIntro ??
+  (description ? `${description} Ready for chapter ${chapterIndex} of ${chapterTotal}?` : `Let's tackle ${lessonTitle}.`);
+---
+
+<section
+  class="story-beat flex min-h-[60vh] flex-col items-center justify-center gap-8 px-4 py-16"
+  data-story-beat
+>
+  <MascotDialogue message={message} mood="happy" compact />
+
+  <div class="max-w-lg space-y-2 text-center">
+    <p class="text-xs uppercase tracking-wider text-emerald-400/80">{topic} · Ch {chapterIndex}/{chapterTotal}</p>
+    <h2 class="text-3xl font-semibold tracking-tight text-white">{lessonTitle}</h2>
+  </div>
+
+  <button
+    type="button"
+    class="inline-flex items-center gap-3 rounded-xl bg-emerald-400 px-8 py-3.5 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300"
+    data-story-start
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M8 5v14l11-7z"></path>
+    </svg>
+    Start chapter
+  </button>
+  <p class="text-xs text-white/40">Press Enter to begin</p>
+</section>
+
+<script>
+  const beat = document.querySelector<HTMLElement>("[data-story-beat]");
+  const startBtn = document.querySelector<HTMLButtonElement>("[data-story-start]");
+  if (!beat || !startBtn) throw new Error("story beat missing");
+
+  function dismiss() {
+    beat.classList.add("hidden");
+    beat.dispatchEvent(new CustomEvent("storybeat:dismiss"));
+  }
+
+  startBtn.addEventListener("click", dismiss);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !beat.classList.contains("hidden")) {
+      e.preventDefault();
+      dismiss();
+    }
+  });
+</script>
+
+<style>
+  .story-beat.hidden {
+    display: none !important;
+  }
+</style>

@@ -1,0 +1,145 @@
+---
+import PlayButton from "../../../components/PlayButton.astro";
+import TopicIcon from "../../../components/TopicIcon.astro";
+import Base from "../../../layouts/Base.astro";
+import {
+  buildArcadeTopics,
+  getLessonsForTopic,
+  getResumePoint,
+  loadArcadeData,
+} from "../../../lib/content";
+import { lessonPath, topicPath } from "../../../lib/paths";
+
+export async function getStaticPaths() {
+  const { published, lessons } = await loadArcadeData();
+  const topics = buildArcadeTopics(published, lessons);
+
+  return topics.map((t) => ({
+    params: { topic: t.topic },
+    props: {
+      lessons: getLessonsForTopic(t.topic, lessons),
+      challengeCount: t.challenges,
+    },
+  }));
+}
+
+const { topic } = Astro.params;
+const { lessons, challengeCount } = Astro.props;
+
+const topicSlug = topic ?? "";
+const resumePoint = getResumePoint(topicSlug, lessons, {});
+const playHref = resumePoint?.href ?? (lessons[0] ? lessonPath(topicSlug, lessons[0].slug) : "/");
+const playLabel = resumePoint?.label ?? "Play";
+---
+
+<Base title={`Arcade · ${topic}`}>
+  <a href="/" class="text-sm text-white/50 hover:text-white">← Topics</a>
+
+  <section class="mt-4 flex flex-wrap items-center justify-between gap-6">
+    <div class="flex items-center gap-4">
+      <span class="grid h-12 w-12 place-items-center rounded-xl border border-white/8 bg-white/6 text-white/70">
+        <TopicIcon topic={topicSlug} size={26} />
+      </span>
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight text-white">{topicSlug}</h1>
+        <p class="text-white/60">{challengeCount} challenge{challengeCount === 1 ? "" : "s"} · {lessons.length} lesson{lessons.length === 1 ? "" : "s"}</p>
+      </div>
+    </div>
+
+    {lessons.length > 0 && (
+      <a
+        href={playHref}
+        class="group inline-flex items-center gap-3 rounded-xl bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-300 ring-1 ring-emerald-400/30 transition hover:bg-emerald-400/20"
+        data-play-cta
+        data-topic={topic}
+        data-default-href={playHref}
+        data-default-label={playLabel}
+      >
+        <PlayButton size="sm" label={playLabel} />
+        <span data-play-label>{playLabel}</span>
+      </a>
+    )}
+  </section>
+
+  <section class="mt-10">
+    {lessons.length === 0 ? (
+      <p class="text-white/50">No lessons yet for this topic.</p>
+    ) : (
+      <ul class="space-y-3">
+        {lessons.map((l, i) => (
+          <li>
+            <a
+              href={lessonPath(topicSlug, l.slug)}
+              class="block rounded-xl border border-white/8 bg-white/6 p-5 transition hover:border-white/14 hover:bg-white/8"
+              data-lesson-card
+              data-slugs={JSON.stringify(l.challenges)}
+              data-chapter={i + 1}
+            >
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-3">
+                  <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/8 bg-white/6 text-xs text-white/50">
+                    {i + 1}
+                  </span>
+                  <h2 class="truncate text-lg font-medium text-white">{l.title}</h2>
+                </div>
+                <span class="shrink-0 text-sm text-white/40" data-lesson-progress>{l.challenges.length} challenge{l.challenges.length === 1 ? "" : "s"}</span>
+              </div>
+              {l.description && <p class="mt-2 pl-11 text-sm text-white/50">{l.description}</p>}
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Base>
+
+<script>
+  import { countCorrect, getResumeLabel, readProgress, readSession } from "../../../lib/progress";
+  import { lessonPath } from "../../../lib/paths";
+
+  const progress = readProgress();
+  const session = readSession();
+
+  document.querySelectorAll<HTMLElement>("[data-lesson-card]").forEach((card) => {
+    const slugsAttr = card.dataset.slugs;
+    if (!slugsAttr) return;
+    const slugs: string[] = JSON.parse(slugsAttr);
+    const total = slugs.length;
+    const correct = countCorrect(slugs, progress);
+    const label = card.querySelector<HTMLElement>("[data-lesson-progress]");
+    if (!label) return;
+    label.textContent =
+      correct === 0
+        ? `${total} challenge${total === 1 ? "" : "s"}`
+        : `${correct}/${total} correct`;
+  });
+
+  const playCta = document.querySelector<HTMLAnchorElement>("[data-play-cta]");
+  if (playCta) {
+    const topic = playCta.dataset.topic!;
+    const cards = document.querySelectorAll<HTMLElement>("[data-lesson-card]");
+    const allSlugs: string[] = [];
+    cards.forEach((c) => {
+      const slugs = JSON.parse(c.dataset.slugs || "[]") as string[];
+      allSlugs.push(...slugs);
+    });
+    const label = getResumeLabel(allSlugs, progress);
+    const labelEl = playCta.querySelector<HTMLElement>("[data-play-label]");
+    if (labelEl) labelEl.textContent = label;
+
+    const sessionEntry = session[topic];
+    if (sessionEntry) {
+      playCta.href = lessonPath(topic, sessionEntry.lesson, sessionEntry.stepIndex);
+    } else if (label === "Continue") {
+      for (const card of cards) {
+        const slugs = JSON.parse(card.dataset.slugs || "[]") as string[];
+        const incomplete = slugs.findIndex((s) => !progress[s]);
+        if (incomplete >= 0) {
+          const href = card.getAttribute("href");
+          if (href) playCta.href = `${href}?start=${incomplete}`;
+          break;
+        }
+      }
+    }
+  }
+</script>

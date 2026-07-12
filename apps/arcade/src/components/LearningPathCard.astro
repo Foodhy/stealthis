@@ -1,0 +1,64 @@
+---
+import type { PathOutput } from "@schema";
+import PlayButton from "./PlayButton.astro";
+
+interface Props {
+  path: PathOutput & { progressPct: number };
+}
+
+const { path } = Astro.props;
+
+const accentMap: Record<string, string> = {
+  emerald: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30 ring-emerald-500/20",
+  sky: "from-sky-500/20 to-sky-600/5 border-sky-500/30 ring-sky-500/20",
+  violet: "from-violet-500/20 to-violet-600/5 border-violet-500/30 ring-violet-500/20",
+  amber: "from-amber-500/20 to-amber-600/5 border-amber-500/30 ring-amber-500/20",
+  rose: "from-rose-500/20 to-rose-600/5 border-rose-500/30 ring-rose-500/20",
+  cyan: "from-cyan-500/20 to-cyan-600/5 border-cyan-500/30 ring-cyan-500/20",
+};
+
+const accent = accentMap[path.accent] ?? accentMap.emerald;
+const preview = path.units[0]?.preview ?? path.tagline;
+---
+
+<a
+  href={`/path/${path.slug}`}
+  class:list={[
+    "group block rounded-2xl border bg-gradient-to-br p-5 ring-1 transition hover:scale-[1.01] hover:ring-2",
+    accent,
+  ]}
+  data-path-card={path.slug}
+  data-progress={path.progressPct}
+>
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0 flex-1">
+      <h3 class="text-lg font-semibold text-white">{path.title}</h3>
+      <p class="mt-1 text-sm text-white/55">{path.tagline}</p>
+      <p class="mt-2 line-clamp-2 text-xs italic text-white/40">"{preview}"</p>
+    </div>
+    <div class="relative grid h-14 w-14 shrink-0 place-items-center">
+      <svg class="absolute inset-0 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+        <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"></circle>
+        <circle
+          cx="18"
+          cy="18"
+          r="15.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="text-emerald-400"
+          stroke-dasharray={`${path.progressPct} 100`}
+          stroke-linecap="round"
+        ></circle>
+      </svg>
+      <span class="text-xs font-bold tabular-nums text-white/70">{path.progressPct}%</span>
+    </div>
+  </div>
+  <div class="mt-4 flex items-center justify-between">
+    <span class="text-xs text-white/40">{path.units.length} units</span>
+    <span class="inline-flex items-center gap-2 text-sm font-medium text-emerald-300 opacity-0 transition group-hover:opacity-100">
+      <PlayButton size="sm" label={`Open ${path.title}`} />
+      Open path
+    </span>
+  </div>
+</a>

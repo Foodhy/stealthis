@@ -1,0 +1,127 @@
+---
+import { Code } from "astro:components";
+import type { CodeTab } from "../../lib/code-tabs";
+
+export type { CodeTab };
+
+interface Props {
+  tabs: CodeTab[];
+  collapsed?: boolean;
+  panelId?: string;
+  lang?: string;
+}
+
+const { tabs, collapsed = true, panelId = "code-panel", lang } = Astro.props;
+const badgeLang = lang ?? tabs[0]?.lang ?? "code";
+---
+
+{tabs.length > 0 && (
+  <div class="code-panel overflow-hidden rounded-xl border border-white/10 bg-[#0d1117] shadow-inner shadow-black/40" data-code-panel={panelId}>
+    <button
+      type="button"
+      class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-white/[0.03]"
+      data-code-toggle
+    >
+      <span class="flex items-center gap-2 text-sm font-medium text-white/85">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald-400/80" aria-hidden="true">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        See the code
+      </span>
+      <span class="flex items-center gap-2">
+        <span class="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400/70">
+          {badgeLang}
+        </span>
+        <span class="text-xs text-white/40" data-code-toggle-icon>{collapsed ? "Show" : "Hide"}</span>
+      </span>
+    </button>
+    <div class:list={["code-panel-body border-t border-white/8", collapsed && "hidden"]} data-code-body>
+      {tabs.length > 1 && (
+        <div class="flex gap-1 border-b border-white/8 bg-black/20 px-2 pt-2" role="tablist">
+          {tabs.map((tab, i) => (
+            <button
+              type="button"
+              role="tab"
+              class="code-tab rounded-t-md px-3 py-2 text-xs font-medium text-white/45 transition hover:text-white/75"
+              data-code-tab={tab.id}
+              data-active={i === 0 ? "true" : "false"}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div class="max-h-[50vh] overflow-y-auto overflow-x-auto">
+        {tabs.map((tab, i) => (
+          <div
+            class:list={["code-tab-panel arcade-shiki-panel", i !== 0 && "hidden"]}
+            data-code-panel-tab={tab.id}
+            role="tabpanel"
+          >
+            <Code
+              code={tab.code}
+              lang={tab.lang as "html" | "css" | "javascript" | "tsx" | "typescript"}
+              theme="github-dark-dimmed"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-code-panel]").forEach((panel) => {
+    const toggle = panel.querySelector<HTMLButtonElement>("[data-code-toggle]");
+    const body = panel.querySelector<HTMLElement>("[data-code-body]");
+    const icon = panel.querySelector<HTMLElement>("[data-code-toggle-icon]");
+    if (!toggle || !body) return;
+
+    toggle.addEventListener("click", () => {
+      const hidden = body.classList.toggle("hidden");
+      if (icon) icon.textContent = hidden ? "Show" : "Hide";
+    });
+
+    panel.querySelectorAll<HTMLButtonElement>("[data-code-tab]").forEach((tabBtn) => {
+      tabBtn.addEventListener("click", () => {
+        const id = tabBtn.dataset.codeTab;
+        panel.querySelectorAll<HTMLButtonElement>("[data-code-tab]").forEach((b) => {
+          b.dataset.active = b === tabBtn ? "true" : "false";
+        });
+        panel.querySelectorAll<HTMLElement>("[data-code-panel-tab]").forEach((p) => {
+          p.classList.toggle("hidden", p.dataset.codePanelTab !== id);
+        });
+      });
+    });
+  });
+
+  document.addEventListener("arcade:reveal-code", (e) => {
+    const detail = (e as CustomEvent<{ panelId?: string }>).detail;
+    const selector = detail?.panelId
+      ? `[data-code-panel="${detail.panelId}"]`
+      : "[data-code-panel]";
+    document.querySelectorAll<HTMLElement>(selector).forEach((panel) => {
+      const body = panel.querySelector<HTMLElement>("[data-code-body]");
+      const icon = panel.querySelector<HTMLElement>("[data-code-toggle-icon]");
+      body?.classList.remove("hidden");
+      if (icon) icon.textContent = "Hide";
+    });
+  });
+</script>
+
+<style>
+  .code-tab[data-active="true"] {
+    @apply bg-[#0d1117] text-emerald-300;
+    box-shadow: inset 0 -2px 0 #34d399;
+  }
+  .arcade-shiki-panel :global(pre) {
+    @apply m-0 rounded-none border-0 bg-transparent p-4 text-[13px] leading-6;
+  }
+  .arcade-shiki-panel :global(code) {
+    @apply font-mono;
+  }
+  .code-panel :global(.shiki) {
+    background: transparent !important;
+  }
+</style>

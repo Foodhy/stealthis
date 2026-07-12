@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prompt Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="pp" aria-label="Prompt playground">
+      <header class="pp__top">
+        <div class="pp__brand">
+          <span class="pp__dot" aria-hidden="true"></span>
+          <div>
+            <h1 class="pp__title">Prompt Playground</h1>
+            <p class="pp__sub">Compose, meter and run prompts against a simulated model.</p>
+          </div>
+        </div>
+        <div class="pp__topmeta">
+          <span class="pp__pill" id="statusPill" data-state="idle">Idle</span>
+        </div>
+      </header>
+
+      <div class="pp__grid">
+        <!-- Editors -->
+        <section class="pp__col pp__col--editors" aria-label="Prompt editors">
+          <article class="card">
+            <div class="card__head">
+              <label class="card__label" for="systemPrompt">System prompt</label>
+              <span class="card__count" data-count-for="systemPrompt">0 tok</span>
+            </div>
+            <textarea
+              id="systemPrompt"
+              class="editor"
+              spellcheck="false"
+              rows="5"
+              aria-describedby="systemHint"
+            >You are {{persona}}, a concise assistant for {{product}}. Answer in a friendly, technical tone and never invent facts.</textarea>
+            <p class="card__hint" id="systemHint">Sets the model's role and guardrails.</p>
+          </article>
+
+          <article class="card card--grow">
+            <div class="card__head">
+              <label class="card__label" for="userPrompt">User prompt</label>
+              <span class="card__count" data-count-for="userPrompt">0 tok</span>
+            </div>
+            <textarea
+              id="userPrompt"
+              class="editor editor--tall"
+              spellcheck="false"
+              rows="8"
+              aria-describedby="userHint"
+            >Write a {{length}} release note for {{product}} announcing dark mode. Audience: {{audience}}.</textarea>
+            <p class="card__hint" id="userHint">Use <code>{{variable}}</code> tokens — resolve them in the Variables panel.</p>
+          </article>
+
+          <article class="card" aria-label="Compiled prompt preview">
+            <div class="card__head">
+              <span class="card__label">Compiled preview</span>
+              <span class="card__count" id="unresolvedBadge" hidden>0 unresolved</span>
+            </div>
+            <pre class="preview" id="compiledPreview" tabindex="0"></pre>
+          </article>
+        </section>
+
+        <!-- Controls -->
+        <aside class="pp__col pp__col--controls" aria-label="Parameters">
+          <article class="card">
+            <div class="card__head">
+              <span class="card__label">Parameters</span>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="modelSelect">Model</label>
+              <div class="select">
+                <select id="modelSelect" aria-describedby="modelPrice"></select>
+                <svg class="select__chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <p class="field__meta" id="modelPrice"></p>
+            </div>
+
+            <div class="field">
+              <div class="field__row">
+                <label class="field__label" for="temperature">Temperature</label>
+                <output class="field__val" id="temperatureVal">0.70</output>
+              </div>
+              <input id="temperature" class="slider" type="range" min="0" max="2" step="0.01" value="0.7" />
+              <p class="field__meta">Higher = more random, lower = more deterministic.</p>
+            </div>
+
+            <div class="field">
+              <div class="field__row">
+                <label class="field__label" for="topP">Top-p</label>
+                <output class="field__val" id="topPVal">1.00</output>
+              </div>
+              <input id="topP" class="slider" type="range" min="0" max="1" step="0.01" value="1" />
+              <p class="field__meta">Nucleus sampling cutoff.</p>
+            </div>
+
+            <div class="field">
+              <div class="field__row">
+                <label class="field__label" for="maxTokens">Max output tokens</label>
+                <output class="field__val" id="maxTokensVal">512</output>
+              </div>
+              <input id="maxTokens" class="slider" type="range" min="64" max="4096" step="64" value="512" />
+              <p class="field__meta">Upper bound on the completion length.</p>
+            </div>
+          </article>
+
+          <!-- Variables -->
+          <article class="card">
+            <div class="card__head">
+              <span class="card__label">Variables</span>
+              <button class="linkbtn" id="addVarBtn" type="button">+ Add</button>
+            </div>
+            <div class="vars" id="varsList" aria-live="polite"></div>
+          </article>
+
+          <!-- Meter -->
+          <article class="card card--meter" aria-label="Token and cost meter">
+            <div class="card__head">
+              <span class="card__label">Usage estimate</span>
+            </div>
+            <div class="meter">
+              <div class="meter__row">
+                <span class="meter__k">Characters</span>
+                <span class="meter__v" id="charCount">0</span>
+              </div>
+              <div class="meter__row">
+                <span class="meter__k">Input tokens (est.)</span>
+                <span class="meter__v" id="tokCount">0</span>
+              </div>
+              <div class="meter__bar" role="progressbar" aria-label="Context window used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <span class="meter__fill" id="ctxFill"></span>
+              </div>
+              <p class="meter__ctx" id="ctxLabel">0 / 0 tokens of context</p>
+              <div class="meter__row meter__row--cost">
+                <span class="meter__k">Est. input cost</span>
+                <span class="meter__v meter__v--cost" id="costOut">$0.00</span>
+              </div>
+            </div>
+          </article>
+        </aside>
+
+        <!-- Output -->
+        <section class="pp__col pp__col--output" aria-label="Model response">
+          <article class="card card--output">
+            <div class="card__head card__head--run">
+              <span class="card__label">Response</span>
+              <div class="runrow">
+                <span class="latency" id="latency" hidden></span>
+                <button class="btn btn--ghost" id="clearBtn" type="button">Clear</button>
+                <button class="btn btn--run" id="runBtn" type="button">
+                  <span class="btn__ico" aria-hidden="true">&#9654;</span>
+                  <span class="btn__txt">Run</span>
+                </button>
+              </div>
+            </div>
+            <div class="output" id="output" aria-live="polite" tabindex="0">
+              <div class="output__empty" id="outputEmpty">
+                <span class="output__glyph" aria-hidden="true">&#9673;</span>
+                <p>Press <strong>Run</strong> to stream a simulated completion.</p>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>

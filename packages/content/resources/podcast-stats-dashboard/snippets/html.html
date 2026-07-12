@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signal &amp; Noise — Stats Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ HEADER ============ -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand__logo" aria-hidden="true">
+          <span class="wave"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+        <div class="brand__meta">
+          <h1>Signal &amp; Noise</h1>
+          <p><span class="dot" aria-hidden="true"></span> Live analytics · synced 2 min ago</p>
+        </div>
+      </div>
+
+      <div class="topbar__actions">
+        <div class="range" role="tablist" aria-label="Time range">
+          <button role="tab" class="range__btn" data-range="7" aria-selected="false">7d</button>
+          <button role="tab" class="range__btn is-active" data-range="30" aria-selected="true">30d</button>
+          <button role="tab" class="range__btn" data-range="90" aria-selected="false">90d</button>
+        </div>
+        <button class="btn btn--ghost" id="exportBtn" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export
+        </button>
+      </div>
+    </header>
+
+    <!-- ============ KPI CARDS ============ -->
+    <section class="kpis" aria-label="Key metrics">
+      <article class="kpi" data-metric="downloads">
+        <div class="kpi__top">
+          <span class="kpi__label">Total downloads</span>
+          <span class="kpi__badge" data-delta></span>
+        </div>
+        <div class="kpi__value" data-value>0</div>
+        <div class="kpi__spark" aria-hidden="true"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path data-spark d="" fill="none" stroke="url(#gradA)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gradA" x1="0" x2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg></div>
+      </article>
+
+      <article class="kpi" data-metric="subscribers">
+        <div class="kpi__top">
+          <span class="kpi__label">Subscribers</span>
+          <span class="kpi__badge" data-delta></span>
+        </div>
+        <div class="kpi__value" data-value>0</div>
+        <div class="kpi__spark" aria-hidden="true"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path data-spark d="" fill="none" stroke="url(#gradB)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gradB" x1="0" x2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs></svg></div>
+      </article>
+
+      <article class="kpi" data-metric="listen">
+        <div class="kpi__top">
+          <span class="kpi__label">Avg. listen-through</span>
+          <span class="kpi__badge" data-delta></span>
+        </div>
+        <div class="kpi__value" data-value data-suffix="%">0</div>
+        <div class="kpi__spark" aria-hidden="true"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path data-spark d="" fill="none" stroke="url(#gradC)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gradC" x1="0" x2="1"><stop offset="0" stop-color="#f472b6"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg></div>
+      </article>
+
+      <article class="kpi" data-metric="minutes">
+        <div class="kpi__top">
+          <span class="kpi__label">Minutes streamed</span>
+          <span class="kpi__badge" data-delta></span>
+        </div>
+        <div class="kpi__value" data-value data-suffix="k">0</div>
+        <div class="kpi__spark" aria-hidden="true"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path data-spark d="" fill="none" stroke="url(#gradD)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gradD" x1="0" x2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg></div>
+      </article>
+    </section>
+
+    <!-- ============ MAIN GRID ============ -->
+    <div class="grid">
+      <!-- Bar chart -->
+      <section class="panel panel--chart" aria-label="Downloads per episode">
+        <div class="panel__head">
+          <div>
+            <h2>Downloads per episode</h2>
+            <p class="panel__sub" id="chartSub">Last 30 days · latest 10 episodes</p>
+          </div>
+          <span class="chip"><span class="chip__swatch"></span> Downloads</span>
+        </div>
+        <div class="chart" id="chart">
+          <svg id="barSvg" viewBox="0 0 640 300" role="img" aria-label="Bar chart of downloads per episode" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0" stop-color="#7c3aed"/>
+                <stop offset="1" stop-color="#22d3ee"/>
+              </linearGradient>
+            </defs>
+            <g id="gridLines"></g>
+            <g id="bars"></g>
+          </svg>
+          <div class="chart__tip" id="tip" role="status" aria-live="polite" hidden></div>
+        </div>
+      </section>
+
+      <!-- Donut -->
+      <section class="panel panel--donut" aria-label="Platform breakdown">
+        <div class="panel__head">
+          <div>
+            <h2>Listeners by platform</h2>
+            <p class="panel__sub">Share of total plays</p>
+          </div>
+        </div>
+        <div class="donut">
+          <svg viewBox="0 0 180 180" id="donutSvg" aria-hidden="true">
+            <g transform="translate(90,90)" id="donutG"></g>
+          </svg>
+          <div class="donut__center">
+            <strong id="donutValue">100%</strong>
+            <span id="donutLabel">All platforms</span>
+          </div>
+        </div>
+        <ul class="legend" id="legend"></ul>
+      </section>
+
+      <!-- Top episodes table -->
+      <section class="panel panel--table" aria-label="Top episodes">
+        <div class="panel__head">
+          <div>
+            <h2>Top episodes</h2>
+            <p class="panel__sub">Ranked for the selected range</p>
+          </div>
+          <div class="sort" role="group" aria-label="Sort episodes">
+            <button class="sort__btn is-active" data-sort="downloads" type="button">Downloads</button>
+            <button class="sort__btn" data-sort="completion" type="button">Listen-through</button>
+            <button class="sort__btn" data-sort="growth" type="button">Growth</button>
+          </div>
+        </div>
+        <div class="tablewrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Episode</th>
+                <th scope="col" class="num">Downloads</th>
+                <th scope="col">Listen-through</th>
+                <th scope="col" class="num">Growth</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

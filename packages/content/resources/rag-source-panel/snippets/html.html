@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RAG Source Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app__head">
+      <div class="brand">
+        <span class="brand__dot" aria-hidden="true"></span>
+        <div>
+          <h1 class="brand__title">RAG Source Panel</h1>
+          <p class="brand__sub">Answer grounded in retrieved sources — hover or click a citation to reveal its evidence.</p>
+        </div>
+      </div>
+      <span class="badge" title="Retrieval-augmented generation">RAG · grounded</span>
+    </header>
+
+    <div class="grid">
+      <!-- ANSWER -->
+      <section class="answer" aria-label="Generated answer">
+        <div class="answer__meta">
+          <span class="pill pill--model">gpt-grounded-4o</span>
+          <span class="pill">query: “How does HNSW indexing speed up vector search?”</span>
+        </div>
+        <div class="answer__body" id="answer">
+          <p>
+            Hierarchical Navigable Small World (<strong>HNSW</strong>) graphs accelerate
+            approximate nearest-neighbor search by organizing vectors into a layered
+            proximity graph, where upper layers act as long-range express lanes and lower
+            layers refine the result<span class="cite" data-src="1" tabindex="0" role="button" aria-label="Source 1">1</span><span class="cite" data-src="2" tabindex="0" role="button" aria-label="Source 2">2</span>.
+          </p>
+          <p>
+            A greedy walk starts at the sparse top layer and descends, so query time grows
+            <em>logarithmically</em> rather than linearly with corpus size<span class="cite" data-src="3" tabindex="0" role="button" aria-label="Source 3">3</span>.
+            Recall is tunable through the <code>efSearch</code> parameter, trading a few
+            extra hops for higher accuracy<span class="cite" data-src="2" tabindex="0" role="button" aria-label="Source 2">2</span><span class="cite" data-src="4" tabindex="0" role="button" aria-label="Source 4">4</span>.
+          </p>
+          <p>
+            In practice HNSW dominates production vector stores because its build cost is
+            paid once and query latency stays flat as data grows into the millions<span class="cite" data-src="5" tabindex="0" role="button" aria-label="Source 5">5</span>.
+          </p>
+        </div>
+        <p class="answer__note">Citations are generated inline. Focus a chip and press Enter, or hover it, to spotlight the source.</p>
+      </section>
+
+      <!-- SOURCES -->
+      <aside class="panel" aria-label="Source panel">
+        <div class="panel__head">
+          <div class="panel__titlerow">
+            <h2 class="panel__title">Sources</h2>
+            <span class="panel__count" id="count" aria-live="polite">5 shown</span>
+          </div>
+          <div class="controls">
+            <label class="control control--range">
+              <span class="control__label">Min score <b id="threshVal">0.00</b></span>
+              <input id="thresh" type="range" min="0" max="1" step="0.01" value="0" aria-label="Minimum relevance score" />
+            </label>
+            <div class="control control--sort" role="group" aria-label="Sort sources">
+              <span class="control__label">Sort</span>
+              <div class="segmented">
+                <button class="seg is-active" data-sort="score" aria-pressed="true">Relevance</button>
+                <button class="seg" data-sort="order" aria-pressed="false">Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ol class="panel__list" id="sources"></ol>
+        <p class="panel__empty" id="empty" hidden>No sources meet this score threshold.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

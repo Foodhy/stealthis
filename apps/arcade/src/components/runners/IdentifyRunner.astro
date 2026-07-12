@@ -1,15 +1,27 @@
 ---
 import type { IdentifyChallenge } from "@schema";
+import type { CodeTab } from "../../lib/code-tabs";
+import { buildResourcePreviewSrcdoc } from "../../lib/complete-preview";
+import { detectCodeLang, highlightLine } from "../../lib/highlight";
+import ChallengeShell from "../ChallengeShell.astro";
+import CodePanel from "../CodePanel.astro";
+import PreviewPane from "../PreviewPane.astro";
 
 interface Props {
   challenge: IdentifyChallenge;
   index: number;
+  codeTabs?: CodeTab[];
+  isGenerated?: boolean;
 }
 
-const { challenge, index } = Astro.props;
+const { challenge, index, codeTabs = [], isGenerated = false } = Astro.props;
 
 const lines = challenge.code.split("\n");
+const lang = detectCodeLang(challenge.code);
 const isMcq = Array.isArray(challenge.options) && challenge.options.length > 0;
+const highlightedLines = await Promise.all(lines.map(async (line) => highlightLine(line, lang)));
+const previewSrcdoc = challenge.resourceSlug ? buildResourcePreviewSrcdoc(challenge.resourceSlug) : null;
+const showPreview = Boolean(previewSrcdoc);
 ---
 
 <article
@@ -20,53 +32,76 @@ const isMcq = Array.isArray(challenge.options) && challenge.options.length > 0;
   data-mode={isMcq ? "mcq" : "line"}
   data-answer={String(challenge.answer)}
   data-index={index}
+  data-difficulty={challenge.difficulty}
 >
   <div class="space-y-2">
-    <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-xs uppercase tracking-wider text-white/40">{challenge.topic}</span>
+      {isGenerated && (
+        <span class="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/45">
+          Auto-generated
+        </span>
+      )}
+    </div>
     <h2 class="text-2xl font-medium leading-snug text-white">{challenge.title}</h2>
-    {!isMcq && (
-      <p class="text-sm text-white/50">Click the line that contains the bug.</p>
+    {challenge.realWorldHook && (
+      <p class="text-sm italic text-white/50">{challenge.realWorldHook}</p>
     )}
   </div>
 
-  <ol
-    class="identify-code overflow-x-auto rounded-xl border border-white/8 bg-[#070707] py-3 font-mono text-sm leading-relaxed text-white/80"
-    role={isMcq ? "presentation" : "listbox"}
-  >
-    {lines.map((line, i) => (
-      <li class="identify-line flex gap-3 px-4">
-        <span class="w-6 select-none text-right text-white/30">{i + 1}</span>
-        {isMcq ? (
-          <code class="flex-1 whitespace-pre">{line}</code>
-        ) : (
-          <button
-            type="button"
-            class="identify-line-btn flex-1 cursor-pointer whitespace-pre text-left text-inherit transition hover:text-white"
-            data-line-index={i}
-          >{line}</button>
-        )}
-      </li>
-    ))}
-  </ol>
+  <ChallengeShell previewId={`preview-${challenge.slug}`} showPreview={showPreview} interactionLabel={isMcq ? "Code + options" : "Find the bug"}>
+    {showPreview && previewSrcdoc && (
+      <PreviewPane slot="preview" id={`preview-${challenge.slug}`} srcdoc={previewSrcdoc} title="Live component" />
+    )}
 
-  {isMcq && (
-    <ul class="grid gap-3">
-      {challenge.options!.map((opt, i) => (
-        <li>
-          <button
-            type="button"
-            class="quiz-option flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/6 px-4 py-3 text-left text-white transition hover:border-white/14 hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-70"
-            data-option-index={i}
-          >
-            <span class="grid h-6 w-6 place-items-center rounded-md border border-white/14 text-xs tabular-nums text-white/60">
-              {i + 1}
-            </span>
-            <span class="flex-1 text-sm">{opt}</span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  )}
+    <div class="space-y-4">
+      {!isMcq && <p class="text-sm text-white/50">Click the line that contains the bug.</p>}
+
+      <div class="arcade-code-block identify-code overflow-hidden rounded-xl border border-white/10 bg-[#0d1117] shadow-inner shadow-black/40">
+        <div class="flex items-center justify-between border-b border-white/8 px-4 py-2">
+          <span class="text-[10px] font-semibold uppercase tracking-widest text-emerald-400/80">{lang}</span>
+        </div>
+        <ol class="identify-lines m-0 max-h-[55vh] list-none overflow-y-auto overflow-x-auto py-2 font-mono text-[13px] leading-6">
+          {highlightedLines.map((lineHtml, i) => (
+            <li class="identify-line group flex min-h-[1.75rem] items-stretch gap-0 hover:bg-white/[0.03]">
+              <span class="w-12 shrink-0 select-none border-r border-white/6 py-0.5 pr-3 text-right text-[11px] tabular-nums text-white/25">
+                {i + 1}
+              </span>
+              {isMcq ? (
+                <code class="block flex-1 whitespace-pre px-4 py-0.5" set:html={lineHtml} />
+              ) : (
+                <button
+                  type="button"
+                  class="identify-line-btn block flex-1 cursor-pointer whitespace-pre border-0 bg-transparent px-4 py-0.5 text-left transition"
+                  data-line-index={i}
+                  set:html={lineHtml}
+                />
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {isMcq && (
+        <ul class="grid gap-3">
+          {challenge.options!.map((opt, i) => (
+            <li>
+              <button
+                type="button"
+                class="quiz-option flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/6 px-4 py-4 text-left text-white transition hover:border-white/14 hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-70"
+                data-option-index={i}
+              >
+                <span class="grid h-7 w-7 place-items-center rounded-md border border-white/14 text-xs tabular-nums text-white/60">
+                  {i + 1}
+                </span>
+                <span class="flex-1 text-sm">{opt}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </ChallengeShell>
 
   {challenge.explanation && (
     <div
@@ -77,7 +112,11 @@ const isMcq = Array.isArray(challenge.options) && challenge.options.length > 0;
     </div>
   )}
 
-  <div class="flex items-center justify-end gap-3 pt-2">
+  {codeTabs.length > 0 && (
+    <CodePanel tabs={codeTabs} panelId={`code-${challenge.slug}`} collapsed={true} lang={lang} />
+  )}
+
+  <div class="sticky bottom-0 z-20 -mx-1 flex items-center justify-end gap-3 border-t border-white/8 bg-[#0a0a0a]/90 px-1 py-3 backdrop-blur">
     <button
       type="button"
       class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"
@@ -98,15 +137,24 @@ const isMcq = Array.isArray(challenge.options) && challenge.options.length > 0;
 
 <style>
   .identify-line-btn[data-selected="true"] {
-    @apply text-white;
-    background: rgba(255, 255, 255, 0.08);
+    @apply bg-emerald-400/10;
+    box-shadow: inset 3px 0 0 #34d399;
   }
   .identify-line-btn[data-result="correct"] {
-    background: rgba(52, 211, 153, 0.18);
-    color: #fff;
+    @apply bg-emerald-400/15;
+    box-shadow: inset 3px 0 0 #34d399;
   }
   .identify-line-btn[data-result="incorrect"] {
-    background: rgba(244, 63, 94, 0.18);
-    color: #fff;
+    @apply bg-rose-400/15;
+    box-shadow: inset 3px 0 0 #fb7185;
+  }
+  .identify-line-btn:hover:not(:disabled) {
+    @apply bg-white/[0.05];
+  }
+  .arcade-code-block :global(.shiki) {
+    background: transparent !important;
+  }
+  .identify-lines :global(.shiki span) {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   }
 </style>

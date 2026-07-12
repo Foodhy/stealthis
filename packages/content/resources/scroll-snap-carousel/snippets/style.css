@@ -1,0 +1,452 @@
+:root {
+  --bg: #0c0d10;
+  --surface: #15161b;
+  --surface-2: #1d1f27;
+  --ink: #e9eaf0;
+  --muted: #9a9cab;
+  --accent: #8b5cf6;
+  --accent-2: #22d3ee;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-2: rgba(255, 255, 255, 0.18);
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(120% 80% at 100% -10%, rgba(139, 92, 246, 0.14), transparent 60%),
+    radial-gradient(90% 70% at -10% 110%, rgba(34, 211, 238, 0.1), transparent 55%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Inter", system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  justify-content: center;
+  padding: clamp(16px, 4vw, 56px);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 780px;
+}
+
+/* ---------- Header ---------- */
+.head {
+  margin-bottom: 26px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+.head h1 {
+  margin: 0 0 12px;
+  font-size: clamp(26px, 6vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.lede {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.lede strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.lede code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.86em;
+  color: var(--accent);
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.24);
+  padding: 1px 6px;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+}
+
+/* ---------- Carousel shell ---------- */
+.carousel {
+  position: relative;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+/* The scroll container: this is where the snap magic lives. */
+.track {
+  --gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+
+  /* CSS Scroll Snap: mandatory snapping on the x axis */
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0;
+
+  border-radius: var(--r-md);
+  /* soft edge fade so partially-visible neighbors feel intentional */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.track:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 4px;
+}
+
+/* ---------- Slides ---------- */
+.slide {
+  position: relative;
+  flex: 0 0 88%;
+  max-width: 560px;
+  min-height: 300px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #fff;
+  isolation: isolate;
+
+  /* Snap each slide to center and never let a flick skip past it */
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+
+  background:
+    radial-gradient(120% 90% at 85% -10%, hsl(var(--h) / 0.95), transparent 62%),
+    linear-gradient(150deg, hsl(var(--h) / 0.85), hsl(var(--h) / 0.35)),
+    #101116;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.slide::after {
+  /* subtle noise/grid texture */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(80% 80% at 20% 90%, #000, transparent 75%);
+  opacity: 0.5;
+}
+
+.slide__index {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.85);
+  align-self: flex-end;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.slide__tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.slide__title {
+  margin: 0 0 6px;
+  font-size: clamp(24px, 5vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+.slide__text {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================================
+   NATIVE SCROLL MARKERS (CSS Carousel API)
+   Generates one dot per slide, no JS. Styled active state
+   via :target-current.
+   ========================================================= */
+.track {
+  scroll-marker-group: after;
+}
+
+.track::scroll-marker-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.slide::scroll-marker {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--line-2);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s ease, width 0.2s ease, border-color 0.2s ease;
+}
+
+.slide::scroll-marker:hover {
+  background: var(--muted);
+}
+
+.slide::scroll-marker:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+/* The marker for the currently-snapped slide */
+.slide::scroll-marker:target-current {
+  width: 26px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+}
+
+/* =========================================================
+   FALLBACK DOTS (anchor links) for browsers without markers.
+   Hidden entirely when ::scroll-marker is supported.
+   ========================================================= */
+.fallback-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.fallback-dots a {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--line-2);
+  transition: background 0.2s ease, width 0.2s ease;
+}
+
+.fallback-dots a:hover {
+  background: var(--muted);
+}
+
+.fallback-dots a:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+/* JS adds .is-active to the anchor matching the centered slide */
+.fallback-dots a.is-active {
+  width: 26px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+@supports selector(::scroll-marker) {
+  /* Native markers exist -> hide the anchor fallback to avoid duplicate dots */
+  .fallback-dots {
+    display: none;
+  }
+}
+
+/* =========================================================
+   JS ENHANCEMENT: counter, prev/next, progress bar
+   ========================================================= */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.controls__meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+  background: #262835;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.btn:active {
+  transform: scale(0.94);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.counter {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 56px;
+  text-align: center;
+}
+
+.counter__sep {
+  color: var(--muted);
+  margin: 0 4px;
+}
+
+.counter #current {
+  color: var(--accent);
+}
+
+.progress {
+  flex: 1 1 200px;
+  height: 6px;
+  min-width: 140px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress__bar {
+  display: block;
+  height: 100%;
+  width: 16.66%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hint {
+  margin: 20px 0 0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--warn);
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.16);
+}
+
+.hint.is-native::before {
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.16);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 520px) {
+  .slide {
+    flex-basis: 84%;
+    min-height: 260px;
+    padding: 18px;
+  }
+
+  .controls {
+    justify-content: center;
+  }
+
+  .progress {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    scroll-behavior: auto;
+  }
+
+  .slide::scroll-marker,
+  .fallback-dots a,
+  .progress__bar,
+  .btn {
+    transition: none;
+  }
+}

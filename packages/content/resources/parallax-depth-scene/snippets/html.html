@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parallax Depth Scene</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div class="head-copy">
+        <p class="eyebrow">UI · Motion</p>
+        <h1>Parallax Depth Scene</h1>
+        <p class="sub">
+          Five stacked planes drift at depth-scaled rates. Move your pointer over the
+          scene — or switch to scroll drive — to crane the diorama. Blur, scale and a
+          moving key light cue distance.
+        </p>
+      </div>
+      <div class="mode" role="radiogroup" aria-label="Parallax drive mode">
+        <button class="mode-btn is-active" role="radio" aria-checked="true" data-mode="pointer">
+          Pointer
+        </button>
+        <button class="mode-btn" role="radio" aria-checked="false" data-mode="scroll">
+          Scroll
+        </button>
+      </div>
+    </header>
+
+    <section class="stage-shell">
+      <div class="stage" id="stage" tabindex="0" aria-label="Interactive parallax diorama. Move pointer to explore depth.">
+        <div class="scene" id="scene">
+          <!-- depth from far (0) to near (5) -->
+          <div class="layer layer--sky" data-depth="0.06" aria-hidden="true">
+            <div class="sky-glow"></div>
+            <div class="star" style="--x:14%; --y:22%; --s:2px"></div>
+            <div class="star" style="--x:32%; --y:12%; --s:1px"></div>
+            <div class="star" style="--x:68%; --y:18%; --s:2px"></div>
+            <div class="star" style="--x:82%; --y:30%; --s:1px"></div>
+            <div class="star" style="--x:52%; --y:8%;  --s:1px"></div>
+            <div class="star" style="--x:90%; --y:14%; --s:2px"></div>
+          </div>
+
+          <div class="layer layer--sun" data-depth="0.16" aria-hidden="true">
+            <div class="sun"></div>
+          </div>
+
+          <div class="layer layer--hills-far" data-depth="0.32" aria-hidden="true">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none" class="ridge">
+              <path d="M0 150 Q 60 96 120 128 T 240 118 T 400 132 L400 200 L0 200 Z" />
+            </svg>
+          </div>
+
+          <div class="layer layer--hills-mid" data-depth="0.55" aria-hidden="true">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none" class="ridge">
+              <path d="M0 168 Q 80 120 150 150 T 300 138 T 400 158 L400 200 L0 200 Z" />
+            </svg>
+          </div>
+
+          <div class="layer layer--monolith" data-depth="0.82" aria-hidden="true">
+            <div class="monolith"></div>
+          </div>
+
+          <div class="layer layer--trees" data-depth="1.15" aria-hidden="true">
+            <div class="tree" style="--tx:12%; --th:58%"></div>
+            <div class="tree" style="--tx:26%; --th:74%"></div>
+            <div class="tree" style="--tx:78%; --th:66%"></div>
+            <div class="tree" style="--tx:90%; --th:80%"></div>
+          </div>
+
+          <div class="layer layer--fore" data-depth="1.55" aria-hidden="true">
+            <div class="grass"></div>
+          </div>
+
+          <div class="frame" aria-hidden="true"></div>
+        </div>
+
+        <p class="rm-note" id="rmNote" hidden>
+          Reduced motion is on — the scene is resting. Use the controls below to explore depth.
+        </p>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Scene controls">
+      <div class="control">
+        <div class="control-label">
+          <label for="depth">Depth intensity</label>
+          <output id="depthOut">1.0×</output>
+        </div>
+        <input id="depth" type="range" min="0" max="2" step="0.05" value="1" />
+      </div>
+
+      <div class="control">
+        <div class="control-label">
+          <label for="dof">Depth-of-field</label>
+          <output id="dofOut">1.0×</output>
+        </div>
+        <input id="dof" type="range" min="0" max="2" step="0.05" value="1" />
+      </div>
+
+      <div class="control">
+        <div class="control-label">
+          <label for="tilt">Plane tilt</label>
+          <output id="tiltOut">1.0×</output>
+        </div>
+        <input id="tilt" type="range" min="0" max="2" step="0.05" value="1" />
+      </div>
+
+      <div class="control control--toggles">
+        <button id="reduce" class="toggle" aria-pressed="false">
+          <span class="dot"></span> Reduced motion
+        </button>
+        <button id="reset" class="ghost">Reset</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <div class="readout" aria-live="off">
+        <span class="chip"><b id="modeVal">pointer</b> drive</span>
+        <span class="chip">offset <b id="offVal">0.00, 0.00</b></span>
+        <span class="chip">fps <b id="fpsVal">—</b></span>
+      </div>
+      <p class="tech">
+        Layers animate only <code>transform: translate3d()</code> + <code>filter</code> —
+        GPU-composited, zero layout thrash. A spring chases the target each
+        <code>requestAnimationFrame</code>.
+      </p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+---
+slug: webgpu-compute-particles
+title: "WebGPU Compute Particles"
+description: "A GPU-accelerated particle field driven by a WGSL compute shader that integrates positions and velocities every frame, rendering thousands of points that swarm toward the cursor. Feature-detects navigator.gpu and gracefully degrades to a Canvas 2D simulation when WebGPU is missing, labeling the active backend on screen. Live controls tune particle count and attraction force, with DPR-aware rendering and reduced-motion support."
+category: ui-components
+type: component
+tags: [webgpu, particles, gpu]
+tech: [webgpu, vanilla-js]
+difficulty: hard
+targets: [html]
+collections: []
+labRoute: /ui-components/webgpu-compute-particles
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-01
+updatedAt: 2026-07-01
+---
+
+An interactive particle system that runs its physics entirely on the GPU. A WGSL compute shader reads and writes a storage buffer of positions and velocities, applying a cursor-directed attraction force and light damping each dispatch, then a render pipeline draws the results as additive points. The whole simulation stays resident in GPU memory — no per-frame CPU readback — which is what lets it scale to tens of thousands of particles at smooth frame rates.
+
+Move or drag the pointer to pull the swarm; the particles accelerate toward the cursor, overshoot, and orbit as momentum carries them past. The **particle count** slider reallocates the storage buffer and reseeds the field, while the **force** slider scales the attraction strength in real time. A backend badge always shows whether you are running on the real **WebGPU** compute path or the **Canvas 2D** fallback.
+
+Because WebGPU is still rolling out, the component feature-detects `navigator.gpu`, requests an adapter and device, and only builds the compute + render pipelines if everything succeeds. If any step is unavailable it transparently switches to a CPU Canvas 2D integrator that mirrors the same behavior, so the demo stays fully interactive everywhere. It also honors `prefers-reduced-motion` by pausing continuous animation and settling the field.

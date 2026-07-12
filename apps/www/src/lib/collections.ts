@@ -46,6 +46,14 @@ export const RESOURCE_COLLECTION_IDS = [
   "insurance",
   "construction",
   "vet",
+  "photography",
+  "dental",
+  "wedding",
+  "podcast",
+  "dating",
+  "coach",
+  "interior",
+  "video",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -93,6 +101,14 @@ export const NEW_LIBRARY_COLLECTION_IDS = [
   "insurance",
   "construction",
   "vet",
+  "photography",
+  "dental",
+  "wedding",
+  "podcast",
+  "dating",
+  "coach",
+  "interior",
+  "video",
 ] as const satisfies readonly ResourceCollection[];
 
 const newLibraryCollectionIdsSet = new Set<ResourceCollection>(NEW_LIBRARY_COLLECTION_IDS);
@@ -440,6 +456,62 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.vet.desc",
     accentToken: "collection-vet",
     order: 47,
+  },
+  {
+    id: "photography",
+    titleKey: "collection.photography.title",
+    descriptionKey: "collection.photography.desc",
+    accentToken: "collection-photography",
+    order: 48,
+  },
+  {
+    id: "dental",
+    titleKey: "collection.dental.title",
+    descriptionKey: "collection.dental.desc",
+    accentToken: "collection-dental",
+    order: 49,
+  },
+  {
+    id: "wedding",
+    titleKey: "collection.wedding.title",
+    descriptionKey: "collection.wedding.desc",
+    accentToken: "collection-wedding",
+    order: 50,
+  },
+  {
+    id: "podcast",
+    titleKey: "collection.podcast.title",
+    descriptionKey: "collection.podcast.desc",
+    accentToken: "collection-podcast",
+    order: 51,
+  },
+  {
+    id: "dating",
+    titleKey: "collection.dating.title",
+    descriptionKey: "collection.dating.desc",
+    accentToken: "collection-dating",
+    order: 52,
+  },
+  {
+    id: "coach",
+    titleKey: "collection.coach.title",
+    descriptionKey: "collection.coach.desc",
+    accentToken: "collection-coach",
+    order: 53,
+  },
+  {
+    id: "interior",
+    titleKey: "collection.interior.title",
+    descriptionKey: "collection.interior.desc",
+    accentToken: "collection-interior",
+    order: 54,
+  },
+  {
+    id: "video",
+    titleKey: "collection.video.title",
+    descriptionKey: "collection.video.desc",
+    accentToken: "collection-video",
+    order: 55,
   },
 ];
 

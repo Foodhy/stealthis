@@ -161,7 +161,7 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     tech: "all",
     author: "all",
     favoritesOnly: false,
-    previewsEnabled: false,
+    previewsEnabled: true,
     search: "",
     indexedResults: null as Set<string> | null,
   };
@@ -507,7 +507,10 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   function renderReveal() {
     let visible = 0;
     const visibleSlugs = new Set<string>();
-    const previewMode = state.collection !== "all" && state.previewsEnabled;
+    // Previews work in any view (default "all" browse or a specific collection).
+    // Lazy IntersectionObserver + MAX_CONCURRENT_PREVIEWS cap keep the iframe
+    // load bounded to on-screen cards, so no throttle-by-collection is needed.
+    const previewMode = state.previewsEnabled;
     const limit = Math.min(revealCount, matchedCards.length);
 
     matchedCards.forEach((card, i) => {

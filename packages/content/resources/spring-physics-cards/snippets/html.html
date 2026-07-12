@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spring Physics Drag</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="head">
+      <div class="head-text">
+        <h1>Spring Physics Drag</h1>
+        <p class="sub">Grab a card and fling it. A damped-spring integrator in <code>requestAnimationFrame</code> carries the momentum, rubber-bands past the edges, then settles it back onto the grid.</p>
+      </div>
+      <div class="rm-badge" id="rmBadge" hidden>
+        <span class="dot"></span> Reduced motion: cards snap instantly
+      </div>
+    </header>
+
+    <section class="stage-wrap">
+      <div class="board" id="board" role="application" aria-label="Draggable spring cards. Focus a card and use arrow keys to nudge, then release to spring back.">
+        <!-- cards injected by script -->
+      </div>
+
+      <aside class="panel" aria-label="Spring controls">
+        <div class="panel-group">
+          <div class="ctrl">
+            <label for="stiffness">Stiffness <span class="hint">pull strength</span></label>
+            <input id="stiffness" type="range" min="40" max="600" step="5" value="220" />
+            <output id="stiffnessOut" for="stiffness">220</output>
+          </div>
+          <div class="ctrl">
+            <label for="damping">Damping <span class="hint">energy loss</span></label>
+            <input id="damping" type="range" min="4" max="60" step="1" value="22" />
+            <output id="dampingOut" for="damping">22</output>
+          </div>
+          <div class="ctrl">
+            <label for="resistance">Over-drag resistance <span class="hint">edge rubber-band</span></label>
+            <input id="resistance" type="range" min="0" max="100" step="5" value="55" />
+            <output id="resistanceOut" for="resistance">55</output>
+          </div>
+        </div>
+
+        <div class="presets" role="group" aria-label="Presets">
+          <button type="button" data-preset="snappy">Snappy</button>
+          <button type="button" data-preset="smooth">Smooth</button>
+          <button type="button" data-preset="wobbly">Wobbly</button>
+          <button type="button" data-preset="molasses">Molasses</button>
+        </div>
+
+        <dl class="readout" aria-live="off">
+          <div><dt>Active card</dt><dd id="roCard">—</dd></div>
+          <div><dt>Velocity</dt><dd id="roVel">0 px/s</dd></div>
+          <div><dt>Offset</dt><dd id="roOff">0, 0</dd></div>
+          <div><dt>State</dt><dd id="roState"><span class="chip chip-rest">at rest</span></dd></div>
+        </dl>
+
+        <div class="energy">
+          <div class="energy-label"><span>Spring energy</span><span id="energyPct">0%</span></div>
+          <div class="energy-track"><div class="energy-fill" id="energyFill"></div></div>
+        </div>
+
+        <button type="button" class="reset" id="reset">Reset board</button>
+      </aside>
+    </section>
+
+    <footer class="note">
+      <strong>How it works.</strong> Each card holds an <em>x/y offset</em> and a <em>velocity</em>. On release, a semi-implicit Euler step runs every frame:
+      <code>a = -k·x − c·v</code>, then <code>v += a·dt</code>, <code>x += v·dt</code> — the same solver behind React Spring and iOS spring animations. Raise stiffness for a faster snap, lower damping for more overshoot.
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

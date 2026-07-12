@@ -446,11 +446,11 @@ const discoverI18n = {
           <button
             id="previews-toggle"
             type="button"
-            aria-pressed="false"
+            aria-pressed="true"
             title={previewsLabel}
-            class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-slate-400 hover:text-slate-200 hover:border-white/14 transition-colors"
+            class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-slate-400 hover:text-slate-200 hover:border-white/14 transition-colors text-sky-400 border-sky-400/50"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 previews-toggle-eye">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" class="shrink-0 previews-toggle-eye">
               <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
               <circle cx="12" cy="12" r="3"/>
             </svg>
@@ -460,11 +460,13 @@ const discoverI18n = {
         </div>
 
         <script>
-          // Opt-in previews: toggle active styling + tell FilterBar to load/unload
-          // the showcase-style preview iframes. Off by default (not persisted).
+          // Previews ON by default: button ships pre-activated (styling + aria in
+          // the markup) and FilterBar defaults previewsEnabled=true, so no init
+          // dispatch is needed — the first render already loads previews. Clicking
+          // toggles them off/on from there (not persisted).
           const previewsToggle = document.getElementById("previews-toggle");
           if (previewsToggle) {
-            let enabled = false;
+            let enabled = true;
             previewsToggle.addEventListener("click", () => {
               enabled = !enabled;
               previewsToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
@@ -494,8 +496,8 @@ const discoverI18n = {
         {SHOW_SORT_BAR && (
         <div class="flex items-center gap-2 mb-6">
           <span class="text-xs text-slate-500 shrink-0">{t("library.sort.grouped").split(" ")[0]}:</span>
-          <button id="sort-grouped" class="chip chip--active sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.grouped")}</button>
-          <button id="sort-latest" class="chip sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.latest")}</button>
+          <button id="sort-grouped" class="chip sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.grouped")}</button>
+          <button id="sort-latest" class="chip chip--active sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.latest")}</button>
         </div>
         )}
 
@@ -696,6 +698,11 @@ const discoverI18n = {
 
   sortLatest.addEventListener("click", () => runSort(sortLatest, "latest", activateLatest));
   sortGrouped.addEventListener("click", () => runSort(sortGrouped, "grouped", activateGrouped));
+
+  // Default sort is "Latest added": reparent cards into the flat grid on load.
+  // The markup already ships sort-latest as the active chip, so this only moves
+  // the DOM (no spinner/overlay needed for the initial paint).
+  activateLatest();
 
   document.getElementById("export-favorites")?.addEventListener("click", exportFavorites);
 

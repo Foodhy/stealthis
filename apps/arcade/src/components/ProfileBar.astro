@@ -1,0 +1,67 @@
+---
+interface Props {
+  sticky?: boolean;
+}
+
+const { sticky = false } = Astro.props;
+---
+
+<div
+  class:list={[
+    "profile-bar rounded-2xl border border-white/10 bg-[#0d1117]/95 px-4 py-3 backdrop-blur",
+    sticky && "sticky top-0 z-20 mb-6",
+  ]}
+  data-profile-bar
+>
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-4">
+      <a href="/profile" class="flex items-center gap-2 transition hover:opacity-90" title="Your profile">
+        <span class="text-lg" aria-hidden="true">🔥</span>
+        <span class="text-sm font-bold tabular-nums text-orange-400" data-streak-count>0</span>
+      </a>
+      <div class="flex min-w-[8rem] flex-col gap-1">
+        <div class="flex items-center justify-between text-[10px] uppercase tracking-wider text-white/40">
+          <span>Lv <span data-level>1</span></span>
+          <span data-xp-label>0 / 100 XP</span>
+        </div>
+        <div class="h-2 overflow-hidden rounded-full bg-white/10">
+          <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all duration-500" data-xp-bar style="width: 0%"></div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 text-sm">
+        <span aria-hidden="true">💎</span>
+        <span class="font-semibold tabular-nums text-violet-300" data-gems>0</span>
+      </div>
+    </div>
+    <nav class="flex items-center gap-3 text-xs text-white/50">
+      <a href="/explore" class="hover:text-white">Explore</a>
+      <a href="/profile" class="hover:text-white">Profile</a>
+    </nav>
+  </div>
+</div>
+
+<script>
+  import { readProfile, xpProgressInLevel } from "../lib/profile";
+
+  function hydrateProfileBar() {
+    const profile = readProfile();
+    const xp = xpProgressInLevel(profile.xp, profile.level);
+
+    document.querySelectorAll("[data-profile-bar]").forEach((bar) => {
+      const streak = bar.querySelector("[data-streak-count]");
+      const level = bar.querySelector("[data-level]");
+      const xpLabel = bar.querySelector("[data-xp-label]");
+      const xpBar = bar.querySelector<HTMLElement>("[data-xp-bar]");
+      const gems = bar.querySelector("[data-gems]");
+
+      if (streak) streak.textContent = String(profile.streak.current);
+      if (level) level.textContent = String(profile.level);
+      if (xpLabel) xpLabel.textContent = `${xp.current} / ${xp.needed} XP`;
+      if (xpBar) xpBar.style.width = `${xp.pct}%`;
+      if (gems) gems.textContent = String(profile.gems);
+    });
+  }
+
+  hydrateProfileBar();
+  document.addEventListener("arcade:profile-updated", hydrateProfileBar);
+</script>

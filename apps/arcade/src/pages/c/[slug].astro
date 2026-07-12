@@ -1,0 +1,305 @@
+---
+import { join } from "node:path";
+import { loadChallenges } from "@schema";
+import Chrome from "../../components/Chrome.astro";
+import AnimationRunner from "../../components/runners/AnimationRunner.astro";
+import CompleteRunner from "../../components/runners/CompleteRunner.astro";
+import FixRunner from "../../components/runners/FixRunner.astro";
+import IdentifyRunner from "../../components/runners/IdentifyRunner.astro";
+import QuizRunner from "../../components/runners/QuizRunner.astro";
+import Base from "../../layouts/Base.astro";
+import { codeTabsForChallenge } from "../../lib/code-tabs";
+import { isGeneratedChallenge } from "../../lib/content";
+import { topicPath } from "../../lib/paths";
+
+export async function getStaticPaths() {
+  const contentDir = join(process.cwd(), "..", "..", "packages", "content");
+  const challenges = await loadChallenges(contentDir);
+  const published = challenges.filter((c) => c.quality === "published");
+
+  return Promise.all(
+    published.map(async (challenge) => ({
+      params: { slug: challenge.slug },
+      props: {
+        challenge,
+        codeTabs: await codeTabsForChallenge(challenge),
+        isGenerated: isGeneratedChallenge(challenge),
+      },
+    }))
+  );
+}
+
+const { challenge, codeTabs, isGenerated } = Astro.props;
+---
+
+<Base title={`Arcade · ${challenge.title}`} hideHeader fullBleed>
+  <Chrome
+    topic={challenge.topic}
+    lessonTitle={challenge.title}
+    total={1}
+    difficulties={[challenge.difficulty]}
+  />
+
+  <div
+    class="mx-auto max-w-3xl px-4 pb-24 sm:px-6"
+    data-runner
+    data-topic={challenge.topic}
+    data-lesson="single"
+    data-single="true"
+    data-difficulty={challenge.difficulty}
+  >
+    {challenge.type === "quiz" && (
+      <QuizRunner challenge={challenge} index={0} codeTabs={codeTabs} isGenerated={isGenerated} />
+    )}
+    {challenge.type === "complete" && (
+      <CompleteRunner challenge={challenge} index={0} codeTabs={codeTabs} isGenerated={isGenerated} />
+    )}
+    {challenge.type === "fix" && (
+      <FixRunner challenge={challenge} index={0} codeTabs={codeTabs} isGenerated={isGenerated} />
+    )}
+    {challenge.type === "identify" && (
+      <IdentifyRunner challenge={challenge} index={0} codeTabs={codeTabs} isGenerated={isGenerated} />
+    )}
+    {challenge.type === "animation" && (
+      <AnimationRunner challenge={challenge} index={0} codeTabs={codeTabs} isGenerated={isGenerated} />
+    )}
+
+    <section class="mt-8 flex flex-wrap gap-3">
+      <a href={topicPath(challenge.topic)} class="rounded-lg bg-white/8 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/14">
+        Back to {challenge.topic}
+      </a>
+      <a href="/random" class="rounded-lg bg-emerald-400/10 px-5 py-2.5 text-sm font-medium text-emerald-300 ring-1 ring-emerald-400/30 hover:bg-emerald-400/20">
+        Another random
+      </a>
+    </section>
+  </div>
+</Base>
+
+<script>
+  import { buildSrcdoc } from "../../lib/sandbox";
+  import { domEqual } from "../../lib/dom-compare";
+  import { writeProgress } from "../../lib/progress";
+  import { awardChallengeComplete } from "../../lib/profile";
+  import { showAwardFeedback } from "../../lib/gamification-feedback";
+  import {
+    allBlanksFilled,
+    gradeBlanks,
+    lockBlankSlots,
+    wireBlankInteractions,
+  } from "../../lib/challenge-wire";
+  import { refreshCompletePreview } from "../../lib/complete-preview-client";
+
+  const runner = document.querySelector<HTMLElement>("[data-runner]");
+  if (!runner) throw new Error("runner root missing");
+
+  const slide = runner.querySelector<HTMLElement>("[data-challenge]");
+  if (!slide) throw new Error("challenge slide missing");
+
+  slide.dataset.active = "true";
+
+  function revealCode(slug: string) {
+    document.dispatchEvent(
+      new CustomEvent("arcade:reveal-code", { detail: { panelId: `code-${slug}` } })
+    );
+    slide.querySelector<HTMLElement>("[data-resource-link]")?.classList.remove("hidden");
+  }
+
+  const slug = slide.dataset.slug!;
+  const type = slide.dataset.type;
+
+  if (type === "quiz") wireQuiz(slide, slug);
+  else if (type === "complete") wireComplete(slide, slug);
+  else if (type === "fix") wireFix(slide, slug);
+  else if (type === "identify") wireIdentify(slide, slug);
+  else if (type === "animation") wireAnimation(slide, slug);
+
+  const fromExplore = new URLSearchParams(window.location.search).get("from") === "explore";
+  const difficulty = Number(runner.dataset.difficulty ?? slide.dataset.difficulty ?? "1");
+
+  function afterCheck(wasCorrect: boolean) {
+    writeProgress(slug, wasCorrect);
+    const award = awardChallengeComplete({
+      slug,
+      correct: wasCorrect,
+      difficulty: Number.isNaN(difficulty) ? 1 : difficulty,
+      challengeType: type,
+      fromExplore,
+    });
+    showAwardFeedback(award);
+    revealCode(slug);
+  }
+
+  function wireQuiz(slide: HTMLElement, slug: string) {
+    const answer = Number(slide.dataset.answer);
+    const options = Array.from(slide.querySelectorAll<HTMLButtonElement>(".quiz-option"));
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    const explanation = slide.querySelector<HTMLElement>("[data-explanation]");
+    let picked: number | null = null;
+    nextBtn.textContent = "Done";
+
+    options.forEach((opt) => {
+      opt.addEventListener("click", () => {
+        if (slide.dataset.checked === "true") return;
+        picked = Number(opt.dataset.optionIndex);
+        options.forEach((o) => {
+          o.dataset.selected = o === opt ? "true" : "false";
+        });
+        checkBtn.disabled = false;
+      });
+    });
+
+    checkBtn.addEventListener("click", () => {
+      if (picked == null || slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      options.forEach((o, i) => {
+        o.disabled = true;
+        if (i === answer) o.dataset.result = "correct";
+        else if (i === picked) o.dataset.result = "incorrect";
+      });
+      explanation?.classList.remove("hidden");
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      afterCheck(picked === answer);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      nextBtn.disabled = true;
+    });
+  }
+
+  function wireComplete(slide: HTMLElement, slug: string) {
+    const answers: Record<string, string> = JSON.parse(slide.dataset.answers || "{}");
+    const caseSensitive = slide.dataset.caseSensitive === "true";
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    nextBtn.textContent = "Done";
+
+    function syncCheckable() {
+      checkBtn.disabled = !allBlanksFilled(slide);
+      refreshCompletePreview(slide);
+    }
+
+    wireBlankInteractions(slide, syncCheckable);
+    syncCheckable();
+
+    checkBtn.addEventListener("click", () => {
+      if (slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      const { allCorrect, results } = gradeBlanks(slide, answers, caseSensitive);
+      lockBlankSlots(slide, results);
+      slide.querySelector<HTMLElement>("[data-explanation]")?.classList.remove("hidden");
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      afterCheck(allCorrect);
+    });
+  }
+
+  function wireFix(slide: HTMLElement, slug: string) {
+    const editor = slide.querySelector<HTMLTextAreaElement>("[data-editor]")!;
+    const preview = slide.querySelector<HTMLIFrameElement>("[data-preview]")!;
+    const solution = slide.querySelector<HTMLIFrameElement>("[data-solution]")!;
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    const lineNumbers = slide.querySelector<HTMLElement>("[data-line-numbers]");
+    const solutionSource = solution.dataset.solutionSource ?? "";
+    nextBtn.textContent = "Done";
+
+    function updatePreview() {
+      preview.srcdoc = buildSrcdoc(editor.value, { pickMode: true });
+    }
+
+    editor.addEventListener("input", () => {
+      updatePreview();
+      if (lineNumbers) {
+        lineNumbers.textContent = Array.from({ length: editor.value.split("\n").length }, (_, i) =>
+          String(i + 1)
+        ).join("\n");
+      }
+    });
+
+    solution.srcdoc = buildSrcdoc(solutionSource);
+    updatePreview();
+
+    checkBtn.addEventListener("click", async () => {
+      if (slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      preview.srcdoc = buildSrcdoc(editor.value);
+      solution.srcdoc = buildSrcdoc(solutionSource);
+      await Promise.all([
+        new Promise((r) => preview.addEventListener("load", r, { once: true })),
+        new Promise((r) => solution.addEventListener("load", r, { once: true })),
+      ]);
+      const ok =
+        preview.contentDocument && solution.contentDocument
+          ? domEqual(preview.contentDocument, solution.contentDocument)
+          : false;
+      editor.disabled = true;
+      slide.querySelector<HTMLElement>("[data-explanation]")?.classList.remove("hidden");
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      afterCheck(ok);
+    });
+  }
+
+  function wireIdentify(slide: HTMLElement, slug: string) {
+    const mode = slide.dataset.mode;
+    const answerRaw = slide.dataset.answer ?? "";
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    let picked: number | null = null;
+    nextBtn.textContent = "Done";
+
+    if (mode === "line") {
+      slide.querySelectorAll<HTMLButtonElement>(".identify-line-btn").forEach((line) => {
+        line.addEventListener("click", () => {
+          picked = Number(line.dataset.lineIndex);
+          checkBtn.disabled = false;
+        });
+      });
+    } else {
+      slide.querySelectorAll<HTMLButtonElement>(".quiz-option").forEach((opt) => {
+        opt.addEventListener("click", () => {
+          picked = Number(opt.dataset.optionIndex);
+          checkBtn.disabled = false;
+        });
+      });
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (picked == null || slide.dataset.checked === "true") return;
+      slide.dataset.checked = "true";
+      afterCheck(picked === Number(answerRaw));
+      checkBtn.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+    });
+  }
+
+  function wireAnimation(slide: HTMLElement, slug: string) {
+    const checkBtn = slide.querySelector<HTMLButtonElement>("[data-check]")!;
+    const nextBtn = slide.querySelector<HTMLButtonElement>("[data-next]")!;
+    nextBtn.textContent = "Done";
+    const reflectionInput = slide.querySelector<HTMLInputElement>("[data-animation-reflection]");
+    if (reflectionInput) {
+      reflectionInput.addEventListener("input", () => {
+        checkBtn.disabled = reflectionInput.value.trim().length < 12;
+      });
+      checkBtn.addEventListener("click", () => {
+        slide.dataset.checked = "true";
+        afterCheck(true);
+        checkBtn.classList.add("hidden");
+        nextBtn.classList.remove("hidden");
+      });
+    }
+  }
+</script>
+
+<style is:global>
+  .challenge-slide {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+</style>

@@ -163,6 +163,14 @@ const ResourceCollectionSchema = z.enum([
   "insurance",
   "construction",
   "vet",
+  "photography",
+  "dental",
+  "wedding",
+  "podcast",
+  "dating",
+  "coach",
+  "interior",
+  "video",
 ]);
 
 const resources = defineCollection({
