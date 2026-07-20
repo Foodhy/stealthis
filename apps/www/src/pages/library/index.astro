@@ -1,17 +1,21 @@
 ---
-import Base from "@layouts/Base.astro";
-import ResourceCard from "@components/ResourceCard.astro";
-import FilterBar from "@components/FilterBar.astro";
-import CollectionExplorer from "@components/CollectionExplorer.astro";
 import { getCollection } from "astro:content";
+import LibrarySidebar from "@components/LibrarySidebar.astro";
+import ResourceCard from "@components/ResourceCard.astro";
 import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
-import { IS_NEW_RECOMMENDATIONS_SECTION } from "@lib/collections";
+import Base from "@layouts/Base.astro";
+import {
+  IS_NEW_RECOMMENDATIONS_SECTION,
+  isNewLibraryCollection,
+  libraryCollections,
+} from "@lib/collections";
 import { SHOW_SORT_BAR } from "@lib/constant";
 import {
-  groupRecommendationsByTheme,
   RECOMMENDATION_THEMES,
   type RecommendationThemeLabelKey,
+  groupRecommendationsByTheme,
 } from "@lib/recommendation-themes";
+import { resolveResourceCollections } from "@lib/resource-collections";
 import { getResourceFilterTechTokens } from "@lib/resource-tech";
 import { BRAND_ALIASES, BRAND_NAME, mergeKeywords } from "@lib/seo";
 import { SITE_URLS } from "@lib/urls";
@@ -20,8 +24,11 @@ const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 const prefix = getLocalePrefix(locale);
 
-// Inline label — avoids adding a key to all ~16 typed locale maps for one button.
+// Inline labels — avoids adding one-off keys to all ~16 typed locale maps.
 const previewsLabel = locale === "es" ? "Mostrar vistas previas" : "Show previews";
+const filtersLabel = locale === "es" ? "Filtros" : "Filters";
+const closeFiltersLabel = locale === "es" ? "Cerrar filtros" : "Close filters";
+const clearCollectionLabel = locale === "es" ? "Quitar colección" : "Clear collection";
 
 const allResources = (await getCollection("resources")).sort(
   (a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime()
@@ -51,6 +58,26 @@ for (const r of allResources) {
   if (!byCategory.has(cat)) byCategory.set(cat, []);
   byCategory.get(cat)!.push(r);
 }
+
+// Sidebar data: per-category and per-collection counts, computed server-side.
+const categoryCounts: Record<string, number> = {};
+for (const [cat, list] of byCategory) categoryCounts[cat] = list.length;
+
+const collectionCounts = new Map<string, number>();
+for (const r of allResources) {
+  for (const c of resolveResourceCollections(r.data)) {
+    collectionCounts.set(c, (collectionCounts.get(c) ?? 0) + 1);
+  }
+}
+const sidebarCollections = [...libraryCollections]
+  .sort((a, b) => a.order - b.order)
+  .map((c) => ({
+    id: c.id as string,
+    title: t(c.titleKey),
+    count: collectionCounts.get(c.id) ?? 0,
+    isNew: isNewLibraryCollection(c.id),
+  }))
+  .filter((c) => c.count > 0);
 
 const recommendationResources = byCategory.get("recommendations") ?? [];
 const recommendationsByTheme = groupRecommendationsByTheme(recommendationResources);
@@ -165,22 +192,42 @@ const discoverI18n = {
     aidev: t("library.discover.q1.aidev"),
     database: t("library.discover.q1.database"),
   },
-  q2: {
-    title: t("library.discover.q2.title"),
-    beginner: t("library.discover.q2.beginner"),
-    intermediate: t("library.discover.q2.intermediate"),
-    advanced: t("library.discover.q2.advanced"),
-  },
-  q3: {
-    title: t("library.discover.q3.title"),
-    react: t("library.discover.q3.react"),
-    vue: t("library.discover.q3.vue"),
-    svelte: t("library.discover.q3.svelte"),
-    vanilla: t("library.discover.q3.vanilla"),
-    astro: t("library.discover.q3.astro"),
-    mobile: t("library.discover.q3.mobile"),
-    sql: t("library.discover.q3.sql"),
-  },
+  // Industry step is inline en/es (the repo pattern for one-off labels) — adding
+  // keys here would force an entry in all ~16 typed locale maps.
+  industry:
+    locale === "es"
+      ? {
+          title: "¿Para qué tipo de proyecto o industria?",
+          hint: "Opcional — sáltalo si no aplica",
+          food: "Restaurantes y comida",
+          health: "Salud y medicina",
+          commerce: "E-commerce y retail",
+          saasai: "SaaS y productos IA",
+          finance: "Finanzas, legal y seguros",
+          creative: "Creativo y medios",
+          home: "Inmobiliaria y espacios",
+          fitness: "Fitness y belleza",
+          travel: "Viajes y hotelería",
+          education: "Educación y cultura",
+          events: "Eventos y comunidad",
+          web3game: "Web3 y gaming",
+        }
+      : {
+          title: "What kind of project or industry?",
+          hint: "Optional — skip if it doesn't apply",
+          food: "Restaurants & Food",
+          health: "Health & Medical",
+          commerce: "E-commerce & Retail",
+          saasai: "SaaS & AI products",
+          finance: "Finance, Legal & Insurance",
+          creative: "Creative & Media",
+          home: "Real Estate & Spaces",
+          fitness: "Fitness & Beauty",
+          travel: "Travel & Hospitality",
+          education: "Education & Culture",
+          events: "Events & Community",
+          web3game: "Web3 & Gaming",
+        },
   q4: {
     title: t("library.discover.q4.title"),
     animations: t("library.discover.q4.animations"),
@@ -202,36 +249,79 @@ const discoverI18n = {
   alternateLinks={alternateLinks}
   structuredData={structuredData}
 >
-  <div class="container-xl py-12" data-pagefind-ignore>
-    <!-- Header -->
-    <div class="mb-10">
-      <h1 class="text-4xl font-extrabold tracking-tight text-white mb-2">{t("library.title")}</h1>
-      <p class="text-slate-400">{t("library.subtitle")} — {allResources.length} resources</p>
+  <div class="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6" data-pagefind-ignore>
+    <!-- Slim header: title + mode tabs + mobile filters button -->
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+      <div class="flex items-baseline gap-2 mr-auto">
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">{t("library.title")}</h1>
+        <span class="text-xs text-slate-500 tabular-nums">{allResources.length}</span>
+      </div>
+
+      <!-- Mode switcher (segmented tabs) -->
+      <div class="flex items-center gap-1 p-1 rounded-xl bg-surface-900 border border-white/8 min-w-0 max-w-full overflow-x-auto" id="mode-switcher">
+        <button class="mode-tab" data-mode="instant" id="mode-instant">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="18" y1="9" x2="18" y2="15"/><line x1="9" y1="18" x2="15" y2="18"/>
+          </svg>
+          {t("library.mode.instant")}
+        </button>
+        <button class="mode-tab" data-mode="discover" id="mode-discover">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+          {t("library.mode.discover")}
+        </button>
+        <button class="mode-tab chip--active" data-mode="browse" id="mode-browse">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+          {t("library.mode.browse")}
+        </button>
+      </div>
+
+      <!-- Mobile: open filter drawer -->
+      <button
+        id="sidebar-open-btn"
+        type="button"
+        class="lg:hidden flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 text-sm text-slate-300 hover:text-white hover:bg-white/6 transition-colors"
+        aria-controls="library-sidebar"
+        aria-expanded="false"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        {filtersLabel}
+      </button>
     </div>
 
-    <CollectionExplorer locale={locale} resources={allResources} />
+    <div class="lg:flex lg:items-start lg:gap-8">
+      <!-- Sidebar: fixed drawer on mobile, sticky column on lg+ -->
+      <div id="sidebar-overlay" class="fixed inset-0 z-[65] bg-black/60 hidden lg:hidden"></div>
+      <aside
+        id="library-sidebar"
+        class="fixed inset-y-0 left-0 z-[70] w-80 max-w-[85vw] -translate-x-full transition-transform duration-200 overflow-y-auto bg-surface-950 border-r border-white/8 p-4 lg:p-0 lg:bg-transparent lg:border-r-0 lg:sticky lg:top-20 lg:z-auto lg:w-64 lg:shrink-0 lg:max-h-[calc(100vh-6rem)] lg:translate-x-0 lg:transition-none"
+        aria-label={filtersLabel}
+      >
+        <button
+          id="sidebar-close-btn"
+          type="button"
+          class="lg:hidden absolute top-3 right-3 text-slate-500 hover:text-white transition-colors"
+          aria-label={closeFiltersLabel}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <LibrarySidebar
+          locale={locale}
+          categories={categories}
+          categoryCounts={categoryCounts}
+          collections={sidebarCollections}
+          techs={techs}
+          authors={authors}
+          totalCount={allResources.length}
+        />
+      </aside>
 
-    <!-- Mode switcher -->
-    <div class="flex items-center gap-2 mb-6" id="mode-switcher">
-      <button class="chip" data-mode="instant" id="mode-instant">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="18" y1="9" x2="18" y2="15"/><line x1="9" y1="18" x2="15" y2="18"/>
-        </svg>
-        {t("library.mode.instant")}
-      </button>
-      <button class="chip" data-mode="discover" id="mode-discover">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-        </svg>
-        {t("library.mode.discover")}
-      </button>
-      <button class="chip chip--active" data-mode="browse" id="mode-browse">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-        </svg>
-        {t("library.mode.browse")}
-      </button>
-    </div>
+      <main class="flex-1 min-w-0">
 
     <!-- Mode 1: Graph Explorer -->
     <div id="mode-instant-content" class="hidden" data-lab-url={SITE_URLS.lab}>
@@ -328,7 +418,7 @@ const discoverI18n = {
           <h2 id="discover-question-title" class="text-2xl font-bold text-white mb-2"></h2>
           <p class="text-slate-400 text-sm mb-6">{t("library.discover.subtitle")}</p>
           <p class="text-xs text-slate-600 mb-3" id="discover-multi-hint"></p>
-          <div id="discover-options" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+          <div id="discover-options" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"></div>
         </div>
 
         <!-- Keyword input (shown on last step) -->
@@ -404,7 +494,7 @@ const discoverI18n = {
           </div>
         </div>
         <!-- Grid view (hidden by default) -->
-        <div id="discover-results-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div id="discover-results-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"></div>
         <p class="hidden text-center text-slate-500 py-16" id="discover-empty">
           {t("library.discover.noResults")}
         </p>
@@ -412,27 +502,9 @@ const discoverI18n = {
     </div>
 
     <!-- Mode 3: Browse (existing) -->
-    <div class="flex flex-col lg:flex-row gap-8" id="mode-browse-content">
-      <!-- Sidebar: filters -->
-      <aside class="w-full lg:w-64 shrink-0">
-        <FilterBar locale={locale} categories={categories} techs={techs} authors={authors} />
-
-        <div class="mt-6 flex flex-col gap-2">
-          <button
-            id="export-favorites"
-            class="w-full text-sm font-medium px-4 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/6 transition-colors text-left"
-          >
-            ↑ {t("favorites.export")}
-          </button>
-          <label class="w-full text-sm font-medium px-4 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/6 transition-colors cursor-pointer">
-            ↓ {t("favorites.import")}
-            <input type="file" accept=".json" class="hidden" id="import-favorites-input" />
-          </label>
-        </div>
-      </aside>
-
+    <div id="mode-browse-content">
       <!-- Resource grid -->
-      <div class="flex-1 min-w-0 relative" id="resource-grid">
+      <div class="min-w-0 relative" id="resource-grid">
 
         <!-- Sort overlay: covers the grid while cards are being reordered so the
              brief main-thread block isn't seen as frozen UI. -->
@@ -442,7 +514,23 @@ const discoverI18n = {
         </div>
 
         <!-- Preview toggle (opt-in; previews load only after activating) -->
-        <div class="flex items-center gap-2 mb-4">
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <!-- Active collection pill (shown/hidden by LibrarySidebar's script) -->
+          <span
+            id="active-collection-pill"
+            class="hidden inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full bg-brand-500/15 border border-brand-400/40 text-brand-300 text-xs font-medium"
+          >
+            <span data-pill-label></span>
+            <button
+              type="button"
+              data-pill-clear
+              class="flex items-center justify-center w-5 h-5 p-0.5 rounded-full hover:bg-brand-400/25 transition-colors"
+              aria-label={clearCollectionLabel}
+              title={clearCollectionLabel}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </span>
           <button
             id="previews-toggle"
             type="button"
@@ -498,11 +586,12 @@ const discoverI18n = {
           <span class="text-xs text-slate-500 shrink-0">{t("library.sort.grouped").split(" ")[0]}:</span>
           <button id="sort-grouped" class="chip sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.grouped")}</button>
           <button id="sort-latest" class="chip chip--active sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.latest")}</button>
+          <button id="sort-random" class="chip sort-chip"><span class="sort-chip-spinner" aria-hidden="true"></span>{t("library.sort.random")}</button>
         </div>
         )}
 
         <!-- Flat grid — shown in "latest" mode -->
-        <div id="flat-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-12"></div>
+        <div id="flat-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-12"></div>
 
         {CATEGORY_GROUPS.map((group) => {
           const hasAny = group.categories.some((c) => (byCategory.get(c)?.length ?? 0) > 0);
@@ -552,7 +641,7 @@ const discoverI18n = {
                           <h3 class="text-sm font-semibold text-slate-400">{t(themeKey)}</h3>
                           <span class="text-xs text-slate-600 tabular-nums">{resources.length}</span>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                           {resources.map((resource) => (
                             <ResourceCard resource={resource} locale={locale} />
                           ))}
@@ -572,7 +661,7 @@ const discoverI18n = {
                         <h3 class="text-sm font-semibold text-slate-400">{t(catKey)}</h3>
                         <span class="text-xs text-slate-600 tabular-nums">{resources.length}</span>
                       </div>
-                      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                         {resources.map((resource) => (
                           <ResourceCard resource={resource} locale={locale} />
                         ))}
@@ -586,8 +675,8 @@ const discoverI18n = {
         })}
 
         <!-- Infinite-scroll sentinel: reveals the next batch of cards when it
-             scrolls into view (wired in FilterBar.astro). Hidden once the full
-             match set is shown. -->
+             scrolls into view (wired in LibrarySidebar.astro). Hidden once the
+             full match set is shown. -->
         <div id="infinite-sentinel" class="flex items-center justify-center py-10" aria-hidden="true">
           <span class="infinite-spinner"></span>
         </div>
@@ -597,6 +686,9 @@ const discoverI18n = {
           {t("library.noResults")}
         </p>
       </div>
+    </div>
+
+      </main>
     </div>
   </div>
   <script is:inline define:vars={{ discoverI18n }}>
@@ -630,18 +722,32 @@ const discoverI18n = {
     (a, b) => (createdAtMs.get(b) ?? 0) - (createdAtMs.get(a) ?? 0)
   );
 
-  let sortMode: "grouped" | "latest" = "grouped";
+  const sortRandom = document.getElementById("sort-random") as HTMLButtonElement;
+
+  // Pre-shuffled order built once at load (same cost as cardsByDate) so hitting
+  // "Random" never pays for building an array — each click only re-shuffles this
+  // existing array in place (O(n), negligible next to the reparent).
+  const cardsRandom = [...origins.keys()];
+  function shuffle(arr: Element[]) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+  shuffle(cardsRandom);
+
+  let sortMode: "grouped" | "latest" | "random" = "grouped";
   let sortBusy = false;
 
-  function activateLatest() {
-    sortMode = "latest";
-    sortGrouped.classList.remove("chip--active");
-    sortLatest.classList.add("chip--active");
+  function activateFlat(mode: "latest" | "random", order: Element[]) {
+    sortMode = mode;
+    for (const b of [sortGrouped, sortLatest, sortRandom]) b.classList.remove("chip--active");
+    (mode === "latest" ? sortLatest : sortRandom).classList.add("chip--active");
 
     // Move every card into the flat grid in one shot via a fragment — a single
     // DOM insertion + reflow instead of 1600 individual appendChild calls.
     const frag = document.createDocumentFragment();
-    for (const card of cardsByDate) frag.appendChild(card);
+    for (const card of order) frag.appendChild(card);
     flatGrid.replaceChildren(frag);
 
     // Hide category groups; show the flat grid.
@@ -654,9 +760,16 @@ const discoverI18n = {
     window.dispatchEvent(new CustomEvent("stealthis:sort-changed"));
   }
 
+  const activateLatest = () => activateFlat("latest", cardsByDate);
+  const activateRandom = () => {
+    shuffle(cardsRandom);
+    activateFlat("random", cardsRandom);
+  };
+
   function activateGrouped() {
     sortMode = "grouped";
     sortLatest.classList.remove("chip--active");
+    sortRandom.classList.remove("chip--active");
     sortGrouped.classList.add("chip--active");
 
     // Restore each card right after its persistent anchor comment.
@@ -678,8 +791,9 @@ const discoverI18n = {
   // Show spinner + cover the grid, then run the heavy reparent on a later frame
   // so the loading state actually paints before the main thread blocks. The
   // overlay hides the (briefly) frozen cards. Guards against double-clicks.
-  function runSort(btn: HTMLButtonElement, targetMode: "grouped" | "latest", fn: () => void) {
-    if (sortBusy || sortMode === targetMode) return;
+  function runSort(btn: HTMLButtonElement, targetMode: "grouped" | "latest" | "random", fn: () => void) {
+    // "random" is always re-runnable — clicking it again means "reshuffle".
+    if (sortBusy || (sortMode === targetMode && targetMode !== "random")) return;
     sortBusy = true;
     btn.classList.add("is-loading");
     if (sortOverlay) {
@@ -698,6 +812,7 @@ const discoverI18n = {
 
   sortLatest.addEventListener("click", () => runSort(sortLatest, "latest", activateLatest));
   sortGrouped.addEventListener("click", () => runSort(sortGrouped, "grouped", activateGrouped));
+  sortRandom.addEventListener("click", () => runSort(sortRandom, "random", activateRandom));
 
   // Default sort is "Latest added": reparent cards into the flat grid on load.
   // The markup already ships sort-latest as the active chip, so this only moves
@@ -705,6 +820,50 @@ const discoverI18n = {
   activateLatest();
 
   document.getElementById("export-favorites")?.addEventListener("click", exportFavorites);
+
+  // ── Mobile filter drawer ─────────────────────────────────────────
+  const drawer = document.getElementById("library-sidebar");
+  const drawerOverlay = document.getElementById("sidebar-overlay");
+  const drawerOpenBtn = document.getElementById("sidebar-open-btn");
+  const drawerCloseBtn = document.getElementById("sidebar-close-btn");
+  const mobileMq = window.matchMedia("(max-width: 1023px)");
+  let drawerOpen = false;
+
+  function setDrawer(open: boolean) {
+    if (!drawer || open === drawerOpen) return;
+    drawerOpen = open;
+    drawer.classList.toggle("is-open", open);
+    drawerOverlay?.classList.toggle("hidden", !open);
+    drawerOpenBtn?.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("overflow-hidden", open && mobileMq.matches);
+    if (open) {
+      drawer.setAttribute("role", "dialog");
+      drawer.setAttribute("aria-modal", "true");
+      drawer.querySelector<HTMLInputElement>("#search-input")?.focus({ preventScroll: true });
+    } else {
+      drawer.removeAttribute("role");
+      drawer.removeAttribute("aria-modal");
+      drawerOpenBtn?.focus({ preventScroll: true });
+    }
+  }
+
+  drawerOpenBtn?.addEventListener("click", () => setDrawer(true));
+  drawerCloseBtn?.addEventListener("click", () => setDrawer(false));
+  drawerOverlay?.addEventListener("click", () => setDrawer(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && drawerOpen) setDrawer(false);
+  });
+  // Picking a filter on mobile closes the drawer so results are visible.
+  drawer?.addEventListener("click", (e) => {
+    if (!mobileMq.matches) return;
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-filter], [data-filter-reset], #favorites-filter-btn")) {
+      setDrawer(false);
+    }
+  });
+  // Leaving mobile widths (or leaving Browse mode) resets the drawer state.
+  mobileMq.addEventListener("change", () => { if (!mobileMq.matches) setDrawer(false); });
+  window.addEventListener("stealthis:close-sidebar", () => setDrawer(false));
 
   const importInput = document.getElementById("import-favorites-input") as HTMLInputElement | null;
   importInput?.addEventListener("change", async () => {
@@ -745,6 +904,11 @@ const discoverI18n = {
 
   const onModeChange: Array<(mode: LibraryMode) => void> = [];
 
+  // The filter sidebar (and its mobile trigger) only applies to Browse mode —
+  // Graph and Guided Discovery take the full width.
+  const sidebarEl = document.getElementById("library-sidebar");
+  const sidebarOpenBtn = document.getElementById("sidebar-open-btn");
+
   function switchMode(mode: LibraryMode) {
     if (mode === currentMode) return;
     currentMode = mode;
@@ -755,6 +919,11 @@ const discoverI18n = {
     for (const [key, btn] of Object.entries(modeButtons)) {
       btn?.classList.toggle("chip--active", key === mode);
     }
+
+    const showSidebar = mode === "browse";
+    if (sidebarEl) sidebarEl.style.display = showSidebar ? "" : "none";
+    if (sidebarOpenBtn) sidebarOpenBtn.style.display = showSidebar ? "" : "none";
+    if (!showSidebar) window.dispatchEvent(new CustomEvent("stealthis:close-sidebar"));
 
     const url = new URL(window.location.href);
     if (mode === "browse") {
@@ -949,14 +1118,15 @@ const discoverI18n = {
     value: string;
     label: string;
     categories?: string[];
-    difficulties?: string[];
-    techs?: string[];
+    collections?: string[];
   }
 
   interface WizardQuestion {
     id: string;
     title: string;
     options: WizardOption[];
+    /** Optional steps show a hint that skipping is fine. */
+    optional?: boolean;
   }
 
   const WIZARD_QUESTIONS: WizardQuestion[] = [
@@ -973,25 +1143,24 @@ const discoverI18n = {
       ],
     },
     {
-      id: "level",
-      title: _di.q2?.title ?? "What's your experience level?",
+      // Industry step: each button maps to a group of library collections, so a
+      // baker and a fintech dev get very different result sets.
+      id: "industry",
+      title: _di.industry?.title ?? "What kind of project or industry?",
+      optional: true,
       options: [
-        { value: "easy", label: _di.q2?.beginner ?? "Beginner", difficulties: ["easy"] },
-        { value: "med", label: _di.q2?.intermediate ?? "Intermediate", difficulties: ["easy", "med"] },
-        { value: "hard", label: _di.q2?.advanced ?? "Advanced", difficulties: ["easy", "med", "hard"] },
-      ],
-    },
-    {
-      id: "tech",
-      title: _di.q3?.title ?? "What tech do you prefer?",
-      options: [
-        { value: "react", label: _di.q3?.react ?? "React", techs: ["react"] },
-        { value: "vue", label: _di.q3?.vue ?? "Vue", techs: ["vue"] },
-        { value: "svelte", label: _di.q3?.svelte ?? "Svelte", techs: ["svelte"] },
-        { value: "vanilla", label: _di.q3?.vanilla ?? "Vanilla JS / HTML", techs: ["js", "html", "css"] },
-        { value: "astro", label: _di.q3?.astro ?? "Astro", techs: ["astro"] },
-        { value: "mobile", label: _di.q3?.mobile ?? "React Native / Expo", techs: ["react-native", "expo"] },
-        { value: "sql", label: _di.q3?.sql ?? "SQL", techs: ["sql"] },
+        { value: "food", label: _di.industry?.food ?? "Restaurants & Food", collections: ["restaurant", "cookbook", "delivery"] },
+        { value: "health", label: _di.industry?.health ?? "Health & Medical", collections: ["clinic", "dental", "vet"] },
+        { value: "commerce", label: _di.industry?.commerce ?? "E-commerce & Retail", collections: ["ecommerce", "d2c", "auto"] },
+        { value: "saasai", label: _di.industry?.saasai ?? "SaaS & AI products", collections: ["saas", "ai-product"] },
+        { value: "finance", label: _di.industry?.finance ?? "Finance, Legal & Insurance", collections: ["fintech", "legal", "insurance"] },
+        { value: "creative", label: _di.industry?.creative ?? "Creative & Media", collections: ["portfolio", "agency", "photography", "creator", "music", "podcast", "streaming", "comics", "editorial"] },
+        { value: "home", label: _di.industry?.home ?? "Real Estate & Spaces", collections: ["realestate", "interior", "construction", "cowork"] },
+        { value: "fitness", label: _di.industry?.fitness ?? "Fitness & Beauty", collections: ["gym", "salon", "coach"] },
+        { value: "travel", label: _di.industry?.travel ?? "Travel & Hospitality", collections: ["travel", "hotel", "airline"] },
+        { value: "education", label: _di.industry?.education ?? "Education & Culture", collections: ["elearning", "science", "museum", "wiki"] },
+        { value: "events", label: _di.industry?.events ?? "Events & Community", collections: ["events", "wedding", "nonprofit", "jobs", "dating"] },
+        { value: "web3game", label: _di.industry?.web3game ?? "Web3 & Gaming", collections: ["web3", "gamedev"] },
       ],
     },
     {
@@ -1075,6 +1244,83 @@ const discoverI18n = {
     return wizardSelections[questionId];
   }
 
+  // --- Constraints + live option counts ---------------------------------------
+  // Every card's category/collections, read once from the browse-mode DOM. Used
+  // to tell the user up front how many resources each answer would yield.
+  interface DiscoverCardMeta {
+    category: string;
+    collections: string[];
+  }
+  let discoverCardMetas: DiscoverCardMeta[] | null = null;
+  function getDiscoverCardMetas(): DiscoverCardMeta[] {
+    if (!discoverCardMetas) {
+      discoverCardMetas = [
+        ...document.querySelectorAll<HTMLElement>("#mode-browse-content article[data-slug]"),
+      ].map((card) => ({
+        category: card.dataset.category ?? "",
+        collections: (card.dataset.collections ?? "").split(",").filter(Boolean),
+      }));
+    }
+    return discoverCardMetas;
+  }
+
+  interface DiscoverConstraints {
+    categories: Set<string>;
+    collections: Set<string>;
+  }
+
+  // Merge the selected options into allowed category/collection sets. Questions
+  // can be excluded (used to price a single option against the other answers).
+  function buildConstraints(excludeQuestionId?: string): DiscoverConstraints {
+    const categories = new Set<string>();
+    const collections = new Set<string>();
+    for (const question of WIZARD_QUESTIONS) {
+      if (question.id === excludeQuestionId) continue;
+      const selected = wizardSelections[question.id];
+      if (!selected?.size) continue;
+      for (const value of selected) {
+        const opt = question.options.find((o) => o.value === value);
+        for (const cat of opt?.categories ?? []) categories.add(cat);
+        for (const col of opt?.collections ?? []) collections.add(col);
+      }
+    }
+    return { categories, collections };
+  }
+
+  function countMatching({ categories, collections }: DiscoverConstraints): number {
+    let count = 0;
+    for (const meta of getDiscoverCardMetas()) {
+      if (categories.size > 0 && !categories.has(meta.category)) continue;
+      if (collections.size > 0 && !meta.collections.some((c) => collections.has(c))) continue;
+      count++;
+    }
+    return count;
+  }
+
+  // "How much does THIS option have to offer" — the option's own mapping, scoped
+  // by the other dimension. Category answers union across steps, so folding them
+  // in here would make every option report the same inflated number.
+  function countForOption(question: WizardQuestion, opt: WizardOption): number {
+    const other = buildConstraints(question.id);
+    return countMatching({
+      categories: opt.categories?.length ? new Set(opt.categories) : other.categories,
+      collections: opt.collections?.length ? new Set(opt.collections) : other.collections,
+    });
+  }
+
+  // Rewrite only the count spans + disabled state so a click never steals focus.
+  function refreshOptionCounts(question: WizardQuestion) {
+    discoverOptions?.querySelectorAll<HTMLButtonElement>(".discover-option").forEach((btn) => {
+      const opt = question.options.find((o) => o.value === btn.dataset.value);
+      if (!opt) return;
+      const count = countForOption(question, opt);
+      const countEl = btn.querySelector<HTMLElement>(".discover-option-count");
+      if (countEl) countEl.textContent = String(count);
+      const isSelected = btn.classList.contains("is-selected");
+      btn.disabled = count === 0 && !isSelected;
+    });
+  }
+
   function renderWizardStep(step: number) {
     wizardStep = step;
     const totalSteps = WIZARD_QUESTIONS.length;
@@ -1107,22 +1353,28 @@ const discoverI18n = {
 
     if (discoverStepLabel) discoverStepLabel.textContent = `${_di.step ?? "Step"} ${step + 1} ${_di.of ?? "of"} ${totalSteps + 1}`;
     if (discoverQuestionTitle) discoverQuestionTitle.textContent = question.title;
-    if (discoverMultiHint) discoverMultiHint.textContent = _di.multiHint ?? "Select one or more options";
+    if (discoverMultiHint) {
+      discoverMultiHint.textContent = question.optional
+        ? (_di.industry?.hint ?? "Optional — skip if it doesn't apply")
+        : (_di.multiHint ?? "Select one or more options");
+    }
 
     const selected = getStepSelections(question.id);
 
-    // Render options as toggleable buttons
+    // Render options as toggleable buttons, each showing how many resources it
+    // would surface given the answers given so far.
     if (discoverOptions) {
       discoverOptions.innerHTML = question.options
         .map((opt) => {
           const isSelected = selected.has(opt.value);
-          return `<button class="discover-option${isSelected ? " is-selected" : ""}" data-value="${opt.value}" type="button">${escapeHtml(opt.label)}</button>`;
+          const count = countForOption(question, opt);
+          return `<button class="discover-option${isSelected ? " is-selected" : ""}" data-value="${opt.value}" type="button"${count === 0 && !isSelected ? " disabled" : ""}>${escapeHtml(opt.label)}<span class="discover-option-count">${count}</span></button>`;
         })
         .join("");
 
       discoverOptions.querySelectorAll<HTMLButtonElement>(".discover-option").forEach((btn) => {
         btn.addEventListener("click", () => {
-          const value = btn.dataset.value!;
+          const value = btn.dataset.value ?? "";
           if (selected.has(value)) {
             selected.delete(value);
             btn.classList.remove("is-selected");
@@ -1130,6 +1382,7 @@ const discoverI18n = {
             selected.add(value);
             btn.classList.add("is-selected");
           }
+          refreshOptionCounts(question);
           updateNavButtons();
         });
       });
@@ -1166,90 +1419,50 @@ const discoverI18n = {
     discoverSkip?.classList.add("hidden");
     discoverShowResults?.classList.add("hidden");
 
-    // Compute filter criteria from all multi-selections
-    const allowedCategories = new Set<string>();
-    const allowedDifficulties = new Set<string>();
-    const allowedTechs = new Set<string>();
+    // Answers are the hard filter: categories from "building" + "need", and
+    // collections from the "industry" step.
+    const { categories: allowedCategories, collections: allowedCollections } = buildConstraints();
 
-    // Merge categories from "building" and "need" selections
-    for (const questionId of ["building", "need"]) {
-      const selected = wizardSelections[questionId];
-      if (!selected || selected.size === 0) continue;
-      const question = WIZARD_QUESTIONS.find((q) => q.id === questionId);
-      if (!question) continue;
-      for (const val of selected) {
-        const opt = question.options.find((o) => o.value === val);
-        if (opt?.categories) {
-          for (const cat of opt.categories) allowedCategories.add(cat);
-        }
-      }
-    }
-
-    // Difficulty from "level" selections
-    const levelSelected = wizardSelections["level"];
-    if (levelSelected && levelSelected.size > 0) {
-      const levelQ = WIZARD_QUESTIONS.find((q) => q.id === "level");
-      if (levelQ) {
-        for (const val of levelSelected) {
-          const opt = levelQ.options.find((o) => o.value === val);
-          if (opt?.difficulties) {
-            for (const d of opt.difficulties) allowedDifficulties.add(d);
-          }
-        }
-      }
-    }
-
-    // Tech from "tech" selections
-    const techSelected = wizardSelections["tech"];
-    if (techSelected && techSelected.size > 0) {
-      const techQ = WIZARD_QUESTIONS.find((q) => q.id === "tech");
-      if (techQ) {
-        for (const val of techSelected) {
-          const opt = techQ.options.find((o) => o.value === val);
-          if (opt?.techs) {
-            for (const t of opt.techs) allowedTechs.add(t);
-          }
-        }
-      }
-    }
-
-    // Optional keyword filter (fuzzy)
-    const keyword = discoverKeywordInput?.value.trim() ?? "";
+    // The keyword only RANKS — it never removes a result. A typo or an unusual
+    // word used to empty the whole list, which read as "nothing exists".
+    const keyword = discoverKeywordInput?.value.trim().toLowerCase() ?? "";
+    const keywordTokens = keyword.split(/\s+/).filter(Boolean);
 
     // Filter cards from the browse mode DOM
     const allCards = document.querySelectorAll<HTMLElement>("#mode-browse-content article[data-slug]");
-    const scored: Array<{ card: HTMLElement; score: number }> = [];
+    const scored: Array<{ card: HTMLElement; score: number; order: number }> = [];
+    let order = 0;
 
     allCards.forEach((card) => {
       const cardCategory = card.dataset.category ?? "";
-      const cardDifficulty = card.dataset.difficulty ?? "";
-      const cardTech = (card.dataset.tech ?? "").split(",").filter(Boolean);
+      const cardCollections = (card.dataset.collections ?? "").split(",").filter(Boolean);
 
       if (allowedCategories.size > 0 && !allowedCategories.has(cardCategory)) return;
-      if (allowedDifficulties.size > 0 && !allowedDifficulties.has(cardDifficulty)) return;
-      if (allowedTechs.size > 0 && !cardTech.some((t) => allowedTechs.has(t))) return;
+      if (allowedCollections.size > 0 && !cardCollections.some((c) => allowedCollections.has(c))) return;
 
-      // Fuzzy keyword match (against title, description, tags)
-      if (keyword) {
+      let score = 0;
+      if (keywordTokens.length > 0) {
         const title = card.querySelector("h2")?.textContent ?? "";
         const desc = card.querySelector("p:nth-of-type(2)")?.textContent ?? "";
-        const tags = card.dataset.tags ?? "";
-        const combined = `${title} ${desc} ${tags}`;
-        // Try exact substring first, then fuzzy
-        if (combined.toLowerCase().includes(keyword.toLowerCase())) {
-          scored.push({ card, score: 0 });
-        } else {
-          const s = fuzzyScore(keyword, combined);
-          if (s >= 0) scored.push({ card, score: s + 100 }); // fuzzy matches ranked after exact
+        const haystack = `${title} ${desc} ${card.dataset.tags ?? ""}`.toLowerCase();
+
+        for (const token of keywordTokens) {
+          if (haystack.includes(token)) {
+            score += 10;
+          } else {
+            // fuzzyScore: lower = tighter match, -1 = no match at all.
+            const fuzzy = fuzzyScore(token, haystack);
+            if (fuzzy >= 0) score += Math.max(1, 5 - Math.min(fuzzy, 4));
+          }
         }
-        return;
+        if (keywordTokens.length > 1 && haystack.includes(keyword)) score += 20;
       }
 
-      scored.push({ card, score: 0 });
+      scored.push({ card, score, order: order++ });
     });
 
-    // Sort by relevance score (lower = better) and build matched array
-    scored.sort((a, b) => a.score - b.score);
+    // Best matches first; everything else keeps its original (newest-first) order.
+    scored.sort((a, b) => b.score - a.score || a.order - b.order);
     discoverMatchedCards = scored.map((s) => s.card);
 
     if (discoverResultsCount) {
@@ -1467,8 +1680,34 @@ const discoverI18n = {
 </script>
 
 <style>
-  /* Infinite-scroll loading spinner (sentinel). Hidden by FilterBar once the
-     full match set is on screen. */
+  /* Mobile filter drawer: slides in from the left; sticky column on lg+. */
+  #library-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  /* Mode switcher segmented tabs. chip--active is toggled by the mode JS. */
+  .mode-tab {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.6rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #94a3b8;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .mode-tab:hover {
+    color: #e2e8f0;
+  }
+  .mode-tab.chip--active {
+    color: #fff;
+    background: rgb(255 255 255 / 8%);
+  }
+
+  /* Infinite-scroll loading spinner (sentinel). Hidden by LibrarySidebar once
+     the full match set is on screen. */
   .infinite-spinner {
     width: 22px;
     height: 22px;

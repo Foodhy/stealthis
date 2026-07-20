@@ -1,17 +1,43 @@
 ---
-import { getLocalePrefix, type Locale, useTranslations } from "@i18n/index";
+import { type Locale, getLocalePrefix, useTranslations } from "@i18n/index";
 import { IS_NEW_RECOMMENDATIONS_SECTION } from "@lib/collections";
+
+interface SidebarCollection {
+  id: string;
+  title: string;
+  count: number;
+  isNew: boolean;
+}
 
 interface Props {
   locale?: Locale;
   categories: string[];
+  categoryCounts: Record<string, number>;
+  collections: SidebarCollection[];
   techs: string[];
   authors: string[];
+  totalCount: number;
 }
 
-const { locale = "en", categories, techs, authors } = Astro.props;
+const {
+  locale = "en",
+  categories,
+  categoryCounts,
+  collections,
+  techs,
+  authors,
+  totalCount,
+} = Astro.props;
 const t = useTranslations(locale);
 const libPath = `${getLocalePrefix(locale)}/library`;
+
+// Inline labels — avoids adding one-off keys to all ~16 typed locale maps.
+const isEs = locale === "es";
+const L = {
+  allResources: isEs ? "Todos los recursos" : "All resources",
+  collections: isEs ? "Colecciones" : "Collections",
+  collectionSearch: isEs ? "Filtrar colecciones…" : "Filter collections…",
+};
 
 const difficulties = ["easy", "med", "hard"] as const;
 const TECH_LABELS: Record<string, string> = {
@@ -38,7 +64,7 @@ const TECH_LABELS: Record<string, string> = {
 const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 ---
 
-<div class="filter-bar flex flex-col gap-4" id="filter-bar">
+<div class="filter-bar flex flex-col gap-5" id="filter-bar">
   <!-- Search -->
   <div class="relative">
     <svg
@@ -55,22 +81,31 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     />
   </div>
 
-  <!-- Favorites toggle -->
-  <button
-    id="favorites-filter-btn"
-    class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/8 text-sm text-slate-400 hover:text-slate-200 hover:border-white/14 transition-colors w-full"
-  >
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-    {t("library.filter.favorites")}
-  </button>
+  <!-- Quick views -->
+  <div class="flex flex-col gap-1">
+    <button class="side-row" data-filter-reset type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      <span class="side-row-label">{L.allResources}</span>
+      <span class="side-row-count">{totalCount}</span>
+    </button>
+    <button id="favorites-filter-btn" class="side-row" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span class="side-row-label">{t("library.filter.favorites")}</span>
+    </button>
+  </div>
 
   <!-- Category filter -->
   <div>
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{t("library.filter.category")}</p>
-    <div class="flex flex-wrap gap-1.5">
-      <button class="chip chip--compact chip--active" data-filter="category" data-value="all">{t("library.filter.all")}</button>
+    <p class="side-heading">{t("library.filter.category")}</p>
+    <div class="flex flex-col gap-0.5">
+      <button class="side-row chip--active" data-filter="category" data-value="all" type="button">
+        <span class="side-row-label">{t("library.filter.all")}</span>
+        <span class="side-row-count">{totalCount}</span>
+      </button>
       {categories.map((cat) => {
         const key = `category.${cat}` as
           | "category.web-animations" | "category.web-pages" | "category.ui-components" | "category.patterns"
@@ -85,24 +120,67 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
           | "category.recommendations";
         const isNew = cat === "recommendations" && IS_NEW_RECOMMENDATIONS_SECTION;
         return (
-          <button class="chip chip--compact" data-filter="category" data-value={cat}>
-            {t(key)}
-            {isNew && <span class="lib-new-badge">{t("badge.new")}</span>}
+          <button class="side-row" data-filter="category" data-value={cat} type="button">
+            <span class="side-row-label">
+              {t(key)}
+              {isNew && <span class="lib-new-badge">{t("badge.new")}</span>}
+            </span>
+            <span class="side-row-count">{categoryCounts[cat] ?? 0}</span>
           </button>
         );
       })}
     </div>
   </div>
 
+  <!-- Collections -->
+  <div>
+    <p class="side-heading">{L.collections}</p>
+    <div class="relative mb-2">
+      <svg
+        class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none"
+        width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        id="collection-filter-input"
+        type="search"
+        placeholder={L.collectionSearch}
+        autocomplete="off"
+        class="w-full pl-7 pr-3 py-1.5 rounded-lg bg-surface-900 border border-white/6 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-brand-500/40 transition-colors"
+      />
+    </div>
+    <div class="flex flex-col gap-0.5 max-h-72 overflow-y-auto pr-1" id="collection-list">
+      <button class="side-row chip--active" data-filter="collection" data-value="all" data-label="all" type="button">
+        <span class="side-row-label">{t("library.filter.all")}</span>
+      </button>
+      {collections.map((c) => (
+        <button
+          class="side-row"
+          data-filter="collection"
+          data-value={c.id}
+          data-label={c.title.toLowerCase()}
+          type="button"
+        >
+          <span class="side-row-label">
+            {c.title}
+            {c.isNew && <span class="lib-new-badge">{t("badge.new")}</span>}
+          </span>
+          <span class="side-row-count">{c.count}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+
   <!-- Difficulty filter -->
   <div>
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{t("library.filter.difficulty")}</p>
+    <p class="side-heading">{t("library.filter.difficulty")}</p>
     <div class="flex flex-wrap gap-1.5">
-      <button class="chip chip--active" data-filter="difficulty" data-value="all">{t("library.filter.all")}</button>
+      <button class="chip chip--compact chip--active" data-filter="difficulty" data-value="all" type="button">{t("library.filter.all")}</button>
       {difficulties.map((d) => {
         const key = `resource.difficulty.${d}` as "resource.difficulty.easy" | "resource.difficulty.med" | "resource.difficulty.hard";
         return (
-          <button class="chip" data-filter="difficulty" data-value={d}>{t(key)}</button>
+          <button class="chip chip--compact" data-filter="difficulty" data-value={d} type="button">{t(key)}</button>
         );
       })}
     </div>
@@ -110,27 +188,30 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 
   <!-- Tech filter -->
   <div>
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{t("library.filter.tech")}</p>
+    <p class="side-heading">{t("library.filter.tech")}</p>
     <div class="flex flex-wrap gap-1.5" id="tech-chips">
-      <button class="chip chip--active" data-filter="tech" data-value="all">{t("library.filter.all")}</button>
+      <button class="chip chip--compact chip--active" data-filter="tech" data-value="all" type="button">{t("library.filter.all")}</button>
       {techs.slice(0, 20).map((tech) => (
-        <button class="chip" data-filter="tech" data-value={tech}>{formatTechLabel(tech)}</button>
+        <button class="chip chip--compact" data-filter="tech" data-value={tech} type="button">{formatTechLabel(tech)}</button>
       ))}
     </div>
   </div>
 
   <!-- Author filter — uses <a> links so URL is source of truth -->
   {authors.length > 0 && (
-    <div>
-      <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{t("library.filter.author")}</p>
-      <div class="flex flex-wrap gap-1.5">
-        <a href={libPath} class="chip chip--active" data-filter="author" data-value="all">
+    <details class="group">
+      <summary class="side-heading cursor-pointer select-none list-none flex items-center gap-1">
+        {t("library.filter.author")}
+        <svg class="transition-transform group-open:rotate-90" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </summary>
+      <div class="flex flex-wrap gap-1.5 mt-2">
+        <a href={libPath} class="chip chip--compact chip--active" data-filter="author" data-value="all">
           {t("library.filter.all")}
         </a>
         {authors.map((handle) => (
           <a
             href={`${libPath}?author=${handle}`}
-            class="chip"
+            class="chip chip--compact"
             data-filter="author"
             data-value={handle}
           >
@@ -138,11 +219,25 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
           </a>
         ))}
       </div>
-    </div>
+    </details>
   )}
 
   <!-- Results count -->
-  <p class="text-xs text-slate-600 mt-1" id="results-count"></p>
+  <p class="text-xs text-slate-600" id="results-count"></p>
+
+  <!-- Favorites export / import -->
+  <div class="flex flex-col gap-2 border-t border-white/6 pt-4">
+    <button
+      id="export-favorites"
+      class="w-full text-sm font-medium px-4 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/6 transition-colors text-left"
+    >
+      ↑ {t("favorites.export")}
+    </button>
+    <label class="w-full text-sm font-medium px-4 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/6 transition-colors cursor-pointer">
+      ↓ {t("favorites.import")}
+      <input type="file" accept=".json" class="hidden" id="import-favorites-input" />
+    </label>
+  </div>
 </div>
 
 <script>
@@ -447,6 +542,25 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   }
 
   let pendingScroll = false;
+  // Auto-scroll to results only where the grid isn't already beside the filters
+  // (mobile drawer). With the sticky desktop sidebar it just feels jumpy.
+  const isMobileViewport = () => window.matchMedia("(max-width: 1023px)").matches;
+
+  // --- URL write-back ---------------------------------------------------------
+  // Keep the address bar in sync with active filters so state survives refresh
+  // and can be shared. replaceState only — no history spam. ?mode= is owned by
+  // the mode-switcher in the page script and is left untouched here.
+  const URL_FILTER_KEYS = ["collection", "category", "difficulty", "tech", "author"] as const;
+  function syncUrl() {
+    const url = new URL(window.location.href);
+    for (const key of URL_FILTER_KEYS) {
+      if (state[key] !== "all") url.searchParams.set(key, state[key]);
+      else url.searchParams.delete(key);
+    }
+    if (state.search) url.searchParams.set("search", state.search);
+    else url.searchParams.delete("search");
+    history.replaceState(history.state, "", url.toString());
+  }
 
   // --- Infinite scroll --------------------------------------------------------
   // 1621 cards is too many to paint at once. We compute the full match set but
@@ -574,6 +688,30 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     }
   }
 
+  // --- Active collection pill --------------------------------------------------
+  // Small dismissible pill above the grid showing the selected collection, since
+  // the sidebar may be scrolled or (on mobile) closed when results render.
+  const collectionPill = document.getElementById("active-collection-pill");
+  const collectionPillLabel = collectionPill?.querySelector<HTMLElement>("[data-pill-label]");
+  function syncCollectionPill() {
+    if (!collectionPill) return;
+    if (state.collection === "all") {
+      collectionPill.classList.add("hidden");
+      return;
+    }
+    const activeBtn = document.querySelector<HTMLElement>(
+      `[data-filter="collection"][data-value="${state.collection}"] .side-row-label`
+    );
+    if (collectionPillLabel) {
+      collectionPillLabel.textContent =
+        activeBtn?.childNodes[0]?.textContent?.trim() ?? state.collection;
+    }
+    collectionPill.classList.remove("hidden");
+  }
+  collectionPill?.querySelector("[data-pill-clear]")?.addEventListener("click", () => {
+    setFilter("collection", "all");
+  });
+
   function setFilter(filter: "collection" | "category" | "difficulty" | "tech" | "author", value: string, apply = true) {
     const filterElements = document.querySelectorAll<HTMLElement>(`[data-filter="${filter}"]`);
     const allowedValues = new Set(
@@ -587,7 +725,12 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       element.classList.toggle("chip--active", element.dataset.value === value);
     });
 
-    if (apply) applyFilters();
+    if (filter === "collection") syncCollectionPill();
+
+    if (apply) {
+      applyFilters();
+      syncUrl();
+    }
   }
 
   // Filter buttons
@@ -596,15 +739,51 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       const filter = btn.dataset.filter as "collection" | "category" | "difficulty" | "tech" | "author";
       const value = btn.dataset.value ?? "all";
 
-      if (value !== "all") pendingScroll = true;
+      if (value !== "all" && isMobileViewport()) pendingScroll = true;
       setFilter(filter, value);
     });
+  });
+
+  // Reset button ("All resources" quick view): back to the default view.
+  document.querySelectorAll<HTMLButtonElement>("[data-filter-reset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.collection = "all";
+      state.category = "all";
+      state.difficulty = "all";
+      state.tech = "all";
+      state.author = "all";
+      state.favoritesOnly = false;
+      state.search = "";
+      state.indexedResults = null;
+      if (searchInput) searchInput.value = "";
+      document.querySelectorAll<HTMLElement>("[data-filter]").forEach((element) => {
+        element.classList.toggle("chip--active", (element.dataset.value ?? "all") === "all");
+      });
+      syncFavBtn();
+      syncCollectionPill();
+      applyFilters();
+      syncUrl();
+    });
+  });
+
+  // Collections mini-filter: narrows the (long) collection list client-side.
+  const collectionFilterInput = document.getElementById("collection-filter-input") as HTMLInputElement | null;
+  collectionFilterInput?.addEventListener("input", () => {
+    const q = collectionFilterInput.value.trim().toLowerCase();
+    document
+      .querySelectorAll<HTMLElement>('#collection-list [data-filter="collection"]')
+      .forEach((row) => {
+        const label = row.dataset.label ?? "";
+        const keep = !q || label === "all" || label.includes(q);
+        row.style.display = keep ? "" : "none";
+      });
   });
 
   // Search
   async function handleSearch(value: string) {
     state.search = value.toLowerCase().trim();
     state.indexedResults = null;
+    syncUrl();
     if (!state.search) {
       applyFilters();
       return;
@@ -634,7 +813,7 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   const favBtn = document.getElementById("favorites-filter-btn");
   function syncFavBtn() {
     if (!favBtn) return;
-    favBtn.classList.toggle("border-rose-400/50", state.favoritesOnly);
+    favBtn.classList.toggle("chip--active", state.favoritesOnly);
     favBtn.classList.toggle("text-rose-400", state.favoritesOnly);
     const svg = favBtn.querySelector("svg");
     if (svg) svg.setAttribute("fill", state.favoritesOnly ? "currentColor" : "none");
@@ -677,9 +856,11 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   if (authorParam) setFilter("author", authorParam, false);
 
   // Scroll to results on initial load if a specific filter is active from URL
-  if (categoryParam || collectionParam || difficultyParam || techParam || authorParam) {
+  if ((categoryParam || collectionParam || difficultyParam || techParam || authorParam) && isMobileViewport()) {
     pendingScroll = true;
   }
+
+  syncCollectionPill();
 
   const searchParam = params.get("search");
   if (searchParam && searchInput) {
@@ -691,6 +872,57 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 </script>
 
 <style is:global>
+  /* Sidebar rows (categories, collections, quick views). Global because the
+     active class is toggled at runtime and the pill lives in the page markup. */
+  #library-sidebar .side-heading {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+    margin-bottom: 0.5rem;
+  }
+  #library-sidebar .side-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.6rem;
+    font-size: 0.8125rem;
+    color: rgb(148 163 184);
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  #library-sidebar .side-row:hover {
+    color: rgb(226 232 240);
+    background: rgb(255 255 255 / 6%);
+  }
+  #library-sidebar .side-row.chip--active {
+    color: #fff;
+    background: rgb(255 255 255 / 8%);
+    border-color: rgb(255 255 255 / 14%);
+  }
+  #library-sidebar .side-row-label {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #library-sidebar .side-row-count {
+    font-size: 0.6875rem;
+    color: rgb(100 116 139);
+    font-variant-numeric: tabular-nums;
+  }
+  #library-sidebar details > summary::-webkit-details-marker {
+    display: none;
+  }
+
   /* Floating progress pill — injected into <body> by the script above, so it must
      live in a global style block (scoped styles wouldn't reach it). */
   #preview-load-status {
