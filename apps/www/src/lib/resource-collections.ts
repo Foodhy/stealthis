@@ -108,5 +108,11 @@ export function resolveResourceCollections(
     resolved.add("restaurant");
   }
 
+  // Requires BOTH tags on purpose: dedicated a11y resources carry the pair, while
+  // components that merely mention accessibility in passing carry only one of them.
+  if (normalizedTags.has("accessibility") && normalizedTags.has("a11y")) {
+    resolved.add("accessibility");
+  }
+
   return RESOURCE_COLLECTION_IDS.filter((id) => resolved.has(id));
 }

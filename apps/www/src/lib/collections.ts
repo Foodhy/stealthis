@@ -57,6 +57,7 @@ export const RESOURCE_COLLECTION_IDS = [
   "mobile",
   "modern-css",
   "webgl",
+  "accessibility",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -66,52 +67,11 @@ export const ALL_COLLECTION_FILTER_VALUE: CollectionFilterValue = "all";
 
 /** Industry vertical collections — show a "New" badge in the library explorer. */
 export const NEW_LIBRARY_COLLECTION_IDS = [
-  "restaurant",
-  "clinic",
-  "gym",
-  "salon",
-  "realestate",
-  "editorial",
-  "comics",
-  "music",
-  "wiki",
-  "patterns",
-  "web3",
-  "gamedev",
-  "storybook",
-  "travel",
-  "portfolio",
-  "ecommerce",
-  "science",
-  "cookbook",
-  "museum",
-  "agency",
-  "d2c",
-  "ai-product",
-  "fintech",
-  "elearning",
-  "delivery",
-  "streaming",
-  "jobs",
-  "events",
-  "nonprofit",
-  "creator",
-  "hotel",
-  "airline",
-  "cowork",
-  "auto",
-  "legal",
-  "insurance",
-  "construction",
-  "vet",
-  "photography",
-  "dental",
-  "wedding",
-  "podcast",
-  "dating",
-  "coach",
-  "interior",
   "video",
+  "mobile",
+  "modern-css",
+  "webgl",
+  "accessibility",
 ] as const satisfies readonly ResourceCollection[];
 
 const newLibraryCollectionIdsSet = new Set<ResourceCollection>(NEW_LIBRARY_COLLECTION_IDS);
@@ -536,6 +496,13 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.webgl.desc",
     accentToken: "collection-webgl",
     order: 58,
+  },
+  {
+    id: "accessibility",
+    titleKey: "collection.accessibility.title",
+    descriptionKey: "collection.accessibility.desc",
+    accentToken: "collection-accessibility",
+    order: 59,
   },
 ];
 

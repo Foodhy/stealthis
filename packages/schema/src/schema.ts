@@ -123,6 +123,7 @@ export const ResourceCollectionSchema = z.enum([
   "mobile",
   "modern-css",
   "webgl",
+  "accessibility",
 ]);
 
 // Sub-kind / bucket for a recommendation topic (drives the card badge label)

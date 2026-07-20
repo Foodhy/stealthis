@@ -544,6 +544,9 @@ const en = {
   "collection.webgl.title": "WebGL Scenes",
   "collection.webgl.desc":
     "Dependency-free WebGL scenes, shader-lit surfaces, depth cards, product viewers, and cursor-reactive canvas experiments.",
+  "collection.accessibility.title": "Accessibility",
+  "collection.accessibility.desc":
+    "WAI-ARIA patterns, keyboard navigation, focus management, screen reader utilities, contrast and color-blind themes, and inclusive reading controls.",
   "resource.copy": "Copy",
   "resource.copied": "Copied!",
   "resource.copiedPasteGemini": "Copied! Opening Gemini in 3s — paste when ready.",
@@ -1083,6 +1086,9 @@ const es = {
   "collection.webgl.title": "Escenas WebGL",
   "collection.webgl.desc":
     "Escenas WebGL sin dependencias, superficies con shaders, tarjetas con profundidad, visores de producto y canvas reactivo al cursor.",
+  "collection.accessibility.title": "Accesibilidad",
+  "collection.accessibility.desc":
+    "Patrones WAI-ARIA, navegación por teclado, gestión del foco, utilidades para lectores de pantalla, temas de contraste y daltonismo, y controles de lectura inclusiva.",
   "collection.wiki.title": "Wiki y Base de Conocimiento",
   "collection.wiki.desc":
     "Artículos de wiki, páginas de documentación, referencias de API y tutoriales, primitivos de conocimiento reutilizables (infobox, TOC fijo, árbol de navegación, callouts, selector de versión, historial de revisiones, notas al pie), búsqueda facetada y command-K, un editor de artículos y panel de KB, más landings temáticas de enciclopedia/dev-docs/fandom/manual/soporte.",

@@ -173,6 +173,7 @@ const ResourceCollectionSchema = z.enum([
   "mobile",
   "modern-css",
   "webgl",
+  "accessibility",
 ]);
 
 const resources = defineCollection({
