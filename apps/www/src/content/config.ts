@@ -170,6 +170,9 @@ const ResourceCollectionSchema = z.enum([
   "coach",
   "interior",
   "video",
+  "mobile",
+  "modern-css",
+  "webgl",
 ]);
 
 const resources = defineCollection({

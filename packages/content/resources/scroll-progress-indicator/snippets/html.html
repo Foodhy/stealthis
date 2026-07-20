@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scroll Progress Indicator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="demo" data-demo="Scroll Progress Indicator">
+    <header class="topbar">
+      <span class="brand">Long-form article</span>
+      <div
+        class="progress"
+        id="progressbar"
+        role="progressbar"
+        aria-label="Reading progress"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+      >
+        <div class="progress__fill" id="progressFill"></div>
+      </div>
+      <output class="pct" id="pct">0%</output>
+    </header>
+
+    <div class="scroller" id="scroller" tabindex="0" role="region" aria-label="Article body, scrollable">
+      <nav class="rail" id="rail" aria-hidden="true"></nav>
+
+      <article class="article" id="article">
+        <h1>Scroll-linked progress, done twice</h1>
+        <p class="lede">
+          A progress bar driven by <code>animation-timeline: scroll()</code> where the browser
+          supports it, and by a passive scroll listener everywhere else.
+        </p>
+
+        <section>
+          <h2>Why two paths</h2>
+          <p>Scroll-driven animations run off the main thread, so the bar tracks the scroller
+          without jank even during heavy layout work. Support is still uneven, so the JavaScript
+          path keeps the same visual contract as a fallback.</p>
+          <p>Both paths write the same <code>scaleX</code>, so only one is ever active. The script
+          checks for both <code>animation-timeline</code> and <code>timeline-scope</code> support and
+          steps aside when the native timeline exists. The bar sits outside the scroller, so the
+          scroller declares a <em>named</em> timeline (<code>scroll-timeline: --article-scroll</code>)
+          and a shared ancestor exports it with <code>timeline-scope</code> — <code>scroll(nearest)</code>
+          would bind to the page instead.</p>
+        </section>
+
+        <section>
+          <h2>Accessibility</h2>
+          <p>The bar is a real <code>progressbar</code> with a live <code>aria-valuenow</code>, so
+          assistive tech gets the same signal sighted users do.</p>
+          <p>The scroller is focusable, so the keyboard can drive it with Page Up, Page Down, Home
+          and End — the pattern never depends on a pointer.</p>
+        </section>
+
+        <section>
+          <h2>Section markers</h2>
+          <p>The rail on the left marks each section start. Markers light up as they are passed,
+          giving a coarse table of contents with no extra chrome.</p>
+          <p>Offsets are measured once and re-measured on resize, so they stay correct when the
+          article reflows.</p>
+        </section>
+
+        <section>
+          <h2>Performance</h2>
+          <p>The fallback listener is passive and only writes a CSS custom property. No layout is
+          read during scroll — heights are cached and invalidated by a ResizeObserver.</p>
+          <p>That keeps the handler well under a millisecond even on very long documents.</p>
+        </section>
+
+        <section>
+          <h2>Wrapping up</h2>
+          <p>Keep the fallback. Keep the semantics. The rest is styling.</p>
+          <p class="end">— end of article —</p>
+        </section>
+      </article>
+    </div>
+
+    <p class="hint">Scroll the panel, or focus it and use Page Up / Page Down / Home / End.</p>
+    <p class="mode" id="mode"></p>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

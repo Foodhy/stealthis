@@ -54,6 +54,9 @@ export const RESOURCE_COLLECTION_IDS = [
   "coach",
   "interior",
   "video",
+  "mobile",
+  "modern-css",
+  "webgl",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -512,6 +515,27 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.video.desc",
     accentToken: "collection-video",
     order: 55,
+  },
+  {
+    id: "mobile",
+    titleKey: "collection.mobile.title",
+    descriptionKey: "collection.mobile.desc",
+    accentToken: "collection-mobile",
+    order: 56,
+  },
+  {
+    id: "modern-css",
+    titleKey: "collection.modern-css.title",
+    descriptionKey: "collection.modern-css.desc",
+    accentToken: "collection-modern-css",
+    order: 57,
+  },
+  {
+    id: "webgl",
+    titleKey: "collection.webgl.title",
+    descriptionKey: "collection.webgl.desc",
+    accentToken: "collection-webgl",
+    order: 58,
   },
 ];
 

@@ -7,8 +7,11 @@ import type { ChallengeMetaOutput, LessonOutput, PathOutput, ResourceMetaOutput 
 
 // fast-glob only accepts forward slashes in patterns; node:path join() emits
 // backslashes on Windows, which silently matches zero files there.
+// Only the directory is converted — convertPathToPattern escapes glob
+// metacharacters (`*`, `?`, …), so passing the full pattern through it
+// silently matches zero files.
 const globPattern = (contentDir: string, subpath: string) =>
-  fg.convertPathToPattern(join(contentDir, subpath));
+  `${fg.convertPathToPattern(contentDir)}/${subpath}`;
 
 export async function loadResources(contentDir: string): Promise<ResourceMetaOutput[]> {
   const pattern = globPattern(contentDir, "resources/*/index.mdx");

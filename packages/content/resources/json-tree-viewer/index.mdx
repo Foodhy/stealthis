@@ -1,0 +1,94 @@
+---
+slug: json-tree-viewer
+title: JSON Tree Viewer
+description: Collapsible JSON tree with live search, match navigation, expand/collapse all, copy, and a Raw text tab. Zero dependencies, syntax-colored by value type.
+category: ui-components
+type: component
+tags: [json, tree, viewer, inspector, search, collapse, devtools, payload, debug]
+tech: [css, javascript, react, svelte, typescript]
+difficulty: med
+targets: [html, react, svelte]
+collections: [dashboard]
+labRoute: /ui-components/json-tree-viewer
+license: MIT
+createdAt: 2026-07-19
+updatedAt: 2026-07-19
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+---
+
+## JSON Tree Viewer
+
+A dark "instrument panel" JSON inspector for API payloads, webhook bodies, and debug dumps.
+Renders any parsed JSON as a collapsible tree, colored per value type, with an incremental
+search that jumps between hits and opens whatever branch they are hiding in.
+
+### Features
+
+- **Collapsible nodes** — click any row to fold an object or array; collapsed rows show `… 12 keys }` so structure stays legible
+- **Type coloring** — strings, numbers, booleans, and `null` each get their own token color
+- **Incremental search** — matches both keys and values, highlights every occurrence, and counts them (`3/17`)
+- **Match navigation** — `Enter` / `Shift+Enter` (or ▲▼) cycle hits; the active hit scrolls into view and its collapsed ancestors auto-open
+- **Expand / collapse all** — collapse leaves the root open so the top-level shape is always visible
+- **Raw tab** — the exact `JSON.stringify(data, null, 2)` text, selectable and copyable
+- **Copy button** — writes the raw JSON to the clipboard with a green confirmation flash
+- **Invalid JSON** — the tree shows a recoverable error instead of throwing, pointing at the Raw tab
+
+### How it works
+
+1. The tree is built by a recursive node renderer. Each node knows its `depth` (indent = `depth * 18px`)
+   and whether it is the last sibling (to place the trailing comma correctly).
+2. Search highlighting splits every rendered string into plain/hit segments and wraps hits in `<mark class="jv-mark">`.
+   Marks are numbered in DOM order, which is what makes prev/next navigation addressable.
+3. Because a hit can live inside a collapsed branch, the viewer walks the data to find every
+   container path that contains a match and force-opens those paths before scrolling.
+4. Collapse-all deliberately skips the root node — a fully collapsed viewer shows nothing useful.
+
+### Variants
+
+| Target | Entry point | Notes |
+| --- | --- | --- |
+| `html` | `script.js` | `window.JsonTreeViewer.attachShell(el).seed(jsonText)`; auto-boots any `[data-jv-shell]` |
+| `react` | `react.tsx` | `<JsonTreeViewer data={payload} />` or `<JsonTreeViewer text={rawString} />` |
+| `svelte` | `svelte.svelte` | Shell component; the recursive `JsonNode.svelte` child is included in the comment block at the bottom — split it into its own file |
+
+### Usage
+
+```html
+<!-- vanilla -->
+<div class="jv-shell" data-jv-shell="payload">…toolbar + .jv-tree + .jv-raw…</div>
+<script>
+  const api = window.JsonTreeViewer.attachShell(document.querySelector('[data-jv-shell="payload"]'));
+  api.seed(JSON.stringify(payload, null, 2));
+</script>
+```
+
+```tsx
+// react
+<JsonTreeViewer data={payload} title="Input Payload" defaultOpenDepth={2} />
+```
+
+```svelte
+<!-- svelte -->
+<JsonTreeViewer data={payload} title="Input Payload" defaultOpenDepth={2} />
+```
+
+### Use cases
+
+- Debug panels for API request/response payloads
+- Webhook and event inspectors
+- Admin dashboards showing raw record state
+- Internal tools where the JSON shape matters as much as its values
+
+### Accessibility
+
+Search input is labelled, every icon button carries an `aria-label`, and the toggle rotation
+is disabled under `prefers-reduced-motion`. Rows are click-targets rather than buttons — wrap
+them in `<button>` if you need full keyboard traversal of the tree itself.
+
+### Customization
+
+All colors come from `--jv-*` custom properties on `:root`. Override them to retheme the
+viewer; `--jv-accent` drives keys and the active mode tab, `--jv-amber` drives search marks.
+Change `INDENT` (18px) to tighten or widen nesting.

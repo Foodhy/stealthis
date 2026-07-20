@@ -4432,6 +4432,128 @@ Category `ui-components`. High-end motion + GPU compute.
 
 ---
 
+## Phase 90 — Drag & Drop Systems ✅ DONE (2026-07-18)
+
+Collection focus: `ui-components` + `effects`. Native HTML5 DnD and Pointer Events variants.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `drag-drop-sortable-list` | Sortable list | easy | ✅ |
+| `drag-drop-kanban-board` | Kanban board | med | ✅ |
+| `drag-drop-file-grid` | File reorder grid | med | ✅ |
+| `drag-drop-handle` | Handle-only drag | easy | ✅ |
+| `drag-drop-placeholder-zone` | Drop-zone placeholder | med | ✅ |
+
+## Phase 91 — Gesture & Touch Surfaces ✅ DONE (2026-07-18)
+
+Collection focus: `mobile`. Touch + Pointer Events with bounded motion and snap behavior.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `gesture-swipe-dismiss` | Swipe-to-dismiss card | med | ✅ |
+| `gesture-pinch-zoom` | Pinch-zoom image | hard | ✅ |
+| `gesture-pull-to-refresh` | Pull-to-refresh | med | ✅ |
+| `gesture-long-press-menu` | Long-press menu | easy | ✅ |
+| `gesture-bottom-sheet` | Bottom-sheet drag | hard | ✅ |
+
+## Phase 92 — Virtual Scroll & Windowing ✅ DONE (2026-07-18)
+
+Collection focus: `ui-components` + `dashboard`. Manual windowing with IntersectionObserver where useful.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `virtual-scroll-windowed-list` | Windowed list | med | ✅ |
+| `virtual-scroll-infinite-feed` | Infinite feed sentinel | med | ✅ |
+| `virtual-scroll-table` | Virtualized table | hard | ✅ |
+| `virtual-scroll-sticky-groups` | Sticky group headers | hard | ✅ |
+| `virtual-scroll-card-grid` | Windowed card grid | hard | ✅ |
+
+## Phase 93 — Scroll-driven CSS ✅ DONE (2026-07-18)
+
+Collection focus: `modern-css`. Native `animation-timeline: scroll()/view()` with JavaScript fallback.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `scroll-timeline-reveal` | CSS scroll-timeline reveal | easy | ✅ |
+| `scroll-parallax-layers` | Parallax layers | med | ✅ |
+| `scroll-sticky-stack` | Sticky-stack sections | med | ✅ |
+| `scroll-progress-indicator` | Progress indicator | easy | ✅ |
+| `scroll-horizontal-gallery` | Horizontal scroll gallery | easy | ✅ |
+
+## Phase 94 — Rich Editor Primitives ✅ DONE (2026-07-18)
+
+Collection focus: `ui-components` + `patterns`. Dependency-free contenteditable patterns.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `rich-editor-contenteditable` | Contenteditable preview | easy | ✅ |
+| `rich-editor-slash-menu` | Slash-command menu | med | ✅ |
+| `rich-editor-mentions` | @mentions autocomplete | med | ✅ |
+| `rich-editor-inline-popover` | Inline code/link popover | hard | ✅ |
+| `rich-editor-toolbar` | Editor toolbar | easy | ✅ |
+
+## Phase 95 — Bento Grid Systems ✅ DONE (2026-07-18)
+
+Collection focus: `modern-css` + `dashboard`. Responsive grid, masonry, auto-fit, expansion, and reorder.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `bento-grid` | Responsive bento dashboard | med | ✅ |
+| `bento-masonry-layout` | Masonry layout | easy | ✅ |
+| `bento-auto-fit-tiles` | Auto-fit tiles | easy | ✅ |
+| `bento-hover-expand` | Hover-expand cell | med | ✅ |
+| `bento-drag-rearrange` | Draggable rearrange | med | ✅ |
+
+## Phase 96 — SVG Maps & Data Layers ✅ DONE (2026-07-18)
+
+Collection focus: `ui-components` + `charts`. Pure SVG maps with no tile server.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `svg-world-pan-zoom` | Pan/zoom SVG world map | hard | ✅ |
+| `svg-map-clustering` | Marker clustering | hard | ✅ |
+| `svg-map-tooltip` | Hover tooltip | med | ✅ |
+| `svg-choropleth-fill` | Choropleth fill | med | ✅ |
+| `svg-world-marker` | World map markers | easy | ✅ |
+
+## Phase 97 — Form UX ✅ DONE (2026-07-18)
+
+Collection focus: `ui-components` + `patterns`. Progressive validation, masks, strength, and local drafts.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `form-wizard-progress` | Multi-step wizard | med | ✅ |
+| `form-inline-validation` | Inline validation | easy | ✅ |
+| `form-input-masks` | Phone/card/date masks | med | ✅ |
+| `form-password-strength` | Password strength | easy | ✅ |
+| `form-draft-autosave` | Draft autosave | med | ✅ |
+
+## Phase 98 — Raw WebGL Scenes ✅ DONE (2026-07-18)
+
+Collection focus: `webgl`. Canvas and WebGL only; no Three.js dependency.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `three-product-360` | Product 360 viewer | hard | ✅ |
+| `three-depth-cards` | Cards with depth | med | ✅ |
+| `three-shader-hero` | Shader-lit hero | hard | ✅ |
+| `three-cursor-mesh` | Cursor-reactive mesh | hard | ✅ |
+| `three-scene-switcher` | Scene switcher | hard | ✅ |
+
+## Phase 99 — SVG Morph & Motion ✅ DONE (2026-07-18)
+
+Collection focus: `modern-css` + `motion`. SMIL and JavaScript morphing patterns.
+
+| Slug | Description | Difficulty | Status |
+|---|---|---:|---|
+| `svg-path-morph` | Path morph transition | med | ✅ |
+| `svg-icon-toggle` | Play/pause and menu/close icons | easy | ✅ |
+| `svg-blob-morph` | Blob morph | easy | ✅ |
+| `svg-signature-draw` | Signature draw | med | ✅ |
+| `svg-morph-loader` | Morphing loader | easy | ✅ |
+
+---
+
 ## Phase index (planned families) 🗂️
 
 > Quick map of the planned/future phase families for navigation. ✅ = shipped phases tracked in their own sections above.
@@ -4462,4 +4584,4 @@ Category `ui-components`. High-end motion + GPU compute.
 | Modern web & AI components | 82–84 | Modern CSS/platform · WebGL/Shader/Canvas · AI-app UI |
 | Lifestyle verticals (II) | 85–88 | Dating/Social · Fitness Coach · Interior Design · Videographer/Film |
 | Advanced motion | 89 | Advanced Motion / WebGPU |
-
+| Interaction & Advanced Components | 90–99 | Drag & Drop · Gesture · Virtual Scroll · Scroll-driven · Rich Editor · Bento · SVG Maps · Form UX · Raw WebGL · SVG Morph |

@@ -1,6 +1,6 @@
 import { SITE_URLS } from "@lib/urls";
 
-export type AppIcon = "dbviz" | "zenpomodoro" | "video" | "record" | "office";
+export type AppIcon = "dbviz" | "zenpomodoro" | "video" | "record" | "office" | "gitbattle";
 
 export type AppEntry = {
   /** Stable slug — also the preview image filename: /apps/<slug>.webp */
@@ -24,6 +24,15 @@ export type AppEntry = {
  * a repo only, hosted apps ship a demo (and a repo when open source).
  */
 export const APPLICATIONS: AppEntry[] = [
+  {
+    slug: "git-battle",
+    name: "Git Battle",
+    desc: "Learn Git by playing — animated codebook, practice drills, and 1v1 multiplayer quiz duels.",
+    image: "/apps/git-battle.webp",
+    icon: "gitbattle",
+    demoHref: "https://git-battle.pages.dev/",
+    repoHref: "https://github.com/Foodhy/git-battle",
+  },
   {
     slug: "dbviz",
     name: "DbViz",

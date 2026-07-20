@@ -1,284 +1,135 @@
+/* Inline Validation — validate on blur, re-validate live once touched. */
 (() => {
-  "use strict";
+  const form = document.querySelector(".iv-form");
+  if (!form) return;
 
-  const form = document.getElementById("signup");
-  const submitBtn = document.getElementById("submit");
-  const done = document.getElementById("done");
-  const doneEmail = document.getElementById("done-email");
-  const resetBtn = document.getElementById("reset");
-  const toastEl = document.getElementById("toast");
+  const summary = form.querySelector("[data-summary]");
+  const summaryList = form.querySelector("[data-summary-list]");
+  const meter = form.querySelector("[data-meter]");
+  const count = form.querySelector("[data-count]");
+  const submit = form.querySelector("[data-submit]");
+  const fields = [...form.querySelectorAll("[data-field]")].map((wrap) => ({
+    wrap,
+    input: wrap.querySelector("input"),
+    msg: wrap.querySelector(".msg"),
+    label: wrap.querySelector("label").textContent.trim(),
+    touched: false,
+  }));
 
-  /* ── Toast helper ── */
-  let toastTimer = null;
-  function toast(msg, isError = false) {
-    toastEl.textContent = msg;
-    toastEl.classList.toggle("is-error", isError);
-    toastEl.classList.add("is-show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastEl.classList.remove("is-show"), 2600);
-  }
+  const EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 
-  /* ── Field registry ──
-     Each validator returns "" when valid, else a specific error message. */
-  const fields = {
-    name: {
-      el: form.elements.name,
-      help: document.getElementById("name-help"),
-      defaultHelp: "Use the name on your ID. At least 2 characters.",
-      validate(v) {
-        const t = v.trim();
-        if (!t) return "Please enter your full name.";
-        if (t.length < 2) return "Name is too short.";
-        if (!/[a-zA-ZÀ-ɏ]/.test(t)) return "Use letters for your name.";
-        return "";
-      },
+  const rules = {
+    required: (v) => (v.trim().length >= 2 ? null : "Enter at least 2 characters."),
+    email: (v) =>
+      !v.trim() ? "Email is required." : EMAIL.test(v.trim()) ? null : "That doesn't look like a valid email.",
+    phone: (v) => {
+      const digits = v.replace(/\D/g, "");
+      if (!digits) return "Phone is required.";
+      return digits.length >= 7 && digits.length <= 15 ? null : "Use 7 to 15 digits.";
     },
-    email: {
-      el: form.elements.email,
-      help: document.getElementById("email-help"),
-      defaultHelp: "We'll send a confirmation link here.",
-      validate(v) {
-        const t = v.trim();
-        if (!t) return "Email is required.";
-        // Pragmatic email shape: local@domain.tld
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t)) return "Enter a valid email, like name@site.com.";
-        return "";
-      },
-      okText: "Looks good.",
+    password: (v) => {
+      if (v.length < 8) return "Use at least 8 characters.";
+      if (!/[a-z]/.test(v) || !/[A-Z]/.test(v)) return "Mix upper and lower case letters.";
+      if (!/\d/.test(v)) return "Include at least one number.";
+      return null;
     },
-    password: {
-      el: form.elements.password,
-      help: null, // uses rules + meter instead of single help line
-      validate(v) {
-        if (!v) return "Create a password.";
-        if (v.length < 8) return "Use at least 8 characters.";
-        if (!/[a-z]/.test(v) || !/[A-Z]/.test(v)) return "Mix upper and lowercase letters.";
-        if (!/\d/.test(v)) return "Include at least one number.";
-        return "";
-      },
-    },
-    confirm: {
-      el: form.elements.confirm,
-      help: document.getElementById("confirm-help"),
-      defaultHelp: "Type it again so we know it matches.",
-      validate(v) {
-        if (!v) return "Please confirm your password.";
-        if (v !== fields.password.el.value) return "Passwords don't match.";
-        return "";
-      },
-      okText: "Passwords match.",
-    },
-    phone: {
-      el: form.elements.phone,
-      help: document.getElementById("phone-help"),
-      defaultHelp: "US format. At least 10 digits.",
-      validate(v) {
-        const digits = v.replace(/\D/g, "");
-        if (!digits) return "Phone number is required.";
-        if (digits.length < 10) return "Enter at least 10 digits.";
-        if (digits.length > 11) return "That's too many digits.";
-        if (digits.length === 11 && digits[0] !== "1") return "11-digit numbers must start with 1.";
-        return "";
-      },
-      okText: "Valid number.",
+    match: (v, input) => {
+      const other = form.querySelector("#" + input.dataset.match);
+      if (!v) return "Confirm your password.";
+      return v === other.value ? null : "Passwords do not match.";
     },
   };
 
-  // Track which fields have been "touched" (blurred at least once).
-  const touched = new Set();
-  const debounceTimers = {};
+  const okText = {
+    required: "Looks good.",
+    email: "Email format is valid.",
+    phone: "Phone number accepted.",
+    password: "Strong enough.",
+    match: "Passwords match.",
+  };
 
-  /* ── Apply a field's visual + ARIA state ── */
-  function render(key) {
-    const f = fields[key];
-    const wrap = f.el.closest(".field");
-    const error = f.validate(f.el.value);
+  function validate(field, { show = true } = {}) {
+    const { input } = field;
+    const error = rules[input.dataset.rule](input.value, input);
+    field.error = error;
 
-    if (error) {
-      wrap.classList.add("is-error");
-      wrap.classList.remove("is-valid");
-      f.el.setAttribute("aria-invalid", "true");
-      if (f.help) {
-        f.help.textContent = error;
-        f.help.classList.add("is-error");
-        f.help.classList.remove("is-ok");
-      }
+    if (!show || (!field.touched && !error)) {
+      // keep neutral until the field has been visited
+    }
+
+    if (!field.touched) {
+      field.wrap.removeAttribute("data-state");
+      field.msg.textContent = "";
+      input.removeAttribute("aria-invalid");
     } else {
-      wrap.classList.remove("is-error");
-      wrap.classList.add("is-valid");
-      f.el.setAttribute("aria-invalid", "false");
-      if (f.help) {
-        f.help.textContent = f.okText || f.defaultHelp;
-        f.help.classList.toggle("is-ok", Boolean(f.okText));
-        f.help.classList.remove("is-error");
-      }
+      field.wrap.dataset.state = error ? "invalid" : "valid";
+      field.msg.textContent = error || okText[input.dataset.rule];
+      input.setAttribute("aria-invalid", error ? "true" : "false");
     }
     return !error;
   }
 
-  /* Reset a field's display to neutral (used before first touch). */
-  function clearState(key) {
-    const f = fields[key];
-    const wrap = f.el.closest(".field");
-    wrap.classList.remove("is-error", "is-valid");
-    f.el.setAttribute("aria-invalid", "false");
-    if (f.help) {
-      f.help.textContent = f.defaultHelp;
-      f.help.classList.remove("is-error", "is-ok");
-    }
+  function refresh() {
+    const valid = fields.filter((f) => !f.error).length;
+    meter.style.width = (valid / fields.length) * 100 + "%";
+    count.textContent = `${valid} of ${fields.length} fields valid`;
   }
 
-  /* ── Password strength + rules ── */
-  const meter = document.querySelector("[data-meter]");
-  const meterBar = document.querySelector("[data-meter-bar]");
-  const meterLabel = document.querySelector("[data-meter-label]");
-  const ruleEls = {
-    len: document.querySelector('[data-rule="len"]'),
-    case: document.querySelector('[data-rule="case"]'),
-    num: document.querySelector('[data-rule="num"]'),
-  };
-  const STRENGTH = ["Weak", "Weak", "Fair", "Good", "Strong"];
-
-  function renderPassword() {
-    const v = fields.password.el.value;
-    const met = {
-      len: v.length >= 8,
-      case: /[a-z]/.test(v) && /[A-Z]/.test(v),
-      num: /\d/.test(v),
-    };
-    let score = 0;
-    Object.keys(met).forEach((k) => {
-      ruleEls[k].classList.toggle("is-met", met[k]);
-      if (met[k]) score++;
-    });
-    // Bonus point for length >= 12 once base rules pass.
-    if (score === 3 && v.length >= 12) score = 4;
-
-    const pct = v ? Math.max(8, (score / 4) * 100) : 0;
-    meterBar.style.width = pct + "%";
-    meter.setAttribute("data-level", String(Math.min(score, 4)));
-    meterLabel.textContent = v ? STRENGTH[Math.min(score, 4)] : "Strength";
-  }
-
-  /* ── Overall form gate ── */
-  function refreshSubmit() {
-    const allValid = Object.keys(fields).every((k) => fields[k].validate(fields[k].el.value) === "");
-    submitBtn.disabled = !allValid;
-    return allValid;
-  }
-
-  /* ── Wire up each field ── */
-  Object.keys(fields).forEach((key) => {
-    const f = fields[key];
-
-    // First blur marks the field touched and shows its state.
-    f.el.addEventListener("blur", () => {
-      touched.add(key);
-      render(key);
-      refreshSubmit();
+  fields.forEach((field) => {
+    field.input.addEventListener("blur", () => {
+      field.touched = true;
+      validate(field);
+      refresh();
     });
 
-    // As-you-type, but only after first blur. Debounced so messages
-    // don't flicker on every keystroke.
-    f.el.addEventListener("input", () => {
-      if (key === "password") renderPassword();
+    field.input.addEventListener("input", () => {
+      // live re-validation only after the first blur (no premature yelling)
+      if (field.touched) validate(field);
+      else field.error = rules[field.input.dataset.rule](field.input.value, field.input);
 
-      // The confirm field depends on password — re-check it live.
-      if (key === "password" && touched.has("confirm")) {
-        clearTimeout(debounceTimers.confirm);
-        debounceTimers.confirm = setTimeout(() => render("confirm"), 220);
-      }
-
-      if (touched.has(key)) {
-        clearTimeout(debounceTimers[key]);
-        debounceTimers[key] = setTimeout(() => {
-          render(key);
-          refreshSubmit();
-        }, 240);
-      } else {
-        // Not yet touched: still update the submit gate quietly.
-        refreshSubmit();
-      }
-    });
-
-    clearState(key);
-  });
-
-  /* ── Phone live formatting (light touch) ── */
-  fields.phone.el.addEventListener("input", (e) => {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
-    let local = digits;
-    let prefix = "";
-    if (digits.length === 11) {
-      prefix = "1 ";
-      local = digits.slice(1);
-    }
-    let out = local;
-    if (local.length > 6) out = `(${local.slice(0, 3)}) ${local.slice(3, 6)}-${local.slice(6)}`;
-    else if (local.length > 3) out = `(${local.slice(0, 3)}) ${local.slice(3)}`;
-    else if (local.length > 0) out = `(${local}`;
-    e.target.value = (prefix + out).trim();
-  });
-
-  /* ── Password reveal toggles ── */
-  document.querySelectorAll("[data-toggle]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const input = document.getElementById(btn.getAttribute("data-toggle"));
-      const show = input.type === "password";
-      input.type = show ? "text" : "password";
-      btn.setAttribute("aria-pressed", String(show));
-      btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
-      input.focus();
+      // confirm depends on password
+      const confirm = fields.find((f) => f.input.dataset.match === field.input.id);
+      if (confirm && confirm.touched) validate(confirm);
+      refresh();
     });
   });
 
-  /* ── Submit ── */
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    // Touch and validate everything; focus the first invalid field.
-    let firstInvalid = null;
-    Object.keys(fields).forEach((key) => {
-      touched.add(key);
-      const ok = render(key);
-      if (!ok && !firstInvalid) firstInvalid = fields[key].el;
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    fields.forEach((f) => {
+      f.touched = true;
+      validate(f);
     });
-    renderPassword();
+    refresh();
 
-    if (!refreshSubmit()) {
-      if (firstInvalid) firstInvalid.focus();
-      toast("Please fix the highlighted fields.", true);
+    const bad = fields.filter((f) => f.error);
+    if (bad.length) {
+      summaryList.replaceChildren(
+        ...bad.map((f) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = "#" + f.input.id;
+          a.textContent = `${f.label}: ${f.error}`;
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            f.input.focus();
+          });
+          li.append(a);
+          return li;
+        })
+      );
+      summary.hidden = false;
+      summary.focus();
+      submit.removeAttribute("data-done");
+      submit.textContent = "Create account";
       return;
     }
 
-    // Simulate an async account creation request.
-    submitBtn.classList.add("is-loading");
-    submitBtn.disabled = true;
-    submitBtn.querySelector(".submit__label").textContent = "Creating…";
-
-    setTimeout(() => {
-      const email = fields.email.el.value.trim();
-      doneEmail.textContent = email || "your inbox";
-      done.hidden = false;
-      done.querySelector(".done__title").focus?.();
-      toast("Account created.");
-    }, 900);
+    summary.hidden = true;
+    submit.dataset.done = "true";
+    submit.textContent = "Account created";
   });
 
-  /* ── Start over ── */
-  resetBtn.addEventListener("click", () => {
-    form.reset();
-    touched.clear();
-    submitBtn.classList.remove("is-loading");
-    submitBtn.querySelector(".submit__label").textContent = "Create account";
-    submitBtn.disabled = true;
-    Object.keys(fields).forEach(clearState);
-    renderPassword();
-    done.hidden = true;
-    fields.name.el.focus();
-  });
-
-  // Initial paint.
-  renderPassword();
-  refreshSubmit();
+  fields.forEach((f) => validate(f, { show: false }));
+  refresh();
 })();

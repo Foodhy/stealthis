@@ -1,0 +1,122 @@
+/* Sticky-stack Sections */
+
+:root {
+  --bg: #0b1020;
+  --surface: #151d31;
+  --text: #eef2ff;
+  --muted: #9eb1d4;
+  --line: rgba(255, 255, 255, 0.09);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(900px 500px at 50% -10%, rgba(120, 169, 255, 0.16), transparent 70%),
+    var(--bg);
+  color: var(--text);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.demo {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3.5rem) 1.25rem 4rem;
+}
+
+.intro h1 {
+  margin: 0 0 .5rem;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.intro p { margin: 0 0 .5rem; color: var(--muted); }
+.hint { font-size: .85rem; }
+
+kbd {
+  font: inherit;
+  font-size: .78em;
+  padding: .1em .42em;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .06);
+}
+
+/* --- the stack --------------------------------------------------------- */
+
+.stack {
+  margin: 2.5rem 0;
+  outline: none;
+  padding-bottom: 40vh; /* room for the last card to unpin */
+}
+
+.stack:focus-visible {
+  outline: 2px solid #78a9ff;
+  outline-offset: 12px;
+  border-radius: 22px;
+}
+
+.card {
+  position: sticky;
+  top: 12vh;
+  min-height: 14rem;
+  margin-bottom: 3.5rem;
+  padding: 1.75rem 1.75rem 2rem;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--accent) 16%, var(--surface)),
+    var(--surface) 62%);
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, .85);
+  overflow: hidden;
+  transform-origin: 50% 0%;
+  /* --p is written by script.js: 0 = frontmost, 1 = fully buried */
+  transform: scale(calc(1 - .08 * var(--p, 0)));
+  filter: brightness(calc(1 - .38 * var(--p, 0))) blur(calc(2px * var(--p, 0)));
+  will-change: transform, filter;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.card:last-child { margin-bottom: 0; }
+
+.num {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  font-size: .78rem;
+  letter-spacing: .22em;
+  color: var(--accent);
+}
+
+.card h2 { margin: .35rem 0 .6rem; font-size: 1.45rem; letter-spacing: -.01em; }
+.card p { margin: 0; color: var(--muted); max-width: 36ch; }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .88em;
+  padding: .1em .35em;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .07);
+}
+
+.outro {
+  text-align: center;
+  color: var(--muted);
+  font-size: .9rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .card { position: static; transform: none; filter: none; }
+}

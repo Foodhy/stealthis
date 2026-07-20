@@ -148,6 +148,7 @@ const en = {
   "apps.page.desc": "Apps and tools from the Stealthis suite.",
   "apps.demo": "Open demo",
   "apps.repo": "View repo",
+  "apps.git-battle.desc": "Learn Git by playing — animated codebook, practice drills, and 1v1 multiplayer quiz duels.",
   "apps.dbviz.desc": "Visual database schema explorer — design tables, generate ERDs, and run SQL right in the browser.",
   "apps.zenpomodoro.desc": "Calm focus timer for deep work — minimalist Pomodoro sessions with tasks, notes, and history.",
   "apps.video-gen.desc": "Fully-local Mac video editor with a CapCut-style timeline — subtitles, translation, and effects, all offline.",
@@ -533,6 +534,15 @@ const en = {
   "collection.video.title": "Videographer & Film Studio",
   "collection.video.desc":
     "Videographer & film studio stack — showreel hero player, portfolio grid, video packages, booking, project pipeline, testimonials, gear/services, before/after grade, and themed studio landings (wedding, commercial, music-video, documentary). Cinematic black + amber, letterbox framing, film-forward.",
+  "collection.mobile.title": "Mobile Interaction",
+  "collection.mobile.desc":
+    "Touch-first gestures, pull-to-refresh, sheets, long-press menus, and mobile interaction patterns built with Pointer Events.",
+  "collection.modern-css.title": "Modern CSS & Platform",
+  "collection.modern-css.desc":
+    "Scroll timelines, responsive bento layouts, SVG motion, and progressive enhancement with current web platform APIs.",
+  "collection.webgl.title": "WebGL Scenes",
+  "collection.webgl.desc":
+    "Dependency-free WebGL scenes, shader-lit surfaces, depth cards, product viewers, and cursor-reactive canvas experiments.",
   "resource.copy": "Copy",
   "resource.copied": "Copied!",
   "resource.copiedPasteGemini": "Copied! Opening Gemini in 3s — paste when ready.",
@@ -717,6 +727,7 @@ const es = {
   "apps.page.desc": "Apps y herramientas de la suite Stealthis.",
   "apps.demo": "Abrir demo",
   "apps.repo": "Ver repo",
+  "apps.git-battle.desc": "Aprende Git jugando — codebook animado, ejercicios de práctica y duelos multijugador 1v1.",
   "apps.dbviz.desc": "Explorador visual de esquemas de bases de datos — diseña tablas, genera diagramas ER y ejecuta SQL en el navegador.",
   "apps.zenpomodoro.desc": "Temporizador de enfoque para trabajo profundo — sesiones Pomodoro minimalistas con tareas, notas e historial.",
   "apps.video-gen.desc": "Editor de video totalmente local para Mac con línea de tiempo estilo CapCut — subtítulos, traducción y efectos, sin conexión.",
@@ -1061,6 +1072,15 @@ const es = {
   "collection.video.title": "Videógrafo y Estudio de Cine",
   "collection.video.desc":
     "Stack de videógrafo y estudio de cine — hero con reproductor de showreel, grid de portafolio, paquetes de video, reserva, pipeline de proyectos, testimonios, equipo/servicios, before/after de color y landings temáticas (boda, comercial, videoclip, documental). Negro cinemático + ámbar, encuadre letterbox.",
+  "collection.mobile.title": "Interacción móvil",
+  "collection.mobile.desc":
+    "Gestos táctiles, pull-to-refresh, sheets, menús long-press y patrones mobile-first con Pointer Events.",
+  "collection.modern-css.title": "CSS moderno y plataforma",
+  "collection.modern-css.desc":
+    "Scroll timelines, layouts bento responsivos, motion SVG y progressive enhancement con APIs web actuales.",
+  "collection.webgl.title": "Escenas WebGL",
+  "collection.webgl.desc":
+    "Escenas WebGL sin dependencias, superficies con shaders, tarjetas con profundidad, visores de producto y canvas reactivo al cursor.",
   "collection.wiki.title": "Wiki y Base de Conocimiento",
   "collection.wiki.desc":
     "Artículos de wiki, páginas de documentación, referencias de API y tutoriales, primitivos de conocimiento reutilizables (infobox, TOC fijo, árbol de navegación, callouts, selector de versión, historial de revisiones, notas al pie), búsqueda facetada y command-K, un editor de artículos y panel de KB, más landings temáticas de enciclopedia/dev-docs/fandom/manual/soporte.",
