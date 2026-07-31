@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reverse engineering a $6 thermal printer — SOLDER &amp; SMOKE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<a class="skip" href="#article">Skip to article</a>
+
+<header class="masthead">
+  <div class="wrap mast-inner">
+    <a class="brand" href="#" aria-label="SOLDER and SMOKE home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30" role="presentation">
+          <rect x="1" y="1" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 22 L13 10 L17 18 L21 13 L25 22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="miter"/>
+          <circle cx="13" cy="10" r="2.4" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="brand-text">SOLDER<span class="amp">&amp;</span>SMOKE</span>
+    </a>
+    <nav class="mast-nav" aria-label="Sections">
+      <a href="#article">Teardowns</a>
+      <a href="#bom">Parts</a>
+      <a href="#comments">Comments</a>
+      <a class="nav-cta" href="#composer">Submit a tip</a>
+    </nav>
+    <button class="menu-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="mobileNav">MENU</button>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" hidden aria-label="Sections (mobile)">
+    <a href="#article">Teardowns</a>
+    <a href="#bom">Parts</a>
+    <a href="#comments">Comments</a>
+    <a href="#composer">Submit a tip</a>
+  </nav>
+  <div class="progress" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+    <span class="progress-fill" id="progressFill"></span>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <article class="article" id="article">
+
+    <div class="kicker">
+      <span class="tag-cat">TEARDOWN</span>
+      <span class="kicker-meta mono">LOG&nbsp;#0417 · SERIAL BUS</span>
+    </div>
+
+    <h1 class="headline">Reverse engineering a $6 thermal printer</h1>
+
+    <p class="dek">It arrived in a padded envelope with no datasheet, no driver, and a USB-C port that
+      only charges. Two evenings, one logic analyzer and a lot of receipt paper later, it prints
+      arbitrary bitmaps over Bluetooth — and the protocol turned out to be almost polite.</p>
+
+    <div class="byline">
+      <span class="avatar" aria-hidden="true">MK</span>
+      <div class="byline-txt">
+        <p class="byline-name">Mara Kovacs</p>
+        <p class="byline-meta mono">30 JUL 2026 · 14 MIN READ · 6 COMMENTS</p>
+      </div>
+      <div class="share" role="group" aria-label="Share this article">
+        <button class="btn-share" type="button" data-share="link" id="copyLink">COPY LINK</button>
+        <button class="btn-share" type="button" data-share="cite">CITE</button>
+        <button class="btn-share" type="button" data-share="save" id="saveBtn" aria-pressed="false">SAVE</button>
+      </div>
+    </div>
+
+    <figure class="fig fig-hero">
+      <div class="duo duo-printer" aria-hidden="true">
+        <span class="d-body"></span>
+        <span class="d-slot"></span>
+        <span class="d-paper"></span>
+        <span class="d-led"></span>
+        <span class="d-scan"></span>
+      </div>
+      <figcaption class="mono">FIG. 1 — The unit as received. Single ABS shell, four hidden clips, zero screws.</figcaption>
+    </figure>
+
+    <h2 id="s-teardown" class="h2">The teardown</h2>
+    <p>The shell has no fasteners at all. Four internal clips run along the seam, two per long side,
+      and they release in order from the paper slot backwards if you slide a plastic spudger in at a
+      shallow angle. Do the front pair first and the rear pair pop with almost no force. Do it in the
+      other order and you will snap the left rear clip, which I know because I snapped the left rear clip.</p>
+    <p>Inside: one four-layer board about the size of a credit card, a 1200&nbsp;mAh pouch cell held down
+      with foam tape, a stepper-free platen roller driven by a small brushed motor, and the thermal
+      head itself on a flex ribbon with a 24-pin ZIF connector. The main IC has its markings lasered
+      off, but the pinout, the 8&nbsp;MHz crystal and the two-wire debug pads made the family obvious
+      within a few minutes of probing.</p>
+
+    <blockquote class="pull">
+      <p>Nobody obfuscates a protocol they expect you to look at. This one was never obfuscated —
+        it was simply never documented.</p>
+    </blockquote>
+
+    <p>The debug pads are unpopulated but on a 1.27&nbsp;mm pitch, so a set of pogo pins and a steady hand
+      is enough. I did not need them in the end: the interesting traffic was all on the air, and the
+      vendor app was happy to talk while a sniffer sat between it and the printer.</p>
+
+    <figure class="fig">
+      <div class="duo duo-board" aria-hidden="true">
+        <span class="b-pcb"></span>
+        <span class="b-mcu"></span>
+        <span class="b-cap b-cap1"></span>
+        <span class="b-cap b-cap2"></span>
+        <span class="b-zif"></span>
+        <span class="b-trace"></span>
+      </div>
+      <figcaption class="mono">FIG. 2 — Main board, top side. MCU markings removed; ZIF at right feeds the thermal head.</figcaption>
+    </figure>
+
+    <h2 id="s-protocol" class="h2">Sniffing the protocol</h2>
+    <p>The printer advertises a single GATT service with one write-without-response characteristic and
+      one notify characteristic. Everything — status, feed, density, image data — moves through those
+      two handles as framed packets. Each frame starts with a two-byte magic, carries a command byte,
+      a length, a payload and a CRC-8 with polynomial 0x07, then a fixed terminator.</p>
+
+    <div class="code" data-lang="python">
+      <div class="code-head">
+        <span class="mono code-file">sniff_frames.py</span>
+        <button class="btn-copy" type="button" data-copy="#code1">COPY</button>
+      </div>
+      <pre id="code1"><code><span class="ln"></span><span class="c"># frame = 51 78 CMD 00 LEN 00 PAYLOAD CRC FF</span>
+<span class="ln"></span><span class="k">def</span> <span class="f">frame</span>(cmd, payload=<span class="s">b""</span>):
+<span class="ln"></span>    body = <span class="fn">bytes</span>([<span class="n">0x51</span>, <span class="n">0x78</span>, cmd, <span class="n">0x00</span>, <span class="fn">len</span>(payload), <span class="n">0x00</span>])
+<span class="ln"></span>    <span class="k">return</span> body + payload + <span class="fn">bytes</span>([crc8(payload), <span class="n">0xFF</span>])
+<span class="ln"></span>
+<span class="ln"></span><span class="k">def</span> <span class="f">crc8</span>(data, poly=<span class="n">0x07</span>):
+<span class="ln"></span>    crc = <span class="n">0</span>
+<span class="ln"></span>    <span class="k">for</span> b <span class="k">in</span> data:
+<span class="ln"></span>        crc ^= b
+<span class="ln"></span>        <span class="k">for</span> _ <span class="k">in</span> <span class="fn">range</span>(<span class="n">8</span>):
+<span class="ln"></span>            crc = ((crc &lt;&lt; <span class="n">1</span>) ^ poly) &amp; <span class="n">0xFF</span> <span class="k">if</span> crc &amp; <span class="n">0x80</span> <span class="k">else</span> crc &lt;&lt; <span class="n">1</span>
+<span class="ln"></span>    <span class="k">return</span> crc</code></pre>
+    </div>
+
+    <p>Command <code class="ic">0xA9</code> is a keepalive the app sends every two seconds. Ignore it and the
+      printer sleeps mid-job, which produced my first three half-printed test pages. Command
+      <code class="ic">0xA2</code> sets thermal density from 1 to 5; anything above 3 on cheap paper bleeds badly.
+      Command <code class="ic">0xA6</code> feeds a line without heating, and <code class="ic">0xA1</code> takes 48 bytes of packed
+      1-bit pixels — one full 384-dot row.</p>
+
+    <h3 class="h3">What the sniff turned up</h3>
+    <ul class="findings">
+      <li><b>384 dots per line</b>, 8&nbsp;dots/mm, so the printable width is exactly 48&nbsp;mm on 58&nbsp;mm paper.</li>
+      <li><b>No pairing secret.</b> Any BLE central that knows the service UUID can print. There is no auth at all.</li>
+      <li><b>The CRC is checked.</b> Bad frames are dropped silently — no NAK, no notify, nothing.</li>
+      <li><b>Row order is MSB-first</b>, left pixel in bit 7, which is the opposite of what I guessed first.</li>
+      <li><b>Battery status</b> arrives unsolicited on the notify handle roughly every 10&nbsp;seconds as a single percentage byte.</li>
+      <li><b>Overheat cutout</b> at a reported 58&nbsp;°C halts the job and only resumes after a fresh keepalive.</li>
+    </ul>
+
+    <aside class="bom" id="bom" aria-labelledby="bom-title">
+      <h3 class="bom-title mono" id="bom-title">BILL OF MATERIALS — BENCH RIG</h3>
+      <div class="bom-scroll">
+        <table class="bom-table">
+          <thead>
+            <tr><th scope="col">REF</th><th scope="col">ITEM</th><th scope="col">SPEC</th><th scope="col">QTY</th><th scope="col">EST.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>U1</td><td>Thermal printer</td><td>58&nbsp;mm BLE, unbranded</td><td>1</td><td>$6.10</td></tr>
+            <tr><td>U2</td><td>Logic analyzer</td><td>8-ch, 24&nbsp;MS/s</td><td>1</td><td>$11.00</td></tr>
+            <tr><td>U3</td><td>BLE sniffer dongle</td><td>2.4&nbsp;GHz, follow-connection</td><td>1</td><td>$18.50</td></tr>
+            <tr><td>J1</td><td>Pogo pin jig</td><td>1.27&nbsp;mm pitch, 4-pos</td><td>1</td><td>$4.20</td></tr>
+            <tr><td>P1</td><td>Receipt paper</td><td>58&nbsp;mm × 12&nbsp;m, BPA-free</td><td>6</td><td>$5.40</td></tr>
+            <tr><td>T1</td><td>Plastic spudger set</td><td>nylon, 3-piece</td><td>1</td><td>$2.80</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="bom-total mono">TOTAL — $48.00 · ALL PRICES INDICATIVE, JUL 2026</p>
+    </aside>
+
+    <h2 id="s-driver" class="h2">Writing a driver</h2>
+    <p>With the frame format nailed down the driver is short. Dither the source image to 1-bit with
+      Floyd–Steinberg, pack each row into 48 bytes, and stream the rows with a small delay so the head
+      driver keeps up. Sending faster than about 12&nbsp;ms per row makes the print smear vertically —
+      the roller is the bottleneck, not the radio.</p>
+
+    <div class="code" data-lang="javascript">
+      <div class="code-head">
+        <span class="mono code-file">print.js</span>
+        <button class="btn-copy" type="button" data-copy="#code2">COPY</button>
+      </div>
+      <pre id="code2"><code><span class="ln"></span><span class="k">const</span> WIDTH = <span class="n">384</span>, BYTES = WIDTH / <span class="n">8</span>;
+<span class="ln"></span>
+<span class="ln"></span><span class="k">async function</span> <span class="f">printRows</span>(chr, rows) {
+<span class="ln"></span>  <span class="k">await</span> <span class="f">send</span>(chr, <span class="f">frame</span>(<span class="n">0xA2</span>, <span class="k">new</span> <span class="fn">Uint8Array</span>([<span class="n">3</span>])));  <span class="c">// density</span>
+<span class="ln"></span>  <span class="k">for</span> (<span class="k">const</span> row <span class="k">of</span> rows) {
+<span class="ln"></span>    <span class="k">await</span> <span class="f">send</span>(chr, <span class="f">frame</span>(<span class="n">0xA1</span>, row.<span class="f">slice</span>(<span class="n">0</span>, BYTES)));
+<span class="ln"></span>    <span class="k">await</span> <span class="f">sleep</span>(<span class="n">12</span>);                        <span class="c">// roller limit</span>
+<span class="ln"></span>  }
+<span class="ln"></span>  <span class="k">await</span> <span class="f">send</span>(chr, <span class="f">frame</span>(<span class="n">0xA6</span>, <span class="k">new</span> <span class="fn">Uint8Array</span>([<span class="n">40</span>]))); <span class="c">// tear-off feed</span>
+<span class="ln"></span>}</code></pre>
+    </div>
+
+    <p>The full source, the captured frame dumps and a small web front end that prints straight from a
+      browser over Web Bluetooth are all in the project log, along with the three failed attempts that
+      taught me about the keepalive.</p>
+
+    <figure class="fig">
+      <div class="duo duo-receipt" aria-hidden="true">
+        <span class="r-paper"></span>
+        <span class="r-l r-l1"></span><span class="r-l r-l2"></span><span class="r-l r-l3"></span>
+        <span class="r-blk"></span>
+        <span class="r-zig"></span>
+      </div>
+      <figcaption class="mono">FIG. 3 — First clean bitmap after fixing bit order and honouring the keepalive.</figcaption>
+    </figure>
+
+    <h2 id="s-next" class="h2">Where this goes next</h2>
+    <p>Because there is no authentication, a printer left powered on is a printer anyone in radio range
+      can drive. That is a fun party trick and a genuinely bad property for a device people put on a
+      shop counter. The firmware appears to be updatable over the same characteristic with command
+      <code class="ic">0xB0</code>, which is the next thing I want to characterise — carefully, on a second unit,
+      with a full flash dump taken first.</p>
+    <p>If you have one of these with a slightly different shell, the protocol is very likely identical.
+      Check whether your unit answers <code class="ic">0xA9</code> and let me know in the comments; I am
+      collecting a compatibility list.</p>
+
+    <div class="related" aria-label="Related posts">
+      <h3 class="rel-title mono">RELATED FROM THE LOG</h3>
+      <div class="rel-grid">
+        <a class="rel-card" href="#article">
+          <span class="rel-tag mono">TEARDOWN</span>
+          <span class="rel-h">The $3 e-ink tag that speaks a real protocol</span>
+          <span class="rel-m mono">9 MIN · 41 COMMENTS</span>
+        </a>
+        <a class="rel-card" href="#article">
+          <span class="rel-tag mono">TOOLS</span>
+          <span class="rel-h">Building a pogo jig from a broken keyboard</span>
+          <span class="rel-m mono">6 MIN · 18 COMMENTS</span>
+        </a>
+        <a class="rel-card" href="#article">
+          <span class="rel-tag mono">RADIO</span>
+          <span class="rel-h">Following BLE connections on a $18 dongle</span>
+          <span class="rel-m mono">12 MIN · 77 COMMENTS</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="tags" aria-label="Tags">
+      <a class="tag" href="#article">#thermal-printer</a>
+      <a class="tag" href="#article">#ble</a>
+      <a class="tag" href="#article">#reverse-engineering</a>
+      <a class="tag" href="#article">#protocol</a>
+      <a class="tag" href="#article">#teardown</a>
+      <a class="tag" href="#article">#web-bluetooth</a>
+    </div>
+
+    <section class="comments" id="comments" aria-labelledby="comments-title">
+      <div class="comments-head">
+        <h2 class="h2" id="comments-title">Comments <span class="count mono" id="cCount">6</span></h2>
+        <button class="btn-ghost" type="button" id="collapseAll" aria-expanded="true">COLLAPSE REPLIES</button>
+      </div>
+
+      <ul class="c-list" id="cList">
+        <li class="c-item" data-votes="34">
+          <div class="c-body">
+            <div class="c-meta"><span class="c-av" aria-hidden="true">DV</span><b class="c-name">devnull_vic</b><span class="badge badge-op mono">OP</span><span class="c-time mono">2h ago</span></div>
+            <p class="c-text">Author here — the compatibility list is live in the log. So far six shell variants, all identical on the wire. The one exception is a unit with a white paper door that uses density 1–7 instead of 1–5.</p>
+            <div class="c-actions">
+              <div class="vote" data-vote-group><button class="v-btn" type="button" data-vote="up" aria-label="Upvote">▲</button><span class="v-count mono">34</span><button class="v-btn" type="button" data-vote="down" aria-label="Downvote">▼</button></div>
+              <button class="c-reply" type="button">REPLY</button>
+              <button class="c-toggle" type="button" aria-expanded="true">HIDE 2 REPLIES</button>
+            </div>
+          </div>
+          <ul class="c-children">
+            <li class="c-item">
+              <div class="c-body">
+                <div class="c-meta"><span class="c-av" aria-hidden="true">RS</span><b class="c-name">rustysolder</b><span class="c-time mono">96m ago</span></div>
+                <p class="c-text">Mine is the white-door variant and density 6 melts the paper into a grey smear instantly. 4 is the practical ceiling. Good excuse to buy nicer rolls.</p>
+                <div class="c-actions">
+                  <div class="vote" data-vote-group><button class="v-btn" type="button" data-vote="up" aria-label="Upvote">▲</button><span class="v-count mono">12</span><button class="v-btn" type="button" data-vote="down" aria-label="Downvote">▼</button></div>
+                  <button class="c-reply" type="button">REPLY</button>
+                </div>
+              </div>
+            </li>
+            <li class="c-item">
+              <div class="c-body">
+                <div class="c-meta"><span class="c-av" aria-hidden="true">KP</span><b class="c-name">k_prasad</b><span class="badge badge-staff mono">STAFF</span><span class="c-time mono">71m ago</span></div>
+                <p class="c-text">Adding the variant table to the post as an addendum. If anyone has one that rejects 0xA1 outright, please dump the notify handle before power cycling — that is the interesting failure mode.</p>
+                <div class="c-actions">
+                  <div class="vote" data-vote-group><button class="v-btn" type="button" data-vote="up" aria-label="Upvote">▲</button><span class="v-count mono">9</span><button class="v-btn" type="button" data-vote="down" aria-label="Downvote">▼</button></div>
+                  <button class="c-reply" type="button">REPLY</button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </li>
+
+        <li class="c-item" data-votes="21">
+          <div class="c-body">
+            <div class="c-meta"><span class="c-av" aria-hidden="true">MB</span><b class="c-name">mel_bitrot</b><span class="c-time mono">3h ago</span></div>
+            <p class="c-text">The 12&nbsp;ms figure matches what I measured on a similar head. If you preheat with a couple of blank rows at density 2 first, you can drop to 9&nbsp;ms for the rest of the page without smearing.</p>
+            <div class="c-actions">
+              <div class="vote" data-vote-group><button class="v-btn" type="button" data-vote="up" aria-label="Upvote">▲</button><span class="v-count mono">21</span><button class="v-btn" type="button" data-vote="down" aria-label="Downvote">▼</button></div>
+              <button class="c-reply" type="button">REPLY</button>
+              <button class="c-toggle" type="button" aria-expanded="true">HIDE 1 REPLY</button>
+            </div>
+          </div>
+          <ul class="c-children">
+            <li class="c-item">
+              <div class="c-body">
+                <div class="c-meta"><span class="c-av" aria-hidden="true">TQ</span><b class="c-name">tinq</b><span class="c-time mono">2h ago</span></div>
+                <p class="c-text">Confirmed on two units. Preheat rows also stop the first printed line from coming out faint, which had been bugging me for months.</p>
+                <div class="c-actions">
+                  <div class="vote" data-vote-group><button class="v-btn" type="button" data-vote="up" aria-label="Upvote">▲</button><span class="v-count mono">15</span><button class="v-btn" type="button" data-vote="down" aria-label="Downvote">▼</button></div>
+                  <button class="c-reply" type="button">REPLY</button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </li>
+
+        <li class="c-item" data-votes="7">
+          <div class="c-body">
+            <div class="c-meta"><span class="c-av" aria-hidden="true">GH</span><b class="c-name">ghost_of_pcb</b><span class="c-time mono">5h ago</span></div>
+            <p class="c-text">Lasered-off markings almost always mean a repackaged part rather than a custom one. Try dumping the ROM through the two-wire pads and grepping for a vendor string — half the time it is right there in the bootloader banner.</p>
+            <div class="c-actions">
+              <div class="vote" data-vote-group><button class="v-btn" type="button" data-vote="up" aria-label="Upvote">▲</button><span class="v-count mono">7</span><button class="v-btn" type="button" data-vote="down" aria-label="Downvote">▼</button></div>
+              <button class="c-reply" type="button">REPLY</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <form class="composer" id="composer" novalidate>
+        <label class="comp-label mono" for="cText">JOIN THE THREAD</label>
+        <textarea id="cText" class="comp-input" rows="4" maxlength="480" placeholder="Measured something different? Post your numbers."></textarea>
+        <div class="comp-foot">
+          <span class="counter mono" id="counter" aria-live="polite">0 / 480</span>
+          <button class="btn-post" type="submit">POST COMMENT</button>
+        </div>
+      </form>
+    </section>
+  </article>
+
+  <aside class="rail" aria-label="Article contents">
+    <div class="rail-inner">
+      <p class="rail-title mono">ON THIS PAGE</p>
+      <nav class="toc" id="toc">
+        <a href="#s-teardown" data-toc="s-teardown">The teardown</a>
+        <a href="#s-protocol" data-toc="s-protocol">Sniffing the protocol</a>
+        <a href="#bom" data-toc="bom">Bill of materials</a>
+        <a href="#s-driver" data-toc="s-driver">Writing a driver</a>
+        <a href="#s-next" data-toc="s-next">Where this goes next</a>
+        <a href="#comments" data-toc="comments">Comments</a>
+      </nav>
+      <div class="rail-box">
+        <p class="rail-box-t mono">PROJECT LOG</p>
+        <p class="rail-box-p">Frame dumps, dither code and the Web Bluetooth front end.</p>
+        <a class="rail-link" href="#article">OPEN LOG →</a>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <p class="mono">SOLDER &amp; SMOKE — A FICTIONAL HARDWARE-HACKING BLOG. DEMO CONTENT ONLY.</p>
+    <p class="mono">NO REAL PRODUCTS, PRICES OR PEOPLE ARE DEPICTED.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>

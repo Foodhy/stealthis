@@ -1,6 +1,7 @@
 ---
 import { type Locale, getLocalePrefix, useTranslations } from "@i18n/index";
 import { IS_NEW_RECOMMENDATIONS_SECTION } from "@lib/collections";
+import { getCategoryIcon, getCollectionIcon } from "@lib/icons";
 
 interface SidebarCollection {
   id: string;
@@ -31,12 +32,10 @@ const {
 const t = useTranslations(locale);
 const libPath = `${getLocalePrefix(locale)}/library`;
 
-// Inline labels — avoids adding one-off keys to all ~16 typed locale maps.
-const isEs = locale === "es";
 const L = {
-  allResources: isEs ? "Todos los recursos" : "All resources",
-  collections: isEs ? "Colecciones" : "Collections",
-  collectionSearch: isEs ? "Filtrar colecciones…" : "Filter collections…",
+  allResources: t("library.sidebar.allResources"),
+  collections: t("library.sidebar.collections"),
+  collectionSearch: t("library.sidebar.filterCollections"),
 };
 
 const difficulties = ["easy", "med", "hard"] as const;
@@ -103,6 +102,7 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     <p class="side-heading">{t("library.filter.category")}</p>
     <div class="flex flex-col gap-0.5">
       <button class="side-row chip--active" data-filter="category" data-value="all" type="button">
+        <span class="side-row-glyph" aria-hidden="true">◆</span>
         <span class="side-row-label">{t("library.filter.all")}</span>
         <span class="side-row-count">{totalCount}</span>
       </button>
@@ -121,6 +121,7 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
         const isNew = cat === "recommendations" && IS_NEW_RECOMMENDATIONS_SECTION;
         return (
           <button class="side-row" data-filter="category" data-value={cat} type="button">
+            <span class="side-row-glyph" aria-hidden="true">{getCategoryIcon(cat)}</span>
             <span class="side-row-label">
               {t(key)}
               {isNew && <span class="lib-new-badge">{t("badge.new")}</span>}
@@ -152,6 +153,7 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     </div>
     <div class="flex flex-col gap-0.5 max-h-72 overflow-y-auto pr-1" id="collection-list">
       <button class="side-row chip--active" data-filter="collection" data-value="all" data-label="all" type="button">
+        <span class="side-row-glyph" aria-hidden="true">◆</span>
         <span class="side-row-label">{t("library.filter.all")}</span>
       </button>
       {collections.map((c) => (
@@ -162,6 +164,7 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
           data-label={c.title.toLowerCase()}
           type="button"
         >
+          <span class="side-row-glyph" aria-hidden="true">{getCollectionIcon(c.id)}</span>
           <span class="side-row-label">
             <span class="side-row-name">{c.title}</span>
             {c.isNew && <span class="lib-new-badge">{t("badge.new")}</span>}
@@ -241,6 +244,8 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
 </div>
 
 <script>
+  import { LIBRARY_INITIAL_REVEAL } from "@lib/constant";
+
   const FAVORITES_KEY = "stealthis:favorites";
   function getFavoriteSlugs(): Set<string> {
     try {
@@ -568,7 +573,10 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
   // batch as the user scrolls. Hidden-but-matching cards cost nothing (they are
   // display:none) and previews only attach to revealed cards, so the iframe
   // storm that made "Show previews" choke is bounded too.
-  const INITIAL_REVEAL = 48;
+  // Shared with the static markup in pages/library/index.astro, which ships the
+  // first INITIAL_REVEAL cards visible and the rest display:none — so this first
+  // pass is a no-op instead of collapsing 2000 painted cards down to 48.
+  const INITIAL_REVEAL = LIBRARY_INITIAL_REVEAL;
   const REVEAL_STEP = 48;
   let revealCount = INITIAL_REVEAL;
   let matchedCards: HTMLElement[] = [];
@@ -703,8 +711,12 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       `[data-filter="collection"][data-value="${state.collection}"] .side-row-label`
     );
     if (collectionPillLabel) {
+      // Title lives in .side-row-name (the first child node is whitespace, so
+      // childNodes[0] alone yields an empty pill). Fall back to the raw ID.
       collectionPillLabel.textContent =
-        activeBtn?.childNodes[0]?.textContent?.trim() ?? state.collection;
+        activeBtn?.querySelector(".side-row-name")?.textContent?.trim() ||
+        activeBtn?.childNodes[0]?.textContent?.trim() ||
+        state.collection;
     }
     collectionPill.classList.remove("hidden");
   }
@@ -725,7 +737,14 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       element.classList.toggle("chip--active", element.dataset.value === value);
     });
 
-    if (filter === "collection") syncCollectionPill();
+    if (filter === "collection") {
+      syncCollectionPill();
+      // The sort chips (page script) force "By category" while a collection is
+      // active and restore the user's last pick on "All".
+      window.dispatchEvent(
+        new CustomEvent("stealthis:collection-changed", { detail: { collection: value } })
+      );
+    }
 
     if (apply) {
       applyFilters();
@@ -739,7 +758,9 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       const filter = btn.dataset.filter as "collection" | "category" | "difficulty" | "tech" | "author";
       const value = btn.dataset.value ?? "all";
 
-      if (value !== "all" && isMobileViewport()) pendingScroll = true;
+      // Collections always scroll back to the top of the results — the sidebar
+      // list is long, so the click usually happens with the page scrolled deep.
+      if (value !== "all" && (filter === "collection" || isMobileViewport())) pendingScroll = true;
       setFilter(filter, value);
     });
   });
@@ -761,6 +782,9 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
       });
       syncFavBtn();
       syncCollectionPill();
+      window.dispatchEvent(
+        new CustomEvent("stealthis:collection-changed", { detail: { collection: "all" } })
+      );
       applyFilters();
       syncUrl();
     });
@@ -910,6 +934,24 @@ const formatTechLabel = (value: string) => TECH_LABELS[value] ?? value;
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+  }
+  /* Unicode glyph shared with the homepage category grid (see @lib/icons).
+     Fixed width so every label starts on the same optical baseline, matching
+     the 14px stroke SVGs used by the "All resources" / "Favorites" rows. */
+  #library-sidebar .side-row-glyph {
+    flex-shrink: 0;
+    width: 14px;
+    text-align: center;
+    font-size: 0.8125rem;
+    line-height: 1;
+    color: rgb(100 116 139);
+    transition: color 0.15s ease;
+  }
+  #library-sidebar .side-row:hover .side-row-glyph {
+    color: rgb(148 163 184);
+  }
+  #library-sidebar .side-row.chip--active .side-row-glyph {
+    color: rgb(56 189 248);
   }
   /* Only the name truncates; the "New" badge is a sibling so it never gets clipped
      by the ellipsis (which was cutting the badge off on long collection names). */

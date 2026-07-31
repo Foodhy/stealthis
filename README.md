@@ -226,6 +226,54 @@ Handy add-ons you can append to the request:
 > mechanics, the script template, and how to read `/workflows` live in
 > [`PHASE-WORKFLOW.md`](./PHASE-WORKFLOW.md).
 
+## Replicating a Design into Resources (`/replicate-resource`)
+
+Sometimes you have a one-off page you love — a standalone HTML file, an internal doc, an
+existing resource — and you want it in the library. The repo ships a skill + agent pair
+for exactly that:
+
+- **`/replicate-resource`** (`.claude/skills/replicate-resource/SKILL.md`) — the
+  orchestrator: analyzes the source design, scrubs anything sensitive/company-specific,
+  asks the few decisions that matter (language, scrub depth, design directions), fans out
+  builds, then regenerates the catalog and verifies every page live.
+- **`resource-replicator`** (`.claude/agents/resource-replicator.md`) — the builder: one
+  agent per resource, with the authoring rules baked in (snippet wiring, the
+  `scrollIntoView` fix for sandboxed `srcdoc` iframes, valid frontmatter enums, responsive
+  rules, self-scrub grep).
+
+It does two things, together or separately:
+
+1. **Replicate** — same design, new generalized English content (internal names replaced
+   by a fictional `acme-service`).
+2. **Alternatives** — same educational intent, but each on a topic you choose and with a
+   *deliberately different* aesthetic that fills a gap in the library (it checks what
+   looks already exist before proposing).
+
+### Example
+
+```
+/replicate-resource my-cool-page.html "docker networking" "git internals"
+```
+
+Claude will: read `my-cool-page.html` → build a scrubbed replica resource with its exact
+design → propose distinct design directions for the two extra topics (with ASCII previews
+to pick from) → build all resources in parallel → run the catalog build, a scrub grep
+(zero hits required), and live checks on `/r/<slug>` and the Lab route → report each new
+slug and its URLs.
+
+Real-world run: an internal `scheduled-tasks-book.html` became
+[`wiki-scheduled-tasks-book`](https://stealthis.dev/r/wiki-scheduled-tasks-book)
+(paper/serif concept book, replicated + scrubbed), plus three alternatives with brand-new
+designs: [`wiki-localstack-notebook`](https://stealthis.dev/r/wiki-localstack-notebook)
+(Jupyter notebook with typed cell outputs),
+[`wiki-lambda-blueprint`](https://stealthis.dev/r/wiki-lambda-blueprint) (navy/cyan
+engineering drawings with dimension lines), and
+[`wiki-rendering-split`](https://stealthis.dev/r/wiki-rendering-split) (CSR-vs-SSR
+split screen with an animated page-load race).
+
+> Scale note: 1–4 resources is this skill's sweet spot. For a 20+ resource phase, use the
+> [multi-agent workflow](#building-a-whole-phase-multi-agent-workflow) instead.
+
 ## Schema + Consumer Alignment
 
 If you add/rename category/type/target fields, keep these in sync:

@@ -9,7 +9,8 @@ import {
   isNewLibraryCollection,
   libraryCollections,
 } from "@lib/collections";
-import { SHOW_SORT_BAR } from "@lib/constant";
+import { LIBRARY_INITIAL_REVEAL, SHOW_SORT_BAR } from "@lib/constant";
+import { getCategoryIcon } from "@lib/icons";
 import {
   RECOMMENDATION_THEMES,
   type RecommendationThemeLabelKey,
@@ -24,11 +25,10 @@ const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 const prefix = getLocalePrefix(locale);
 
-// Inline labels — avoids adding one-off keys to all ~16 typed locale maps.
-const previewsLabel = locale === "es" ? "Mostrar vistas previas" : "Show previews";
-const filtersLabel = locale === "es" ? "Filtros" : "Filters";
-const closeFiltersLabel = locale === "es" ? "Cerrar filtros" : "Close filters";
-const clearCollectionLabel = locale === "es" ? "Quitar colección" : "Clear collection";
+const previewsLabel = t("library.previews.show");
+const filtersLabel = t("library.filters");
+const closeFiltersLabel = t("library.filters.close");
+const clearCollectionLabel = t("library.collection.clear");
 
 const allResources = (await getCollection("resources")).sort(
   (a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime()
@@ -69,8 +69,13 @@ for (const r of allResources) {
     collectionCounts.set(c, (collectionCounts.get(c) ?? 0) + 1);
   }
 }
+// "New" collections surface at the top of the sidebar; within each group, keep `order`.
 const sidebarCollections = [...libraryCollections]
-  .sort((a, b) => a.order - b.order)
+  .sort(
+    (a, b) =>
+      Number(isNewLibraryCollection(b.id)) - Number(isNewLibraryCollection(a.id)) ||
+      a.order - b.order,
+  )
   .map((c) => ({
     id: c.id as string,
     title: t(c.titleKey),
@@ -85,8 +90,8 @@ const recommendationsByTheme = groupRecommendationsByTheme(recommendationResourc
 const CATEGORY_GROUPS = [
   {
     id: "visual",
-    label: "Visual & Code",
-    description: "Copy-paste UI, animations, and components",
+    label: t("library.group.visual.title"),
+    description: t("library.group.visual.desc"),
     categories: [
       "web-animations",
       "web-pages",
@@ -102,29 +107,66 @@ const CATEGORY_GROUPS = [
   },
   {
     id: "3d",
-    label: "3D & Immersive",
-    description: "Three.js models, WebGL interactions, and immersive 3D experiences",
+    label: t("library.group.3d.title"),
+    description: t("library.group.3d.desc"),
     categories: ["3d-models", "3d-interactions"],
   },
   {
     id: "ai",
-    label: "AI & Dev",
-    description: "Prompts, skills, architectures, and server configs",
+    label: t("library.group.ai.title"),
+    description: t("library.group.ai.desc"),
     categories: ["prompts", "plugins", "architectures", "boilerplates"],
   },
   {
     id: "data",
-    label: "Data & SQL",
-    description: "Relational schemas with SQL, ERD diagrams, seed data, and query examples",
+    label: t("library.group.data.title"),
+    description: t("library.group.data.desc"),
     categories: ["database-schemas"],
   },
   {
     id: "recommendations",
-    label: "Recommendations",
-    description: "Tools, models, apps, books & programs we actually rely on",
+    label: t("library.group.recommendations.title"),
+    description: t("library.group.recommendations.desc"),
     categories: ["recommendations"],
   },
 ] as const;
+
+// ── Card inventory ────────────────────────────────────────────────────────────
+// The default view is "Latest added", so THAT is what the static HTML ships:
+// every card is rendered once, in date order, inside #flat-grid. The category
+// sections below are rendered as empty shells and filled in on demand when the
+// user picks "By category" (see activateGrouped in the client script).
+//
+// Each card carries the section it belongs to and its position inside it, which
+// is all the client needs to rebuild the grouped view exactly as it would have
+// been rendered here.
+type CardMeta = {
+  resource: (typeof allResources)[number];
+  sectionKey: string;
+  sectionIndex: number;
+};
+const cardMetas: CardMeta[] = [];
+for (const group of CATEGORY_GROUPS) {
+  if (group.id === "recommendations") {
+    for (const theme of RECOMMENDATION_THEMES) {
+      (recommendationsByTheme.get(theme.id) ?? []).forEach((resource, i) => {
+        cardMetas.push({ resource, sectionKey: `recommendations-${theme.id}`, sectionIndex: i });
+      });
+    }
+  } else {
+    for (const cat of group.categories) {
+      (byCategory.get(cat) ?? []).forEach((resource, i) => {
+        cardMetas.push({ resource, sectionKey: cat, sectionIndex: i });
+      });
+    }
+  }
+}
+// allResources is already newest-first, so a stable sort by createdAt gives the
+// same order the client's "Latest" sort produces.
+const latestCards = [...cardMetas].sort(
+  (a, b) =>
+    new Date(b.resource.data.createdAt).getTime() - new Date(a.resource.data.createdAt).getTime()
+);
 
 type CategoryKey =
   | "category.web-animations"
@@ -590,14 +632,26 @@ const discoverI18n = {
         </div>
         )}
 
-        <!-- Flat grid — shown in "latest" mode -->
-        <div id="flat-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5 min-[2560px]:grid-cols-6 gap-4 mb-12"></div>
+        <!-- Flat grid — the default "latest" view, and the home of every card.
+             "By category" moves these into the section shells below. -->
+        <div id="flat-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5 min-[2560px]:grid-cols-6 gap-4 mb-12">
+          {latestCards.map((card, i) => (
+            <ResourceCard
+              resource={card.resource}
+              locale={locale}
+              previewDefault
+              sectionKey={card.sectionKey}
+              sectionIndex={card.sectionIndex}
+              hidden={i >= LIBRARY_INITIAL_REVEAL}
+            />
+          ))}
+        </div>
 
         {CATEGORY_GROUPS.map((group) => {
           const hasAny = group.categories.some((c) => (byCategory.get(c)?.length ?? 0) > 0);
           if (!hasAny) return null;
           return (
-            <div data-category-group={group.id} class="mb-12">
+            <div data-category-group={group.id} class="mb-12" style="display:none">
               <!-- Group header -->
               <div class="flex items-center gap-3 mb-6">
                 <h2 class="text-base font-bold text-white whitespace-nowrap flex items-center gap-1.5">
@@ -641,11 +695,11 @@ const discoverI18n = {
                           <h3 class="text-sm font-semibold text-slate-400">{t(themeKey)}</h3>
                           <span class="text-xs text-slate-600 tabular-nums">{resources.length}</span>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5 min-[2560px]:grid-cols-6 gap-4">
-                          {resources.map((resource) => (
-                            <ResourceCard resource={resource} locale={locale} />
-                          ))}
-                        </div>
+                        <!-- Filled in by activateGrouped() — cards live in #flat-grid until then. -->
+                        <div
+                          data-section-grid={`recommendations-${theme.id}`}
+                          class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5 min-[2560px]:grid-cols-6 gap-4"
+                        ></div>
                       </div>
                     );
                   })}
@@ -658,14 +712,15 @@ const discoverI18n = {
                   return (
                     <div data-category-section={cat} class="mb-8 last:mb-0">
                       <div class="flex items-center gap-2 mb-3">
+                        <span class="text-sm text-sky-400/70" aria-hidden="true">{getCategoryIcon(cat)}</span>
                         <h3 class="text-sm font-semibold text-slate-400">{t(catKey)}</h3>
                         <span class="text-xs text-slate-600 tabular-nums">{resources.length}</span>
                       </div>
-                      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5 min-[2560px]:grid-cols-6 gap-4">
-                        {resources.map((resource) => (
-                          <ResourceCard resource={resource} locale={locale} />
-                        ))}
-                      </div>
+                      <!-- Filled in by activateGrouped() — cards live in #flat-grid until then. -->
+                      <div
+                        data-section-grid={cat}
+                        class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5 min-[2560px]:grid-cols-6 gap-4"
+                      ></div>
                     </div>
                   );
                 })
@@ -704,30 +759,19 @@ const discoverI18n = {
   const sortGrouped  = document.getElementById("sort-grouped") as HTMLButtonElement;
   const sortLatest   = document.getElementById("sort-latest") as HTMLButtonElement;
 
-  // Store each card's original parent grid and use a persistent anchor comment.
-  // Parse createdAt ONCE here (not on every sort comparison — that was 1600×log
-  // worth of Date parsing per click, a big chunk of the jank).
-  type CardOrigin = { parent: Element; anchor: Comment };
-  const origins = new Map<Element, CardOrigin>();
-  const createdAtMs = new Map<Element, number>();
-  document.querySelectorAll<HTMLElement>("article[data-slug]").forEach((card) => {
-    const anchor = document.createComment("card-anchor");
-    card.parentElement!.insertBefore(anchor, card);
-    origins.set(card, { parent: card.parentElement!, anchor });
-    createdAtMs.set(card, new Date(card.dataset.createdAt ?? "").getTime() || 0);
-  });
-
-  // Cards pre-sorted newest-first once; reused on every switch to "latest".
-  const cardsByDate = [...origins.keys()].sort(
-    (a, b) => (createdAtMs.get(b) ?? 0) - (createdAtMs.get(a) ?? 0)
-  );
+  // The static HTML already ships every card inside #flat-grid in "latest"
+  // order — that IS the default view, so there is nothing to reparent on load
+  // and the page never reflows behind the user. Capture that order once; it is
+  // what we restore whenever the user comes back to "Latest".
+  const allCards = [...document.querySelectorAll<HTMLElement>("article[data-slug]")];
+  const cardsByDate = allCards;
 
   const sortRandom = document.getElementById("sort-random") as HTMLButtonElement;
 
   // Pre-shuffled order built once at load (same cost as cardsByDate) so hitting
   // "Random" never pays for building an array — each click only re-shuffles this
   // existing array in place (O(n), negligible next to the reparent).
-  const cardsRandom = [...origins.keys()];
+  const cardsRandom = [...allCards];
   function shuffle(arr: Element[]) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -736,7 +780,8 @@ const discoverI18n = {
   }
   shuffle(cardsRandom);
 
-  let sortMode: "grouped" | "latest" | "random" = "grouped";
+  // Matches the server-rendered markup: flat grid, newest first.
+  let sortMode: "grouped" | "latest" | "random" = "latest";
   let sortBusy = false;
 
   function activateFlat(mode: "latest" | "random", order: Element[]) {
@@ -772,13 +817,34 @@ const discoverI18n = {
     sortRandom.classList.remove("chip--active");
     sortGrouped.classList.add("chip--active");
 
-    // Restore each card right after its persistent anchor comment.
-    for (const [card, { parent, anchor }] of origins.entries()) {
-      parent.insertBefore(card, anchor.nextSibling);
+    // Rebuild the category sections from the flat grid: bucket the cards by the
+    // section they were assigned at build time, restore their in-section order,
+    // and insert each bucket with a single fragment (one reflow per section
+    // instead of one per card).
+    const buckets = new Map<string, HTMLElement[]>();
+    for (const card of allCards) {
+      const key = card.dataset.sectionKey;
+      if (!key) continue;
+      const bucket = buckets.get(key);
+      if (bucket) bucket.push(card);
+      else buckets.set(key, [card]);
+    }
+    for (const [key, cards] of buckets) {
+      const grid = document.querySelector<HTMLElement>(`[data-section-grid="${key}"]`);
+      if (!grid) continue;
+      cards.sort((a, b) => Number(a.dataset.sectionIndex) - Number(b.dataset.sectionIndex));
+      const frag = document.createDocumentFragment();
+      for (const card of cards) frag.appendChild(card);
+      grid.replaceChildren(frag);
     }
 
+    // Hide the (now empty) flat grid; renderReveal below decides which groups
+    // and sections actually have visible cards.
     flatGrid.classList.add("hidden");
     flatGrid.style.display = "";
+    document
+      .querySelectorAll<HTMLElement>("[data-category-group]")
+      .forEach((g) => (g.style.display = ""));
 
     // Section/group visibility is recomputed by FilterBar's renderReveal below —
     // no need to walk every section/group here (that was redundant work).
@@ -810,14 +876,59 @@ const discoverI18n = {
     });
   }
 
-  sortLatest.addEventListener("click", () => runSort(sortLatest, "latest", activateLatest));
-  sortGrouped.addEventListener("click", () => runSort(sortGrouped, "grouped", activateGrouped));
-  sortRandom.addEventListener("click", () => runSort(sortRandom, "random", activateRandom));
+  // The sort the user explicitly picked with the chips. Selecting a collection
+  // forces "grouped" without touching this, so going back to "All" restores it.
+  let userSortMode: "grouped" | "latest" | "random" = "latest";
 
-  // Default sort is "Latest added": reparent cards into the flat grid on load.
-  // The markup already ships sort-latest as the active chip, so this only moves
-  // the DOM (no spinner/overlay needed for the initial paint).
-  activateLatest();
+  sortLatest.addEventListener("click", () => {
+    userSortMode = "latest";
+    runSort(sortLatest, "latest", activateLatest);
+  });
+  sortGrouped.addEventListener("click", () => {
+    userSortMode = "grouped";
+    runSort(sortGrouped, "grouped", activateGrouped);
+  });
+  sortRandom.addEventListener("click", () => {
+    userSortMode = "random";
+    runSort(sortRandom, "random", activateRandom);
+  });
+
+  // Selecting a specific collection defaults the view to "By category"; "All"
+  // goes back to whatever the user last chose.
+  // The sidebar's own scroll-to-results fires before the forced sort below
+  // reparents the grid (which drags the viewport back down) — scroll again once
+  // the reparent is done, instantly, so the results top is where we land.
+  const scrollResultsTop = () => {
+    document.getElementById("resource-grid")?.scrollIntoView({ behavior: "auto", block: "start" });
+  };
+
+  window.addEventListener("stealthis:collection-changed", (e) => {
+    const collection = (e as CustomEvent<{ collection: string }>).detail.collection;
+    if (collection !== "all") {
+      if (sortMode !== "grouped") {
+        runSort(sortGrouped, "grouped", () => {
+          activateGrouped();
+          scrollResultsTop();
+        });
+      }
+    } else if (sortMode !== userSortMode) {
+      if (userSortMode === "latest") runSort(sortLatest, "latest", activateLatest);
+      else if (userSortMode === "random") runSort(sortRandom, "random", activateRandom);
+      else runSort(sortGrouped, "grouped", activateGrouped);
+    }
+  });
+
+  // Nothing to do on load for the default view: the static HTML is already the
+  // flat "Latest added" grid with sort-latest as the active chip, so the first
+  // paint is the final layout.
+  // Landing with ?collection=x (e.g. from the Collection Explorer) does switch
+  // to "By category" — run it through runSort so the existing overlay covers the
+  // reparent instead of the grid visibly jumping. The sidebar init may dispatch
+  // its event before this script's listener attaches, so read the URL directly.
+  const initialCollection = new URLSearchParams(window.location.search).get("collection");
+  if (initialCollection && initialCollection !== "all") {
+    runSort(sortGrouped, "grouped", activateGrouped);
+  }
 
   document.getElementById("export-favorites")?.addEventListener("click", exportFavorites);
 
@@ -1495,6 +1606,11 @@ const discoverI18n = {
     for (const card of discoverMatchedCards) {
       const clone = card.cloneNode(true) as HTMLElement;
       clone.style.display = "";
+      // Discover results are static copies — no preview machinery runs on them,
+      // so strip the preview box (a clone would otherwise shimmer forever, and a
+      // cloned iframe would reload the lab demo for nothing).
+      clone.classList.remove("is-preview");
+      clone.querySelector("[data-card-preview] iframe")?.remove();
       discoverResultsGrid.appendChild(clone);
     }
 

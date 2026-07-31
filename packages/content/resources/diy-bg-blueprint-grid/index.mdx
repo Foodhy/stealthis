@@ -1,0 +1,33 @@
+---
+slug: diy-bg-blueprint-grid
+title: "DIY — Blueprint Grid Background"
+description: "A drafting-table blueprint background built entirely from layered CSS gradients — zero images, zero libraries. A full-bleed grid sits behind a sample hero sheet while a live tuner adjusts fine-grid size, major-line interval and line opacity, switches between navy, kraft, dark-shop and cyan-print themes, and toggles vignette, paper grain and a slow drift animation. Every control writes a custom property on :root, and a live code panel emits the exact CSS with a copy button."
+category: ui-components
+type: component
+tags: [diy, background, blueprint, grid]
+tech: [html, css, vanilla-js]
+difficulty: easy
+targets: [html]
+collections: [diy]
+labRoute: /ui-components/diy-bg-blueprint-grid
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-30
+updatedAt: 2026-07-30
+---
+
+## Blueprint Grid Background
+
+The page opens on a fixed, full-bleed drafting surface: a radial base wash for the paper tint, then four hairline gradients that draw fine measurement ticks and heavier structural rules on top of it. A sample hero sheet from the fictional Hollowbrook Workshop floats above it with a dashed inner border, revision chips and a rotated APPROVED stamp, so you can judge the texture against real type instead of an empty swatch.
+
+The tuner drives everything live. Three sliders set the fine cell size (4–16px), the major line interval (40–160px) and the line opacity; the major lines derive their own alpha from that value so the hierarchy never inverts. A four-way theme switcher — navy blueprint, kraft paper, dark shop with faint cyan lines, and inverted cyan-print — retints the base, the line colour and the whole UI chrome at once, and is keyboard-navigable with arrow keys as a proper radio group. Toggles add or remove the vignette, the paper-grain overlay and a slow diagonal drift.
+
+A code panel mirrors the current state as copy-ready CSS, updating on every input, with a clipboard button and a toast. Below it, three preset cards run the identical gradient stack at different scales — a wide hero band, a masked divider strip and a whisper-fine card surface — followed by a layer inventory table naming what each of the five gradients contributes.
+
+### How this look is built
+
+The whole effect is four `linear-gradient` layers plus one `radial-gradient` wash sharing a single `background-image`, with a matching multi-value `background-size` so each pair of layers tiles at its own interval — the old approach was a repeating PNG per theme, which meant a new asset for every colour and a blurry result on high-DPI screens. Because the sizes and colours are `var()` references (`--g-fine`, `--g-major`, `--g-op`, `--g-rgb`), JS only ever calls `style.setProperty` on `:root`; no class swapping, no re-layout, and `rgba(var(--g-rgb), var(--g-op))` lets one channel carry the theme while another carries the alpha. The divider preset uses `mask-image` to fade the grid out at both edges rather than stacking a matching-colour gradient over it. Watch the drift: animating `background-position` repaints a viewport-sized layer, so it is confined to one fixed, `-20%`-inset element behind everything, marked `will-change`, and its `animation-play-state` is driven by the same variable the toggle writes — under `prefers-reduced-motion: reduce` the checkbox is disabled and the keyframes are dropped entirely, and the reduced-motion query also disables smooth scrolling.
+
+> Illustrative UI only — always follow real safety guidance when working with tools, electronics, or repairs.

@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DIY — Exploded View Animation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-badges">
+        <span class="badge badge-mono">DWG-EXP-068</span>
+        <span class="badge badge-orange">TEARDOWN SHEET</span>
+        <span class="badge badge-mono">REV C · 68-KEY</span>
+      </div>
+      <h1 class="hero-title">Foundry FR-68<span class="hero-title-sub">Exploded assembly view</span></h1>
+      <p class="hero-lede">
+        Scroll to pull the keyboard apart, layer by layer — keycaps, switches, plate,
+        PCB and case. Click any callout for material specs and part counts.
+      </p>
+      <div class="hero-meta">
+        <span><strong class="mono">5</strong> layers</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span><strong class="mono">141</strong> parts</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>Bolt &amp; Solder Workshop Co.</span>
+      </div>
+      <div class="scroll-hint" aria-hidden="true">
+        <span class="scroll-hint-arrow">▼</span> scroll to explode
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ STICKY STAGE ============ -->
+  <section class="scroll-stage" id="scroll-stage" aria-label="Exploded view of the Foundry FR-68 keyboard">
+    <div class="stage-sticky">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <span class="sidebar-kicker mono">PARTS INDEX</span>
+          <h2 class="sidebar-title">Layer stack</h2>
+        </div>
+
+        <ol class="layer-list" id="layer-list">
+          <li>
+            <button class="layer-item" data-layer="keycaps" type="button">
+              <span class="layer-num mono">01</span>
+              <span class="layer-name">Keycaps</span>
+              <span class="layer-part mono">KC-PBT-68</span>
+            </button>
+          </li>
+          <li>
+            <button class="layer-item" data-layer="switches" type="button">
+              <span class="layer-num mono">02</span>
+              <span class="layer-name">Switches</span>
+              <span class="layer-part mono">SW-TAC-62</span>
+            </button>
+          </li>
+          <li>
+            <button class="layer-item" data-layer="plate" type="button">
+              <span class="layer-num mono">03</span>
+              <span class="layer-name">Plate</span>
+              <span class="layer-part mono">PL-ALU-15</span>
+            </button>
+          </li>
+          <li>
+            <button class="layer-item" data-layer="pcb" type="button">
+              <span class="layer-num mono">04</span>
+              <span class="layer-name">PCB</span>
+              <span class="layer-part mono">PCB-HS-R3</span>
+            </button>
+          </li>
+          <li>
+            <button class="layer-item" data-layer="case" type="button">
+              <span class="layer-num mono">05</span>
+              <span class="layer-name">Case</span>
+              <span class="layer-part mono">CS-CNC-2P</span>
+            </button>
+          </li>
+        </ol>
+
+        <!-- Info card -->
+        <div class="info-card" id="info-card" role="region" aria-live="polite" aria-label="Selected layer details">
+          <div class="info-card-top">
+            <span class="info-part mono" id="info-part">FR-68</span>
+            <span class="info-count mono" id="info-count">×141</span>
+          </div>
+          <h3 class="info-name" id="info-name">Full assembly</h3>
+          <p class="info-material" id="info-material">Select a layer or callout to inspect its specs.</p>
+          <p class="info-fact" id="info-fact">Every part in this drawing is serviceable with a single T6 driver and a keycap puller.</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+          <div class="controls-row">
+            <button class="btn btn-primary" id="btn-explode" type="button">Explode</button>
+            <button class="btn btn-ghost" id="btn-assemble" type="button">Assemble</button>
+          </div>
+          <label class="scrub-label" for="scrub">
+            <span>Scrub</span>
+            <span class="mono" id="scrub-readout">0%</span>
+          </label>
+          <input type="range" id="scrub" min="0" max="1000" value="0" step="1"
+                 aria-label="Explode progress" aria-valuetext="0 percent exploded" />
+          <p class="rm-note" id="rm-note" hidden>Reduced motion is on — use the slider or buttons.</p>
+        </div>
+      </aside>
+
+      <!-- Blueprint viewport -->
+      <div class="viewport">
+        <div class="viewport-corner tl mono" aria-hidden="true">FIG. 1</div>
+        <div class="viewport-corner tr mono" aria-hidden="true">SCALE 1:1</div>
+        <div class="viewport-corner bl mono" aria-hidden="true">SHEET 3 / 7</div>
+        <div class="viewport-status mono" id="stage-status">ASSEMBLED</div>
+
+        <svg id="exploded-svg" viewBox="0 0 640 620" role="img"
+             aria-label="Exploded diagram: keycaps, switches, plate, PCB and case separating vertically">
+          <defs>
+            <pattern id="p-keys" width="30" height="26" patternUnits="userSpaceOnUse">
+              <rect x="3" y="3" width="24" height="20" rx="4" fill="rgba(255,255,255,0.55)" stroke="rgba(28,39,51,0.28)" stroke-width="1.2" />
+            </pattern>
+            <pattern id="p-stems" width="30" height="22" patternUnits="userSpaceOnUse">
+              <rect x="10" y="4" width="10" height="8" rx="2" fill="#ff6b35" opacity="0.9" />
+              <rect x="7" y="12" width="16" height="7" rx="2" fill="rgba(28,39,51,0.35)" />
+            </pattern>
+            <pattern id="p-traces" width="34" height="12" patternUnits="userSpaceOnUse">
+              <path d="M0 6 H12 L18 2 H34" fill="none" stroke="#ff6b35" stroke-width="1.1" opacity="0.7" />
+              <circle cx="12" cy="6" r="1.6" fill="#ffe3d6" opacity="0.8" />
+            </pattern>
+          </defs>
+
+          <!-- 05 · CASE -->
+          <g class="layer" id="g-case" data-layer="case" tabindex="0" role="button" aria-label="Case layer — open details">
+            <path class="face-top" d="M130,328 L160,312 L460,312 L430,328 Z" fill="#4c5a68" />
+            <path class="face-side" d="M430,328 L460,312 L460,358 L430,374 Z" fill="#2e3944" />
+            <rect class="face-front" x="130" y="328" width="300" height="46" rx="6" fill="#3d4a57" />
+            <rect x="130" y="362" width="300" height="12" rx="5" fill="#2e3944" />
+            <circle cx="152" cy="350" r="4" fill="#1c2733" stroke="#8fa1b0" stroke-width="1" />
+            <circle cx="408" cy="350" r="4" fill="#1c2733" stroke="#8fa1b0" stroke-width="1" />
+            <text x="280" y="354" class="etch mono" text-anchor="middle">FOUNDRY FR-68 · CNC 6063</text>
+            <g class="callout" id="lbl-case">
+              <line x1="436" y1="351" x2="478" y2="351" />
+              <circle cx="436" cy="351" r="3" />
+              <rect x="478" y="339" width="118" height="24" rx="5" />
+              <text x="537" y="355" text-anchor="middle" class="mono">05 · CASE</text>
+            </g>
+          </g>
+
+          <!-- 04 · PCB -->
+          <g class="layer" id="g-pcb" data-layer="pcb" tabindex="0" role="button" aria-label="PCB layer — open details">
+            <path class="face-top" d="M138,314 L166,299 L454,299 L426,314 Z" fill="#1d4675" />
+            <path class="face-side" d="M426,314 L454,299 L454,311 L426,326 Z" fill="#0a1e36" />
+            <rect class="face-front" x="138" y="314" width="288" height="12" rx="3" fill="#16385f" />
+            <rect x="138" y="314" width="288" height="12" rx="3" fill="url(#p-traces)" />
+            <g class="callout" id="lbl-pcb">
+              <line x1="432" y1="320" x2="478" y2="320" />
+              <circle cx="432" cy="320" r="3" />
+              <rect x="478" y="308" width="118" height="24" rx="5" />
+              <text x="537" y="324" text-anchor="middle" class="mono">04 · PCB</text>
+            </g>
+          </g>
+
+          <!-- 03 · PLATE -->
+          <g class="layer" id="g-plate" data-layer="plate" tabindex="0" role="button" aria-label="Plate layer — open details">
+            <path class="face-top" d="M134,302 L163,286 L457,286 L428,302 Z" fill="#dbe3ea" />
+            <path class="face-side" d="M428,302 L457,286 L457,296 L428,312 Z" fill="#93a3b1" />
+            <rect class="face-front" x="134" y="302" width="294" height="10" rx="3" fill="#b8c4cf" />
+            <line x1="150" y1="307" x2="412" y2="307" stroke="rgba(28,39,51,0.25)" stroke-width="1" stroke-dasharray="10 8" />
+            <g class="callout" id="lbl-plate">
+              <line x1="434" y1="307" x2="478" y2="307" />
+              <circle cx="434" cy="307" r="3" />
+              <rect x="478" y="295" width="118" height="24" rx="5" />
+              <text x="537" y="311" text-anchor="middle" class="mono">03 · PLATE</text>
+            </g>
+          </g>
+
+          <!-- 02 · SWITCHES -->
+          <g class="layer" id="g-switches" data-layer="switches" tabindex="0" role="button" aria-label="Switches layer — open details">
+            <path class="face-top" d="M132,278 L161,262 L459,262 L430,278 Z" fill="#ffd9c6" />
+            <path class="face-side" d="M430,278 L459,262 L459,284 L430,300 Z" fill="#f0b89e" />
+            <rect class="face-front" x="132" y="278" width="298" height="22" rx="4" fill="#ffe3d6" />
+            <rect x="132" y="278" width="298" height="22" rx="4" fill="url(#p-stems)" />
+            <g class="callout" id="lbl-switches">
+              <line x1="436" y1="289" x2="478" y2="289" />
+              <circle cx="436" cy="289" r="3" />
+              <rect x="478" y="277" width="118" height="24" rx="5" />
+              <text x="537" y="293" text-anchor="middle" class="mono">02 · SWITCHES</text>
+            </g>
+          </g>
+
+          <!-- 01 · KEYCAPS -->
+          <g class="layer" id="g-keycaps" data-layer="keycaps" tabindex="0" role="button" aria-label="Keycaps layer — open details">
+            <path class="face-top" d="M130,250 L160,234 L460,234 L430,250 Z" fill="#f7f1e4" />
+            <path class="face-side" d="M430,250 L460,234 L460,260 L430,276 Z" fill="#d9c7a7" />
+            <rect class="face-front" x="130" y="250" width="300" height="26" rx="5" fill="#efe6d4" />
+            <rect x="130" y="250" width="300" height="26" rx="5" fill="url(#p-keys)" />
+            <g class="callout" id="lbl-keycaps">
+              <line x1="436" y1="263" x2="478" y2="263" />
+              <circle cx="436" cy="263" r="3" />
+              <rect x="478" y="251" width="118" height="24" rx="5" />
+              <text x="537" y="267" text-anchor="middle" class="mono">01 · KEYCAPS</text>
+            </g>
+          </g>
+
+          <!-- centerline -->
+          <line x1="280" y1="30" x2="280" y2="590" stroke="rgba(140,180,220,0.22)" stroke-width="1" stroke-dasharray="4 10" aria-hidden="true" />
+        </svg>
+
+        <!-- Progress rail -->
+        <div class="rail" aria-hidden="true">
+          <span class="rail-cap mono">100</span>
+          <div class="rail-track"><div class="rail-fill" id="rail-fill"></div></div>
+          <span class="rail-cap mono">0</span>
+          <span class="rail-pct mono" id="rail-pct">0%</span>
+          <span class="rail-label mono">EXPLODE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OUTRO ============ -->
+  <footer class="outro">
+    <div class="outro-inner">
+      <span class="badge badge-mono">END OF SHEET 3</span>
+      <h2 class="outro-title">Reassembly is the reverse of removal</h2>
+      <p class="outro-copy">
+        Torque case screws to <span class="mono">0.4 N·m</span>, reseat all
+        <span class="mono">68</span> switches before dropping the plate, and never force a keycap —
+        pull straight up with the wire puller in bag <span class="mono">B</span>.
+      </p>
+    </div>
+  </footer>
+
+  <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

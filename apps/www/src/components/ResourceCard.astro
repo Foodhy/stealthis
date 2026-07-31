@@ -8,9 +8,28 @@ import { SITE_URLS } from "@lib/urls";
 interface Props {
   resource: CollectionEntry<"resources">;
   locale?: Locale;
+  /**
+   * Ship the card with its live-preview box already open. The library page uses
+   * this because previews are on by default there — without it the card paints
+   * as text-only and then grows by 280px the moment FilterBar hydrates.
+   */
+  previewDefault?: boolean;
+  /** Which category section this card belongs to, for client-side regrouping. */
+  sectionKey?: string;
+  /** Position inside that section, so the grouped order can be restored. */
+  sectionIndex?: number;
+  /** Render hidden (past the initial reveal window) — see LIBRARY_INITIAL_REVEAL. */
+  hidden?: boolean;
 }
 
-const { resource, locale = "en" } = Astro.props;
+const {
+  resource,
+  locale = "en",
+  previewDefault = false,
+  sectionKey,
+  sectionIndex,
+  hidden = false,
+} = Astro.props;
 const t = useTranslations(locale);
 const { slug, title, description, category, difficulty, tags, tech, targets, labRoute, author } =
   resource.data;
@@ -122,7 +141,13 @@ const filterTechTokens = getResourceFilterTechTokens(resource, snippetFlags);
 ---
 
 <article
-  class="group relative flex flex-col gap-4 p-5 rounded-2xl border border-white/8 bg-surface-900/50 hover:bg-surface-800/60 hover:border-white/14 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover"
+  class:list={[
+    "group relative flex flex-col gap-4 p-5 rounded-2xl border border-white/8 bg-surface-900/50 hover:bg-surface-800/60 hover:border-white/14 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover",
+    { "is-preview": previewDefault && labRoute },
+  ]}
+  style={hidden ? "display:none" : undefined}
+  data-section-key={sectionKey}
+  data-section-index={sectionIndex}
   data-slug={slug}
   data-category={category}
   data-difficulty={difficulty}

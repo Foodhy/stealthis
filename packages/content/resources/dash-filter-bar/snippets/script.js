@@ -158,7 +158,11 @@
 
   document.addEventListener("click", closeAllMenus);
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeAllMenus();
+    if (e.key !== "Escape") return;
+    var openBtn = $('.facet__btn[aria-expanded="true"]');
+    if (!openBtn) return; // only act when a menu is actually open
+    closeAllMenus();
+    openBtn.focus();
   });
 
   /* ---------- Clear all ---------- */

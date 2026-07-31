@@ -165,7 +165,11 @@ export type ResourceCollection =
   | "video"
   | "mobile"
   | "modern-css"
-  | "webgl";
+  | "webgl"
+  | "accessibility"
+  | "ai"
+  | "devtools"
+  | "diy";
 
 export interface ResourceAuthor {
   name: string;

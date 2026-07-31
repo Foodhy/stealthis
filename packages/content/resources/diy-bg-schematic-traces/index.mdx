@@ -1,0 +1,33 @@
+---
+slug: diy-bg-schematic-traces
+title: "DIY — PCB Traces Background"
+description: "A full-bleed animated printed-circuit background drawn entirely in SVG and CSS. Copper traces are routed in the classic 45-degree style across a solder-mask surface with ringed vias, pads and two IC footprints, while current pulses walk the nets using stroke-dasharray offsets staggered at different speeds. Controls cover trace density, four colorways, pulse speed, glow, pause and a readability scrim, with reduced-motion respected by default and a live copyable snippet panel."
+category: ui-components
+type: component
+tags: [diy, background, pcb, animation]
+tech: [html, css, vanilla-js]
+difficulty: med
+targets: [html]
+collections: [diy]
+labRoute: /ui-components/diy-bg-schematic-traces
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-30
+updatedAt: 2026-07-30
+---
+
+## PCB Traces Background
+
+A fixed, full-bleed board sits behind the page: a solder-mask gradient, a fine 8&nbsp;px weave with an 80&nbsp;px major grid, a soft copper sheen, and an SVG net of traces routed only in horizontal, vertical and 45-degree segments. Ringed vias, rectangular pads and two labelled footprints — `KX-1180` and `TL-4C` — are placed on the same net that the router generated, so nothing looks pasted on. The whole layer is procedural and seeded, so a given density always produces the same board.
+
+Current pulses are duplicate copies of a handful of trace paths, dashed and offset-animated so a bright segment travels the route. Each pulse gets its own duration and a negative delay, which spreads them apart without any timers. The control panel — a kraft-paper card floating over the board — swaps density (sparse / medium / dense rebuild the net), switches between classic green, matte black with gold, navy with cyan and a purple OSH-style mask, scrubs pulse speed from 25% to 250%, toggles the glow filter, and pauses everything.
+
+Moving the pointer near a via makes it flare: the script maps client coordinates back into viewBox space and looks for a via within range, then drops a short-lived blurred circle. A demo content card and three routing notes float above to prove text stays legible, and the readability scrim toggle lets you see exactly how much work that dark radial layer is doing. The snippet panel mirrors the current settings in both CSS and SVG form with a copy button.
+
+### How this look is built
+
+The board is three stacked layers instead of one image: a `linear-gradient` solder mask, a `.board__mask` element whose four repeating gradients plus `background-size: 8px 8px, 8px 8px, 80px 80px, 80px 80px` give the fine-and-major grid in a single paint, and a `mask-image` radial that fades the grid out at the edges so it never fights the text. The traces themselves are SVG paths built by a small seeded router; the pulses reuse the exact same `d` strings with `stroke-dasharray` and a `@keyframes` step on `stroke-dashoffset` driven by a `--to` custom property computed from `getTotalLength()`. That beats the old approach of animating a masked gradient sprite: the dash animation runs on one property the compositor handles cheaply, speed changes are just a CSS variable rewrite rather than a rebuild, and pausing is a single `animation-play-state` flip from a `data-paused` attribute on `<body>`. Watch the glow — `feGaussianBlur` on the pulse group is the one genuinely expensive part, so it is a toggle and it is applied to the group rather than per path. Under `prefers-reduced-motion: reduce` the pulses are stopped and the dashes removed by CSS, the script boots in the paused state, and the panel says so in plain language with a Resume button for anyone who wants motion anyway.
+
+> Illustrative UI only — always follow real safety guidance when working with tools, electronics, or repairs.

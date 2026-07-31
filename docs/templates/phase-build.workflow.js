@@ -36,7 +36,16 @@ const STYLE = `DESIGN SYSTEM (match exactly unless told otherwise):
 - Accessible: aria where relevant, WCAG AA contrast, keyboard-usable buttons.
 - Responsive: works down to ~360px (add a @media (max-width:520px) section).
 - Vanilla JS only (no frameworks/build). A small toast(msg) helper is a good pattern.
-- Realistic but clearly fictional names/data.`
+- Realistic but clearly fictional names/data.
+
+DISMISSIBLE LAYERS — MANDATORY (this is the single most common bug in this library; 203 of 2127 resources shipped a modal that could not be closed):
+- The [hidden] attribute only applies display:none from the UA stylesheet, which ANY class rule beats. So a modal styled ".modal-backdrop { display: grid }" stays visible even when JS sets hidden=true — it renders open on load and the close button appears dead.
+- Therefore ALWAYS include this line in the reset section of style.css whenever the markup uses the hidden attribute:
+    [hidden] { display: none !important; }
+  (Or drop the hidden attribute entirely and toggle a class instead — but never mix both.)
+- Every modal / drawer / sheet / lightbox / mega-menu / popover MUST: start closed on page load; close via a ✕ button, a click on the backdrop, AND the Escape key; restore document.body.style.overflow if it was locked on open; move focus into the dialog on open and back to the trigger on close; carry role="dialog" and aria-modal="true".
+- Guard the Escape handler so it only fires when the layer is actually open.
+- The same trap applies to any hidden element that is not an overlay (form error messages, empty states, progress bars): if CSS gives it a display value, hidden stops working.`
 
 // Disclaimer opcional que debe cerrar el cuerpo del mdx (vacío = sin disclaimer).
 const DISCLAIMER = '> Illustrative UI only — **not** intended for real medical use.'

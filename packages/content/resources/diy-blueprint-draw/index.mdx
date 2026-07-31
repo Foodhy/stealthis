@@ -1,0 +1,55 @@
+---
+slug: diy-blueprint-draw
+title: "DIY — Blueprint Line-Draw Effect"
+description: "A self-drawing technical blueprint plate for a fictional wall-mounted shelf bracket, rendered on a CSS-gradient grid in navy and orange. Outlines ink themselves in via stroke-dashoffset, then section hatching, centre lines, extension lines, arrow-headed dimension lines, mono labels and a corner title block arrive on staggered delays. Controls cover replay, a speed multiplier, layer-by-layer step-through and visibility toggles, with IntersectionObserver triggering, hover-linked edge highlighting and a reduced-motion instant render."
+category: ui-components
+type: component
+tags: [diy, animation, svg, blueprint]
+tech: [html, css, vanilla-js]
+difficulty: med
+targets: [html]
+collections: [diy]
+labRoute: /ui-components/diy-blueprint-draw
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-30
+updatedAt: 2026-07-30
+---
+
+## Blueprint Line-Draw Effect
+
+The sheet presents shop drawing NG-4821 for a fictional shelf bracket: a front elevation with
+bolt holes and a diagonal gusset, plus a side elevation shown in section. Nothing is visible
+until the plate scrolls into view — then an `IntersectionObserver` starts the sequence and the
+drawing inks itself in the order a drafter actually works: outlines, section hatch, centre lines,
+extension lines, dimension lines, dimension text, title block.
+
+Every layer is addressable. A speed slider scales the whole timeline through a CSS custom
+property, so slowing to 0.4× stretches the strokes rather than restarting them. Flipping
+step-through mode hands the sequence to the Next/Prev buttons (or the arrow keys) so you can
+walk one layer at a time and watch the legend on the right mark each stage as pending, current
+or inked. Four toggles drop hatching, centre lines, the dimension set or the title block out of
+the sequence entirely, and the step counter re-bases itself on whatever remains.
+
+Dimension labels are focusable SVG groups: hovering or tabbing to "240 mm" lights the exact
+edge it measures along with its extension and dimension lines, so the reader can tie a number
+to geometry without a legend. A second, smaller plate reuses the same controller for an exploded
+M8 fastener callout, and a matching cut list sits beside it.
+
+### How this look is built
+
+The paper is pure CSS — four layered linear gradients over a radial base give a fine 8px grid
+with an 80px major line, so there is no image to fetch and it stays crisp at any zoom. The draw
+itself measures each shape with `getTotalLength()`, writes the result into `stroke-dasharray`
+and a `--len` custom property, then lets a single `@keyframes draw` rule animate
+`stroke-dashoffset` to zero; per-element `--delay` and a shared `--dur / var(--speed)` division
+produce the stagger and the speed control without any JS animation loop or per-frame work. That
+beats the old JS-timer approach because the strokes run on the compositor and a slider change is
+a one-line custom-property write instead of a rebuild. Watch two things: `getTotalLength()`
+forces layout, so measure once and cache it (this build uses a `WeakMap`); and under
+`prefers-reduced-motion` the controller skips animation entirely and paints the finished state,
+which is also the fallback when `IntersectionObserver` is missing.
+
+> Illustrative UI only — always follow real safety guidance when working with tools, electronics, or repairs.

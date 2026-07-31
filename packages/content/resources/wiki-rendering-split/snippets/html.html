@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CSR vs SSR — Split-Screen Explainer</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">CLIENT <span class="vs">vs</span> SERVER</span>
+  <div class="dots">
+    <a href="#b1" title="Intro"></a>
+    <a href="#b2" title="What rendering means"></a>
+    <a href="#b3" title="The flow"></a>
+    <a href="#b4" title="Hydration"></a>
+    <a href="#b5" title="Race"></a>
+    <a href="#b6" title="Metrics"></a>
+    <a href="#b7" title="The spectrum"></a>
+  </div>
+</div>
+
+<!-- ═══ Band 1 · Hero ═══ -->
+<section class="band hero" id="b1">
+  <div class="half client">
+    <span class="tag">Client-side rendering</span>
+    <h1>The browser builds the page.</h1>
+    <p class="sub">The server ships an almost-empty HTML shell plus a JavaScript bundle. The app boots <strong>in the browser</strong>, fetches its data, and renders everything there.</p>
+  </div>
+  <div class="half server">
+    <span class="tag">Server-side rendering</span>
+    <h1>The server builds the page.</h1>
+    <p class="sub">The server runs the app <strong>per request</strong>, fetches the data, and responds with finished HTML. The browser paints it immediately, then JavaScript takes over.</p>
+  </div>
+</section>
+
+<!-- ═══ Band 2 · What rendering means ═══ -->
+<section class="band" id="b2">
+  <div class="half client">
+    <h3>What "rendering" means here</h3>
+    <p>Rendering = turning <strong>components + data into HTML</strong>. The question is never <em>whether</em> it happens — it's <strong>where</strong> and <strong>when</strong>.</p>
+    <p>In CSR that transformation runs on your user's device, on every visit, after the JavaScript arrives and executes.</p>
+    <div class="codebox"><span class="dim">&lt;!-- what the server sends --&gt;</span>
+&lt;body&gt;
+  <span class="hl">&lt;div id="root"&gt;&lt;/div&gt;</span>   <span class="dim">← empty</span>
+  &lt;script src="bundle.js"&gt;&lt;/script&gt;
+&lt;/body&gt;</div>
+  </div>
+  <div class="half server">
+    <h3>What "rendering" means here</h3>
+    <p>Same transformation, different machine: the server (or an edge node) runs it <strong>before responding</strong>, so HTML arrives already full of content.</p>
+    <p>Your user's device only has to paint — the heavy lifting happened on hardware you control.</p>
+    <div class="codebox"><span class="dim">&lt;!-- what the server sends --&gt;</span>
+&lt;body&gt;
+  &lt;div id="root"&gt;
+    <span class="hl">&lt;h1&gt;Best Trail Shoes 2026&lt;/h1&gt;
+    &lt;article&gt;…full content…&lt;/article&gt;</span>
+  &lt;/div&gt;
+  &lt;script src="bundle.js"&gt;&lt;/script&gt;
+&lt;/body&gt;</div>
+  </div>
+</section>
+
+<!-- ═══ Band 3 · The flow ═══ -->
+<section class="band" id="b3">
+  <div class="half client">
+    <h3>The request, step by step</h3>
+    <ol class="steps">
+      <li><strong>HTML arrives fast</strong> — it's tiny and static. But the screen is blank: there's nothing in it.</li>
+      <li><strong>Download the bundle</strong> — often hundreds of KB of JavaScript. On a slow phone this is the long pole.</li>
+      <li><strong>Parse &amp; execute</strong> — the framework boots, the router resolves, components mount.</li>
+      <li><strong>Fetch the data</strong> — <em>now</em> the API calls start. A second round-trip the server flow doesn't need.</li>
+      <li><strong>Render</strong> — content finally appears, already interactive.</li>
+    </ol>
+    <p>First paint is late, but once loaded, navigation between pages is instant — the app is already in memory.</p>
+  </div>
+  <div class="half server">
+    <h3>The request, step by step</h3>
+    <ol class="steps">
+      <li><strong>Server receives the request</strong> — runs the app for this URL.</li>
+      <li><strong>Fetch the data on the server</strong> — DB and APIs are milliseconds away, not a mobile round-trip.</li>
+      <li><strong>HTML arrives full</strong> — slightly later than CSR's shell (the server did real work), but it's the <em>finished page</em>.</li>
+      <li><strong>Content paints immediately</strong> — the user reads while JavaScript still downloads.</li>
+      <li><strong>Hydrate</strong> — the bundle attaches interactivity to the HTML that's already on screen.</li>
+    </ol>
+    <p>First paint is early, but each full navigation costs a server round-trip — unless a client router takes over after load.</p>
+  </div>
+</section>
+
+<!-- ═══ Band 4 · Hydration ═══ -->
+<section class="band" id="b4">
+  <div class="half client">
+    <h3>No hydration needed</h3>
+    <p>CSR skips this problem entirely: the DOM is <strong>born from JavaScript</strong>, so it's interactive the moment it exists.</p>
+    <p>The cost was paid earlier — the user stared at a spinner while the app booted. There is no "visible but dead" phase; there's a "nothing visible at all" phase instead.</p>
+    <span class="chip">blank → interactive</span>
+  </div>
+  <div class="half server">
+    <h3>Hydration ⚡</h3>
+    <p>Server HTML is a <strong>picture of the app</strong> — visible but inert. Hydration is the step where the downloaded bundle re-runs the components, matches them to the existing markup, and attaches the event listeners.</p>
+    <p>Between first paint and hydration there's an <strong>uncanny valley</strong>: the page looks ready but buttons don't respond yet. Keeping bundles small shrinks that gap; streaming and islands (band 7) attack it structurally.</p>
+    <span class="chip">visible → then interactive</span>
+  </div>
+</section>
+
+<!-- ═══ Band 5 · The race ═══ -->
+<section class="band" id="b5">
+  <div class="simbar">
+    <button id="sim-start">▶ SIMULATE PAGE LOAD</button>
+    <span class="sim-clock" id="sim-clock">0 ms</span>
+    <button id="sim-reset">RESET</button>
+  </div>
+  <div class="half client">
+    <h3>Same app, slow 4G — client side</h3>
+    <div class="browser">
+      <div class="chrome"><span class="b-dots"><i></i><i></i><i></i></span><span class="url">https://shop.example — CSR build</span></div>
+      <div class="viewport" id="csr-vp">
+        <div class="msg" id="csr-msg"><span id="csr-msg-txt">idle — press simulate</span><span class="jsbar" id="csr-jsbar-wrap" hidden><i id="csr-jsbar"></i></span><span class="spinner" id="csr-spinner" hidden></span></div>
+        <div class="piece hero-piece"></div>
+        <div class="piece bar w60"></div>
+        <div class="piece box"></div>
+        <div class="piece bar w85"></div>
+      </div>
+    </div>
+    <div class="metrics">
+      <span class="lamp" id="csr-ttfb">TTFB <span class="ms">—</span></span>
+      <span class="lamp" id="csr-fcp">FCP <span class="ms">—</span></span>
+      <span class="lamp" id="csr-tti">TTI <span class="ms">—</span></span>
+    </div>
+  </div>
+  <div class="half server">
+    <h3>Same app, slow 4G — server side</h3>
+    <div class="browser">
+      <div class="chrome"><span class="b-dots"><i></i><i></i><i></i></span><span class="url">https://shop.example — SSR build</span></div>
+      <div class="viewport" id="ssr-vp">
+        <div class="msg" id="ssr-msg"><span id="ssr-msg-txt">idle — press simulate</span></div>
+        <div class="piece hero-piece"></div>
+        <div class="piece bar w60"></div>
+        <div class="piece box"></div>
+        <div class="piece bar w85"></div>
+      </div>
+    </div>
+    <div class="metrics">
+      <span class="lamp" id="ssr-ttfb">TTFB <span class="ms">—</span></span>
+      <span class="lamp" id="ssr-fcp">FCP <span class="ms">—</span></span>
+      <span class="lamp" id="ssr-tti">TTI <span class="ms">—</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Band 6 · Metrics compared ═══ -->
+<section class="band" id="b6">
+  <div class="half client">
+    <h3>Scorecard</h3>
+    <table class="spec">
+      <tr><td>TTFB</td><td><strong>Excellent</strong> — the shell is static, cache it on a CDN worldwide.</td></tr>
+      <tr><td>FCP</td><td><strong>Slow</strong> — nothing paints until JS downloads, parses, runs, and fetches.</td></tr>
+      <tr><td>TTI</td><td>Same moment as FCP — late, but no dead-looking UI.</td></tr>
+      <tr><td>SEO</td><td>Riskier — crawlers must execute JS to see content; social previews often see the empty shell.</td></tr>
+      <tr><td>Server cost</td><td><strong>Minimal</strong> — static file hosting; users' devices do the rendering.</td></tr>
+      <tr><td>Best at</td><td>Apps behind login: dashboards, editors, admin panels — long sessions, SEO irrelevant.</td></tr>
+    </table>
+  </div>
+  <div class="half server">
+    <h3>Scorecard</h3>
+    <table class="spec">
+      <tr><td>TTFB</td><td><strong>Slower</strong> — the server works before the first byte (data fetch + render).</td></tr>
+      <tr><td>FCP</td><td><strong>Fast</strong> — real content in the first response; paints as soon as it arrives.</td></tr>
+      <tr><td>TTI</td><td>After hydration — the visible-but-inert gap is the tax.</td></tr>
+      <tr><td>SEO</td><td><strong>Solid</strong> — crawlers and link previews get finished HTML, no JS required.</td></tr>
+      <tr><td>Server cost</td><td>Real — CPU per request; caching and edge rendering keep it sane.</td></tr>
+      <tr><td>Best at</td><td>Content the world must see fast: stores, landing pages, articles, anything shared or indexed.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ Band 7 · The spectrum ═══ -->
+<section class="band" id="b7">
+  <div class="half client">
+    <h3>Beyond the binary — from this side</h3>
+    <p>Modern frameworks blur the line by moving work <em>off</em> the client:</p>
+    <p><span class="chip">SSG</span> Pre-render at <strong>build time</strong> — pure HTML on a CDN, zero server work per request. Perfect for content that changes on deploy.</p>
+    <p><span class="chip">ISR</span> Static pages that <strong>re-generate in the background</strong> on a timer or on demand — static speed, fresh-ish data.</p>
+    <p>Rule of thumb: the less your page changes per user, the further toward build-time it should render.</p>
+  </div>
+  <div class="half server">
+    <h3>Beyond the binary — from this side</h3>
+    <p>And by shrinking what the client must hydrate:</p>
+    <p><span class="chip">Streaming SSR</span> The server <strong>flushes HTML in chunks</strong> — the shell paints while slow data is still loading, with placeholders that fill in.</p>
+    <p><span class="chip">Islands / RSC</span> Most of the page ships as <strong>zero-JS HTML</strong>; only the interactive widgets (cart button, search box) hydrate. The uncanny valley shrinks to a few small islands.</p>
+    <p>Rule of thumb: server-first for content, client islands for interaction — choose per <em>page</em>, not per <em>app</em>.</p>
+  </div>
+</section>
+
+<section class="band footer">
+  <div class="half client">CSR — render where the user is.</div>
+  <div class="half server">SSR — render where the data is. · Illustrative timings, simulated network.</div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

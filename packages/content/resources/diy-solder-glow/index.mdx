@@ -1,0 +1,33 @@
+---
+slug: diy-solder-glow
+title: "DIY — Soldering Spark Effect"
+description: "A dark PCB workbench where the cursor becomes a soldering iron. Press and hold to throw a burst of orange-white sparks that arc under adjustable gravity, drop molten blobs that cool from bright yellow to dull grey, and fill six joint pads with real solder fillets. Sliders drive spark density, heat colour temperature and gravity; a trail toggle adds smoke ghosting. Arrow keys move the tip and space solders, and reduced motion falls back to a static glow."
+category: ui-components
+type: component
+tags: [diy, effect, canvas, particles]
+tech: [html, css, vanilla-js]
+difficulty: med
+targets: [html]
+collections: [diy]
+labRoute: /ui-components/diy-solder-glow
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-30
+updatedAt: 2026-07-30
+---
+
+## Soldering Spark Effect
+
+The stage is a dark green solder-mask board drawn entirely in canvas — copper traces, via holes, silkscreen outlines and six through-hole pads with component legs, labelled R14, C09, D03, Q02, U01 and K07. The native cursor is hidden and replaced by an SVG soldering iron whose tip tracks the pointer; a soft radial heat glow follows it, widening and brightening the moment the iron goes down.
+
+Pressing and holding (or dragging on touch) emits a capped burst of sparks that launch upward, arc back down under the gravity slider, and bounce once off the bottom edge before fading. Each hot frame also drops a molten solder blob that cools from bright yellow through amber to dull grey over roughly two seconds. Holding the tip over a pad fills a charge ring; once it closes, the pad gains a proper solder fillet, the joint row flips from OPEN to SET, the progress bar advances and a toast fires — with a distinct message at six of six.
+
+The control panel exposes spark density, heat colour temperature from cool silver to hot orange, gravity, a trail-persistence toggle that adds streak tails and smoke ghosting, and a clear-board button that reopens every joint. Live readouts show particle count, blob count and measured FPS.
+
+### How this look is built
+
+The static board is rasterised once into an offscreen canvas and blitted each frame, so the per-frame cost is only particles, blobs and the tip glow — far cheaper than re-stroking every trace. Sparks are drawn with `globalCompositeOperation = "lighter"` so overlapping hot pixels bloom toward white naturally instead of needing a blur pass, and both spark and glow colours are generated from a single HSL interpolation driven by the temperature slider, which is why one control repaints the entire effect. The loop is `requestAnimationFrame` with clamped delta timing so gravity stays consistent across refresh rates, and the array is hard-capped at 900 particles. Watch two things: additive blending is fill-rate bound, so keep radii small on mobile, and `prefers-reduced-motion` is checked up front to skip emission entirely and render a static glow instead.
+
+> Illustrative UI only — always follow real safety guidance when working with tools, electronics, or repairs.

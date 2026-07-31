@@ -1,0 +1,33 @@
+---
+slug: diy-bg-graph-paper
+title: "DIY — Graph Paper Background"
+description: "An engineering graph-paper surface drawn entirely in CSS, with a three-tier grid of 1mm fine, 5mm medium and 10mm bold lines layered from gradients and driven by custom properties. A notebook-style build-log card sits on the sheet while a control panel switches scale presets, paper tint, a red margin rule, corner registration marks, a punched-holes strip, fibre grain and a 60-degree isometric variant. A live ruler redraws with the scale and a code panel emits copyable CSS."
+category: ui-components
+type: component
+tags: [diy, background, graph-paper, texture]
+tech: [html, css, vanilla-js]
+difficulty: easy
+targets: [html]
+collections: [diy]
+labRoute: /ui-components/diy-bg-graph-paper
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-30
+updatedAt: 2026-07-30
+---
+
+## Graph Paper Background
+
+The full-bleed surface behind the page is a real sheet of engineering paper: fine millimetre lines, a medium rule every 5&nbsp;mm and a heavier one every 10&nbsp;mm, all painted by a single fixed layer with no images and no canvas. Sitting on it is a notebook card from a fictional workshop, Fenwick &amp; Roe — a build log for a fold-down workbench with a cut list, part numbers in mono, and status pills that show which stock is cut, on order or short.
+
+The control panel on the right drives the sheet. Scale presets shift which tier dominates: at 1&nbsp;mm the fine lines carry the weight, at 10&nbsp;mm they nearly vanish and the bold rule takes over. Four tints — white, cream, pale engineering green and pale blue — retune both the paper colour and the ink hue so green paper gets green rules rather than blue ones. Independent toggles add the red left margin rule, dashed SVG registration crosshairs at the four corners, a seven-hole filing strip, a subtle fibre speckle, and a full isometric variant that swaps the square grid for a 60&nbsp;degree triangular one.
+
+Two sliders expose the underlying maths directly: base unit in pixels-per-millimetre, and an overall line-strength multiplier. Along the top edge a ruler strip redraws its ticks and mono numerals whenever the unit changes, dropping fine ticks automatically once they would sit closer than three pixels apart. The output panel below mirrors whatever you have built as copyable CSS.
+
+### How this look is built
+
+The whole surface is six `linear-gradient` layers on one element — a hard colour stop at the line width followed by `transparent`, tiled by a matching `background-size` so each layer repeats at its own pitch, with `--fine`, `--med` and `--bold` all derived with `calc()` from a single `--unit` custom property. Because the tiers are pure background layers, changing scale or tint is one property write instead of a repaint of hundreds of DOM nodes, which is why this beats the old approach of absolutely positioned 1px divs or a tiled PNG that goes soft on retina. The isometric variant uses three `repeating-linear-gradient` layers at 0°, 60° and −60° and cross-fades by opacity so the square grid never flashes. The ruler is redrawn as SVG lines inside a `requestAnimationFrame`-throttled resize handler, and every transition is cancelled under `prefers-reduced-motion`; the one thing to watch is the fibre-grain layer, which uses `mix-blend-mode: multiply` and is worth disabling on very large viewports if you also animate over it.
+
+> Illustrative UI only — always follow real safety guidance when working with tools, electronics, or repairs.

@@ -404,7 +404,9 @@ ${scriptTagClose}
   }
 
   const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
-  const files = await fg(path.join(CONTENT_DIR, "resources/*/index.mdx"));
+  // fast-glob only accepts forward slashes in patterns; path.join emits
+  // backslashes on Windows, which silently matches zero files there.
+  const files = await fg(`${fg.convertPathToPattern(CONTENT_DIR)}/resources/*/index.mdx`);
 
   const paths = [];
 

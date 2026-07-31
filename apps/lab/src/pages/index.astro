@@ -9,7 +9,9 @@ import "../styles/tailwind.css";
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
 
 // Read all resource metadata
-const files = await fg(path.join(CONTENT_DIR, "resources/*/index.mdx"));
+// fast-glob only accepts forward slashes in patterns; path.join emits
+// backslashes on Windows, which silently matches zero files there.
+const files = await fg(`${fg.convertPathToPattern(CONTENT_DIR)}/resources/*/index.mdx`);
 const resources = files.map((file) => {
   const raw = readFileSync(file, "utf-8");
   const { data } = matter(raw);

@@ -4554,6 +4554,99 @@ Collection focus: `modern-css` + `motion`. SMIL and JavaScript morphing patterns
 
 ---
 
+## Phase 100 — DIY / Maker Theme 🔧 ✅ DONE (2026-07-30) · 47/47
+
+Collection: `diy`. Estética "taller/maker": fondos tipo blueprint o cartón kraft, tipografía stencil/mono, acentos naranja seguridad + azul blueprint, texturas de papel milimetrado, iconografía de herramientas.
+
+> **Inspiración:** iFixit (guías de reparación paso a paso, medidor de dificultad, listas de piezas/herramientas), Instructables (cards de proyectos, listas de materiales, pasos con fotos), Arduino / Adafruit (diagramas de cableado, pinouts, código embebido), Hackaday (build logs), Thingiverse / Printables (galerías de impresión 3D, specs de slicing).
+
+### Pages (concept pages / landings)
+
+| Slug | Description | Concept | Diff | Status |
+|---|---|---|---|---|
+| `diy-hero-workshop` | Maker workshop hero | Hero con textura blueprint, herramientas animadas, CTA "Start building" | med | ✅ |
+| `diy-repair-guide` | Repair guide (iFixit-style) | Guía paso a paso: fotos numeradas, callouts de tornillos, avisos de precaución | hard | ✅ |
+| `diy-project-detail` | Project detail (Instructables-style) | Intro + materiales + pasos colapsables + comentarios de la comunidad | hard | ✅ |
+| `diy-projects-grid` | Projects browse grid | Grid filtrable por categoría/dificultad/tiempo, cards con badge de dificultad | med | ✅ |
+| `diy-arduino-tutorial` | Arduino tutorial page | Diagrama de cableado + pinout + bloques de código + "what you'll learn" | hard | ✅ |
+| `diy-3d-print-detail` | 3D print model page (Thingiverse-style) | Galería del modelo, specs de slicing (infill, capas), botón download STL | med | ✅ |
+| `diy-build-log` | Build log / worklog (Hackaday-style) | Timeline cronológico de entradas con fotos, fails y aprendizajes | med | ✅ |
+| `diy-teardown` | Product teardown page | Vista explosionada por capas, chips identificados, puntuación de reparabilidad | hard | ✅ |
+| `diy-workshop-classes` | Workshop / maker classes landing | Calendario de talleres presenciales, niveles, inscripción | easy | ✅ |
+| `diy-kit-product` | DIY kit product landing | Landing de kit electrónico: contenido de la caja, nivel, edad, FAQ | med | ✅ |
+| `diy-community-forum` | Maker community / Q&A | Hilos de preguntas, respuestas aceptadas, reputación por badges | med | ✅ |
+| `diy-tools-encyclopedia` | Tool encyclopedia / wiki | Fichas de herramientas con usos, seguridad y alternativas | easy | ✅ |
+
+### UI Components
+
+| Slug | Description | Concept | Diff | Status |
+|---|---|---|---|---|
+| `diy-step-stepper` | Guide step navigator | Stepper vertical con foto por paso, progreso persistente, "mark as done" | med | ✅ |
+| `diy-difficulty-meter` | Difficulty / repairability meter | Medidor tipo iFixit (1–10) con desglose por criterio | easy | ✅ |
+| `diy-parts-list` | Parts & tools checklist | Lista de piezas/herramientas con checkboxes, cantidades y links de compra | easy | ✅ |
+| `diy-wiring-diagram` | Interactive wiring diagram | SVG de breadboard + Arduino: hover resalta cada conexión y su pin | hard | ✅ |
+| `diy-pinout-card` | Microcontroller pinout card | Pinout interactivo (Uno/ESP32): click en pin muestra función y ejemplos | med | ✅ |
+| `diy-exploded-view` | Exploded view animation | Vista explosionada scroll-driven: las capas del dispositivo se separan | hard | ✅ |
+| `diy-measure-converter` | Maker unit converter | mm/pulgadas, AWG, resistencias (código de colores interactivo) | med | ✅ |
+| `diy-safety-callout` | Warning / caution callouts | Sistema de avisos estilo manual: danger/warning/tip/note con iconos | easy | ✅ |
+
+### Site-homage landings (alusión a páginas reales)
+
+Landings que reinterpretan el lenguaje visual de sitios maker reales — no clones, sino "a la manera de": mismo tipo de layout, jerarquía y patrones, documentando en el README **cómo se construye mejor** cada uno (qué técnicas CSS/JS usa el original y cuál es la forma moderna de lograrlo).
+
+| Slug | Description | Alusión a | Diff | Status |
+|---|---|---|---|---|
+| `diy-landing-ifixit` | Repair-manual landing | iFixit — cards de dispositivos, buscador de guías, score de reparabilidad | med | ✅ |
+| `diy-landing-instructables` | Project-sharing landing | Instructables — grid fotográfico denso, categorías (Circuits/Workshop/Craft), concursos | med | ✅ |
+| `diy-landing-arduino` | Electronics platform landing | Arduino — teal corporativo, hero de producto (placa), docs + IDE + comunidad | med | ✅ |
+| `diy-landing-adafruit` | Electronics shop / learn landing | Adafruit — tienda + "Learn", negro/azul, fotos de componentes sobre fondo limpio | med | ✅ |
+| `diy-landing-hackaday` | Hacker blog landing | Hackaday — negro/blanco brutalist, logo calavera-llave, feed denso de artículos | easy | ✅ |
+| `diy-landing-printables` | 3D print community landing | Printables/Thingiverse — grid de renders 3D, filtros por impresora/material, makes | med | ✅ |
+
+### Tipos de página por sitio (interiores "a la manera de")
+
+Cada sitio homenaje tiene páginas interiores características además de su home. Estas complementan las de la sección **Pages** (la guía de reparación ya cubre iFixit/guide, el tutorial Arduino cubre Arduino/docs-tutorial, el detalle 3D cubre Printables/model, el build log cubre Hackaday/project).
+
+| Slug | Description | Sitio / tipo de página | Diff | Status |
+|---|---|---|---|---|
+| `diy-ifixit-device-hub` | Device hub page | iFixit — página de dispositivo: foto, specs, lista de guías por componente, troubleshooting | med | ✅ |
+| `diy-ifixit-answers` | Q&A troubleshooting page | iFixit Answers — pregunta + respuestas votadas, "solución elegida", dispositivos relacionados | med | ✅ |
+| `diy-instructables-step-page` | Step-by-step project page | Instructables — pasos como capítulos con foto grande, "I Made It!", descarga PDF | med | ✅ |
+| `diy-instructables-contest` | Contest page | Instructables — concurso: premio, deadline countdown, entradas en grid, jurado | easy | ✅ |
+| `diy-arduino-product` | Board product page | Arduino Store — placa: render grande, tabla de specs (pines, memoria, clock), docs links | med | ✅ |
+| `diy-arduino-project-hub` | Project hub gallery | Arduino Project Hub — proyectos de la comunidad con dificultad, tiempo y componentes usados | med | ✅ |
+| `diy-adafruit-learn-guide` | Learn guide page | Adafruit Learn — guía multi-página con sidebar de secciones, código descargable, avisos | med | ✅ |
+| `diy-hackaday-article` | Article / writeup page | Hackaday — artículo denso, bloques de código, galería inline, comentarios legendarios | easy | ✅ |
+| `diy-printables-maker-profile` | Maker profile page | Printables — perfil: modelos publicados, makes, badges/logros, impresoras del maker | easy | ✅ |
+
+### Landing variants (nichos DIY — como `photography-landing-*`)
+
+| Slug | Description | Nicho | Diff | Status |
+|---|---|---|---|---|
+| `diy-landing-woodworking` | Woodworking shop landing | Carpintería — madera, kraft, planos de corte, proyectos por nivel | med | ✅ |
+| `diy-landing-robotics` | Robotics lab landing | Robótica — dark tech, render de robot, kits por edad/nivel | med | ✅ |
+| `diy-landing-3dprint-farm` | 3D print service landing | Granja de impresión — cotizador (material/infill), galería de trabajos | med | ✅ |
+| `diy-landing-crafts` | Crafts & handmade landing | Manualidades — pastel, texturas de papel/tela, tutoriales con fotos | easy | ✅ |
+| `diy-landing-home-improvement` | Home improvement landing | Mejoras del hogar — antes/después, calculadoras de materiales, checklist por proyecto | med | ✅ |
+| `diy-landing-retro-electronics` | Retro electronics landing | Restauración retro — consolas/radios vintage, CRT vibes, guías de recap | med | ✅ |
+
+### Backgrounds & Effects
+
+| Slug | Description | Concept | Diff | Status |
+|---|---|---|---|---|
+| `diy-bg-blueprint-grid` | Blueprint grid background | Fondo azul plano técnico con retícula fina + mayor (como `wiki-lambda-blueprint`) — CSS gradients puros, variantes navy/kraft/dark, con vignette y animación sutil de drift | easy | ✅ |
+| `diy-bg-graph-paper` | Graph / engineering paper BG | Papel milimetrado claro, cuadrícula 1mm/5mm/10mm, esquinas con marcas de registro | easy | ✅ |
+| `diy-bg-schematic-traces` | PCB traces background | Pistas de circuito SVG animadas con pulsos de "corriente" recorriendo el fondo | med | ✅ |
+| `diy-blueprint-draw` | Blueprint line-draw effect | Planos técnicos que se dibujan solos (SVG stroke-dash) con cotas | med | ✅ |
+| `diy-solder-glow` | Soldering / spark effect | Partículas de chispas + punta de soldador que sigue el cursor | med | ✅ |
+| `diy-gear-assembly` | Gear assembly loader | Engranajes SVG que encajan y giran sincronizados como loader/hero | med | ✅ |
+
+**Wiring de colección (5 lugares + docs):** `diy` en `packages/schema/src/schema.ts`, `apps/www/src/content/config.ts`, `apps/www/src/lib/collections.ts`, i18n EN+ES, y fila en `apps/docs/src/content/docs/collections.mdx` (+ `choose-your-path.mdx` si aplica).
+
+**Progress (2026-07-30):** 47/47 ✅ — construida en tres workflows multi-agente (`diy-phase100-batch1/2/3`). Colección `diy` cableada (schema + types + www config + collections card + i18n EN/ES + docs `collections.mdx` y `choose-your-path.mdx`) y catálogo MCP regenerado (2031 recursos). Los landings homenaje usan marcas ficticias (FIXWELL, MAKELOG, CIRCUITO, SOLDERBOX, SOLDER & SMOKE, SPOOLYARD) — los sitios reales solo se citan como referencia estilística en la prosa, y cada `index.mdx` incluye una sección **How this look is built**.
+
+---
+
 ## Phase index (planned families) 🗂️
 
 > Quick map of the planned/future phase families for navigation. ✅ = shipped phases tracked in their own sections above.
@@ -4585,3 +4678,4 @@ Collection focus: `modern-css` + `motion`. SMIL and JavaScript morphing patterns
 | Lifestyle verticals (II) | 85–88 | Dating/Social · Fitness Coach · Interior Design · Videographer/Film |
 | Advanced motion | 89 | Advanced Motion / WebGPU |
 | Interaction & Advanced Components | 90–99 | Drag & Drop · Gesture · Virtual Scroll · Scroll-driven · Rich Editor · Bento · SVG Maps · Form UX · Raw WebGL · SVG Morph |
+| DIY / Maker | 100 | DIY / Maker Theme — guías de reparación, proyectos, Arduino, impresión 3D, build logs, landings de nicho y fondos blueprint |

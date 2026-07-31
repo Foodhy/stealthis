@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesson 03 — Blink + Button · NV-UNO Workshop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero" role="banner">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#">Maker Bench</a>
+        <span aria-hidden="true">/</span>
+        <a href="#">Electronics Track</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Lesson 03</span>
+      </nav>
+
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="kicker"><span class="dot" aria-hidden="true"></span> Electronics · Beginner Track</p>
+          <h1>Blink + Button<span class="accent">.</span><br />Your first input circuit</h1>
+          <p class="lede">
+            Wire a tactile button to a digital pin, read its state, and drive an LED —
+            the foundation of every interactive gadget you'll ever build.
+          </p>
+
+          <div class="meta-row" aria-label="Lesson metadata">
+            <span class="badge badge-board">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="4" width="14" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 4V2M8 4V2M12 4V2M4 14v-2M8 14v-2M12 14v-2" stroke="currentColor" stroke-width="1.5"/></svg>
+              NV-UNO R3 · UNO-compatible
+            </span>
+            <span class="badge badge-diff" title="Difficulty">
+              <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></span>
+              Difficulty 2/4
+            </span>
+            <span class="badge badge-time">⏱ ~35 min bench time</span>
+            <span class="badge badge-rev">REV C · 2026-07</span>
+          </div>
+
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="#wiring">Jump to wiring</a>
+            <a class="btn btn-ghost" href="#code">View the sketch</a>
+          </div>
+        </div>
+
+        <aside class="learn-card" aria-labelledby="learn-title">
+          <h2 id="learn-title">What you'll learn</h2>
+          <ul class="learn-list">
+            <li><span class="ref">L-01</span> Reading a digital input with <code>digitalRead()</code></li>
+            <li><span class="ref">L-02</span> Why <code>INPUT_PULLUP</code> beats a floating pin</li>
+            <li><span class="ref">L-03</span> Sizing a current-limit resistor for a 5&nbsp;mm LED</li>
+            <li><span class="ref">L-04</span> Breadboard rails, rows &amp; the "column rule"</li>
+            <li><span class="ref">L-05</span> Serial monitor as your first debug tool</li>
+          </ul>
+          <p class="learn-note">Prereq: Lesson 02 — "Blink without a breadboard"</p>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap main" id="main">
+
+    <!-- ============ COMPONENTS ============ -->
+    <section class="section" aria-labelledby="bom-title">
+      <div class="section-head">
+        <h2 id="bom-title"><span class="step-no">01</span> Components &amp; tools</h2>
+        <span class="section-tag">BOM-L03</span>
+      </div>
+
+      <div class="bom-grid">
+        <article class="bom-card">
+          <div class="bom-visual led-visual" aria-hidden="true">
+            <span class="led-dome"></span>
+            <span class="led-leg long"></span>
+            <span class="led-leg"></span>
+          </div>
+          <h3>LED, 5&nbsp;mm red</h3>
+          <p class="bom-ref">LED-5R-RED · Vf ≈ 2.0 V</p>
+          <p class="bom-qty">×1</p>
+          <p class="bom-note">Long leg = anode (+). It matters.</p>
+        </article>
+
+        <article class="bom-card">
+          <div class="bom-visual resistor-visual" aria-hidden="true">
+            <span class="res-lead"></span>
+            <span class="res-body">
+              <i class="band b-red" title="2"></i>
+              <i class="band b-red" title="2"></i>
+              <i class="band b-brown" title="×10"></i>
+              <i class="band b-gold" title="±5%"></i>
+            </span>
+            <span class="res-lead"></span>
+          </div>
+          <h3>Resistor, 220&nbsp;Ω</h3>
+          <p class="bom-ref">R-220-0.25W · red · red · brown · gold</p>
+          <p class="bom-qty">×1</p>
+          <p class="bom-note">Limits LED current to ≈ 14 mA from a 5 V pin.</p>
+        </article>
+
+        <article class="bom-card">
+          <div class="bom-visual btn-visual" aria-hidden="true">
+            <span class="btn-base"><span class="btn-cap"></span></span>
+          </div>
+          <h3>Tactile button, 6&nbsp;mm</h3>
+          <p class="bom-ref">SW-TACT-6 · momentary, 4-pin</p>
+          <p class="bom-qty">×1</p>
+          <p class="bom-note">Legs bridge in pairs across the center gap.</p>
+        </article>
+
+        <article class="bom-card">
+          <div class="bom-visual wires-visual" aria-hidden="true">
+            <span class="jw jw-o"></span><span class="jw jw-b"></span><span class="jw jw-g"></span>
+          </div>
+          <h3>Jumper wires, M-M</h3>
+          <p class="bom-ref">JW-MM-150 · 150 mm</p>
+          <p class="bom-qty">×4</p>
+          <p class="bom-note">One per connection in the table below.</p>
+        </article>
+      </div>
+
+      <p class="bench-tip"><strong>Bench tip —</strong> no multimeter needed for this lesson, but keep the board unplugged from USB while you wire. Power last, always.</p>
+    </section>
+
+    <!-- ============ WIRING ============ -->
+    <section class="section" id="wiring" aria-labelledby="wiring-title">
+      <div class="section-head">
+        <h2 id="wiring-title"><span class="step-no">02</span> Wiring diagram</h2>
+        <span class="section-tag">FIG-03.1</span>
+      </div>
+      <p class="section-lede">Hover (or focus) a row in the connection table to light up the matching wire on the diagram — and vice-versa.</p>
+
+      <div class="wiring-grid">
+        <figure class="diagram-card">
+          <svg id="wiring-svg" viewBox="0 0 720 380" role="img" aria-label="Wiring diagram: NV-UNO board connected to a breadboard with an LED, a 220 ohm resistor and a tactile button">
+            <!-- board -->
+            <g>
+              <rect x="26" y="58" width="204" height="264" rx="10" class="board-body"/>
+              <rect x="26" y="58" width="204" height="264" rx="10" class="board-outline"/>
+              <text x="128" y="100" class="svg-label svg-label-lg" text-anchor="middle">NV-UNO</text>
+              <text x="128" y="118" class="svg-label svg-label-sm" text-anchor="middle">R3 · UNO-COMPATIBLE</text>
+              <rect x="52" y="140" width="60" height="44" rx="4" class="board-chip"/>
+              <text x="82" y="166" class="svg-label svg-label-xs" text-anchor="middle">MCU-328</text>
+              <rect x="40" y="286" width="36" height="22" rx="3" class="board-usb"/>
+              <text x="58" y="301" class="svg-label svg-label-xs" text-anchor="middle">USB</text>
+              <!-- pin headers -->
+              <g class="pin" data-wire="w1"><rect x="216" y="126" width="22" height="14" rx="2"/><text x="212" y="137" text-anchor="end">D13</text></g>
+              <g class="pin" data-wire="w3"><rect x="216" y="166" width="22" height="14" rx="2"/><text x="212" y="177" text-anchor="end">D2</text></g>
+              <g class="pin" data-wire="w5"><rect x="216" y="246" width="22" height="14" rx="2"/><text x="212" y="257" text-anchor="end">GND</text></g>
+            </g>
+
+            <!-- breadboard -->
+            <g>
+              <rect x="300" y="40" width="392" height="300" rx="10" class="bb-body"/>
+              <rect x="300" y="40" width="392" height="300" rx="10" class="bb-outline"/>
+              <!-- rails -->
+              <line x1="316" y1="316" x2="676" y2="316" class="bb-rail bb-rail-neg"/>
+              <text x="684" y="320" class="svg-label svg-label-xs">−</text>
+              <line x1="316" y1="300" x2="676" y2="300" class="bb-rail bb-rail-pos"/>
+              <text x="684" y="304" class="svg-label svg-label-xs">+</text>
+              <!-- hole grid -->
+              <g class="bb-holes" aria-hidden="true">
+                <!-- rows a-e -->
+                <g id="holes"></g>
+              </g>
+              <!-- center gap -->
+              <line x1="316" y1="170" x2="676" y2="170" class="bb-gap"/>
+              <text x="322" y="64" class="svg-label svg-label-xs">1</text>
+              <text x="660" y="64" class="svg-label svg-label-xs">30</text>
+            </g>
+
+            <!-- components on breadboard -->
+            <!-- resistor between rows -->
+            <g class="cmp" data-wire="w1">
+              <line x1="400" y1="96" x2="400" y2="150" class="cmp-lead"/>
+              <rect x="392" y="104" width="16" height="36" rx="5" class="res-svg"/>
+              <rect x="393.5" y="110" width="13" height="4" class="rb rb-red"/>
+              <rect x="393.5" y="117" width="13" height="4" class="rb rb-red"/>
+              <rect x="393.5" y="124" width="13" height="4" class="rb rb-brown"/>
+              <rect x="393.5" y="131" width="13" height="4" class="rb rb-gold"/>
+              <text x="416" y="126" class="svg-label svg-label-xs">R1 220Ω</text>
+            </g>
+            <!-- LED -->
+            <g class="cmp" data-wire="w2">
+              <line x1="400" y1="186" x2="400" y2="214" class="cmp-lead"/>
+              <line x1="428" y1="186" x2="428" y2="214" class="cmp-lead"/>
+              <circle cx="414" cy="224" r="14" class="led-svg"/>
+              <circle cx="414" cy="224" r="7" class="led-core"/>
+              <text x="436" y="228" class="svg-label svg-label-xs">LED1</text>
+              <text x="392" y="252" class="svg-label svg-label-xs">A</text>
+              <text x="424" y="252" class="svg-label svg-label-xs">K</text>
+            </g>
+            <!-- button -->
+            <g class="cmp" data-wire="w3">
+              <rect x="536" y="146" width="48" height="48" rx="6" class="sw-svg"/>
+              <circle cx="560" cy="170" r="12" class="sw-cap"/>
+              <text x="592" y="174" class="svg-label svg-label-xs">SW1</text>
+            </g>
+
+            <!-- wires -->
+            <path id="p-w1" class="wire wire-orange" data-wire="w1" d="M238 133 C 300 133, 330 96, 400 96" />
+            <path id="p-w2" class="wire wire-gray" data-wire="w2" d="M428 214 C 428 268, 452 316, 470 316" />
+            <path id="p-w3" class="wire wire-blue" data-wire="w3" d="M238 173 C 300 173, 470 146, 540 150" />
+            <path id="p-w4" class="wire wire-gray" data-wire="w4" d="M580 190 C 600 240, 606 300, 620 316" />
+            <path id="p-w5" class="wire wire-black" data-wire="w5" d="M238 253 C 290 253, 300 316, 340 316" />
+
+            <!-- endpoint dots -->
+            <g class="dots" aria-hidden="true">
+              <circle cx="238" cy="133" r="4" class="dot-o"/><circle cx="400" cy="96" r="4" class="dot-o"/>
+              <circle cx="428" cy="214" r="4" class="dot-g"/><circle cx="470" cy="316" r="4" class="dot-g"/>
+              <circle cx="238" cy="173" r="4" class="dot-b"/><circle cx="540" cy="150" r="4" class="dot-b"/>
+              <circle cx="580" cy="190" r="4" class="dot-g"/><circle cx="620" cy="316" r="4" class="dot-g"/>
+              <circle cx="238" cy="253" r="4" class="dot-k"/><circle cx="340" cy="316" r="4" class="dot-k"/>
+            </g>
+          </svg>
+          <figcaption>FIG-03.1 — Button uses the internal pull-up, so no external resistor is needed on SW1.</figcaption>
+        </figure>
+
+        <div class="conn-card">
+          <h3 class="conn-title">Connection table</h3>
+          <table class="conn-table" aria-describedby="wiring-title">
+            <thead>
+              <tr><th scope="col">#</th><th scope="col">From</th><th scope="col">To</th><th scope="col">Wire</th></tr>
+            </thead>
+            <tbody>
+              <tr class="conn-row" data-wire="w1" tabindex="0">
+                <td class="mono">W1</td>
+                <td><span class="mono">D13</span> (board)</td>
+                <td><span class="mono">R1</span> 220 Ω → LED1 anode</td>
+                <td><span class="swatch sw-orange" aria-hidden="true"></span>orange</td>
+              </tr>
+              <tr class="conn-row" data-wire="w2" tabindex="0">
+                <td class="mono">W2</td>
+                <td><span class="mono">LED1</span> cathode (K)</td>
+                <td><span class="mono">GND</span> rail (−)</td>
+                <td><span class="swatch sw-gray" aria-hidden="true"></span>gray</td>
+              </tr>
+              <tr class="conn-row" data-wire="w3" tabindex="0">
+                <td class="mono">W3</td>
+                <td><span class="mono">D2</span> (board)</td>
+                <td><span class="mono">SW1</span> pin 1</td>
+                <td><span class="swatch sw-blue" aria-hidden="true"></span>blue</td>
+              </tr>
+              <tr class="conn-row" data-wire="w4" tabindex="0">
+                <td class="mono">W4</td>
+                <td><span class="mono">SW1</span> pin 2</td>
+                <td><span class="mono">GND</span> rail (−)</td>
+                <td><span class="swatch sw-gray" aria-hidden="true"></span>gray</td>
+              </tr>
+              <tr class="conn-row" data-wire="w5" tabindex="0">
+                <td class="mono">W5</td>
+                <td><span class="mono">GND</span> (board)</td>
+                <td><span class="mono">GND</span> rail (−)</td>
+                <td><span class="swatch sw-black" aria-hidden="true"></span>black</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="conn-note">Polarity check: the LED's flat side / short leg (cathode, K) always points toward ground.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CODE ============ -->
+    <section class="section" id="code" aria-labelledby="code-title">
+      <div class="section-head">
+        <h2 id="code-title"><span class="step-no">03</span> The sketch</h2>
+        <span class="section-tag">SKETCH-03.INO</span>
+      </div>
+      <p class="section-lede">Two functions run everything: <code>setup()</code> once at power-on, then <code>loop()</code> forever. Callouts below the editor explain both.</p>
+
+      <div class="code-card">
+        <div class="code-bar">
+          <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-file">blink_button.ino</span>
+          <button type="button" class="copy-btn" id="copy-btn" aria-label="Copy sketch to clipboard">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            <span>Copy</span>
+          </button>
+        </div>
+        <pre class="code-body" id="code-body" tabindex="0"><code><span class="cl"><span class="tk-cm">// Lesson 03 — Blink + Button</span></span>
+<span class="cl"><span class="tk-cm">// Board: NV-UNO R3 (UNO-compatible) · IDE 2.x</span></span>
+<span class="cl"></span>
+<span class="cl"><span class="tk-kw">const</span> <span class="tk-type">int</span> LED_PIN <span class="tk-op">=</span> <span class="tk-num">13</span>;  <span class="tk-cm">// through R1 (220Ω)</span></span>
+<span class="cl"><span class="tk-kw">const</span> <span class="tk-type">int</span> BTN_PIN <span class="tk-op">=</span> <span class="tk-num">2</span>;   <span class="tk-cm">// tactile button SW1</span></span>
+<span class="cl"></span>
+<span class="cl mark-setup"><span class="tk-type">void</span> <span class="tk-fn">setup</span>() {</span>
+<span class="cl mark-setup">  <span class="tk-fn">pinMode</span>(LED_PIN, <span class="tk-const">OUTPUT</span>);</span>
+<span class="cl mark-setup">  <span class="tk-fn">pinMode</span>(BTN_PIN, <span class="tk-const">INPUT_PULLUP</span>);  <span class="tk-cm">// no external resistor!</span></span>
+<span class="cl mark-setup">  Serial.<span class="tk-fn">begin</span>(<span class="tk-num">9600</span>);</span>
+<span class="cl mark-setup">}</span>
+<span class="cl"></span>
+<span class="cl mark-loop"><span class="tk-type">void</span> <span class="tk-fn">loop</span>() {</span>
+<span class="cl mark-loop">  <span class="tk-cm">// pull-up means: pressed = LOW, released = HIGH</span></span>
+<span class="cl mark-loop">  <span class="tk-kw">if</span> (<span class="tk-fn">digitalRead</span>(BTN_PIN) <span class="tk-op">==</span> <span class="tk-const">LOW</span>) {</span>
+<span class="cl mark-loop">    <span class="tk-fn">digitalWrite</span>(LED_PIN, <span class="tk-const">HIGH</span>);</span>
+<span class="cl mark-loop">    Serial.<span class="tk-fn">println</span>(<span class="tk-str">"SW1 pressed"</span>);</span>
+<span class="cl mark-loop">  } <span class="tk-kw">else</span> {</span>
+<span class="cl mark-loop">    <span class="tk-fn">digitalWrite</span>(LED_PIN, <span class="tk-const">LOW</span>);</span>
+<span class="cl mark-loop">  }</span>
+<span class="cl mark-loop">  <span class="tk-fn">delay</span>(<span class="tk-num">10</span>);  <span class="tk-cm">// crude debounce — Lesson 04 does it properly</span></span>
+<span class="cl mark-loop">}</span></code></pre>
+      </div>
+
+      <div class="callout-grid">
+        <div class="callout callout-setup">
+          <span class="callout-ref">L07–L11 · setup()</span>
+          <p>Runs <strong>once</strong> when the board powers up or resets. Here we declare pin directions and open the serial port. <code>INPUT_PULLUP</code> switches on an internal ~20 kΩ resistor so the pin idles at HIGH instead of floating randomly.</p>
+        </div>
+        <div class="callout callout-loop">
+          <span class="callout-ref">L13–L23 · loop()</span>
+          <p>Repeats <strong>forever</strong>, thousands of times per second. Because of the pull-up, a pressed button reads <code>LOW</code> — the logic looks inverted but is completely normal. The <code>delay(10)</code> softens contact bounce for now.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ UPLOAD & TEST ============ -->
+    <section class="section" aria-labelledby="upload-title">
+      <div class="section-head">
+        <h2 id="upload-title"><span class="step-no">04</span> Upload &amp; test</h2>
+        <span class="section-tag">QC-PASS</span>
+      </div>
+
+      <div class="check-card">
+        <div class="check-progress" aria-hidden="true">
+          <div class="check-progress-bar" id="check-bar"></div>
+        </div>
+        <p class="check-count" id="check-count">0 / 6 steps done</p>
+        <ul class="checklist" id="checklist">
+          <li><label><input type="checkbox" /> <span class="ck" aria-hidden="true"></span><span class="ck-text">Double-check LED polarity — flat side toward the GND rail</span></label></li>
+          <li><label><input type="checkbox" /> <span class="ck" aria-hidden="true"></span><span class="ck-text">Connect the NV-UNO over USB; the green <span class="mono">PWR</span> LED should light</span></label></li>
+          <li><label><input type="checkbox" /> <span class="ck" aria-hidden="true"></span><span class="ck-text">Select <span class="mono">Tools → Board → NV-UNO R3</span> and the right serial port</span></label></li>
+          <li><label><input type="checkbox" /> <span class="ck" aria-hidden="true"></span><span class="ck-text">Hit Upload — the <span class="mono">TX/RX</span> LEDs flicker while flashing</span></label></li>
+          <li><label><input type="checkbox" /> <span class="ck" aria-hidden="true"></span><span class="ck-text">Press SW1 → LED1 lights; release → it goes dark</span></label></li>
+          <li><label><input type="checkbox" /> <span class="ck" aria-hidden="true"></span><span class="ck-text">Open Serial Monitor at <span class="mono">9600 baud</span> — see "SW1 pressed"</span></label></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ TROUBLESHOOTING ============ -->
+    <section class="section" aria-labelledby="ts-title">
+      <div class="section-head">
+        <h2 id="ts-title"><span class="step-no">05</span> Troubleshooting</h2>
+        <span class="section-tag">FAQ-L03</span>
+      </div>
+
+      <div class="accordion" id="accordion">
+        <div class="acc-item">
+          <h3 class="acc-heading">
+            <button type="button" class="acc-btn" aria-expanded="false" aria-controls="acc-p1" id="acc-b1">
+              <span class="acc-code">TS-01</span> LED never lights up
+              <span class="acc-chev" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="acc-panel" id="acc-p1" role="region" aria-labelledby="acc-b1" hidden>
+            <ul>
+              <li><strong>Polarity first.</strong> Flip the LED — 9 times out of 10 it's in backwards. It won't be damaged.</li>
+              <li>Confirm R1 and the LED anode share the <em>same breadboard row</em> (the column rule).</li>
+              <li>Swap wire W1 to pin <span class="mono">D13</span> — a neighbor pin off-by-one is a classic.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <h3 class="acc-heading">
+            <button type="button" class="acc-btn" aria-expanded="false" aria-controls="acc-p2" id="acc-b2">
+              <span class="acc-code">TS-02</span> LED is always on, button does nothing
+              <span class="acc-chev" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="acc-panel" id="acc-p2" role="region" aria-labelledby="acc-b2" hidden>
+            <ul>
+              <li>SW1 is probably rotated 90°. The 4 legs bridge in pairs — rotate it so pins 1/2 sit on opposite sides of the center gap.</li>
+              <li>Verify the sketch uses <span class="mono">INPUT_PULLUP</span>, not plain <span class="mono">INPUT</span>. A floating pin reads garbage.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <h3 class="acc-heading">
+            <button type="button" class="acc-btn" aria-expanded="false" aria-controls="acc-p3" id="acc-b3">
+              <span class="acc-code">TS-03</span> Serial monitor prints dozens of lines per press
+              <span class="acc-chev" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="acc-panel" id="acc-p3" role="region" aria-labelledby="acc-b3" hidden>
+            <ul>
+              <li>That's <strong>contact bounce</strong> — the metal contacts chatter for a few milliseconds. <span class="mono">delay(10)</span> tames most of it.</li>
+              <li>Lesson 04 replaces the delay with a proper <span class="mono">millis()</span>-based debounce that never blocks the loop.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <h3 class="acc-heading">
+            <button type="button" class="acc-btn" aria-expanded="false" aria-controls="acc-p4" id="acc-b4">
+              <span class="acc-code">TS-04</span> Upload fails: "port not found"
+              <span class="acc-chev" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="acc-panel" id="acc-p4" role="region" aria-labelledby="acc-b4" hidden>
+            <ul>
+              <li>Try a different USB cable — charge-only cables have no data lines and are the #1 culprit.</li>
+              <li>On clones, install the <span class="mono">CH340</span> USB-serial driver, then reopen the IDE.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ NEXT LESSONS ============ -->
+    <section class="section next-section" aria-labelledby="next-title">
+      <div class="section-head">
+        <h2 id="next-title"><span class="step-no">→</span> Keep building</h2>
+        <span class="section-tag">TRACK-E</span>
+      </div>
+      <div class="next-grid">
+        <a href="#" class="next-card">
+          <span class="next-ref">LESSON 04</span>
+          <h3>Debounce like a pro</h3>
+          <p>Replace <code>delay()</code> with <code>millis()</code> timing and toggle the LED with a single clean click.</p>
+          <span class="next-meta">⏱ 40 min · Difficulty 2/4</span>
+        </a>
+        <a href="#" class="next-card">
+          <span class="next-ref">LESSON 05</span>
+          <h3>Fade with PWM</h3>
+          <p>Meet <code>analogWrite()</code> — breathe your LED up and down using pulse-width modulation on pin D9.</p>
+          <span class="next-meta">⏱ 30 min · Difficulty 2/4</span>
+        </a>
+        <a href="#" class="next-card">
+          <span class="next-ref">LESSON 06</span>
+          <h3>Read a potentiometer</h3>
+          <p>Your first analog input: map a knob's 0–1023 reading to LED brightness in ten lines of code.</p>
+          <span class="next-meta">⏱ 45 min · Difficulty 3/4</span>
+        </a>
+      </div>
+      <p class="footer-note mono">MAKER BENCH · ELECTRONICS TRACK · SHEET 3 OF 12 · REV C</p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

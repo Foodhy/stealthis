@@ -58,6 +58,10 @@ export const RESOURCE_COLLECTION_IDS = [
   "modern-css",
   "webgl",
   "accessibility",
+  "ai",
+  "devtools",
+  "diy",
+  "design",
 ] as const;
 
 export type ResourceCollection = (typeof RESOURCE_COLLECTION_IDS)[number];
@@ -72,6 +76,10 @@ export const NEW_LIBRARY_COLLECTION_IDS = [
   "modern-css",
   "webgl",
   "accessibility",
+  "ai",
+  "devtools",
+  "diy",
+  "design",
 ] as const satisfies readonly ResourceCollection[];
 
 const newLibraryCollectionIdsSet = new Set<ResourceCollection>(NEW_LIBRARY_COLLECTION_IDS);
@@ -503,6 +511,34 @@ export const libraryCollections: LibraryCollection[] = [
     descriptionKey: "collection.accessibility.desc",
     accentToken: "collection-accessibility",
     order: 59,
+  },
+  {
+    id: "ai",
+    titleKey: "collection.ai.title",
+    descriptionKey: "collection.ai.desc",
+    accentToken: "collection-ai",
+    order: 60,
+  },
+  {
+    id: "devtools",
+    titleKey: "collection.devtools.title",
+    descriptionKey: "collection.devtools.desc",
+    accentToken: "collection-devtools",
+    order: 61,
+  },
+  {
+    id: "diy",
+    titleKey: "collection.diy.title",
+    descriptionKey: "collection.diy.desc",
+    accentToken: "collection-diy",
+    order: 62,
+  },
+  {
+    id: "design",
+    titleKey: "collection.design.title",
+    descriptionKey: "collection.design.desc",
+    accentToken: "collection-design",
+    order: 63,
   },
 ];
 

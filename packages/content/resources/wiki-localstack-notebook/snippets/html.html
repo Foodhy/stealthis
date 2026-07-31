@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LocalStack Lab — Notebook</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="nb-nav">
+  <a href="#s1">What is LocalStack</a>
+  <a href="#s2">How it works</a>
+  <a href="#s3">Starting it</a>
+  <a href="#s4">awslocal</a>
+  <a href="#s5">Hands-on: S3 · SQS · Lambda</a>
+  <a href="#s6">SDK config</a>
+  <a href="#s7">Tests &amp; CI</a>
+  <a href="#s8">Limits &amp; tips</a>
+</div>
+
+<div class="nb">
+  <div class="nb-titlebar">
+    <div class="dots"><i></i><i></i><i></i></div>
+    <span class="fname">localstack-lab.ipynb <span class="unsaved">— autosaved</span></span>
+    <span class="kernel"><span class="ring"></span> Shell · LocalStack</span>
+  </div>
+
+  <div class="nb-toolbar">
+    <button class="primary" id="run-all">▶▶ Run All</button>
+    <button id="restart">↻ Restart</button>
+    <span class="sep"></span>
+    <button disabled>+ Code</button>
+    <button disabled>+ Markdown</button>
+    <span class="status" id="kernel-status">Kernel idle</span>
+  </div>
+
+  <div class="cells">
+
+    <!-- ═══ 1 · What is LocalStack ═══ -->
+    <div class="cell md" id="s1">
+      <div class="prompt"></div>
+      <div class="body">
+        <h1>LocalStack Lab 🧪</h1>
+        <p><strong>LocalStack</strong> is a local AWS cloud emulator: a single Docker container that impersonates dozens of AWS services (S3, SQS, Lambda, DynamoDB, SNS, …) on your machine. Your code talks to it with the <em>same SDKs, same CLI, same APIs</em> it would use against real AWS — but nothing leaves your laptop, nothing costs money, and you can destroy and recreate the whole "cloud" in seconds.</p>
+        <div class="note">💡 <strong>The mental model:</strong> LocalStack is to AWS what SQLite is to your production database — a faithful-enough stand-in for development and tests, running entirely on localhost.</div>
+      </div>
+    </div>
+
+    <!-- ═══ 2 · How it works ═══ -->
+    <div class="cell md" id="s2">
+      <div class="prompt"></div>
+      <div class="body">
+        <h2>How it works</h2>
+        <p>Everything runs behind <strong>one edge port: <code>4566</code></strong>. The container exposes a single HTTP gateway that inspects each incoming request (its <code>Authorization</code> header, target host, and payload shape) and routes it to an internal emulator for the right service. That's why "configuring LocalStack" is almost always just one change: <em>point your endpoint at <code>http://localhost:4566</code></em>.</p>
+        <ul>
+          <li><strong>One container, many services</strong> — emulators start lazily on first use.</li>
+          <li><strong>Ephemeral by default</strong> — state lives in the container; remove it and your buckets, queues and tables are gone.</li>
+          <li><strong>Credentials are fake</strong> — any access key works locally (<code>test</code>/<code>test</code> is the convention); they only select the account namespace.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src">curl -s http://localhost:4566/_localstack/health | head -12</div>
+        <template class="out-template">{
+  <span class="st">"services"</span>: {
+    <span class="st">"dynamodb"</span>: <span class="st">"available"</span>,
+    <span class="st">"lambda"</span>: <span class="st">"available"</span>,
+    <span class="st">"s3"</span>: <span class="st">"running"</span>,
+    <span class="st">"sqs"</span>: <span class="st">"running"</span>,
+    <span class="st">"sns"</span>: <span class="st">"available"</span>
+  },
+  <span class="st">"edition"</span>: <span class="st">"community"</span>,
+  <span class="st">"version"</span>: <span class="st">"3.6.0"</span>
+}</template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+
+    <!-- ═══ 3 · Starting it ═══ -->
+    <div class="cell md" id="s3">
+      <div class="prompt"></div>
+      <div class="body">
+        <h2>Starting it</h2>
+        <p>Three equivalent front doors — pick the one that fits your workflow. All of them end with the same container listening on <code>4566</code>.</p>
+      </div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># Option A — plain docker</span>
+docker run --rm -d -p 4566:4566 -p 4510-4559:4510-4559 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  localstack/localstack</div>
+        <template class="out-template">Unable to find image 'localstack/localstack:latest' locally
+latest: Pulling from localstack/localstack
+<span class="dim">6e3729cf69e0: Pull complete</span>
+<span class="dim">f3f4b8ddca6f: Pull complete</span>
+Status: Downloaded newer image for localstack/localstack:latest
+9f1c2ab8c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8
+<span class="ok">✔ LocalStack is up — edge on :4566</span></template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># Option B — docker-compose.yml (checked into the repo)</span>
+cat docker-compose.yml</div>
+        <template class="out-template"><span class="kw">services</span>:
+  <span class="kw">localstack</span>:
+    image: localstack/localstack
+    ports:
+      - <span class="st">"4566:4566"</span>
+    environment:
+      - SERVICES=s3,sqs,lambda,dynamodb
+      - DEBUG=0
+    volumes:
+      - <span class="st">"/var/run/docker.sock:/var/run/docker.sock"</span></template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># Option C — the LocalStack CLI (wraps docker for you)</span>
+pip install localstack &amp;&amp; localstack start -d</div>
+        <template class="out-template">     __                     _______ __             __
+    / /   ____  _________ _/ / ___// /_____ ______/ /__
+   / /   / __ \/ ___/ __ `/ /\__ \/ __/ __ `/ ___/ //_/
+  / /___/ /_/ / /__/ /_/ / /___/ / /_/ /_/ / /__/ ,&lt;
+ /_____/\____/\___/\__,_/_//____/\__/\__,_/\___/_/|_|
+
+<span class="ok">✔ container started on :4566 (detached)</span></template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+
+    <!-- ═══ 4 · awslocal ═══ -->
+    <div class="cell md" id="s4">
+      <div class="prompt"></div>
+      <div class="body">
+        <h2>Talking to it: <code>awslocal</code></h2>
+        <p>The real AWS CLI works against LocalStack if you pass <code>--endpoint-url=http://localhost:4566</code> on every call. That gets old fast, so the <code>awslocal</code> wrapper does it for you — <strong>same commands, endpoint pre-wired</strong>:</p>
+        <table>
+          <tr><th>Real AWS</th><th>LocalStack</th></tr>
+          <tr><td><code>aws s3 ls</code></td><td><code>awslocal s3 ls</code></td></tr>
+          <tr><td><code>aws sqs create-queue …</code></td><td><code>awslocal sqs create-queue …</code></td></tr>
+          <tr><td><code>aws --endpoint-url=http://localhost:4566 …</code></td><td>(what awslocal does under the hood)</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src">pip install awscli-local
+awslocal sts get-caller-identity</div>
+        <template class="out-template">{
+  <span class="st">"UserId"</span>: <span class="st">"AKIAIOSFODNN7EXAMPLE"</span>,
+  <span class="st">"Account"</span>: <span class="st">"000000000000"</span>,
+  <span class="st">"Arn"</span>: <span class="st">"arn:aws:iam::000000000000:root"</span>
+}
+<span class="dim"># account 000000000000 — the LocalStack default namespace</span></template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+
+    <!-- ═══ 5 · Hands-on ═══ -->
+    <div class="cell md" id="s5">
+      <div class="prompt"></div>
+      <div class="body">
+        <h2>Hands-on: S3, SQS, Lambda</h2>
+        <p>The point of the emulator is that real workflows just work. Run the cells in order — each one builds on the previous.</p>
+      </div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># S3 — bucket, upload, list</span>
+awslocal s3 mb s3://demo-bucket
+echo "hello localstack" &gt; hello.txt
+awslocal s3 cp hello.txt s3://demo-bucket/
+awslocal s3 ls s3://demo-bucket/</div>
+        <template class="out-template">make_bucket: demo-bucket
+upload: ./hello.txt to s3://demo-bucket/hello.txt
+2026-07-30 10:14:02         17 hello.txt
+<span class="ok">✔ objects also browsable at http://localhost:4566/demo-bucket/hello.txt</span></template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># SQS — queue, send, receive</span>
+awslocal sqs create-queue --queue-name jobs
+awslocal sqs send-message \
+  --queue-url http://localhost:4566/000000000000/jobs \
+  --message-body '{"task":"resize","id":42}'</div>
+        <template class="out-template">{
+  <span class="st">"QueueUrl"</span>: <span class="st">"http://localhost:4566/000000000000/jobs"</span>
+}
+{
+  <span class="st">"MD5OfMessageBody"</span>: <span class="st">"8c7e1f…"</span>,
+  <span class="st">"MessageId"</span>: <span class="st">"c81d4e2e-bcf2-11e6-869b-7df92533d2db"</span>
+}</template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># Lambda — zip, create, invoke (LocalStack runs it in a nested container)</span>
+zip fn.zip handler.py
+awslocal lambda create-function --function-name hello \
+  --runtime python3.12 --handler handler.lambda_handler \
+  --zip-file fileb://fn.zip --role arn:aws:iam::000000000000:role/any
+awslocal lambda invoke --function-name hello out.json &amp;&amp; cat out.json</div>
+        <template class="out-template">  adding: handler.py (stored 0%)
+{
+  <span class="st">"FunctionName"</span>: <span class="st">"hello"</span>,
+  <span class="st">"State"</span>: <span class="st">"Pending"</span>,
+  <span class="st">"Runtime"</span>: <span class="st">"python3.12"</span>
+}
+{
+  <span class="st">"StatusCode"</span>: 200,
+  <span class="st">"ExecutedVersion"</span>: <span class="st">"$LATEST"</span>
+}
+{<span class="st">"message"</span>: <span class="st">"hello from local lambda 👋"</span>}</template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+
+    <!-- ═══ 6 · SDK config ═══ -->
+    <div class="cell md" id="s6">
+      <div class="prompt"></div>
+      <div class="body">
+        <h2>Pointing your SDK at it</h2>
+        <p>In application code the trick is identical: <strong>override the endpoint</strong>, keep everything else. Do it behind an env var so the same code runs against LocalStack in dev and real AWS in prod — the flag simply isn't set there.</p>
+      </div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># Python · boto3</span>
+<span class="kw">import</span> boto3, os
+s3 = boto3.client(<span class="st">"s3"</span>,
+    endpoint_url=os.getenv(<span class="st">"AWS_ENDPOINT_URL"</span>),  <span class="cm"># http://localhost:4566 in dev, None in prod</span>
+    region_name=<span class="st">"us-east-1"</span>)
+print([b[<span class="st">"Name"</span>] <span class="kw">for</span> b <span class="kw">in</span> s3.list_buckets()[<span class="st">"Buckets"</span>]])</div>
+        <template class="out-template">['demo-bucket']</template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm">// Node · AWS SDK v3</span>
+<span class="kw">import</span> { S3Client, ListBucketsCommand } <span class="kw">from</span> <span class="st">"@aws-sdk/client-s3"</span>;
+<span class="kw">const</span> s3 = <span class="kw">new</span> S3Client({
+  endpoint: process.env.AWS_ENDPOINT_URL,   <span class="cm">// same trick</span>
+  region: <span class="st">"us-east-1"</span>,
+  forcePathStyle: <span class="kw">true</span>,                     <span class="cm">// S3 path-style for localhost</span>
+});
+console.log(<span class="kw">await</span> s3.send(<span class="kw">new</span> ListBucketsCommand({})));</div>
+        <template class="out-template">{ Buckets: [ { Name: 'demo-bucket', CreationDate: 2026-07-30T10:14:01.000Z } ] }</template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+
+    <!-- ═══ 7 · Tests & CI ═══ -->
+    <div class="cell md" id="s7">
+      <div class="prompt"></div>
+      <div class="body">
+        <h2>Tests &amp; CI</h2>
+        <p>This is where LocalStack earns its keep: <strong>integration tests against a real-ish AWS, per test run, for free</strong>.</p>
+        <ul>
+          <li><strong>Ephemeral state is a feature</strong> — start a fresh container per suite (testcontainers-style) and every run begins from zero. No shared dev account, no leftover buckets.</li>
+          <li><strong>CI is just another docker host</strong> — run the container as a service in your pipeline, export <code>AWS_ENDPOINT_URL</code>, run the suite.</li>
+          <li><strong>Seed with the CLI</strong> — an init script of <code>awslocal</code> commands (or the <code>/etc/localstack/init/ready.d/</code> hook) recreates queues/buckets/tables on boot.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cell code">
+      <div class="prompt in">In [ ]:</div>
+      <div class="body">
+        <button class="run">▶ RUN</button>
+        <div class="src"><span class="cm"># A typical CI job (GitHub Actions flavor)</span>
+services:
+  localstack:
+    image: localstack/localstack
+    ports: [<span class="st">"4566:4566"</span>]
+steps:
+  - run: awslocal s3 mb s3://test-bucket        <span class="cm"># seed</span>
+  - run: AWS_ENDPOINT_URL=http://localhost:4566 npm test</div>
+        <template class="out-template">✓ uploads report to S3          (211 ms)
+✓ enqueues resize job to SQS    (94 ms)
+✓ lambda processes the message  (1.2 s)
+
+Test Suites: <span class="ok">3 passed</span>, 3 total
+Tests:       <span class="ok">17 passed</span>, 17 total</template>
+      </div>
+      <div class="outwrap"><div class="prompt out">Out [ ]:</div><div class="out"></div></div>
+    </div>
+
+    <!-- ═══ 8 · Limits & tips ═══ -->
+    <div class="cell md" id="s8">
+      <div class="prompt"></div>
+      <div class="body">
+        <h2>Limits &amp; tips</h2>
+        <ul>
+          <li><strong>Community vs Pro</strong> — the free edition covers the core serverless set (S3, SQS, SNS, Lambda, DynamoDB, Kinesis, …); advanced services and some IAM enforcement live in the paid tiers. Check the health endpoint for what's actually available.</li>
+          <li><strong>Emulation ≠ AWS</strong> — quotas, exact error messages, IAM edge cases and timing can differ. LocalStack proves your <em>integration logic</em>; keep a thin smoke test against a real sandbox account for the last mile.</li>
+          <li><strong>State resets on restart</strong> — by design. If you need it to survive, enable the persistence option or re-seed with an init script (the more reproducible habit).</li>
+          <li><strong>Lambda needs the docker socket</strong> — mounting <code>/var/run/docker.sock</code> lets LocalStack spawn the nested runtime containers your functions run in.</li>
+          <li><strong>Port collisions</strong> — everything is <code>4566</code>; a second stack needs a different host port mapping.</li>
+        </ul>
+        <div class="note warn">⚠️ <strong>Don't ship endpoint overrides to prod.</strong> Guard them behind an env var that only dev/CI sets — code that hardcodes <code>localhost:4566</code> will "work on my machine" right up until deploy day.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

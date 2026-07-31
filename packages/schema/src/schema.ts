@@ -124,6 +124,10 @@ export const ResourceCollectionSchema = z.enum([
   "modern-css",
   "webgl",
   "accessibility",
+  "ai",
+  "devtools",
+  "diy",
+  "design",
 ]);
 
 // Sub-kind / bucket for a recommendation topic (drives the card badge label)

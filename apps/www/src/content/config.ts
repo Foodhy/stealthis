@@ -174,6 +174,10 @@ const ResourceCollectionSchema = z.enum([
   "modern-css",
   "webgl",
   "accessibility",
+  "ai",
+  "devtools",
+  "diy",
+  "design",
 ]);
 
 const resources = defineCollection({

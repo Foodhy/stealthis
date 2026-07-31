@@ -114,5 +114,17 @@ export function resolveResourceCollections(
     resolved.add("accessibility");
   }
 
+  if (normalizedCategory === "prompts") {
+    resolved.add("ai");
+  }
+
+  if (
+    normalizedCategory === "design-styles" ||
+    normalizedCategory === "3d-models" ||
+    normalizedCategory === "3d-interactions"
+  ) {
+    resolved.add("design");
+  }
+
   return RESOURCE_COLLECTION_IDS.filter((id) => resolved.has(id));
 }

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fenwick &amp; Sale — Solder Bench 03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="26" height="26">
+          <path d="M4 27l4-1 1-4 13-13 3 3L12 25l-4 1z" fill="#ff6b35"/>
+          <path d="M22 6l4-4 4 4-4 4z" fill="#d9c7a7"/>
+        </svg>
+      </span>
+      <span>
+        <strong>Fenwick &amp; Sale</strong>
+        <small>Repair Bench · Station 03</small>
+      </span>
+    </div>
+    <div class="topbar-meta">
+      <span class="chip"><i class="dot" aria-hidden="true"></i> Iron 340&nbsp;°C</span>
+      <span class="chip mono">PCB-1147-B</span>
+      <span class="chip mono">Rev&nbsp;2.4</span>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <section class="stage-card" aria-label="Soldering practice board">
+      <div class="stage-head">
+        <h1>Solder the six joints</h1>
+        <p>Press and hold the iron tip over a pad. Keyboard: arrow keys to move, <kbd>Space</kbd> to solder.</p>
+      </div>
+
+      <div class="stage-wrap">
+        <canvas id="board" class="board" width="900" height="560"
+                tabindex="0" role="application"
+                aria-label="Soldering board. Use arrow keys to move the iron tip and space to solder a joint.">
+        </canvas>
+
+        <div class="iron" id="iron" aria-hidden="true">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <defs>
+              <linearGradient id="gBody" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#4a5663"/>
+                <stop offset="1" stop-color="#1c2733"/>
+              </linearGradient>
+              <linearGradient id="gTip" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0" stop-color="#ffd9a0"/>
+                <stop offset="0.5" stop-color="#c98a4b"/>
+                <stop offset="1" stop-color="#8a6236"/>
+              </linearGradient>
+            </defs>
+            <g transform="translate(2,2)">
+              <rect x="46" y="8" width="24" height="52" rx="9" fill="url(#gBody)" transform="rotate(-40 58 34)"/>
+              <rect x="49" y="30" width="17" height="12" rx="4" fill="#ff6b35" transform="rotate(-40 58 34)"/>
+              <path d="M40 58 L24 82 L14 96 L22 88 L46 70 Z" fill="url(#gTip)"/>
+              <circle class="tip-hot" cx="16" cy="94" r="4" fill="#ffb56b"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="stage-badge mono" id="stageBadge">READY</div>
+      </div>
+
+      <div class="stage-foot">
+        <div class="progress" role="group" aria-label="Joints completed">
+          <div class="progress-label">
+            <span>Joints completed</span>
+            <strong class="mono"><span id="jointCount">0</span> / 6</strong>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+        <button class="btn btn-ghost" id="clearBtn" type="button">Clear board</button>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Iron controls">
+      <h2 class="panel-title">Station controls</h2>
+
+      <div class="control">
+        <label for="density">Spark density <span class="val mono" id="densityVal">18</span></label>
+        <input id="density" type="range" min="4" max="40" value="18" step="1" />
+        <p class="hint">Particles emitted per frame while the tip is hot.</p>
+      </div>
+
+      <div class="control">
+        <label for="temp">Heat temperature <span class="val mono" id="tempVal">340&nbsp;°C</span></label>
+        <input id="temp" type="range" min="0" max="100" value="62" step="1" class="range-heat" />
+        <p class="hint">Cool silver alloy through to hot orange flux burn.</p>
+      </div>
+
+      <div class="control">
+        <label for="gravity">Gravity <span class="val mono" id="gravityVal">0.42</span></label>
+        <input id="gravity" type="range" min="0" max="120" value="42" step="1" />
+        <p class="hint">How fast sparks arc back down to the board.</p>
+      </div>
+
+      <div class="control control-row">
+        <div>
+          <span class="control-row-label">Trail persistence</span>
+          <p class="hint">Leaves smoke ghosting between frames.</p>
+        </div>
+        <button class="switch" id="trailToggle" type="button" role="switch" aria-checked="true">
+          <span class="knob"></span>
+        </button>
+      </div>
+
+      <div class="readouts">
+        <div class="readout">
+          <span class="readout-k mono">PARTICLES</span>
+          <span class="readout-v mono" id="pCount">0</span>
+        </div>
+        <div class="readout">
+          <span class="readout-k mono">FPS</span>
+          <span class="readout-v mono" id="fps">—</span>
+        </div>
+        <div class="readout">
+          <span class="readout-k mono">BLOBS</span>
+          <span class="readout-v mono" id="bCount">0</span>
+        </div>
+      </div>
+
+      <div class="joint-list" id="jointList" aria-live="polite"></div>
+
+      <div class="notice">
+        <strong>Flux note</strong>
+        <p>Rosin core 60/40, 0.8&nbsp;mm. Wipe the tip on the brass wool between joints — do not file it.</p>
+      </div>
+    </aside>
+
+  </main>
+
+  <footer class="footer">
+    <span class="mono">STEALTHIS · BENCH KIT</span>
+    <span>Illustrative UI only — follow real safety guidance when working with tools and electronics.</span>
+  </footer>
+</div>
+
+<div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+<script src="script.js"></script>
+</body>
+</html>

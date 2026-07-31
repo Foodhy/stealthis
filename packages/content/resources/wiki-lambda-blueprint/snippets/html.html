@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AWS Lambda — Engineering Blueprint</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="sheetnav" id="sheetnav">
+  <a href="#sh1">01</a>
+  <a href="#sh2">02</a>
+  <a href="#sh3">03</a>
+  <a href="#sh4">04</a>
+  <a href="#sh5">05</a>
+  <a href="#sh6">06</a>
+  <a href="#sh7">07</a>
+</div>
+
+<main>
+
+<div class="cover">
+  <div class="proj">Acme Engineering · Drawing Set L-100</div>
+  <h1>AWS Lambda<br />Technical Drawings</h1>
+  <p class="sub">Serverless functions drawn to spec: execution lifecycle, cold-start tolerances, trigger schematics, scaling behavior, and operating limits. Seven sheets, not to scale, revision A.</p>
+</div>
+
+<!-- ═══════════ SHEET 01 ═══════════ -->
+<section class="sheet" id="sh1">
+  <div class="sheet-head"><span class="no">SHEET 01 / 07</span><h2>General Notes &amp; Drawing Index</h2></div>
+
+  <p><strong>AWS Lambda</strong> is Functions-as-a-Service: you upload a function, AWS runs it <em>only when an event arrives</em>, and you never see the servers. No provisioning, no patching, no idle cost — you are billed only for the milliseconds your code executes.</p>
+
+  <h3>Design intent</h3>
+  <ul>
+    <li><strong>Event-driven</strong> — a function does nothing until something invokes it: an HTTP request, a file landing in S3, a queue message, a schedule.</li>
+    <li><strong>Stateless by contract</strong> — each invocation must assume a fresh environment; anything persistent lives outside (DB, S3, cache).</li>
+    <li><strong>Small units</strong> — one function ≈ one responsibility. Composition happens through events, not through a monolith.</li>
+  </ul>
+
+  <h3>Drawing index</h3>
+  <div class="dwg-index">
+    <a href="#sh2"><span class="sn">L-102</span><span>Execution lifecycle — INIT / INVOKE / FREEZE</span><span class="rev">REV A</span></a>
+    <a href="#sh3"><span class="sn">L-103</span><span>Cold &amp; warm starts — timing tolerances</span><span class="rev">REV A</span></a>
+    <a href="#sh4"><span class="sn">L-104</span><span>Trigger &amp; event-source schematic</span><span class="rev">REV A</span></a>
+    <a href="#sh5"><span class="sn">L-105</span><span>Scaling &amp; concurrency</span><span class="rev">REV A</span></a>
+    <a href="#sh6"><span class="sn">L-106</span><span>Operating limits — specification table</span><span class="rev">REV A</span></a>
+    <a href="#sh7"><span class="sn">L-107</span><span>Cost model &amp; standard details</span><span class="rev">REV A</span></a>
+  </div>
+
+  <div class="titleblock">
+    <div><span class="k">Project</span><span class="v">Lambda Concept Set</span></div>
+    <div><span class="k">Sheet</span><span class="v">01 · Index</span></div>
+    <div><span class="k">Scale</span><span class="v">NTS</span></div>
+    <div><span class="k">Rev</span><span class="v">A</span></div>
+  </div>
+</section>
+
+<!-- ═══════════ SHEET 02 ═══════════ -->
+<section class="sheet" id="sh2">
+  <div class="sheet-head"><span class="no">SHEET 02 / 07</span><h2>Execution Lifecycle</h2></div>
+
+  <p>Every function runs inside an <strong>execution environment</strong> — a lightweight micro-VM sandbox with your code, your chosen runtime, and the memory you configured. The platform drives it through three phases:</p>
+
+  <div class="diagram">
+    <div class="flow">
+      <div class="node">EVENT<small>trigger fires</small></div>
+      <div class="wire"><span class="lbl">route</span></div>
+      <div class="node dashed">INIT<small>new sandbox · runtime boot · your init code</small></div>
+      <div class="wire"><span class="lbl">handler()</span></div>
+      <div class="node hot">INVOKE<small>your code runs</small></div>
+      <div class="wire"><span class="lbl">response</span></div>
+      <div class="node">FREEZE<small>sandbox kept warm</small></div>
+    </div>
+    <div class="dim"><span class="tick"></span><span class="line"></span><span class="txt">INIT runs once per sandbox — not once per request</span><span class="line"></span><span class="tick"></span></div>
+  </div>
+
+  <ul>
+    <li><strong>INIT</strong> — the sandbox is created, the runtime starts, and everything <em>outside your handler</em> executes: imports, SDK clients, DB connection setup.</li>
+    <li><strong>INVOKE</strong> — the handler receives the event, does its work, returns. One invocation at a time per sandbox.</li>
+    <li><strong>FREEZE</strong> — after responding, the sandbox is paused, not destroyed. The next event may <em>thaw</em> it and skip INIT entirely.</li>
+  </ul>
+
+  <div class="annot">Global scope survives between invocations of the same sandbox. That's the standard detail: <strong>put expensive setup (clients, connections) outside the handler</strong> so warm invocations reuse it for free.</div>
+
+  <div class="titleblock">
+    <div><span class="k">Drawing</span><span class="v">L-102 Lifecycle</span></div>
+    <div><span class="k">Sheet</span><span class="v">02</span></div>
+    <div><span class="k">Scale</span><span class="v">NTS</span></div>
+    <div><span class="k">Rev</span><span class="v">A</span></div>
+  </div>
+</section>
+
+<!-- ═══════════ SHEET 03 ═══════════ -->
+<section class="sheet" id="sh3">
+  <div class="sheet-head"><span class="no">SHEET 03 / 07</span><h2>Cold &amp; Warm Starts</h2></div>
+
+  <p>A <strong>cold start</strong> is an invocation that must pay for INIT: no idle sandbox was available, so the platform builds one before your handler runs. A <strong>warm start</strong> thaws a frozen sandbox and jumps straight to INVOKE.</p>
+
+  <div class="diagram">
+    <div class="flow">
+      <div class="node dashed">COLD<small>create sandbox</small></div>
+      <div class="wire"></div>
+      <div class="node dashed">BOOT RUNTIME</div>
+      <div class="wire"></div>
+      <div class="node dashed">RUN INIT CODE</div>
+      <div class="wire"></div>
+      <div class="node hot">HANDLER</div>
+    </div>
+    <div class="dim"><span class="tick"></span><span class="line"></span><span class="txt">~100 ms – several s (runtime + bundle dependent)</span><span class="line"></span><span class="tick"></span></div>
+    <div class="flow" style="margin-top:1.4rem">
+      <div class="node">WARM<small>thaw sandbox</small></div>
+      <div class="wire"></div>
+      <div class="node hot">HANDLER</div>
+    </div>
+    <div class="dim" style="max-width:22rem"><span class="tick"></span><span class="line"></span><span class="txt">~1–10 ms overhead</span><span class="line"></span><span class="tick"></span></div>
+  </div>
+
+  <h3>What makes cold starts worse</h3>
+  <ul>
+    <li>Big deployment bundles and heavy imports (everything loads during INIT).</li>
+    <li>Heavier runtimes — JIT-based platforms tend to boot slower than interpreted or compiled ones.</li>
+    <li>Functions inside a VPC historically paid extra network setup (largely mitigated on modern platforms, still worth measuring).</li>
+    <li>Traffic spikes — every <em>additional concurrent</em> request needs its own new sandbox (see Sheet 05).</li>
+  </ul>
+
+  <h3>Mitigations</h3>
+  <ul>
+    <li><strong>Trim INIT</strong> — smaller bundles, lazy imports, do less at the top of the file.</li>
+    <li><strong>Provisioned concurrency</strong> — pay to keep N sandboxes pre-initialized and always warm.</li>
+    <li><strong>Snapshot restore</strong> (e.g. SnapStart-style) — the platform snapshots an initialized sandbox and clones it, skipping runtime boot.</li>
+  </ul>
+
+  <div class="annot crit">Cold starts are a <strong>tail-latency</strong> problem, not an average-latency problem. Measure p99, not the mean — a service can look fast on average while its first-request users wait seconds.</div>
+
+  <div class="titleblock">
+    <div><span class="k">Drawing</span><span class="v">L-103 Cold Start</span></div>
+    <div><span class="k">Sheet</span><span class="v">03</span></div>
+    <div><span class="k">Scale</span><span class="v">NTS</span></div>
+    <div><span class="k">Rev</span><span class="v">A</span></div>
+  </div>
+</section>
+
+<!-- ═══════════ SHEET 04 ═══════════ -->
+<section class="sheet" id="sh4">
+  <div class="sheet-head"><span class="no">SHEET 04 / 07</span><h2>Triggers &amp; Event Sources</h2></div>
+
+  <p>Nothing runs without an event. Sources connect in three distinct wiring patterns — the pattern decides who waits, who retries, and where failures go.</p>
+
+  <div class="diagram">
+    <div class="flow">
+      <div class="node">API GATEWAY<small>HTTP request</small></div>
+      <div class="wire"><span class="lbl">sync</span></div>
+      <div class="node hot">λ FUNCTION</div>
+      <div class="wire ret"><span class="lbl">response</span></div>
+      <div class="node">CALLER<small>waits for result</small></div>
+    </div>
+    <div class="flow" style="margin-top:1.2rem">
+      <div class="node">S3 / EVENTBRIDGE<small>object created · schedule</small></div>
+      <div class="wire"><span class="lbl">async + queue</span></div>
+      <div class="node hot">λ FUNCTION</div>
+      <div class="wire"><span class="lbl">on failure ×2 retry</span></div>
+      <div class="node dashed">DLQ<small>dead letters</small></div>
+    </div>
+    <div class="flow" style="margin-top:1.2rem">
+      <div class="node">SQS / STREAMS<small>messages · records</small></div>
+      <div class="wire"><span class="lbl">poller batches</span></div>
+      <div class="node dashed">EVENT SOURCE MAPPING<small>platform-managed poller</small></div>
+      <div class="wire"></div>
+      <div class="node hot">λ FUNCTION</div>
+    </div>
+  </div>
+
+  <div class="tblwrap"><table>
+    <tr><th>Pattern</th><th>Examples</th><th>Who retries</th><th>Failure destination</th></tr>
+    <tr><td><strong>Synchronous</strong></td><td>API Gateway, function URLs, direct invoke</td><td>The caller — Lambda returns the error</td><td>Caller handles it</td></tr>
+    <tr><td><strong>Asynchronous</strong></td><td>S3 events, SNS, EventBridge</td><td>The platform — 2 retries with backoff</td><td>DLQ / failure destination</td></tr>
+    <tr><td><strong>Poll-based</strong></td><td>SQS, Kinesis/DynamoDB streams</td><td>The event source mapping — until success or max age</td><td>Back to queue, then DLQ</td></tr>
+  </table></div>
+
+  <div class="annot">Know your pattern before debugging: a "lost" async event is usually sitting in a DLQ; a "stuck" stream is usually one poison record blocking its shard.</div>
+
+  <div class="titleblock">
+    <div><span class="k">Drawing</span><span class="v">L-104 Triggers</span></div>
+    <div><span class="k">Sheet</span><span class="v">04</span></div>
+    <div><span class="k">Scale</span><span class="v">NTS</span></div>
+    <div><span class="k">Rev</span><span class="v">A</span></div>
+  </div>
+</section>
+
+<!-- ═══════════ SHEET 05 ═══════════ -->
+<section class="sheet" id="sh5">
+  <div class="sheet-head"><span class="no">SHEET 05 / 07</span><h2>Scaling &amp; Concurrency</h2></div>
+
+  <p>The core rule: <strong>one sandbox handles one request at a time</strong>. Concurrency is therefore the number of live sandboxes — and scaling means creating more of them.</p>
+
+  <div class="diagram">
+    <div class="flow">
+      <div class="node">1 REQ<small>in flight</small></div>
+      <div class="wire"></div>
+      <div class="node hot">1 SANDBOX</div>
+    </div>
+    <div class="flow" style="margin-top:1rem">
+      <div class="node">100 REQ<small>concurrent</small></div>
+      <div class="wire"></div>
+      <div class="node hot">100 SANDBOXES<small>each possibly cold-starting</small></div>
+    </div>
+    <div class="dim"><span class="tick"></span><span class="line"></span><span class="txt">concurrency = requests in flight, not requests per second</span><span class="line"></span><span class="tick"></span></div>
+  </div>
+
+  <ul>
+    <li><strong>Account concurrency pool</strong> — all functions in a region share a total concurrency quota (default on the order of ~1,000, raisable). One runaway function can starve the rest.</li>
+    <li><strong>Reserved concurrency</strong> — carve out a guaranteed slice for a critical function; it doubles as a hard cap (protects downstream DBs from being hammered).</li>
+    <li><strong>Throttling</strong> — when no concurrency is available: sync callers get a 429-style error; async events wait and retry; pollers back off.</li>
+    <li><strong>Burst behavior</strong> — scale-up is fast but not unlimited; sustained spikes ramp in platform-defined increments.</li>
+  </ul>
+
+  <div class="annot crit">A 10-request/s function that takes 10 s per request needs <strong>100 concurrent sandboxes</strong> — the duration multiplies into concurrency. Slow code doesn't just cost latency; it eats the shared pool.</div>
+
+  <div class="titleblock">
+    <div><span class="k">Drawing</span><span class="v">L-105 Scaling</span></div>
+    <div><span class="k">Sheet</span><span class="v">05</span></div>
+    <div><span class="k">Scale</span><span class="v">NTS</span></div>
+    <div><span class="k">Rev</span><span class="v">A</span></div>
+  </div>
+</section>
+
+<!-- ═══════════ SHEET 06 ═══════════ -->
+<section class="sheet" id="sh6">
+  <div class="sheet-head"><span class="no">SHEET 06 / 07</span><h2>Operating Limits — Specification</h2></div>
+
+  <p>The platform's envelope. Design inside it, or redesign the workload (typical values — check your provider's current quotas).</p>
+
+  <div class="tblwrap"><table>
+    <tr><th>Parameter</th><th>Range / limit</th><th>Engineering note</th></tr>
+    <tr><td>Memory</td><td>128 MB – 10,240 MB</td><td>The single sizing dial — CPU and network scale <em>with</em> memory. More MB often means faster AND cheaper.</td></tr>
+    <tr><td>Timeout</td><td>up to 15 min</td><td>Hard stop. Longer work belongs in containers, batch, or step-function orchestration.</td></tr>
+    <tr><td>Ephemeral storage <code>/tmp</code></td><td>512 MB – 10 GB</td><td>Scratch space only; survives within a warm sandbox, never across them.</td></tr>
+    <tr><td>Payload (sync)</td><td>~6 MB request/response</td><td>Big blobs go to S3; pass a key, not the bytes.</td></tr>
+    <tr><td>Payload (async)</td><td>~256 KB event</td><td>Same rule, stricter.</td></tr>
+    <tr><td>Deployment bundle</td><td>~50 MB zipped / ~250 MB unzipped</td><td>Container-image functions raise this to ~10 GB.</td></tr>
+    <tr><td>Env variables</td><td>~4 KB total</td><td>Secrets belong in a secrets manager, referenced not inlined.</td></tr>
+    <tr><td>Execution model</td><td>1 request per sandbox</td><td>See Sheet 05 — concurrency is sandbox count.</td></tr>
+  </table></div>
+
+  <div class="annot">Memory is mis-named: it's the <strong>performance dial</strong>. Benchmark 256 → 512 → 1024 MB; CPU-bound handlers frequently finish so much faster at higher memory that the per-ms bill goes <em>down</em>.</div>
+
+  <div class="titleblock">
+    <div><span class="k">Drawing</span><span class="v">L-106 Limits</span></div>
+    <div><span class="k">Sheet</span><span class="v">06</span></div>
+    <div><span class="k">Scale</span><span class="v">NTS</span></div>
+    <div><span class="k">Rev</span><span class="v">A</span></div>
+  </div>
+</section>
+
+<!-- ═══════════ SHEET 07 ═══════════ -->
+<section class="sheet" id="sh7">
+  <div class="sheet-head"><span class="no">SHEET 07 / 07</span><h2>Cost Model &amp; Standard Details</h2></div>
+
+  <h3>Billing formula</h3>
+  <div class="diagram">
+    <div class="flow">
+      <div class="node">INVOCATIONS<small>flat fee per million</small></div>
+      <div class="wire"><span class="lbl">+</span></div>
+      <div class="node">GB-SECONDS<small>memory × duration (ms)</small></div>
+      <div class="wire"><span class="lbl">=</span></div>
+      <div class="node hot">MONTHLY BILL<small>zero when idle</small></div>
+    </div>
+  </div>
+  <ul>
+    <li>Duration is metered per millisecond — shaving 40 ms off a hot handler is a real line-item.</li>
+    <li>Idle costs nothing (unless you buy provisioned concurrency — that's the trade).</li>
+    <li>A generous free tier makes low-traffic services effectively free.</li>
+  </ul>
+
+  <h3>Standard details (best practices)</h3>
+  <ul>
+    <li><strong>Init outside the handler</strong> — clients and connections in global scope, reused when warm (Sheet 02).</li>
+    <li><strong>One-shot mindset</strong> — no background threads outliving the response; work is frozen mid-air at FREEZE.</li>
+    <li><strong>Idempotent handlers</strong> — async and poll-based sources deliver <em>at least once</em>; design for duplicates.</li>
+    <li><strong>Structured logs + request IDs</strong> — one summary line per invocation pays for itself during incidents.</li>
+    <li><strong>Small, single-purpose functions</strong> — smaller bundles, faster INIT, clearer ownership.</li>
+    <li><strong>Watch the p99</strong> — alarms on tail latency and throttles, not just error rate.</li>
+  </ul>
+
+  <div class="titleblock">
+    <div><span class="k">Drawing</span><span class="v">L-107 Cost</span></div>
+    <div><span class="k">Sheet</span><span class="v">07</span></div>
+    <div><span class="k">Scale</span><span class="v">NTS</span></div>
+    <div><span class="k">Rev</span><span class="v">A</span></div>
+  </div>
+</section>
+
+<footer>Drawing set L-100 · Not to scale · Illustrative values — verify current quotas with your cloud provider</footer>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

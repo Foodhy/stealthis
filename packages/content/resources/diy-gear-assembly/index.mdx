@@ -1,0 +1,55 @@
+---
+slug: diy-gear-assembly
+title: "DIY — Gear Assembly Loader"
+description: "A blueprint-bench loading component built from procedurally generated SVG gears. A geometry function derives tooth profiles from module and tooth count so any pair meshes correctly, then five gears seat onto their pins with a spring-settle intro and turn in sync at true ratios from one animation loop. Ships three demos — a hero gear train, a compact three-gear inline spinner, and a determinate arc variant — plus tooth-count, speed, direction, exploded-spacing and brass/steel/copper finish controls."
+category: ui-components
+type: component
+tags: [diy, loader, svg, gears]
+tech: [html, css, vanilla-js]
+difficulty: med
+targets: [html]
+collections: [diy]
+labRoute: /ui-components/diy-gear-assembly
+license: MIT
+author:
+  name: "Stealthis"
+  src: "https://github.com/Foodhy/stealthis"
+createdAt: 2026-07-30
+updatedAt: 2026-07-30
+---
+
+## Gear Assembly Loader
+
+A workshop bench rendered on blueprint paper, with a five-gear train drawn entirely from generated
+SVG. Nothing is hand-authored path data: a single `gearPath(teeth, module)` function samples a
+softened involute-style tooth profile around the pitch circle, so a 34-tooth reducer and a 9-tooth
+pinion built with the same module drop into mesh without any manual nudging. Gears are laid out
+tangent to one another along a gentle zig-zag, each labelled with its part code and tooth count.
+
+On load the gears fly in from off-stage, land on their orange pins with a small overshoot settle,
+and only then start turning. Rotation direction alternates down the train and speed scales by the
+inverse tooth ratio, so the output gear genuinely turns faster or slower than the driver depending
+on where the sliders sit. Bench controls change the driver tooth count (rebuilding the train live),
+the drive speed, the direction, an exploded-spacing slider that pulls the gears apart to expose the
+mesh, and a finish switcher for brass, steel and copper gradients.
+
+Two smaller demos share the same machinery. A compact three-gear loader sized for buttons appears
+inline while a save action runs and in table rows for in-flight jobs, and a determinate variant
+drives a `stroke-dashoffset` progress arc from 0 to 100 percent with a monospace readout, block
+counter, throughput and ETA.
+
+### How this look is built
+
+Every gear on the page rotates from one CSS custom property: a single `requestAnimationFrame` loop
+integrates elapsed time into `--spin` on `:root`, and each gear's `transform` is
+`rotate(calc(var(--spin) * var(--k)))` where `--k` is its signed ratio. That means one JS write per
+frame instead of one per element, and the compositor handles the rest — far cheaper than the old
+pattern of a keyframe animation per gear with hand-tuned durations. The assembly intro uses
+`transform` and `opacity` transitions on per-gear `--tx/--ty/--sc` variables with a springy
+`cubic-bezier` overshoot, committed after a forced reflow so the from-state is never skipped. The
+progress arc is a plain circle with `stroke-dasharray` set to its circumference. Watch two things:
+keep `--spin` unbounded-but-wrapped (it wraps at 360000deg) so float precision never degrades, and
+under `prefers-reduced-motion` the loop stops writing `--spin` entirely, leaving a static seated
+assembly while the determinate demo falls back to discrete timer steps.
+
+> Illustrative UI only — always follow real safety guidance when working with tools, electronics, or repairs.

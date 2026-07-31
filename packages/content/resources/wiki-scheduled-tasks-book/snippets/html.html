@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scheduled Tasks — Concept Book</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="brand">ACME PLATFORM · Field Manual</div>
+  <h1>Scheduled Tasks</h1>
+  <ol>
+    <li><a href="#c1">What is a Scheduled Task</a></li>
+    <li><a href="#c2">Anatomy of the task card</a></li>
+    <li><a href="#c3">Schedule expressions in depth</a></li>
+    <li><a href="#c4">The code side</a></li>
+    <li><a href="#c5">Step by step: create a new one</a></li>
+    <li><a href="#c6">Administration &amp; advanced</a></li>
+    <li><a href="#c7">Best practices &amp; gotchas</a></li>
+    <li><a href="#c8">Portable template: take it home</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="cover">
+  <div class="kicker">Concept book · Container job platforms</div>
+  <h1>Scheduled Tasks,<br />explained end to end</h1>
+  <p class="sub">From the cron expression to the green ACTIVE badge: what every field means, where each piece lives, and how to ship a new scheduled job with zero surprises.</p>
+  <div class="meta">A platform-agnostic field manual · Works for any containerized job runner</div>
+</header>
+
+<!-- ════════════════ CHAPTER 1 ════════════════ -->
+<section id="c1">
+  <h2><span class="n">Chapter 01</span>What is a Scheduled Task</h2>
+
+  <p>A <strong>Scheduled Task (ST)</strong> is a <em>containerized job</em> that your platform fires on a <strong>cron</strong>: at the scheduled time, the platform spins up a container from your image, the script runs <strong>exactly once</strong>, finishes, and the container dies. At the next scheduled time, it repeats.</p>
+
+  <p>Mentally, it is the equivalent of an <em>AWS EventBridge rule + ECS task</em>: the cron does not live in your code — it lives in the platform. Your code only knows how to do one thing: run and exit.</p>
+
+  <h3>ST vs Worker vs API</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Type</th><th>Lifecycle</th><th>Trigger</th><th>Typical example</th></tr>
+    <tr><td><strong>API</strong></td><td>Long-lived process</td><td>HTTP requests</td><td><code>node dist/server.js</code></td></tr>
+    <tr><td><strong>Worker</strong></td><td>Long-lived process, infinite loop</td><td>Queue messages (Kafka / SQS)</td><td><code>node dist/workers/order_events.js</code></td></tr>
+    <tr><td><strong>Scheduled Task</strong></td><td><strong>One-shot</strong>: runs, then <code>process.exit(0)</code></td><td>Platform cron</td><td><code>node dist/jobs/expire_old_coupons.js</code></td></tr>
+  </table></div>
+
+  <div class="box ok"><span class="t">Mental rule</span>
+  If the script needs to <em>wait</em> for something (messages, requests), it is a worker or an API. If the work is "every X time, check / clean / sync something and finish", it is a Scheduled Task.</div>
+
+  <p>Each ST is deployed <strong>per environment</strong> (DEV, STAGING, PROD…) independently: same code, same image, but each environment has its own container, its own state (ACTIVE / inactive) and potentially its own deployed version.</p>
+</section>
+
+<!-- ════════════════ CHAPTER 2 ════════════════ -->
+<section id="c2">
+  <h2><span class="n">Chapter 02</span>Anatomy of the task card</h2>
+
+  <p>Each card on the <em>Scheduled Tasks</em> screen of a microservice summarizes one task. Let's rebuild a typical one for a fictional <code>acme-service</code> and take it apart:</p>
+
+  <div class="uicard">
+    <div class="head">
+      <span class="name">⏱ expire_old_coupons <i class="callout-num">1</i></span>
+      <span class="deploy">DEPLOY <i class="callout-num" style="background:var(--ink)">7</i></span>
+    </div>
+    <div class="row">
+      <div class="lbl">Schedule</div>
+      <div class="val">
+        <div class="f"><span class="k">Target Description <i class="callout-num">2</i></span><br />
+        <span class="v" style="font-weight:400">Sweeps coupons past their expiry date and marks them expired, normally midnight local time</span></div>
+        <div class="f" style="margin-top:.6rem"><span class="k">Schedule Expression <i class="callout-num">3</i></span><br />
+        <span class="cron">0 5 * * ? *</span> <em>(At 05:00 AM)</em></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="lbl">Configuration</div>
+      <div class="val fields">
+        <div class="f"><span class="k">Task Count <i class="callout-num">4</i></span><br /><span class="v">1</span></div>
+        <div class="f"><span class="k">Container CPU <i class="callout-num">5</i></span><br /><span class="v">128 Units</span></div>
+        <div class="f"><span class="k">Container Memory <i class="callout-num">5</i></span><br /><span class="v">256 MB</span></div>
+        <div class="f"><span class="k">Custom Dockerfile <i class="callout-num">6</i></span><br /><span class="v" style="font-family:var(--mono);font-weight:400">scheduled_expire_old_coupons.Dockerfile</span></div>
+      </div>
+    </div>
+    <div class="envs">
+      <div class="pill"><span>🧪 DEV <i class="callout-num">8</i></span><br /><span class="st">ACTIVE</span><br /><span>0 5 * * ? *</span></div>
+      <div class="pill"><span>🚀 PROD</span><br /><span class="st">ACTIVE</span><br /><span>0 5 * * ? *</span></div>
+    </div>
+  </div>
+
+  <h3>Field by field</h3>
+  <div class="tblwrap"><table>
+    <tr><th>#</th><th>Field</th><th>What it means</th></tr>
+    <tr><td><i class="callout-num">1</i></td><td><strong>Task name</strong></td><td>Unique identifier of the ST inside the microservice. Convention: same name as the code module (<code>expire_old_coupons</code>).</td></tr>
+    <tr><td><i class="callout-num">2</i></td><td><strong>Target Description</strong></td><td>Free text for humans: what it does and when. Write it for the on-call engineer reading it at 3 AM. Good habit: include the run time in local time ("midnight local").</td></tr>
+    <tr><td><i class="callout-num">3</i></td><td><strong>Schedule Expression</strong></td><td>The 6-field cron (AWS format) that fires the task. The UI translates it to plain language ("At 05:00 AM"). <strong>The time is UTC</strong> — see Chapter 3. This is the "desired" value; the cron that actually governs each environment is the one on its own pill.</td></tr>
+    <tr><td><i class="callout-num">4</i></td><td><strong>Task Count</strong></td><td>How many containers the platform launches per trigger. Almost always <code>1</code>. With 2+, your script runs 2+ times <em>in parallel</em> — only useful if the work self-partitions (e.g. row locking in the DB) and the code is idempotent.</td></tr>
+    <tr><td><i class="callout-num">5</i></td><td><strong>Container CPU / Memory</strong></td><td>Resources assigned to the container, in ECS-style units: <strong>1024 CPU units = 1 vCPU</strong>, so 128 units ≈ 12.5% of a core; memory in MB. If the job exceeds its memory, the platform kills it (OOM). See sizing in Chapter 7.</td></tr>
+    <tr><td><i class="callout-num">6</i></td><td><strong>Custom Dockerfile</strong></td><td>Which Dockerfile in the repo builds the image for THIS task. It is the link between the UI and your code: the <code>CMD</code> of that Dockerfile is what runs on every trigger.</td></tr>
+    <tr><td><i class="callout-num">7</i></td><td><strong>DEPLOY</strong></td><td>Ships a version (image) of the task to the environments. Remember: <em>merging code deploys nothing</em> — until you hit Deploy, the environment keeps running the previous image.</td></tr>
+    <tr><td><i class="callout-num">8</i></td><td><strong>Environment pills</strong></td><td>Real state per environment: name (DEV, PROD), deployed version (e.g. <code>v3.12.0</code>), status <span style="background:var(--green);color:#fff;padding:0 .4em;border-radius:2px;font-size:.75em">ACTIVE</span> or inactive, and the effective cron in that environment. The <code>⋮</code> menu on each pill manages that environment individually.</td></tr>
+  </table></div>
+
+  <div class="box warn"><span class="t">Heads up</span>
+  The cron in the header and the cron on the environment pills can diverge (each environment may have its own schedule). When in doubt about "what time does this run in PROD", the source of truth is the PROD pill, not the header.</div>
+</section>
+
+<!-- ════════════════ CHAPTER 3 ════════════════ -->
+<section id="c3">
+  <h2><span class="n">Chapter 03</span>Schedule expressions in depth</h2>
+
+  <p>Most job platforms use the <strong>AWS cron syntax (EventBridge / CloudWatch Events)</strong>: <strong>6 fields</strong>, not the 5 of the classic Linux crontab. The sixth field is the year, and there is a <code>?</code> wildcard that the Linux crontab does not have.</p>
+
+  <div class="cron-anatomy">
+    <div class="slot"><span class="v">0</span><span class="k">Minutes 0–59</span></div>
+    <div class="slot"><span class="v">5</span><span class="k">Hours 0–23</span></div>
+    <div class="slot"><span class="v">*</span><span class="k">Day of month 1–31</span></div>
+    <div class="slot"><span class="v">*</span><span class="k">Month 1–12</span></div>
+    <div class="slot"><span class="v">?</span><span class="k">Day of week 1–7</span></div>
+    <div class="slot"><span class="v">*</span><span class="k">Year</span></div>
+  </div>
+
+  <p>Read it as: minute <code>0</code>, hour <code>5</code>, any day of the month, any month, no day-of-week restriction, any year → <strong>every day at 05:00</strong>.</p>
+
+  <h3>The wildcards</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Symbol</th><th>Meaning</th><th>Example</th></tr>
+    <tr><td><code>*</code></td><td>All values of the field</td><td><code>*</code> in hours = every hour</td></tr>
+    <tr><td><code>?</code></td><td>"Don't care / no specific value". <strong>Mandatory</strong> in day-of-month <em>or</em> day-of-week: AWS refuses concrete values in both at once; one of the two must be <code>?</code>. Hence the fixed <code>* * ? *</code> tail on most everyday expressions.</td><td><span class="cron">0 5 * * ? *</span></td></tr>
+    <tr><td><code>,</code></td><td>List of values</td><td><code>6,18</code> in hours = at 06:00 and at 18:00</td></tr>
+    <tr><td><code>-</code></td><td>Range</td><td><code>9-17</code> in hours = from 9 AM to 5 PM, every hour</td></tr>
+    <tr><td><code>/</code></td><td>Step: <code>start/interval</code></td><td><code>0/1</code> in minutes = from minute 0, every 1 minute. <code>0/15</code> = every 15 min</td></tr>
+    <tr><td><code>L</code></td><td>Last day (month or week)</td><td><code>L</code> in day-of-month = last day of the month</td></tr>
+    <tr><td><code>W</code></td><td>Nearest weekday</td><td><code>15W</code> = weekday closest to the 15th</td></tr>
+    <tr><td><code>#</code></td><td>Nth weekday of the month</td><td><code>6#3</code> = third Friday of the month</td></tr>
+  </table></div>
+
+  <h3>The timezone: everything is UTC</h3>
+  <p>The cron is evaluated in <strong>UTC</strong>. Say your team lives at UTC−5, then:</p>
+  <div class="box ok"><span class="t">Verify with a real case</span>
+  <code>expire_old_coupons</code> says "midnight local time" in its description and its cron is <span class="cron">0 5 * * ? *</span> (05:00). Indeed: 00:00 local + 5 h = 05:00 UTC. The description and the cron agree — and that cross-check is how you verify yours.</div>
+  <p>Conversion rule: <strong>UTC hour = local hour + offset</strong>. Watch out for schedules that cross midnight: 8 PM at UTC−5 = 01:00 UTC <em>of the next day</em> (it matters if you use day-of-week).</p>
+
+  <h3>A few real-world shapes, decoded</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Task</th><th>Expression</th><th>Reading</th><th>At UTC−5</th></tr>
+    <tr><td><code>expire_old_coupons</code></td><td><span class="cron">0 5 * * ? *</span></td><td>Daily at 05:00 UTC</td><td>Midnight</td></tr>
+    <tr><td><code>rebuild_search_index</code></td><td><span class="cron">0 6,18 * * ? *</span></td><td>Twice a day: 06:00 and 18:00 UTC</td><td>1:00 AM and 1:00 PM</td></tr>
+    <tr><td><code>sync_partner_catalog</code></td><td><span class="cron">0 0 * * ? *</span></td><td>Daily at midnight UTC</td><td>7:00 PM (previous day)</td></tr>
+    <tr><td><code>dispatch_due_events</code></td><td><span class="cron">0/1 * * * ? *</span></td><td><strong>Every minute</strong></td><td>Every minute</td></tr>
+  </table></div>
+
+  <h3>Recipe book of frequent expressions</h3>
+  <div class="tblwrap"><table>
+    <tr><th>I want it to run…</th><th>Expression</th></tr>
+    <tr><td>Every minute</td><td><span class="cron">0/1 * * * ? *</span></td></tr>
+    <tr><td>Every 5 minutes</td><td><span class="cron">0/5 * * * ? *</span></td></tr>
+    <tr><td>Every 30 minutes</td><td><span class="cron">0/30 * * * ? *</span></td></tr>
+    <tr><td>Every hour on the hour</td><td><span class="cron">0 * * * ? *</span></td></tr>
+    <tr><td>Every 6 hours</td><td><span class="cron">0 0/6 * * ? *</span></td></tr>
+    <tr><td>Daily at 9 AM local (UTC−5 → 14:00 UTC)</td><td><span class="cron">0 14 * * ? *</span></td></tr>
+    <tr><td>Monday to Friday at 13:00 UTC</td><td><span class="cron">0 13 ? * MON-FRI *</span></td></tr>
+    <tr><td>1st of every month at midnight</td><td><span class="cron">0 0 1 * ? *</span></td></tr>
+    <tr><td>Sundays at 05:00 UTC</td><td><span class="cron">0 5 ? * SUN *</span></td></tr>
+  </table></div>
+
+  <div class="box warn"><span class="t">Classic trap</span>
+  <code>*</code> in minutes ≠ <code>0</code> in minutes. <span class="cron">* 5 * * ? *</span> runs <strong>60 times</strong> (every minute between 05:00 and 05:59). What you almost always want is <span class="cron">0 5 * * ? *</span>. And when you use a concrete day of week, remember to move the <code>?</code> to day-of-month: <span class="cron">0 13 ? * MON *</span>.</div>
+</section>
+
+<!-- ════════════════ CHAPTER 4 ════════════════ -->
+<section id="c4">
+  <h2><span class="n">Chapter 04</span>The code side</h2>
+
+  <p>The platform owns the cron and the resources; the repo contributes <strong>only two things</strong>: the Dockerfile and the code that Dockerfile runs. This separation is the key to never getting lost:</p>
+
+  <div class="tblwrap"><table>
+    <tr><th>Lives in the repo ✔</th><th>Lives in the platform (UI) ✔</th></tr>
+    <tr><td><code>scheduled_&lt;name&gt;.Dockerfile</code> (repo root)</td><td>Schedule Expression (cron)</td></tr>
+    <tr><td><code>jobs/&lt;name&gt;/index.ts</code> (the job)</td><td>Task Count, CPU units, Memory MB</td></tr>
+    <tr><td>Env template (env vars, with per-environment overrides)</td><td>Deployed environments, ACTIVE state, version</td></tr>
+    <tr><td>CI pipeline (build &amp; push of images)</td><td>The DEPLOY button</td></tr>
+  </table></div>
+
+  <h3>The pattern: one minimal Dockerfile per task</h3>
+  <p>All ST Dockerfiles in a repo should be <strong>byte-identical except the last line</strong>. This is <code>scheduled_expire_old_coupons.Dockerfile</code> in full:</p>
+
+<pre><code><span class="c"># Simple single-stage build for running the job</span>
+FROM node:20-slim
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY . .
+RUN npm run build
+<span class="c"># The ONLY thing that changes between tasks: ↓</span>
+CMD [<span class="g">"node"</span>, <span class="g">"dist/jobs/expire_old_coupons/index.js"</span>]</code></pre>
+
+  <p>That is: <em>one image per task, all containing the full repo, differentiated only by which module they start</em>. The source of truth for "what does each image run" is the <code>CMD</code> of each Dockerfile — keep an index table in your repo docs, but let the CMDs be canonical.</p>
+
+  <h3>The entrypoint: always one-shot</h3>
+  <p>Every job entrypoint follows the same shape. The smallest possible one shows it whole:</p>
+
+<pre><code><span class="c">// jobs/expire_old_coupons/index.ts</span>
+import { db } from "../../src/db";
+import { expireOldCoupons } from "../../src/services/couponService"; <span class="c">// ← shared logic</span>
+
+async function main() {
+  const lookbackDays = Number(process.env.COUPON_LOOKBACK_DAYS ?? 30);
+  try {
+    const n = await expireOldCoupons(db, lookbackDays);
+    console.log(`expire_old_coupons done: ${n} coupons expired`);
+    process.exit(0);   <span class="c">// ← and it ENDS. No loops.</span>
+  } catch (err) {
+    console.error("expire_old_coupons failed:", err);
+    process.exit(1);   <span class="c">// failure visible to the platform</span>
+  }
+}
+main();</code></pre>
+
+  <p>Note the architecture: the entrypoint is a thin wrapper (DB session, logging, error handling) and the real logic lives in <code>src/services/</code> — <strong>shared</strong> code also used by the API and the workers. That way the logic is testable without Docker and reusable everywhere.</p>
+
+  <h3>Per-environment configuration</h3>
+  <p>Env vars reach the container through your platform's env template (usually a YAML with placeholders resolved at deploy time). The per-environment pattern:</p>
+
+<pre><code>- name: COUPON_LOOKBACK_DAYS
+  value:
+    dev:  <span class="g">"7"</span>       <span class="c"># value in DEV</span>
+    prod: <span class="g">"30"</span>      <span class="c"># value in PROD</span></code></pre>
+
+  <p>The "knobs" of an ST that do live in the repo are env vars in this file: batch sizes, lookback windows, feature flags. The cron says <em>when</em> the job runs; the env vars say <em>how much</em> each run covers.</p>
+
+  <h3>Build &amp; push: CI + tags</h3>
+  <p>The CI pipeline builds every image, runs tests, and <strong>only publishes to the registry when the build comes from a git tag</strong> (or release). No tag, no new image; no new image, nothing new for the DEPLOY button to ship. This rule keeps "what is deployable" an explicit, versioned event.</p>
+</section>
+
+<!-- ════════════════ CHAPTER 5 ════════════════ -->
+<section id="c5">
+  <h2><span class="n">Chapter 05</span>Step by step: create a new Scheduled Task</h2>
+
+  <p>The full checklist, from code to the green ACTIVE. Suppose the task is called <code>my_new_job</code>.</p>
+
+  <ol class="steps">
+    <li><b>Write the one-shot job</b>
+    Create <code>jobs/my_new_job/index.ts</code>. Copy the shape of an existing job: logging setup, open the DB session, delegate the logic to a service in <code>src/services/</code>, close resources, <code>process.exit(0)</code>. Logic in the services layer, not in the entrypoint — that keeps it testable and reusable.</li>
+
+    <li><b>Create the Dockerfile</b>
+    Copy any <code>scheduled_*.Dockerfile</code> from the repo root to <code>scheduled_my_new_job.Dockerfile</code> and change only the <code>CMD</code>:
+    <pre style="margin:.6rem 0 0"><code>CMD ["node", "dist/jobs/my_new_job/index.js"]</code></pre>
+    Register the task in your repo's index table (image → entrypoint → responsibility).</li>
+
+    <li><b>Env vars if needed</b>
+    If the job needs configuration (batch size, lookback, flags), add it to the env template with <code>dev:</code> / <code>prod:</code> overrides and read it with a sensible default in code.</li>
+
+    <li><b>Test locally</b>
+    <pre style="margin:.6rem 0 0"><code>docker build -f scheduled_my_new_job.Dockerfile -t my_new_job .
+docker run --env-file .env my_new_job</code></pre>
+    It must run, log, and exit with code 0. If it hangs, it is not an ST yet.</li>
+
+    <li><b>Merge + tag → CI publishes the image</b>
+    PR, merge to the main branch, and <strong>create a git tag</strong> — only tag builds push to the registry. Verify in CI that the tag build passed.</li>
+
+    <li><b>UI: NEW SCHEDULED TASK</b>
+    On the Scheduled Tasks screen of the microservice → the <strong>+ NEW SCHEDULED TASK</strong> button. Fill in:
+    <ul style="margin-top:.4rem">
+      <li><strong>Name</strong>: <code>my_new_job</code></li>
+      <li><strong>Target Description</strong>: what it does + the time in local time ("runs 9 PM local")</li>
+      <li><strong>Schedule Expression</strong>: 6-field cron <strong>in UTC</strong> (Chapter 3)</li>
+      <li><strong>Task Count</strong>: <code>1</code> unless you have a strong reason</li>
+      <li><strong>Container CPU / Memory</strong>: start modest (128 units / 256 MB is a good light-job profile) and grow if needed</li>
+      <li><strong>Custom Dockerfile</strong>: <code>scheduled_my_new_job.Dockerfile</code></li>
+    </ul></li>
+
+    <li><b>DEPLOY per environment</b>
+    Deploy to <strong>DEV</strong> first, verify one full run (logs, effect in the DB), then deploy to <strong>PROD</strong> (and any other environments). Each environment pill must end up <span style="background:var(--green);color:#fff;padding:0 .4em;border-radius:2px;font-family:var(--mono);font-size:.75em">ACTIVE</span> with the correct cron.</li>
+
+    <li><b>Verify the first real run</b>
+    Wait for the first cron trigger (or use a temporary "every 5 min" expression to test, then switch to the final one). Review the platform logs, duration, memory used, and that the expected effect happened. Adjust CPU/memory with real data.</li>
+  </ol>
+
+  <div class="box danger"><span class="t">The #1 mono-repo mistake</span>
+  Changing shared code in <code>src/services/</code> and redeploying only the API. STs run <strong>their own image</strong>: if your change touches code an ST executes, that ST needs <strong>its own redeploy</strong> (new tag → new image → DEPLOY in the UI). Teams learn this from a real incident exactly once.</div>
+</section>
+
+<!-- ════════════════ CHAPTER 6 ════════════════ -->
+<section id="c6">
+  <h2><span class="n">Chapter 06</span>Administration &amp; advanced</h2>
+
+  <h3>Per-task operations (the header's ⋮ menu)</h3>
+  <ul>
+    <li><strong>Edit the configuration</strong>: cron, task count, CPU/memory, Dockerfile. Configuration changes usually require a re-deploy to apply.</li>
+    <li><strong>Delete the task</strong>: stops the triggers in every environment. (The code and Dockerfile stay in the repo — cleaning them up is a separate PR.)</li>
+  </ul>
+
+  <h3>Per-environment operations (each pill's ⋮ menu)</h3>
+  <ul>
+    <li><strong>Enable / disable</strong>: pauses the cron only in that environment without deleting anything. Great for incidents ("turn off the dispatcher in PROD, now").</li>
+    <li><strong>Redeploy / change version</strong>: each environment shows its version (e.g. <code>v3.12.0</code>); different environments can run different versions — check this when "it works in DEV but not in PROD".</li>
+    <li><strong>Per-environment cron override</strong>: the effective schedule of each environment is the one on its pill.</li>
+  </ul>
+
+  <h3>Legacy tasks</h3>
+  <p>Many platforms keep a list of tasks on an older scheduling mechanism. If something of yours lives there, the expected path is migrating it to the current mechanism with <em>New Scheduled Task</em>.</p>
+
+  <h3>Scheduling API</h3>
+  <p>Most platforms also expose an API to manage STs programmatically (create / update / enable without going through the UI) — useful for infrastructure-as-code or automation. Check your platform's docs before scripting against it.</p>
+</section>
+
+<!-- ════════════════ CHAPTER 7 ════════════════ -->
+<section id="c7">
+  <h2><span class="n">Chapter 07</span>Best practices &amp; gotchas</h2>
+
+  <h3>Job design</h3>
+  <ul>
+    <li><strong>Idempotency is mandatory.</strong> If a run overlaps the previous one (slow job + frequent cron, like an every-minute dispatcher), or the platform retries, your job must not duplicate effects. Mark rows as "in progress", use DB locks, or dedupe by key.</li>
+    <li><strong>Bound every run.</strong> Lookback windows (<code>last 26 h</code>, <code>30 days</code>) and batch sizes via env vars — never "the whole table".</li>
+    <li><strong>Honest exit codes.</strong> Unix convention: <code>0</code> = OK, <code>≠0</code> = failed. A common anti-pattern is logging the error and exiting 0, which paints the run "green" even though it failed. For new jobs: propagate the error into the exit code.</li>
+    <li><strong>Log start, summary, and end.</strong> "Processed 1,240 events, 3 failed, 41s" in one line is gold during an incident.</li>
+  </ul>
+
+  <h3>Sizing</h3>
+  <ul>
+    <li>Typical profiles: light sweep job = <strong>128 units / 256 MB</strong>; every-minute dispatcher (more work) = <strong>256 units / 512 MB</strong>; CPU-heavy batch = more units, often little memory. Start on the light profile and adjust with metrics.</li>
+    <li>Insufficient memory = a silent OOM kill mid-run. If the job dies with no goodbye log line, suspect memory before bugs.</li>
+    <li>An ST that runs once a day for 2 minutes can afford extra memory guilt-free: you only pay while it runs.</li>
+  </ul>
+
+  <h3>Common gotchas</h3>
+  <ul>
+    <li><strong>Merge ≠ deploy.</strong> The mantra. New tag → CI publishes → DEPLOY in the UI. Three steps, always.</li>
+    <li><strong>Orphan Dockerfiles.</strong> A Dockerfile whose <code>CMD</code> points at a module that no longer exists will fail at trigger time with <code>module not found</code>. Never use one as a template without checking that its entrypoint exists.</li>
+    <li><strong>Docs with illustrative crons.</strong> Architecture docs often carry example crons or fictional deployment manifests — the real schedules live only in the platform UI. Treat the UI as the source of truth.</li>
+    <li><strong>Name ≠ module drift.</strong> Keep the Dockerfile name, the task name, and the module name identical. Any mismatch means the next person searching by name will not find the code.</li>
+    <li><strong>Timezone-sensitive jobs</strong>: if the job reschedules or windows events by hour of day, keep the entire pipeline in UTC and convert only at the display edge.</li>
+  </ul>
+
+  <h3>Review checklist before calling a change done</h3>
+  <ul>
+    <li>☐ Which images run the code I touched? (<code>grep</code> from the entrypoints)</li>
+    <li>☐ Did I list those images as "needs redeploy" in the PR?</li>
+    <li>☐ Is the new cron in UTC, with <code>?</code> in the right place?</li>
+    <li>☐ Does the Target Description state the time in local time?</li>
+    <li>☐ Did I test the image locally with <code>docker run</code> and get exit 0?</li>
+  </ul>
+</section>
+
+<!-- ════════════════ CHAPTER 8 ════════════════ -->
+<section id="c8">
+  <h2><span class="n">Chapter 08</span>Portable template: take it to your project</h2>
+
+  <p>Nothing in this pattern is tied to one company or language: it is a generic six-piece recipe. This chapter abstracts it so you can set it up in <strong>any microservice</strong> — Python, Node, Go, whatever — with the same analogies.</p>
+
+  <h3>The analogy, piece by piece</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Piece of the pattern</th><th>Reference shape</th><th>Equivalent in YOUR project</th></tr>
+    <tr>
+      <td><strong>1. Jobs folder</strong><br />One directory per task, isolated from the rest</td>
+      <td><code>jobs/&lt;name&gt;/index.ts</code></td>
+      <td>Any stable convention: <code>cmd/&lt;name&gt;/main.go</code>, <code>tasks/&lt;name&gt;.py</code>, <code>scheduled_tasks/&lt;name&gt;/main.py</code>. What matters: <strong>one entrypoint per task, named after the task</strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>2. One-shot entrypoint</strong><br />Run → log → exit</td>
+      <td><code>await run(); process.exit(0)</code></td>
+      <td>Python: <code>asyncio.run(main())</code> → <code>sys.exit(0)</code>. Go: <code>func main()</code> that returns. No loops, no HTTP servers, no <code>setInterval</code>: the "loop" is the platform's cron.</td>
+    </tr>
+    <tr>
+      <td><strong>3. Logic in a shared layer</strong><br />The entrypoint is a thin wrapper</td>
+      <td>Delegates to <code>src/services/</code> (same code the API and workers use)</td>
+      <td>Your services/domain layer. The job only does: setup (DB, logging) → call service → close → exit. That way the logic is tested without Docker and reused.</td>
+    </tr>
+    <tr>
+      <td><strong>4. One Dockerfile per task</strong><br />Identical except the CMD</td>
+      <td><code>scheduled_&lt;name&gt;.Dockerfile</code> at the root, only<br /><code>CMD ["node","dist/jobs/&lt;name&gt;/index.js"]</code> changes</td>
+      <td>Same trick in any stack: copy a base Dockerfile and change only the last line. Python: <code>CMD ["python","-m","tasks.&lt;name&gt;.main"]</code>. The file name IS the link to the UI (the Custom Dockerfile field).</td>
+    </tr>
+    <tr>
+      <td><strong>5. Config via env vars with per-environment overrides</strong></td>
+      <td>Env template: <code>value: {dev: "7", prod: "30"}</code></td>
+      <td>Whatever env template your platform uses. Job parameters (batch size, lookback) ALWAYS via env var with a default — never hardcoded.</td>
+    </tr>
+    <tr>
+      <td><strong>6. CI that publishes images on tags</strong></td>
+      <td>Build always, <code>docker push</code> only on git tags</td>
+      <td>Replicate the rule in your CI: build on every commit, push to the registry only on tag/release. Discover the <code>*.Dockerfile</code> files at the root automatically if you can.</td>
+    </tr>
+  </table></div>
+
+  <div class="box ok"><span class="t">The invariant</span>
+  The only thing the platform demands from your repo: <strong>a Dockerfile whose CMD runs a process that ends on its own</strong>. Everything else (language, structure, framework) is your call. The cron, the resources, and the environments are configured afterwards in the UI, exactly as in Chapter 5.</div>
+
+  <h3>Complete example: the same pattern in Python</h3>
+  <p>Suppose a microservice <code>acme-service</code> needs a daily job <code>cleanup_stale_sessions</code>. A 1:1 translation of the pattern:</p>
+
+<pre><code><span class="c"># tasks/cleanup_stale_sessions/main.py — one-shot entrypoint</span>
+import asyncio, os, sys
+from src.services.sessions import cleanup_stale_sessions  <span class="c"># ← shared logic (piece 3)</span>
+
+async def main():
+    lookback_hours = int(os.getenv("SESSION_LOOKBACK_HOURS", "48"))  <span class="c"># piece 5</span>
+    n = await cleanup_stale_sessions(lookback_hours)
+    print(f"cleanup_stale_sessions done: {n} sessions removed")
+    sys.exit(0)   <span class="c"># piece 2: one-shot, honest exit</span>
+
+if __name__ == "__main__":
+    asyncio.run(main())</code></pre>
+
+<pre><code><span class="c"># scheduled_cleanup_stale_sessions.Dockerfile — piece 4, repo root</span>
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+ENV PYTHONPATH=/app
+<span class="c"># The only thing that differs between jobs: ↓</span>
+CMD [<span class="g">"python"</span>, <span class="g">"-m"</span>, <span class="g">"tasks.cleanup_stale_sessions.main"</span>]</code></pre>
+
+  <p>And in the platform UI (Chapter 5, steps 6–8): New Scheduled Task → name <code>cleanup_stale_sessions</code> → cron <span class="cron">0 5 * * ? *</span> (midnight at UTC−5) → Task Count 1 → 128 units / 256 MB → Dockerfile <code>scheduled_cleanup_stale_sessions.Dockerfile</code> → Deploy DEV → verify → Deploy PROD.</p>
+
+  <h3>Minimal resulting structure (any language)</h3>
+<pre><code>my-service/
+├── scheduled_&lt;job_a&gt;.Dockerfile     <span class="c"># one per task, repo root</span>
+├── scheduled_&lt;job_b&gt;.Dockerfile
+├── env.yml                          <span class="c"># env vars with per-env overrides</span>
+├── ci-pipeline.yml                  <span class="c"># build always, push on tags</span>
+├── jobs/  (or tasks/)
+│   ├── job_a/&lt;entrypoint&gt;           <span class="c"># one-shot, thin wrapper</span>
+│   └── job_b/&lt;entrypoint&gt;
+└── src/services/                    <span class="c"># the real logic, shared</span></code></pre>
+
+  <h3>Adoption checklist for a new project</h3>
+  <ul>
+    <li>☐ Is there a jobs folder with one entrypoint per task, name = task?</li>
+    <li>☐ Does each entrypoint end on its own, with an honest exit code (0 OK / 1 error)?</li>
+    <li>☐ Does the logic live in the services layer, not the entrypoint?</li>
+    <li>☐ Is there one <code>scheduled_&lt;name&gt;.Dockerfile</code> per task at the root, differing only in the CMD?</li>
+    <li>☐ Do job parameters come from env vars with defaults, with per-environment overrides in the env template?</li>
+    <li>☐ Does the CI publish images to the registry on tags?</li>
+    <li>☐ Did you document the image → entrypoint → responsibility table?</li>
+    <li>☐ Cron in UTC, cross-checked against the local time stated in the Target Description?</li>
+  </ul>
+
+  <div class="box warn"><span class="t">What NOT to copy</span>
+  The defects from Chapter 7: orphan Dockerfiles, docs with fictional crons, exit 0 on error, and Dockerfile names that drift from their module. The template is the pattern — not its scars.</div>
+</section>
+
+<footer>
+  A generic field manual for cron-triggered container jobs · AWS EventBridge cron syntax · Adapt the names to your own platform.
+</footer>
+
+</main>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
