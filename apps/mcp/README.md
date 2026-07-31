@@ -1,28 +1,28 @@
 # StealThis MCP Server
 
-![StealThis.dev MCP Server — 1738 copy-paste web resources piped into any AI (Claude Code, Claude Desktop, Cursor) via the Model Context Protocol](./assets/hero.png)
+![StealThis.dev MCP Server — 2031 copy-paste web resources piped into any AI (Claude Code, Claude Desktop, Cursor) via the Model Context Protocol](./assets/hero.png)
 
 REST API + MCP server for the StealThis.dev resource library.
 
 - **Production:** `https://mcp.stealthis.dev`
 - **Local:** `http://localhost:8787`
-- **Guia de funcionamiento:** `./COMO_FUNCIONA.md`
+- **How it works guide:** `./HOW_IT_WORKS.md`
 
 ---
 
-## Configuración en clientes MCP
+## Setup in MCP clients
 
 ### Claude Code (CLI)
 
 ```bash
-# Agregar el servidor (una sola vez)
+# Add the server (one time only)
 claude mcp add stealthis --transport http https://mcp.stealthis.dev/mcp
 
-# Verificar que está activo
+# Verify it is active
 claude mcp list
 ```
 
-En local durante desarrollo:
+Local during development:
 ```bash
 claude mcp add stealthis-local --transport http http://localhost:8787/mcp
 ```
@@ -31,7 +31,7 @@ claude mcp add stealthis-local --transport http http://localhost:8787/mcp
 
 ### Claude Desktop
 
-Edita `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
 
 ```json
 {
@@ -44,13 +44,13 @@ Edita `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
 }
 ```
 
-Reinicia Claude Desktop. Las tools aparecen automáticamente.
+Restart Claude Desktop. The tools show up automatically.
 
 ---
 
 ### Cursor
 
-En **Settings → MCP** (o `~/.cursor/mcp.json`):
+In **Settings → MCP** (or `~/.cursor/mcp.json`):
 
 ```json
 {
@@ -65,89 +65,89 @@ En **Settings → MCP** (o `~/.cursor/mcp.json`):
 
 ---
 
-## Tools disponibles
+## Available tools
 
-Una vez configurado, el AI puede llamar estas tools directamente:
+Once configured, the AI can call these tools directly:
 
-| Tool | Descripción |
+| Tool | Description |
 |------|-------------|
-| `list_resources` | Lista todos los recursos. Filtra por `category`, `difficulty`, `tech`. |
-| `get_resource` | Metadata completa de un recurso por `slug`. |
-| `get_snippet` | Código fuente de un target específico (`html`, `css`, `js`, `react`, `vue`…). |
-| `search` | Busca recursos por keyword en título, descripción, tags y tech. |
-| `get_lab` | URL del demo full-screen en lab.stealthis.dev. |
+| `list_resources` | Lists all resources. Filters by `category`, `difficulty`, `tech`. |
+| `get_resource` | Full metadata for a resource by `slug`. |
+| `get_snippet` | Source code for a specific target (`html`, `css`, `js`, `react`, `vue`…). |
+| `search` | Searches resources by keyword across title, description, tags, and tech. |
+| `get_lab` | URL of the full-screen demo on lab.stealthis.dev. |
 
-### Ejemplos de uso en chat
+### Chat usage examples
 
 ```
-Muéstrame todos los recursos de animaciones web fáciles
+Show me all the easy web animation resources
 → list_resources(category: "web-animations", difficulty: "easy")
 
-Dame el código React del scroll-fade
+Give me the React code for scroll-fade
 → get_snippet(slug: "scroll-fade", target: "react")
 
-Busca recursos con GSAP
+Search for resources using GSAP
 → search(query: "gsap")
 
-¿Hay demo de glass-card?
+Is there a demo for glass-card?
 → get_lab(slug: "glass-card")
 ```
 
 ---
 
-## REST API (acceso directo sin MCP)
+## REST API (direct access without MCP)
 
-Para uso desde scripts, `fetch`, o curl:
+For use from scripts, `fetch`, or curl:
 
 ```bash
-# Listar recursos
+# List resources
 curl https://mcp.stealthis.dev/tools/list_resources
 curl https://mcp.stealthis.dev/tools/list_resources?category=web-animations&difficulty=easy
 
-# Obtener un recurso
+# Get a resource
 curl https://mcp.stealthis.dev/tools/get_resource/scroll-fade
 
-# Obtener snippet de código
+# Get a code snippet
 curl https://mcp.stealthis.dev/tools/get_snippet/scroll-fade/react
 curl https://mcp.stealthis.dev/tools/get_snippet/glass-card/css
 
-# Buscar
+# Search
 curl https://mcp.stealthis.dev/tools/search?q=parallax
 
-# URL del lab
+# Lab URL
 curl https://mcp.stealthis.dev/tools/get_lab/glass-card
 ```
 
 ---
 
-## Desarrollo local
+## Local development
 
 ```bash
-# 1. Generar el catálogo (solo cuando cambie content)
+# 1. Generate the catalog (only when content changes)
 bun run --filter @stealthis/mcp catalog
 
-# 2. Iniciar el worker
+# 2. Start the worker
 bun run dev:mcp
 # → http://localhost:8787
 ```
 
-> **Nota:** `bun run dev:mcp` NO regenera el catálogo automáticamente.
-> Si añades o editas recursos en `packages/content`, ejecuta el paso 1 primero.
+> **Note:** `bun run dev:mcp` does NOT regenerate the catalog automatically.
+> If you add or edit resources in `packages/content`, run step 1 first.
 
 ---
 
 ## Deploy
 
 ```bash
-bun run --filter @stealthis/mcp catalog  # regenerar catálogo
+bun run --filter @stealthis/mcp catalog  # regenerate catalog
 bun run --filter @stealthis/mcp build    # dry-run
 bun run --filter @stealthis/mcp deploy   # wrangler deploy
 ```
 
 ---
 
-## Cómo funciona internamente
+## How it works internally
 
-- **Protocolo:** MCP Streamable HTTP (`POST /mcp`) — compatible con Claude Code, Claude Desktop, Cursor, y cualquier cliente MCP con soporte HTTP.
-- **Datos:** El catálogo (`src/catalog.json`) se genera en build-time con todos los recursos y sus snippets de código. No hay lectura de disco en runtime.
-- **Transport:** Sin SSE — las respuestas son JSON síncronas (suficiente para tools sin streaming).
+- **Protocol:** MCP Streamable HTTP (`POST /mcp`) — compatible with Claude Code, Claude Desktop, Cursor, and any MCP client with HTTP support.
+- **Data:** The catalog (`src/catalog.json`) is generated at build time with every resource and its code snippets. No disk reads at runtime.
+- **Transport:** No SSE — responses are synchronous JSON (enough for tools without streaming).
