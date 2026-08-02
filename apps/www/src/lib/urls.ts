@@ -10,6 +10,7 @@ export const SITE_URLS = {
   remotion: isDev ? "http://localhost:4325" : "https://remotion.stealthis.dev",
   promptDesigner: isDev ? "http://localhost:4328" : "https://prompt-designer.stealthis.dev",
   arcade: isDev ? "http://localhost:4329" : "https://arcade.stealthis.dev",
+  mcp: isDev ? "http://localhost:8787" : "https://mcp.stealthis.dev",
   zenpomodoro: "https://zenpomodoro.app",
   feedbackForm: "https://forms.gle/6tD2iWDXRra58gGs7",
   changelog: "https://github.com/Foodhy/stealthis/releases",

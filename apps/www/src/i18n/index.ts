@@ -72,6 +72,7 @@ const en = {
   "badge.new": "New",
   "nav.library": "Library",
   "nav.docs": "Docs",
+  "nav.mcp": "MCP",
   "nav.lab": "Lab",
   "nav.build": "Builder",
   "nav.styleforge": "StyleForge",

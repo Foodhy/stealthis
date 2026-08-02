@@ -1,0 +1,81 @@
+# Stealthis MCP Server — LLM Context
+
+> Remote MCP (Model Context Protocol) server that gives AI agents access to the Stealthis
+> library: 2,000+ production-ready, MIT-licensed UI components, animations, full page
+> templates and design-system resources. Free, public, no API key, no account.
+
+## Canonical facts
+
+- Server URL (MCP Streamable HTTP): https://mcp.stealthis.dev/mcp
+- Transport: JSON-RPC 2.0 over POST (methods: initialize, notifications/initialized, ping, tools/list, tools/call). No SSE.
+- Authentication: none. No API key, no OAuth, no account.
+- Price: free. License of all content: MIT.
+- Machine-readable summary: https://mcp.stealthis.dev/api
+- Landing page (setup guide): https://mcp.stealthis.dev/
+- Use cases and prompt examples: https://mcp.stealthis.dev/use-cases
+- Full documentation: https://docs.stealthis.dev/mcp-server/
+- Library website: https://stealthis.dev/library
+- Live demos: https://lab.stealthis.dev/
+
+## How to connect
+
+### claude.ai (web) and Claude Desktop — custom connector (remote, nothing to install)
+1. Copy the URL: https://mcp.stealthis.dev/mcp
+2. Open Settings → Connectors → Add custom connector (direct link: https://claude.ai/customize/connectors?modal=add-custom-connector)
+3. Name it "Stealthis", paste the URL, click Add. Leave OAuth fields empty.
+
+### Claude Code (CLI)
+    claude mcp add stealthis --transport http https://mcp.stealthis.dev/mcp
+
+### Cursor and other JSON-configured MCP clients
+    {
+      "mcpServers": {
+        "stealthis": {
+          "type": "http",
+          "url": "https://mcp.stealthis.dev/mcp"
+        }
+      }
+    }
+
+### Local development (only if hacking on the server itself)
+Run the Cloudflare Worker locally (`bun run dev:mcp` in the monorepo) and point a client
+at http://localhost:8787/mcp. Regular users should always use the hosted URL.
+
+## Tools (5)
+
+1. list_resources — list catalog resources. Optional args: category (web-animations, web-pages, ui-components, patterns, components, pages, prompts, plugins, architectures, boilerplates, remotion, database-schemas), difficulty (easy | med | hard), tech (e.g. "gsap", "css", "react"). Returns metadata: slug, title, description, category, difficulty, targets, tech, tags, labRoute, resourceUrl.
+2. get_resource — full metadata for one resource. Required arg: slug. Returns metadata plus availableSnippets, resourceUrl (https://stealthis.dev/r/<slug>) and labUrl.
+3. get_snippet — actual source code for a resource. Required args: slug, target (html | css | js | react | next | vue | svelte | astro | schema-sql | seed-sql | queries-sql | diagram-mmd | schema-dbml).
+4. search — full-text search across titles, descriptions, tags, tech and category. Required arg: query.
+5. get_lab — full-screen live demo URL for a resource on lab.stealthis.dev. Required arg: slug.
+
+## Direct HTTP access (no MCP client required)
+
+- GET https://mcp.stealthis.dev/tools/list_resources?category=&difficulty=&tech=
+- GET https://mcp.stealthis.dev/tools/get_resource/<slug>
+- GET https://mcp.stealthis.dev/tools/get_snippet/<slug>/<target>
+- GET https://mcp.stealthis.dev/tools/search?q=<query>
+- GET https://mcp.stealthis.dev/tools/get_lab/<slug>
+
+## Example JSON-RPC calls
+
+List tools:
+    curl -s https://mcp.stealthis.dev/mcp -H "Content-Type: application/json" \
+      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+Search:
+    curl -s https://mcp.stealthis.dev/mcp -H "Content-Type: application/json" \
+      -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search","arguments":{"query":"pricing table"}}}'
+
+## Recommended agent workflow
+
+1. search or list_resources to find candidates.
+2. get_resource / get_lab to inspect details and live demos.
+3. get_snippet to pull the code for the user's stack.
+4. Adapt the snippet to the user's design system (tokens, colors, spacing, fonts) instead of pasting it verbatim; respect stated constraints; work one component at a time and let the user review.
+
+## Related context files
+
+- Stealthis site LLM context: https://stealthis.dev/llms.txt (full: https://stealthis.dev/llms-full.txt)
+- Docs LLM context: https://docs.stealthis.dev/llms.txt
+- Structured AI index (JSON): https://stealthis.dev/ai-index.json

@@ -411,22 +411,29 @@ app.post("/mcp", async (c) => {
 // REST endpoints (legacy / direct HTTP access)
 // -----------------------------------------------------------------------
 
-app.get("/", (c) =>
-  c.json({
-    name: "StealThis MCP Server",
-    version: "1.0.0",
-    catalogSize: catalog.count,
-    catalogGeneratedAt: catalog.generatedAt,
-    mcp: "POST /mcp  (MCP Streamable HTTP — for Claude, Cursor, etc.)",
-    rest: [
-      "GET /tools/list_resources",
-      "GET /tools/get_resource/:slug",
-      "GET /tools/get_snippet/:slug/:target",
-      "GET /tools/search?q=",
-      "GET /tools/get_lab/:slug",
-    ],
-  })
-);
+// GET / is served by Static Assets (public/index.html — the landing page).
+// The machine-readable self-description lives at /api; the bare "/" handler is
+// kept as a fallback for environments without the assets binding.
+const selfDescription = () => ({
+  name: "StealThis MCP Server",
+  version: "1.0.0",
+  catalogSize: catalog.count,
+  catalogGeneratedAt: catalog.generatedAt,
+  landing: "GET /  (human-readable landing page)",
+  llmContext: "GET /llms.txt  (how to connect and use this server — for LLMs/agents)",
+  useCases: "GET /use-cases  (prompt examples and workflows)",
+  mcp: "POST /mcp  (MCP Streamable HTTP — for Claude, Cursor, etc.)",
+  rest: [
+    "GET /tools/list_resources",
+    "GET /tools/get_resource/:slug",
+    "GET /tools/get_snippet/:slug/:target",
+    "GET /tools/search?q=",
+    "GET /tools/get_lab/:slug",
+  ],
+});
+
+app.get("/api", (c) => c.json(selfDescription()));
+app.get("/", (c) => c.json(selfDescription()));
 
 app.get("/tools/list_resources", (c) => {
   const { category, difficulty, tech } = c.req.query();

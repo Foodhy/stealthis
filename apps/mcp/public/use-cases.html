@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stealthis MCP use cases — real prompts, tool traces &amp; results</title>
+<meta name="description" content="A build log of real Stealthis MCP workflows: exact prompts, the MCP tool calls behind them, and what your AI agent ships — landing pages, design systems, component swaps and more." />
+<link rel="canonical" href="https://mcp.stealthis.dev/use-cases" />
+<meta name="keywords" content="mcp use cases, claude mcp examples, stealthis prompts, ai design system, mcp workflow examples" />
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="Stealthis MCP" />
+<meta property="og:title" content="Stealthis MCP use cases — real prompts, tool traces &amp; results" />
+<meta property="og:description" content="Exact prompts, the MCP tool calls behind them, and what your agent ships." />
+<meta property="og:url" content="https://mcp.stealthis.dev/use-cases" />
+<meta property="og:image" content="https://mcp.stealthis.dev/og/mcp.webp" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://mcp.stealthis.dev/og/mcp.webp" />
+<link rel="icon" href="https://stealthis.dev/favicon.svg" />
+<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM context — how to connect and use this MCP server" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Stealthis MCP use cases",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Steal a single component into an existing app" },
+    { "@type": "ListItem", "position": 2, "name": "Build a full industry landing page" },
+    { "@type": "ListItem", "position": 3, "name": "Generate a design-system starter with Claude" },
+    { "@type": "ListItem", "position": 4, "name": "Compare alternatives with live demos" },
+    { "@type": "ListItem", "position": 5, "name": "Wire snippets inside Claude Code" },
+    { "@type": "ListItem", "position": 6, "name": "Tips: adapt to your design system, constrain, go piece by piece" }
+  ]
+}
+</script>
+<style>
+:root {
+  --bg: #030712;
+  --surface: #0f172a;
+  --surface-2: #1e293b;
+  --ink: #f1f5f9;
+  --muted: #94a3b8;
+  --line: rgba(255, 255, 255, 0.09);
+  --brand: #38bdf8;
+  --accent: #e879f9;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Inter", system-ui, sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { color-scheme: dark; scroll-behavior: smooth; }
+body {
+  background:
+    linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px),
+    var(--bg);
+  background-size: 80px 80px;
+  color: var(--ink); font: 400 15.5px/1.65 var(--sans);
+}
+a { color: var(--brand); }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
+  height: 54px; padding: 0 clamp(16px, 3vw, 36px);
+  background: rgba(3,7,18,0.94); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .wordmark { font: 700 15px var(--sans); color: var(--ink); text-decoration: none; white-space: nowrap; }
+.wordmark .tld { color: var(--brand); }
+.wordmark .mcp-tag { font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent); margin-left: 8px; border: 1px solid rgba(232,121,249,0.4); border-radius: 999px; padding: 2px 8px; vertical-align: 2px; }
+
+.crumb {
+  justify-self: center;
+  display: flex; align-items: center; gap: 8px;
+  font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--muted); white-space: nowrap; overflow: hidden;
+}
+.crumb .sep { color: #475569; }
+.crumb .here { color: var(--accent); }
+
+.topbar nav { display: flex; gap: 4px; }
+.topbar nav a {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--muted); text-decoration: none;
+  padding: 6px 10px; border-radius: 8px; border: 1px solid transparent;
+}
+.topbar nav a svg { flex: none; opacity: 0.8; }
+.topbar nav a:hover { color: var(--ink); background: rgba(255,255,255,0.05); }
+.topbar nav a.active { color: var(--ink); border-color: var(--line); background: rgba(255,255,255,0.06); }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 clamp(16px, 3vw, 48px); }
+
+/* hero: info left / status + CTA right */
+.hero {
+  display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+  gap: clamp(24px, 4vw, 56px); align-items: center;
+  padding: clamp(40px, 5vw, 72px) 0 0;
+}
+.eyebrow { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent); }
+.hero h1 { font-size: clamp(1.8rem, 3.6vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin: 12px 0 12px; text-transform: uppercase; }
+.hero p { max-width: 620px; color: var(--muted); }
+
+/* status panel (hero right) */
+.status {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  background: var(--line);
+}
+.status .cell { background: var(--surface); padding: 18px 12px; text-align: center; }
+.status b { display: block; font: 700 22px var(--sans); }
+.status span { font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); }
+.status-cta { grid-column: 1 / -1; background: var(--surface); padding: 12px; text-align: center; }
+.status-cta a {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 13px var(--sans); color: var(--ink); text-decoration: none;
+  border: 1px solid var(--line); border-radius: 9px; padding: 8px 16px;
+  background: rgba(255,255,255,0.04);
+}
+.status-cta a:hover { background: rgba(255,255,255,0.09); }
+
+/* layout: log + sticky minimap */
+.log-layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) 168px; gap: 32px;
+  align-items: start; margin-top: 44px;
+}
+.timeline { display: flex; flex-direction: column; gap: 28px; }
+
+.entry { display: grid; grid-template-columns: 34px minmax(0, 1fr); }
+.entry-rail { position: relative; }
+.entry-rail::before {
+  content: ""; position: absolute; left: 10px; top: 0; bottom: -28px; width: 2px;
+  background: repeating-linear-gradient(to bottom, rgba(148,163,184,0.35) 0 6px, transparent 6px 12px);
+}
+.entry:last-of-type .entry-rail::before { bottom: 0; }
+.entry-node {
+  position: relative; z-index: 1; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--brand);
+  display: grid; place-items: center; font: 600 10px var(--mono); color: var(--brand);
+}
+.entry--accent .entry-node { border-color: var(--accent); color: var(--accent); }
+.entry--ok .entry-node { border-color: var(--ok); color: var(--ok); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--brand);
+  border-radius: 12px; padding: 20px 22px;
+}
+.entry--accent .card { border-left-color: var(--accent); }
+.entry--ok .card { border-left-color: var(--ok); }
+.card .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.badge {
+  font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: 0.14em;
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--muted);
+}
+.badge--client { color: var(--brand); border-color: rgba(56,189,248,0.4); }
+.badge--goal { color: var(--accent); border-color: rgba(232,121,249,0.4); }
+.card h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; }
+.card > p { color: var(--muted); font-size: 14.5px; }
+
+.prompt {
+  margin-top: 14px; background: #0b1120; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+}
+.prompt .p-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 7px 12px; border-bottom: 1px solid var(--line);
+  font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted);
+}
+.prompt blockquote { padding: 12px 14px; font-size: 14px; }
+.copy-btn {
+  border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--muted);
+  border-radius: 7px; padding: 4px 9px; font: 600 10.5px var(--mono); text-transform: uppercase; letter-spacing: 0.08em;
+  cursor: pointer; flex: none;
+}
+.copy-btn:hover { color: var(--ink); }
+.copy-btn.copied { color: var(--ok); border-color: rgba(52,211,153,0.4); }
+
+.trace {
+  margin-top: 12px; font: 500 12px var(--mono); color: var(--muted);
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.trace .t { background: rgba(56,189,248,0.1); color: var(--brand); border-radius: 6px; padding: 3px 8px; }
+.trace .arrow { color: #475569; }
+
+.result {
+  margin-top: 14px; border-left: 3px solid var(--ok); background: rgba(52,211,153,0.06);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 14px; color: var(--ink);
+}
+.result b { color: var(--ok); font: 600 10.5px var(--mono); text-transform: uppercase; letter-spacing: 0.14em; display: block; margin-bottom: 4px; }
+
+/* graph-paper media placeholder */
+.media {
+  margin-top: 14px; border: 1px dashed rgba(148,163,184,0.35); border-radius: 10px;
+  background:
+    linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+  padding: 26px 14px; text-align: center;
+  font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted);
+}
+.media img { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+/* minimap */
+.minimap { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 4px; }
+.minimap .mm-title { font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); margin-bottom: 6px; }
+.mm-link {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: var(--muted); text-decoration: none;
+  padding: 5px 8px; border-radius: 7px;
+}
+.mm-link:hover { color: var(--ink); background: rgba(255,255,255,0.04); }
+.mm-link.active { color: var(--ink); background: rgba(255,255,255,0.06); }
+.mm-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); flex: none; }
+.mm-dot--accent { background: var(--accent); }
+.mm-dot--ok { background: var(--ok); }
+
+.tips {
+  margin: 64px 0 0; border: 1px solid var(--line); border-left: 4px solid var(--ok);
+  border-radius: 14px; background: var(--surface); padding: 28px;
+}
+.tips-head { max-width: 720px; margin-bottom: 6px; }
+.tips-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 8px 0; }
+.tips-head p { color: var(--muted); font-size: 14.5px; }
+.tips-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.tips-grid .prompt { margin-top: 0; }
+.tips-foot {
+  display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;
+  margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--line);
+}
+@media (max-width: 860px) { .tips-grid { grid-template-columns: 1fr; } }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 10px; padding: 10px 18px;
+  font: 600 14px var(--sans); text-decoration: none; cursor: pointer;
+}
+.btn-primary { background: var(--brand); color: #04121d; }
+.btn-primary:hover { background: #7dd3fc; }
+.btn-ghost { border: 1px solid var(--line); color: var(--ink); background: rgba(255,255,255,0.03); margin-left: 8px; }
+
+footer {
+  margin-top: 64px; border-top: 1px solid var(--line);
+  padding: 28px 0; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between;
+  color: var(--muted); font-size: 13px;
+}
+footer nav { display: flex; gap: 16px; }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--ink); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(12px);
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 9px 16px; font: 600 12.5px var(--mono); color: var(--ok);
+  opacity: 0; pointer-events: none; transition: opacity 0.18s ease, transform 0.18s ease; z-index: 40;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 920px) {
+  .crumb { display: none; }
+  .topbar { grid-template-columns: auto 1fr; }
+  .topbar nav { justify-self: end; }
+  .topbar nav a span { display: none; }
+  .hero { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .log-layout { grid-template-columns: 1fr; }
+  .minimap {
+    order: -1; position: sticky; top: 56px; z-index: 10;
+    flex-direction: row; overflow-x: auto; gap: 8px;
+    background: rgba(3,7,18,0.95); padding: 8px 0; margin: 0 -24px; padding-left: 24px;
+  }
+  .minimap .mm-title { display: none; }
+  .mm-link { flex: none; border: 1px solid var(--line); }
+}
+@media (max-width: 520px) {
+  .entry { grid-template-columns: 24px minmax(0, 1fr); }
+  .entry-rail::before { left: 7px; }
+  .entry-node { width: 16px; height: 16px; font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">stealthis<span class="tld">.dev</span><span class="mcp-tag">MCP</span></a>
+
+  <div class="crumb" aria-live="polite">
+    <span>mcp</span><span class="sep">/</span><span>use-cases</span><span class="sep">/</span><span class="here" id="crumb-here">overview</span>
+  </div>
+
+  <nav>
+    <a href="/">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg>
+      <span>Setup</span>
+    </a>
+    <a href="/use-cases" class="active" aria-current="page">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span>Use cases</span>
+    </a>
+    <a href="https://docs.stealthis.dev/mcp-server/">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="14 3 14 9 20 9"/></svg>
+      <span>Docs</span>
+    </a>
+    <a href="https://stealthis.dev/library">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6.5a2.5 2.5 0 0 1 2.5-2.5H20v15H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M8 4v15"/></svg>
+      <span>Library</span>
+    </a>
+  </nav>
+</header>
+
+<main class="wrap">
+
+<section class="hero">
+  <div>
+    <p class="eyebrow">Use-case build log</p>
+    <h1>What agents actually ship with Stealthis MCP</h1>
+    <p>
+      Each entry is a real workflow: the exact prompt you paste, the MCP tool calls the agent makes
+      behind the scenes, and what lands in your project. Copy any prompt and run it in Claude,
+      Claude Code or Cursor once the <a href="/">connector is set up</a>.
+    </p>
+  </div>
+  <div class="status">
+    <div class="cell"><b>5</b><span>workflows</span></div>
+    <div class="cell"><b>2,031</b><span>resources</span></div>
+    <div class="cell"><b>~30s</b><span>per component</span></div>
+    <div class="cell"><b>MIT</b><span>license</span></div>
+    <div class="status-cta">
+      <a href="/">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg>
+        Set up the connector
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="log-layout">
+
+  <div class="timeline">
+
+    <article class="entry" id="uc-component">
+      <div class="entry-rail"><div class="entry-node">01</div></div>
+      <div class="card">
+        <div class="meta">
+          <span class="badge badge--client">Claude Code</span>
+          <span class="badge badge--goal">Existing app</span>
+        </div>
+        <h2>Steal one component into your app</h2>
+        <p>The classic. You need a specific piece — a testimonial slider, a stat counter, a hero — and want it matching your stack.</p>
+        <div class="prompt">
+          <div class="p-head"><span>Prompt</span><button class="copy-btn" data-copy="Search stealthis for a testimonial carousel, pick the best match for a React app, and integrate it into src/components/ using our Tailwind tokens.">Copy</button></div>
+          <blockquote>"Search stealthis for a testimonial carousel, pick the best match for a React app, and integrate it into <code>src/components/</code> using our Tailwind tokens."</blockquote>
+        </div>
+        <div class="trace">
+          <span class="t">search</span><span class="arrow">→</span>
+          <span class="t">get_resource</span><span class="arrow">→</span>
+          <span class="t">get_snippet(react)</span>
+        </div>
+        <div class="result"><b>Result</b>The agent compares candidates, pulls the React snippet, renames classes to your tokens and drops the file in place — you review a normal diff.</div>
+      </div>
+    </article>
+
+    <article class="entry entry--accent" id="uc-landing">
+      <div class="entry-rail"><div class="entry-node">02</div></div>
+      <div class="card">
+        <div class="meta">
+          <span class="badge badge--client">Claude / Claude Code</span>
+          <span class="badge badge--goal">New page</span>
+        </div>
+        <h2>Build a full industry landing page</h2>
+        <p>The library covers 60+ verticals — gym, clinic, salon, fintech, legal, wedding, SaaS… Whole pages assemble from real, tested sections.</p>
+        <div class="prompt">
+          <div class="p-head"><span>Prompt</span><button class="copy-btn" data-copy="Build a dental clinic landing page with stealthis: list resources for the dental/clinic vertical, then assemble hero, services grid, testimonials, pricing and a booking form into one index.html.">Copy</button></div>
+          <blockquote>"Build a dental clinic landing page with stealthis: list resources for the dental/clinic vertical, then assemble hero, services grid, testimonials, pricing and a booking form into one <code>index.html</code>."</blockquote>
+        </div>
+        <div class="trace">
+          <span class="t">list_resources</span><span class="arrow">→</span>
+          <span class="t">get_snippet ×5</span><span class="arrow">→</span>
+          <span class="t">get_lab</span>
+        </div>
+        <div class="result"><b>Result</b>A complete, coherent page in minutes — each section proven in the lab, unified under one palette by the agent.</div>
+        <div class="media">landing assembly — screenshot slot</div>
+      </div>
+    </article>
+
+    <article class="entry entry--accent" id="uc-design-system">
+      <div class="entry-rail"><div class="entry-node">03</div></div>
+      <div class="card">
+        <div class="meta">
+          <span class="badge badge--client">Claude</span>
+          <span class="badge badge--goal">Design system</span>
+        </div>
+        <h2>Generate a design-system starter</h2>
+        <p>Point Claude at the theme collections (brutalist, glassmorphism, terminal, editorial…) and have it derive tokens + a component kit for your brand.</p>
+        <div class="prompt">
+          <div class="p-head"><span>Prompt</span><button class="copy-btn" data-copy="Using stealthis theme resources, create a design-system starter for my brand (colors: deep green + cream): CSS custom-property tokens, buttons, cards, forms and a type scale, based on the editorial theme components.">Copy</button></div>
+          <blockquote>"Using stealthis theme resources, create a design-system starter for my brand (colors: deep green + cream): CSS custom-property tokens, buttons, cards, forms and a type scale, based on the editorial theme components."</blockquote>
+        </div>
+        <div class="trace">
+          <span class="t">search("editorial")</span><span class="arrow">→</span>
+          <span class="t">get_snippet(css) ×n</span>
+        </div>
+        <div class="result"><b>Result</b>A tokens.css + component kit derived from real themed components instead of generic boilerplate — re-tinted to your palette.</div>
+      </div>
+    </article>
+
+    <article class="entry" id="uc-compare">
+      <div class="entry-rail"><div class="entry-node">04</div></div>
+      <div class="card">
+        <div class="meta">
+          <span class="badge badge--client">claude.ai</span>
+          <span class="badge badge--goal">Explore</span>
+        </div>
+        <h2>Compare alternatives with live demos</h2>
+        <p>Don't pick blind. Every demo-enabled resource has a full-screen page on lab.stealthis.dev the agent can link you to.</p>
+        <div class="prompt">
+          <div class="p-head"><span>Prompt</span><button class="copy-btn" data-copy="Find three different stealthis pricing tables, give me their live lab demo links and a one-line comparison, then show me the code of the one you'd recommend.">Copy</button></div>
+          <blockquote>"Find three different stealthis pricing tables, give me their live lab demo links and a one-line comparison, then show me the code of the one you'd recommend."</blockquote>
+        </div>
+        <div class="trace">
+          <span class="t">search</span><span class="arrow">→</span>
+          <span class="t">get_lab ×3</span><span class="arrow">→</span>
+          <span class="t">get_snippet</span>
+        </div>
+        <div class="result"><b>Result</b>Clickable previews in chat, an opinionated comparison, and code for the winner.</div>
+      </div>
+    </article>
+
+    <article class="entry entry--ok" id="uc-pipeline">
+      <div class="entry-rail"><div class="entry-node">05</div></div>
+      <div class="card">
+        <div class="meta">
+          <span class="badge badge--client">Claude Code</span>
+          <span class="badge badge--goal">Automation</span>
+        </div>
+        <h2>Make it part of your workflow</h2>
+        <p>Once registered with <code>claude mcp add</code>, the tools are available in every session — put them in CLAUDE.md so the agent reaches for the library by default.</p>
+        <div class="prompt">
+          <div class="p-head"><span>CLAUDE.md snippet</span><button class="copy-btn" data-copy="## UI components&#10;Before writing any UI component from scratch, search the stealthis MCP server for an existing resource (tools: search, get_snippet) and adapt it to our design tokens.">Copy</button></div>
+          <blockquote>"## UI components — Before writing any UI component from scratch, search the stealthis MCP server for an existing resource (tools: <code>search</code>, <code>get_snippet</code>) and adapt it to our design tokens."</blockquote>
+        </div>
+        <div class="trace">
+          <span class="t">every session</span><span class="arrow">→</span>
+          <span class="t">search first, write second</span>
+        </div>
+        <div class="result"><b>Result</b>Your agent stops reinventing buttons. New UI starts from 2,031 tested resources by default.</div>
+      </div>
+    </article>
+
+  </div>
+
+  <nav class="minimap" aria-label="Use cases">
+    <span class="mm-title">On this log</span>
+    <a class="mm-link" href="#uc-component"><span class="mm-dot"></span>Component</a>
+    <a class="mm-link" href="#uc-landing"><span class="mm-dot mm-dot--accent"></span>Landing</a>
+    <a class="mm-link" href="#uc-design-system"><span class="mm-dot mm-dot--accent"></span>Design system</a>
+    <a class="mm-link" href="#uc-compare"><span class="mm-dot"></span>Compare</a>
+    <a class="mm-link" href="#uc-pipeline"><span class="mm-dot mm-dot--ok"></span>Workflow</a>
+    <a class="mm-link" href="#tips"><span class="mm-dot mm-dot--ok"></span>Tips</a>
+  </nav>
+
+</div>
+
+<section class="tips" id="tips">
+  <div class="tips-head">
+    <p class="eyebrow">Before you prompt</p>
+    <h2>Tips: how to ask for it right</h2>
+    <p>Don't just say "add it". The difference between a pasted snippet and a component that feels native to your app is in how you ask.</p>
+  </div>
+  <div class="tips-grid">
+    <div class="prompt">
+      <div class="p-head"><span>Tip 1 · Adapt to YOUR design system</span><button class="copy-btn" data-copy="Get the pricing-table snippet from stealthis and adapt it to my design system: use my CSS tokens (colors, radius, spacing, fonts) from src/styles/tokens.css instead of the snippet's own styles, so it looks native to my app.">Copy</button></div>
+      <blockquote>"Get the pricing-table snippet from stealthis and <strong>adapt it to my design system</strong>: use my CSS tokens (colors, radius, spacing, fonts) from <code>src/styles/tokens.css</code> instead of the snippet's own styles, so it looks native to my app."</blockquote>
+    </div>
+    <div class="prompt">
+      <div class="p-head"><span>Tip 2 · Say what you DON'T want</span><button class="copy-btn" data-copy="Add the stealthis testimonial slider, but: no autoplay, no external libraries, don't touch my global CSS, and keep it under 100 lines of JS.">Copy</button></div>
+      <blockquote>"Add the stealthis testimonial slider, but: <strong>no autoplay, no external libraries, don't touch my global CSS</strong>, and keep it under 100 lines of JS."</blockquote>
+    </div>
+    <div class="prompt">
+      <div class="p-head"><span>Tip 3 · Go piece by piece</span><button class="copy-btn" data-copy="We'll build my landing section by section, one at a time. Start ONLY with the hero: search stealthis, show me 2-3 options with their lab links, wait for me to pick, adapt it, and stop so I can review before we move to the next section.">Copy</button></div>
+      <blockquote>"We'll build my landing <strong>section by section, one at a time</strong>. Start ONLY with the hero: search stealthis, show me 2–3 options with their lab links, wait for me to pick, adapt it, and stop so I can review before we move to the next section."</blockquote>
+    </div>
+    <div class="prompt">
+      <div class="p-head"><span>Tip 4 · With time and patience, per element</span><button class="copy-btn" data-copy="For each element we add: state your assumptions, ask before replacing any existing styles, and show me the diff before writing files. Quality over speed.">Copy</button></div>
+      <blockquote>"For each element we add: <strong>state your assumptions, ask before replacing any existing styles</strong>, and show me the diff before writing files. Quality over speed."</blockquote>
+    </div>
+  </div>
+  <div class="tips-foot">
+    <span class="trace" style="margin:0">
+      <span class="t">adapt</span><span class="arrow">→</span>
+      <span class="t">constrain</span><span class="arrow">→</span>
+      <span class="t">one piece at a time</span><span class="arrow">→</span>
+      <span class="t">review</span>
+    </span>
+  </div>
+</section>
+
+<footer>
+  <span>© Stealthis — steal responsibly.</span>
+  <nav>
+    <a href="/">MCP home</a>
+    <a href="https://stealthis.dev">stealthis.dev</a>
+    <a href="https://lab.stealthis.dev">lab</a>
+    <a href="https://docs.stealthis.dev">docs</a>
+  </nav>
+</footer>
+
+</main>
+
+<div class="toast" id="toast" role="status">Copied to clipboard</div>
+
+<script>
+(() => {
+  const toast = document.getElementById("toast");
+  let timer;
+  document.querySelectorAll(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        btn.classList.add("copied");
+        toast.classList.add("show");
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          toast.classList.remove("show");
+          btn.classList.remove("copied");
+        }, 1800);
+      } catch { /* clipboard blocked */ }
+    });
+  });
+
+  // minimap + breadcrumb scrollspy
+  const links = [...document.querySelectorAll(".mm-link")];
+  const map = new Map(links.map((l) => [l.getAttribute("href").slice(1), l]));
+  const crumbHere = document.getElementById("crumb-here");
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          links.forEach((l) => l.classList.remove("active"));
+          const link = map.get(e.target.id);
+          link?.classList.add("active");
+          if (link && crumbHere) crumbHere.textContent = link.textContent.trim();
+        }
+      });
+    },
+    { rootMargin: "-30% 0px -60% 0px" }
+  );
+  document.querySelectorAll(".entry, .tips").forEach((el) => io.observe(el));
+})();
+</script>
+
+</body>
+</html>

@@ -12,6 +12,16 @@ REST API + MCP server for the StealThis.dev resource library.
 
 ## Setup in MCP clients
 
+### claude.ai (web) — custom connector
+
+Remote connector, nothing to install:
+
+1. Copy `https://mcp.stealthis.dev/mcp`
+2. Open [Settings → Connectors → Add custom connector](https://claude.ai/customize/connectors?modal=add-custom-connector)
+3. Name it **Stealthis**, paste the URL, click **Add** (leave the OAuth fields empty)
+
+The landing page at [mcp.stealthis.dev](https://mcp.stealthis.dev) (served from `public/index.html`) walks through this with a screenshot, plus copy-paste prompts at [/use-cases](https://mcp.stealthis.dev/use-cases).
+
 ### Claude Code (CLI)
 
 ```bash

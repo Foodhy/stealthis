@@ -4647,6 +4647,37 @@ Cada sitio homenaje tiene páginas interiores características además de su hom
 
 ---
 
+## Phase 101 — MCP Distribution: marketplaces & directories 📡 PLAN
+
+> Objetivo: que el MCP de Stealthis (`https://mcp.stealthis.dev/mcp`) sea descubrible desde los
+> marketplaces/directorios de agentes, como lo hace Higgsfield (higgsfield.ai/mcp lista Claude,
+> ChatGPT, Cursor, Claude Code, OpenClaw y Hermes como plataformas soportadas). El servidor ya es
+> remoto (Streamable HTTP, sin auth, gratis) — solo falta registrarlo. Landing lista en
+> `apps/mcp/public/` (2026-08-02) y docs actualizados (`mcp-server.mdx`, `integrate.mdx`).
+
+**Targets (registro por URL o PR):**
+
+- [ ] **OpenClaw** — marketplace de skills/conectores; investigar formato de listing (manifest + URL del servidor) y submit
+- [ ] **Cursor** — [Cursor MCP directory](https://cursor.com/directory) (antes cursor.directory); submit del servidor con deeplink `cursor://` de instalación one-click
+- [ ] **modelcontextprotocol/servers** — PR al README "Community Servers" del repo oficial de GitHub
+- [ ] **mcpservers.org** — submit por formulario/PR
+- [ ] **PulseMCP** — submit (indexa automático + formulario)
+- [ ] **Smithery** — publicar listing (acepta servidores remotos por URL)
+- [ ] **Glama** — submit al directorio MCP
+- [ ] **mcp.so** — submit por PR/issue
+- [ ] **ChatGPT (OpenAI connectors)** — verificar requisitos de connectors/Apps SDK para servidores MCP remotos; requiere revisar si piden OAuth
+- [ ] **VS Code / GitHub Copilot** — badge "Install in VS Code" con deeplink `vscode:mcp/install?...` en README + landing
+
+**Extras de soporte (una vez listados):**
+
+- [ ] Fila/logos "Available on" en la landing `apps/mcp/public/index.html` (patrón Higgsfield: logos de plataformas soportadas)
+- [ ] Badges de instalación one-click en `apps/mcp/README.md` y `docs.stealthis.dev/mcp-server/`
+- [ ] `server.json` / manifest si algún directorio lo exige (p. ej. MCP Registry oficial: `registry.modelcontextprotocol.io`)
+
+**Progress:** no iniciado.
+
+---
+
 ## Phase index (planned families) 🗂️
 
 > Quick map of the planned/future phase families for navigation. ✅ = shipped phases tracked in their own sections above.
@@ -4679,3 +4710,4 @@ Cada sitio homenaje tiene páginas interiores características además de su hom
 | Advanced motion | 89 | Advanced Motion / WebGPU |
 | Interaction & Advanced Components | 90–99 | Drag & Drop · Gesture · Virtual Scroll · Scroll-driven · Rich Editor · Bento · SVG Maps · Form UX · Raw WebGL · SVG Morph |
 | DIY / Maker | 100 | DIY / Maker Theme — guías de reparación, proyectos, Arduino, impresión 3D, build logs, landings de nicho y fondos blueprint |
+| MCP Distribution | 101 | Submit del MCP a marketplaces: OpenClaw · Cursor directory · repo oficial MCP · mcpservers.org · PulseMCP · Smithery · Glama · mcp.so · ChatGPT connectors · VS Code |

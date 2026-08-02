@@ -1,46 +1,95 @@
 ---
 title: MCP Server
-description: Use the StealThis MCP server to access the resource catalog programmatically from AI tools.
+description: Connect the StealThis MCP server to claude.ai, Claude Desktop, Claude Code or Cursor and access 2,000+ UI resources from any AI agent.
 ---
 
-import { Code } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import connectorShot from "../../assets/claude-add-connector.png";
 
-The StealThis MCP server runs at `https://mcp.stealthis.dev/mcp` and exposes the resource catalog via HTTP endpoints compatible with the [Model Context Protocol](https://modelcontextprotocol.io).
+The StealThis MCP server runs at **`https://mcp.stealthis.dev/mcp`** and exposes the full resource catalog (2,000+ components, animations, pages and design systems) via the [Model Context Protocol](https://modelcontextprotocol.io). It is free, public, and requires no API key.
 
-## Endpoints
+> **Landing page:** [mcp.stealthis.dev](https://mcp.stealthis.dev) has a quick visual setup guide and copy-paste prompts. A [use-case build log](https://mcp.stealthis.dev/use-cases) shows real workflows end to end.
+
+## Connect from claude.ai (web & desktop)
+
+Connectors on claude.ai and Claude Desktop are **remote** — nothing runs on your machine.
+
+1. Copy the server URL: `https://mcp.stealthis.dev/mcp`
+2. Open [**Settings → Connectors → Add custom connector**](https://claude.ai/customize/connectors?modal=add-custom-connector) (that link opens the modal directly).
+3. Name it **Stealthis**, paste the URL, and click **Add**. Leave the OAuth fields empty — no authentication is needed.
+
+<Image src={connectorShot} alt="Claude's Add custom connector modal with the name Stealthis and the URL https://mcp.stealthis.dev/mcp filled in" />
+
+The five StealThis tools are now available in every conversation.
+
+## Connect from Claude Code
+
+One command:
+
+```bash
+claude mcp add stealthis --transport http https://mcp.stealthis.dev/mcp
+```
+
+## Connect from Cursor (or any JSON-configured client)
+
+```json
+{
+  "mcpServers": {
+    "stealthis": {
+      "type": "http",
+      "url": "https://mcp.stealthis.dev/mcp"
+    }
+  }
+}
+```
+
+## Tools
+
+The server exposes five MCP tools:
+
+| Tool | Arguments | Returns |
+|------|-----------|---------|
+| `list_resources` | `category?`, `difficulty?` (`easy`/`med`/`hard`), `tech?` | Catalog metadata for matching resources |
+| `get_resource` | `slug` | Full metadata for one resource, incl. available snippets and links |
+| `get_snippet` | `slug`, `target` (`html`, `css`, `js`, `react`, `next`, `vue`, `svelte`, `astro`, …) | The actual source code |
+| `search` | `query` | Full-text search across titles, descriptions, tags and tech |
+| `get_lab` | `slug` | The full-screen live demo URL on lab.stealthis.dev |
+
+Example prompts once connected:
+
+- "Find me a scroll animation from StealThis"
+- "Get the React snippet for the magnetic-button resource"
+- "Build a gym landing page using StealThis snippets"
+
+## MCP endpoint (Streamable HTTP)
+
+The primary transport is JSON-RPC over `POST /mcp` (MCP Streamable HTTP). Handled methods: `initialize`, `notifications/initialized`, `ping`, `tools/list`, `tools/call`.
+
+```bash
+# List the tools
+curl -s https://mcp.stealthis.dev/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# Call a tool
+curl -s https://mcp.stealthis.dev/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search","arguments":{"query":"parallax"}}}'
+```
+
+## REST endpoints (no MCP client needed)
+
+The same tools are available as plain HTTP GET routes:
 
 ### `GET /tools/list_resources`
 
-List all resources with optional filters.
-
-**Query params:**
-- `category` — filter by category
-- `difficulty` — filter by difficulty
-- `tech` — filter by tech tag
+Optional query params: `category`, `difficulty`, `tech`.
 
 ```
 GET /tools/list_resources?category=web-animations&difficulty=easy
 ```
 
-**Response:**
-```json
-{
-  "resources": [
-    {
-      "slug": "scroll-fade",
-      "title": "Scroll Fade In",
-      "category": "web-animations",
-      "difficulty": "easy",
-      "targets": ["html", "react"],
-      "tech": ["css", "js", "intersection-observer"]
-    }
-  ]
-}
-```
-
 ### `GET /tools/get_resource/:slug`
-
-Get full metadata for a resource.
 
 ```
 GET /tools/get_resource/scroll-fade
@@ -48,60 +97,29 @@ GET /tools/get_resource/scroll-fade
 
 ### `GET /tools/get_snippet/:slug/:target`
 
-Get a code snippet for a resource and target.
-
 ```
 GET /tools/get_snippet/scroll-fade/react
 ```
 
-### `GET /tools/search`
-
-Full-text search across resources.
+### `GET /tools/search?q=`
 
 ```
 GET /tools/search?q=parallax+scroll+effect
 ```
 
-### `GET /tools/get_doc/:path`
-
-Get documentation content by path.
-
-```
-GET /tools/get_doc/getting-started
-```
-
 ### `GET /tools/get_lab/:slug`
-
-Get the lab demo URL and supported parameters for a resource.
 
 ```
 GET /tools/get_lab/scroll-fade
 ```
 
-**Response:**
-```json
-{
-  "slug": "scroll-fade",
-  "labUrl": "https://lab.stealthis.dev/web-animations/scroll-fade",
-  "embedUrl": "https://lab.stealthis.dev/web-animations/scroll-fade?embed=1"
-}
+A machine-readable server summary lives at `GET /api`.
+
+## Local development
+
+The hosted server is what connectors use — local setup only matters if you're hacking on the worker itself:
+
+```bash
+bun run dev:mcp
+# → point a local MCP client at http://localhost:8787/mcp
 ```
-
-## Using with Claude
-
-Add the MCP server to your Claude configuration:
-
-```json
-{
-  "mcpServers": {
-    "stealthis": {
-      "url": "https://mcp.stealthis.dev/mcp"
-    }
-  }
-}
-```
-
-Then you can ask Claude:
-- "Find me a scroll animation from StealThis"
-- "Get the React snippet for the magnetic-button resource"
-- "Search for parallax effects in StealThis"

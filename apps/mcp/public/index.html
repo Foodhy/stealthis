@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stealthis MCP — 2,000+ UI resources for Claude &amp; AI agents</title>
+<meta name="description" content="Connect the Stealthis MCP server to Claude, Claude Code or Cursor and let your AI agent search, read and steal 2,000+ production-ready UI components, animations, pages and design systems. Free, no API key." />
+<link rel="canonical" href="https://mcp.stealthis.dev/" />
+<meta name="keywords" content="mcp server, claude connector, model context protocol, ui components mcp, design system ai, stealthis, claude mcp, cursor mcp, ai ui library" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Stealthis MCP" />
+<meta property="og:title" content="Stealthis MCP — 2,000+ UI resources for Claude &amp; AI agents" />
+<meta property="og:description" content="One URL connects your AI agent to 2,000+ production-ready UI components, animations and full pages. Free, no API key." />
+<meta property="og:url" content="https://mcp.stealthis.dev/" />
+<meta property="og:image" content="https://mcp.stealthis.dev/og/mcp.webp" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Stealthis MCP — 2,000+ UI resources for Claude &amp; AI agents" />
+<meta name="twitter:description" content="One URL connects your AI agent to 2,000+ production-ready UI components, animations and full pages. Free, no API key." />
+<meta name="twitter:image" content="https://mcp.stealthis.dev/og/mcp.webp" />
+<link rel="icon" href="https://stealthis.dev/favicon.svg" />
+<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM context — how to connect and use this MCP server" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Stealthis MCP Server",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "url": "https://mcp.stealthis.dev/",
+      "description": "Remote MCP (Model Context Protocol) server exposing 2,000+ production-ready UI components, animations, pages and design-system resources to AI agents like Claude, Claude Code and Cursor.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": "list_resources, get_resource, get_snippet, search, get_lab"
+    },
+    {
+      "@type": "HowTo",
+      "name": "Connect Stealthis MCP to Claude",
+      "step": [
+        { "@type": "HowToStep", "name": "Copy the connector URL", "text": "Copy https://mcp.stealthis.dev/mcp" },
+        { "@type": "HowToStep", "name": "Add a custom connector", "text": "Open claude.ai → Settings → Connectors → Add custom connector (https://claude.ai/customize/connectors?modal=add-custom-connector), name it Stealthis and paste the URL." },
+        { "@type": "HowToStep", "name": "Use it in any chat", "text": "Click Add. The five Stealthis tools are now available in every Claude conversation." }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Do I need an API key?", "acceptedAnswer": { "@type": "Answer", "text": "No. The Stealthis MCP server is free and public — just add the URL, no authentication required." } },
+        { "@type": "Question", "name": "Which clients are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Anything that speaks MCP Streamable HTTP: claude.ai (web), Claude Desktop, Claude Code, Cursor and other MCP clients." } },
+        { "@type": "Question", "name": "What can the tools do?", "acceptedAnswer": { "@type": "Answer", "text": "Five tools: list_resources, get_resource, get_snippet, search and get_lab. Your agent can browse the catalog, read full metadata, pull real code snippets (HTML/CSS/JS/React/Vue/Svelte/Astro) and open live demos." } },
+        { "@type": "Question", "name": "Is it remote or local?", "acceptedAnswer": { "@type": "Answer", "text": "claude.ai and Claude Desktop connectors are remote — they call https://mcp.stealthis.dev/mcp directly, nothing to install. For local development, run the worker with wrangler and point your client at http://localhost:8787/mcp." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root {
+  --bg: #030712;
+  --surface: #0f172a;
+  --surface-2: #1e293b;
+  --ink: #f1f5f9;
+  --muted: #94a3b8;
+  --line: rgba(255, 255, 255, 0.09);
+  --brand: #38bdf8;      /* setup side */
+  --brand-soft: rgba(56, 189, 248, 0.12);
+  --accent: #e879f9;     /* use-cases side */
+  --accent-soft: rgba(232, 121, 249, 0.12);
+  --setup-bg: #04121f;
+  --setup-bg2: #061a2b;
+  --cases-bg: #150920;
+  --cases-bg2: #1d0d2c;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Inter", system-ui, sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { color-scheme: dark; scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font: 400 15.5px/1.65 var(--sans); }
+a { color: inherit; }
+
+/* =================== topbar: half/half + icons + active state =================== */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
+  padding: 0 clamp(16px, 3vw, 36px);
+  height: 54px;
+  background: linear-gradient(90deg, rgba(56,189,248,0.08) 50%, rgba(232,121,249,0.08) 50%), rgba(3,7,18,0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .wordmark { font: 700 15px var(--sans); letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
+.wordmark .tld { color: var(--brand); }
+.wordmark .mcp-tag { font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent); margin-left: 8px; border: 1px solid rgba(232,121,249,0.4); border-radius: 999px; padding: 2px 8px; vertical-align: 2px; }
+
+/* breadcrumb — you-are-here, driven by scrollspy */
+.crumb {
+  justify-self: center;
+  display: flex; align-items: center; gap: 8px;
+  font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--muted); white-space: nowrap; overflow: hidden;
+}
+.crumb .sep { color: #475569; }
+.crumb .here { color: var(--brand); }
+.crumb .here.on-cases { color: var(--accent); }
+.crumb-dots { display: flex; gap: 6px; margin-left: 10px; }
+.crumb-dots a { width: 7px; height: 7px; border-radius: 50%; background: #334155; transition: background 0.15s ease, transform 0.15s ease; }
+.crumb-dots a.active { background: var(--brand); transform: scale(1.25); }
+.crumb-dots a.active.dot-cases { background: var(--accent); }
+
+.topbar nav { display: flex; gap: 4px; }
+.topbar nav a {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--muted); text-decoration: none;
+  padding: 6px 10px; border-radius: 8px; border: 1px solid transparent;
+}
+.topbar nav a svg { flex: none; opacity: 0.8; }
+.topbar nav a:hover { color: var(--ink); background: rgba(255,255,255,0.05); }
+.topbar nav a.active { color: var(--ink); border-color: var(--line); background: rgba(255,255,255,0.06); }
+.topbar nav a.ext-docs:hover { color: var(--brand); }
+
+/* =================== full-bleed split machinery =================== */
+.band {
+  display: grid; grid-template-columns: 1fr 1fr; position: relative;
+}
+.band::after {
+  content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; transform: translateX(-50%);
+  background: repeating-linear-gradient(180deg, rgba(148,163,184,0.4) 0 8px, transparent 8px 16px);
+  z-index: 1;
+}
+.half { padding: clamp(32px, 4.5vw, 56px) clamp(20px, 4vw, 56px); min-width: 0; }
+.half .inner { max-width: 640px; }
+.half.setup { --side: var(--brand); --side-soft: var(--brand-soft); background: var(--setup-bg); }
+.half.cases { --side: var(--accent); --side-soft: var(--accent-soft); background: var(--cases-bg); }
+.half.setup .inner { margin-left: auto; }   /* content hugs the seam */
+.half.cases .inner { margin-right: auto; }
+.band.alt .half.setup { background: var(--setup-bg2); }
+.band.alt .half.cases { background: var(--cases-bg2); }
+
+/* =================== hero band: info left / actions right =================== */
+.hero .half { padding-top: clamp(44px, 6vw, 80px); padding-bottom: clamp(44px, 6vw, 80px); }
+.eyebrow { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.25em; color: var(--brand); }
+.hero h1 { font-size: clamp(1.9rem, 3.6vw, 3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.12; margin: 14px 0 16px; }
+.hero h1 .steal { color: var(--brand); }
+.hero .lede { color: var(--muted); font-size: 16.5px; max-width: 540px; }
+
+.hero-stats { display: grid; grid-template-columns: repeat(4, auto); gap: 1px; margin-top: 30px; width: fit-content; }
+.stat { background: rgba(255,255,255,0.04); border: 1px solid var(--line); padding: 10px 18px; text-align: center; margin-left: -1px; }
+.stat:first-child { border-radius: 12px 0 0 12px; margin-left: 0; }
+.stat:last-child { border-radius: 0 12px 12px 0; }
+.stat b { display: block; font: 700 20px var(--sans); letter-spacing: -0.02em; }
+.stat span { font: 500 9.5px var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+
+/* right: connect card */
+.connect-card {
+  background: rgba(3,7,18,0.55); border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px; max-width: 480px;
+}
+.connect-card .cc-title { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 14px; }
+.url-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: #0b1120; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px 11px 14px;
+  font: 500 13.5px var(--mono);
+}
+.url-pill code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.cc-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 10px; padding: 11px 18px; font: 600 14px var(--sans);
+  text-decoration: none; cursor: pointer; border: 1px solid transparent;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.btn svg { flex: none; }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--brand); color: #04121d; }
+.btn-primary:hover { background: #7dd3fc; }
+.btn-accent { background: var(--accent); color: #26041f; }
+.btn-accent:hover { background: #f0abfc; }
+.btn-ghost { border-color: var(--line); color: var(--ink); background: rgba(255,255,255,0.03); }
+.btn-ghost:hover { background: rgba(255,255,255,0.07); }
+.cc-note { margin-top: 12px; font-size: 12.5px; color: var(--muted); text-align: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chip {
+  font: 500 12px var(--mono); color: var(--side, var(--brand));
+  background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+}
+
+.copy-btn {
+  border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--muted);
+  border-radius: 8px; padding: 6px 10px; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em;
+  cursor: pointer; flex: none;
+}
+.copy-btn:hover { color: var(--ink); background: rgba(255,255,255,0.1); }
+.copy-btn.copied { color: #34d399; border-color: rgba(52,211,153,0.4); }
+
+/* =================== rail headers =================== */
+.split-head { display: grid; grid-template-columns: 1fr 1fr; position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.split-head::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; transform: translateX(-50%); background: repeating-linear-gradient(180deg, rgba(148,163,184,0.4) 0 8px, transparent 8px 16px); }
+.split-head h2 {
+  font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: 0.25em; padding: 13px 0; text-align: center;
+}
+.split-head .h-setup { color: var(--brand); background: rgba(56,189,248,0.06); }
+.split-head .h-cases { color: var(--accent); background: rgba(232,121,249,0.06); }
+
+/* =================== content components =================== */
+.tag {
+  display: inline-block; font: 600 10.5px var(--mono); text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--side); border: 1px solid var(--side); border-radius: 999px; padding: 3px 10px; margin-bottom: 14px;
+  opacity: 0.9;
+}
+.half h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 8px; }
+.half p { color: var(--muted); font-size: 14.5px; }
+
+.steps { list-style: none; counter-reset: step; margin-top: 18px; }
+.steps li {
+  counter-increment: step; position: relative; padding: 12px 0 12px 44px;
+  border-bottom: 1px dashed var(--line); font-size: 14.5px;
+}
+.steps li:last-child { border-bottom: 0; }
+.steps li::before {
+  content: counter(step); position: absolute; left: 0; top: 12px;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 600 12px var(--mono); color: var(--side);
+  border: 1px solid var(--side); background: var(--side-soft);
+}
+.steps a { color: var(--side); }
+
+.codebox {
+  margin-top: 16px; background: #0b1120; border: 1px solid var(--line); border-radius: 12px;
+  font: 500 12.5px/1.7 var(--mono); overflow: hidden;
+}
+.codebox .cb-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 12px; border-bottom: 1px solid var(--line);
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted);
+}
+.codebox pre { padding: 14px 16px; overflow-x: auto; }
+.codebox .hl { color: var(--side); }
+.codebox .dim { color: #64748b; }
+
+.shot { margin-top: 18px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption { padding: 8px 12px; font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); border-top: 1px solid var(--line); }
+
+.prompt-card {
+  margin-top: 16px; background: rgba(3,7,18,0.55); border: 1px solid var(--line); border-left: 3px solid var(--side);
+  border-radius: 10px; padding: 14px 16px;
+}
+.prompt-card .pc-label { font: 600 10.5px var(--mono); text-transform: uppercase; letter-spacing: 0.16em; color: var(--side); }
+.prompt-card blockquote { margin: 8px 0 10px; font-size: 14px; color: var(--ink); }
+.prompt-card .pc-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.prompt-card .pc-tools { font: 500 11px var(--mono); color: var(--muted); }
+
+/* =================== FAQ: full-bleed band with shared strip =================== */
+.faq-band { border-top: 1px solid var(--line); background: linear-gradient(90deg, var(--setup-bg2) 50%, var(--cases-bg2) 50%); }
+.faq { max-width: 880px; margin: 0 auto; padding: clamp(40px, 5vw, 64px) 24px; }
+.faq h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; text-align: center; margin-bottom: 24px; }
+.faq details { border: 1px solid var(--line); border-radius: 12px; background: rgba(3,7,18,0.6); margin-bottom: 10px; }
+.faq summary { cursor: pointer; padding: 14px 18px; font-weight: 600; font-size: 14.5px; list-style: none; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; float: right; color: var(--muted); font-family: var(--mono); }
+.faq details[open] summary::after { content: "−"; }
+.faq .faq-body { padding: 0 18px 14px; color: var(--muted); font-size: 14px; }
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 24px clamp(16px, 3vw, 36px);
+  display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;
+  color: var(--muted); font-size: 13px;
+}
+footer nav { display: flex; flex-wrap: wrap; gap: 16px; }
+footer a { text-decoration: none; }
+footer a:hover { color: var(--ink); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(12px);
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 9px 16px; font: 600 12.5px var(--mono); color: #34d399;
+  opacity: 0; pointer-events: none; transition: opacity 0.18s ease, transform 0.18s ease; z-index: 40;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 920px) {
+  .band, .split-head { grid-template-columns: 1fr; }
+  .band::after, .split-head::after { display: none; }
+  .half .inner { max-width: 640px; margin: 0 auto; }
+  .split-head .h-cases { border-top: 1px solid var(--line); }
+  .crumb { display: none; }
+  .topbar { grid-template-columns: auto 1fr; }
+  .topbar nav { justify-self: end; }
+  .topbar nav a span { display: none; }   /* icons only on small screens */
+  .hero-stats { grid-template-columns: repeat(2, 1fr); width: 100%; }
+  .stat { margin-left: 0; border-radius: 0 !important; }
+  .stat:first-child { border-radius: 12px 0 0 0 !important; }
+  .stat:nth-child(2) { border-radius: 0 12px 0 0 !important; }
+  .stat:nth-child(3) { border-radius: 0 0 0 12px !important; }
+  .stat:last-child { border-radius: 0 0 12px 0 !important; }
+  .connect-card { max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="https://stealthis.dev">stealthis<span class="tld">.dev</span><span class="mcp-tag">MCP</span></a>
+
+  <div class="crumb" aria-live="polite">
+    <span>mcp</span><span class="sep">/</span><span class="here" id="crumb-here">overview</span>
+    <span class="crumb-dots" id="crumb-dots">
+      <a href="#top" data-spy="top" aria-label="Overview"></a>
+      <a href="#connector" data-spy="connector" aria-label="Connector"></a>
+      <a href="#clients" data-spy="clients" aria-label="Clients"></a>
+      <a href="#local" data-spy="local" aria-label="Local &amp; demos"></a>
+      <a href="#faq" data-spy="faq" class="dot-cases" aria-label="FAQ"></a>
+    </span>
+  </div>
+
+  <nav>
+    <a href="#connector">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg>
+      <span>Setup</span>
+    </a>
+    <a href="/use-cases">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span>Use cases</span>
+    </a>
+    <a class="ext-docs" href="https://docs.stealthis.dev/mcp-server/">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="14 3 14 9 20 9"/></svg>
+      <span>Docs</span>
+    </a>
+    <a href="https://stealthis.dev/library">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6.5a2.5 2.5 0 0 1 2.5-2.5H20v15H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M8 4v15"/></svg>
+      <span>Library</span>
+    </a>
+  </nav>
+</header>
+
+<!-- ============ HERO: info left / actions right ============ -->
+<section class="band hero" id="top" data-crumb="overview">
+  <div class="half setup">
+    <div class="inner">
+      <p class="eyebrow">Model Context Protocol · Free · No API key</p>
+      <h1>Let your AI agent <span class="steal">steal</span> from 2,000+ UI resources.</h1>
+      <p class="lede">
+        The Stealthis MCP server connects Claude, Claude Code and Cursor to the full Stealthis library —
+        components, animations, complete pages and design systems your agent can search, read and drop
+        straight into your project.
+      </p>
+      <div class="hero-stats">
+        <div class="stat"><b>2,031</b><span>resources</span></div>
+        <div class="stat"><b>5</b><span>tools</span></div>
+        <div class="stat"><b>8</b><span>targets</span></div>
+        <div class="stat"><b>$0</b><span>no key</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="half cases">
+    <div class="inner">
+      <div class="connect-card">
+        <p class="cc-title">Connect in 2 minutes</p>
+        <div class="url-pill">
+          <code id="server-url">https://mcp.stealthis.dev/mcp</code>
+          <button class="copy-btn" data-copy="https://mcp.stealthis.dev/mcp">Copy</button>
+        </div>
+        <div class="cc-btns">
+          <a class="btn btn-primary" href="https://claude.ai/customize/connectors?modal=add-custom-connector" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Add to Claude
+          </a>
+          <a class="btn btn-accent" href="/use-cases">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            See it in action
+          </a>
+          <a class="btn btn-ghost" href="https://docs.stealthis.dev/mcp-server/">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="14 3 14 9 20 9"/></svg>
+            Read the docs
+          </a>
+        </div>
+        <p class="cc-note">No account. No API key. Works in claude.ai, Desktop, Claude Code &amp; Cursor.</p>
+        <div class="chips">
+          <span class="chip">list_resources</span>
+          <span class="chip">get_resource</span>
+          <span class="chip">get_snippet</span>
+          <span class="chip">search</span>
+          <span class="chip">get_lab</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="split-head">
+  <h2 class="h-setup">① Set it up</h2>
+  <h2 class="h-cases">② Use it</h2>
+</div>
+
+<!-- Band 1: claude.ai connector / search prompts -->
+<section class="band" id="connector" data-crumb="connector">
+  <div class="half setup">
+    <div class="inner">
+      <span class="tag">claude.ai · Claude Desktop</span>
+      <h3>Add as a custom connector</h3>
+      <p>Remote connector — nothing to install. Works on claude.ai (web) and the Claude desktop app.</p>
+      <ol class="steps">
+        <li>Copy the server URL <code>https://mcp.stealthis.dev/mcp</code>.</li>
+        <li>Open <a href="https://claude.ai/customize/connectors?modal=add-custom-connector" target="_blank" rel="noopener">Settings → Connectors → Add custom connector</a>.</li>
+        <li>Name it <strong>Stealthis</strong>, paste the URL, click <strong>Add</strong>. Done — the tools appear in every chat.</li>
+      </ol>
+      <figure class="shot">
+        <img src="/assets/claude-add-connector.png" alt="Claude Add custom connector modal with the name Stealthis and URL https://mcp.stealthis.dev/mcp filled in" loading="lazy" width="1145" height="808" />
+        <figcaption>claude.ai → Connectors → Add custom connector</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="half cases">
+    <div class="inner">
+      <span class="tag">Find components</span>
+      <h3>Search the library from chat</h3>
+      <p>Ask in plain language — the agent calls <code>search</code> and <code>get_snippet</code> behind the scenes.</p>
+      <div class="prompt-card">
+        <span class="pc-label">Prompt</span>
+        <blockquote>"Search stealthis for a pricing table with a monthly/annual toggle and add it to my landing page."</blockquote>
+        <div class="pc-foot">
+          <span class="pc-tools">search → get_snippet</span>
+          <button class="copy-btn" data-copy="Search stealthis for a pricing table with a monthly/annual toggle and add it to my landing page.">Copy</button>
+        </div>
+      </div>
+      <div class="prompt-card">
+        <span class="pc-label">Prompt</span>
+        <blockquote>"List stealthis resources in the web-animations category that use GSAP, easy difficulty."</blockquote>
+        <div class="pc-foot">
+          <span class="pc-tools">list_resources</span>
+          <button class="copy-btn" data-copy="List stealthis resources in the web-animations category that use GSAP, easy difficulty.">Copy</button>
+        </div>
+      </div>
+      <div class="prompt-card">
+        <span class="pc-label">Prompt</span>
+        <blockquote>"Show me stealthis dark-theme hero sections and paste the HTML of the best one."</blockquote>
+        <div class="pc-foot">
+          <span class="pc-tools">search → get_snippet(html)</span>
+          <button class="copy-btn" data-copy="Show me stealthis dark-theme hero sections and paste the HTML of the best one.">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Band 2: Claude Code + Cursor / build pages -->
+<section class="band alt" id="clients" data-crumb="clients">
+  <div class="half setup">
+    <div class="inner">
+      <span class="tag">Claude Code</span>
+      <h3>One command in your terminal</h3>
+      <p>Registers the server for every Claude Code session.</p>
+      <div class="codebox">
+        <div class="cb-head"><span>terminal</span><button class="copy-btn" data-copy="claude mcp add stealthis --transport http https://mcp.stealthis.dev/mcp">Copy</button></div>
+        <pre><span class="dim">$</span> claude mcp add <span class="hl">stealthis</span> --transport http https://mcp.stealthis.dev/mcp</pre>
+      </div>
+      <span class="tag" style="margin-top:24px">Cursor · JSON config</span>
+      <div class="codebox">
+        <div class="cb-head"><span>mcp.json</span><button class="copy-btn" data-copy='{
+  "mcpServers": {
+    "stealthis": {
+      "type": "http",
+      "url": "https://mcp.stealthis.dev/mcp"
+    }
+  }
+}'>Copy</button></div>
+        <pre>{
+  <span class="hl">"mcpServers"</span>: {
+    <span class="hl">"stealthis"</span>: {
+      "type": <span class="hl">"http"</span>,
+      "url": <span class="hl">"https://mcp.stealthis.dev/mcp"</span>
+    }
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+  <div class="half cases">
+    <div class="inner">
+      <span class="tag">Build pages</span>
+      <h3>Assemble full pages from real snippets</h3>
+      <p>The library ships complete landing pages per industry — gym, clinic, fintech, agency, and 60+ more verticals.</p>
+      <div class="prompt-card">
+        <span class="pc-label">Prompt</span>
+        <blockquote>"Build a gym landing page using stealthis snippets: hero, class schedule, pricing and a signup modal."</blockquote>
+        <div class="pc-foot">
+          <span class="pc-tools">search → get_resource → get_snippet ×4</span>
+          <button class="copy-btn" data-copy="Build a gym landing page using stealthis snippets: hero, class schedule, pricing and a signup modal.">Copy</button>
+        </div>
+      </div>
+      <div class="prompt-card">
+        <span class="pc-label">Prompt</span>
+        <blockquote>"Create a design-system starter for my brand based on stealthis theme resources — tokens, buttons, cards, forms."</blockquote>
+        <div class="pc-foot">
+          <span class="pc-tools">list_resources → get_snippet</span>
+          <button class="copy-btn" data-copy="Create a design-system starter for my brand based on stealthis theme resources — tokens, buttons, cards, forms.">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Band 3: local dev / live demos -->
+<section class="band" id="local" data-crumb="local &amp; demos">
+  <div class="half setup">
+    <div class="inner">
+      <span class="tag">Local development</span>
+      <h3>Remote by default, local if you hack on it</h3>
+      <p>
+        The hosted server is what claude.ai and Desktop connectors use — nothing runs on your machine.
+        If you're developing the worker itself, run it locally and point a local client at it:
+      </p>
+      <div class="codebox">
+        <div class="cb-head"><span>terminal</span><button class="copy-btn" data-copy="bun run dev:mcp">Copy</button></div>
+        <pre><span class="dim">$</span> bun run dev:mcp
+<span class="dim"># → http://localhost:8787/mcp</span></pre>
+      </div>
+      <p style="margin-top:16px">Prefer plain HTTP? The same tools exist as REST routes (<code>GET /tools/…</code>) and a machine summary at <code>GET /api</code>.</p>
+    </div>
+  </div>
+  <div class="half cases">
+    <div class="inner">
+      <span class="tag">Live demos</span>
+      <h3>Preview before you steal</h3>
+      <p>Every resource with a demo has a full-screen page on <a href="https://lab.stealthis.dev" style="color:var(--side)">lab.stealthis.dev</a> — the agent fetches the link with <code>get_lab</code>.</p>
+      <div class="prompt-card">
+        <span class="pc-label">Prompt</span>
+        <blockquote>"Find three stealthis glassmorphism cards, give me their live demo links so I can compare, then install my favorite."</blockquote>
+        <div class="pc-foot">
+          <span class="pc-tools">search → get_lab ×3 → get_snippet</span>
+          <button class="copy-btn" data-copy="Find three stealthis glassmorphism cards, give me their live demo links so I can compare, then install my favorite.">Copy</button>
+        </div>
+      </div>
+      <p style="margin-top:18px">Want the full walkthroughs — prompts, tool traces and results?</p>
+      <a class="btn btn-accent" style="margin-top:12px" href="/use-cases">Open the use-case build log →</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq-band" id="faq" data-crumb="faq">
+  <div class="faq">
+    <h2>FAQ</h2>
+    <details>
+      <summary>Do I need an API key or account?</summary>
+      <div class="faq-body">No. The server is free and public. Add the URL and start prompting.</div>
+    </details>
+    <details>
+      <summary>Which clients are supported?</summary>
+      <div class="faq-body">Any MCP client that speaks Streamable HTTP: claude.ai (web), Claude Desktop, Claude Code, Cursor, and others. There's also a plain REST API (<code>GET /tools/…</code>) and a machine-readable summary at <code>GET /api</code>.</div>
+    </details>
+    <details>
+      <summary>What exactly do the five tools return?</summary>
+      <div class="faq-body"><code>list_resources</code> and <code>search</code> return catalog metadata; <code>get_resource</code> returns full details for one slug; <code>get_snippet</code> returns real source code (html, css, js, react, next, vue, svelte, astro); <code>get_lab</code> returns a live full-screen demo URL.</div>
+    </details>
+    <details>
+      <summary>Is this remote or does it run on my machine?</summary>
+      <div class="faq-body">Remote — it's a Cloudflare Worker at <code>mcp.stealthis.dev</code>. claude.ai connectors always use the remote URL. Local (<code>http://localhost:8787/mcp</code>) only applies when you run the worker yourself during development.</div>
+    </details>
+    <details>
+      <summary>Where does the content come from?</summary>
+      <div class="faq-body">Everything in the <a href="https://stealthis.dev/library">Stealthis library</a> — 2,000+ MIT-licensed resources, each with docs on <a href="https://stealthis.dev">stealthis.dev</a> and live demos on <a href="https://lab.stealthis.dev">lab.stealthis.dev</a>.</div>
+    </details>
+  </div>
+</section>
+
+<footer>
+  <span>© Stealthis — steal responsibly.</span>
+  <nav>
+    <a href="https://stealthis.dev">stealthis.dev</a>
+    <a href="https://lab.stealthis.dev">lab</a>
+    <a href="https://docs.stealthis.dev">docs</a>
+    <a href="https://docs.stealthis.dev/mcp-server/">MCP docs</a>
+    <a href="/use-cases">use cases</a>
+  </nav>
+</footer>
+
+<div class="toast" id="toast" role="status">Copied to clipboard</div>
+
+<script>
+(() => {
+  // copy buttons
+  const toast = document.getElementById("toast");
+  let timer;
+  document.querySelectorAll(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        btn.classList.add("copied");
+        btn.textContent = "Copied";
+        toast.classList.add("show");
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          toast.classList.remove("show");
+          btn.classList.remove("copied");
+          btn.textContent = "Copy";
+        }, 1800);
+      } catch { /* clipboard blocked */ }
+    });
+  });
+
+  // breadcrumb + dots scrollspy
+  const here = document.getElementById("crumb-here");
+  const dots = [...document.querySelectorAll("#crumb-dots a")];
+  const dotFor = new Map(dots.map((d) => [d.dataset.spy, d]));
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const id = e.target.id;
+        const label = e.target.dataset.crumb || id;
+        here.textContent = label;
+        here.classList.toggle("on-cases", id === "faq");
+        dots.forEach((d) => d.classList.remove("active"));
+        dotFor.get(id)?.classList.add("active");
+      });
+    },
+    { rootMargin: "-40% 0px -50% 0px" }
+  );
+  document.querySelectorAll("[data-crumb]").forEach((el) => io.observe(el));
+})();
+</script>
+
+</body>
+</html>
