@@ -252,6 +252,62 @@ async function geminiChat(
 }
 
 // ─── Stream readers ──────────────────────────────────────────────────────────
+//
+// Todos los proveedores mandan el stream como lineas: NDJSON en Ollama, SSE en
+// el resto. Y todos comparten la misma trampa: un chunk de red NO termina en
+// un limite de linea. Si se parte cada chunk por \n y se procesan las lineas
+// sueltas, el evento que quede a caballo entre dos chunks no parsea, cae en el
+// catch y se descarta en silencio — se pierden tokens sin ningun error.
+//
+// Por eso el troceado vive en un solo sitio: `readLines` guarda el resto entre
+// chunks y solo entrega lineas completas. Los lectores de cada proveedor ya
+// solo se ocupan de su formato.
+
+/** Devuelto por un manejador de linea para cortar la lectura (ej. [DONE]). */
+const STOP = Symbol("stop");
+
+async function readLines(
+  response: Response,
+  onLine: (line: string) => typeof STOP | undefined
+): Promise<void> {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response stream");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    // `stream: true` evita partir un caracter multibyte entre dos chunks.
+    buffer += decoder.decode(value, { stream: true });
+
+    let nl = buffer.indexOf("\n");
+    while (nl !== -1) {
+      const line = buffer.slice(0, nl);
+      buffer = buffer.slice(nl + 1);
+      if (onLine(line) === STOP) {
+        await reader.cancel();
+        return;
+      }
+      nl = buffer.indexOf("\n");
+    }
+  }
+
+  buffer += decoder.decode(); // cierra cualquier secuencia multibyte pendiente
+
+  // La ultima linea puede venir sin salto final. Tirarla perderia el ultimo
+  // token justo cuando la respuesta ya estaba completa.
+  if (buffer.trim()) onLine(buffer);
+}
+
+/** Extrae el payload de una linea SSE, o null si esa linea no es un dato. */
+function sseData(line: string): string | null {
+  const trimmed = line.trimEnd(); // los servidores mandan \r\n
+  if (!trimmed.startsWith("data:")) return null;
+  return trimmed.slice(5).trim();
+}
 
 type NdJsonExtractor = (parsed: Record<string, unknown>) => string;
 
@@ -260,59 +316,44 @@ async function readNDJsonStream(
   extractor: NdJsonExtractor,
   onToken?: (t: string) => void
 ): Promise<string> {
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error("No response stream");
-  const decoder = new TextDecoder();
   let full = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split("\n")) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-      try {
-        const parsed = JSON.parse(trimmed) as Record<string, unknown>;
-        const token = extractor(parsed);
-        if (token) {
-          full += token;
-          onToken?.(token);
-        }
-      } catch {
-        /* skip */
+  await readLines(response, (line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    try {
+      const token = extractor(JSON.parse(trimmed) as Record<string, unknown>);
+      if (token) {
+        full += token;
+        onToken?.(token);
       }
+    } catch {
+      /* linea que no es JSON valido: se ignora */
     }
-  }
+  });
+
   return full;
 }
 
 async function readSSEStream(response: Response, onToken?: (t: string) => void): Promise<string> {
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error("No response stream");
-  const decoder = new TextDecoder();
   let full = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split("\n")) {
-      if (!line.startsWith("data: ")) continue;
-      const data = line.slice(6).trim();
-      if (data === "[DONE]") break;
-      try {
-        const parsed = JSON.parse(data) as { choices?: Array<{ delta?: { content?: string } }> };
-        const token = parsed.choices?.[0]?.delta?.content ?? "";
-        if (token) {
-          full += token;
-          onToken?.(token);
-        }
-      } catch {
-        /* skip */
+  await readLines(response, (line) => {
+    const data = sseData(line);
+    if (data === null) return;
+    if (data === "[DONE]") return STOP;
+    try {
+      const parsed = JSON.parse(data) as { choices?: Array<{ delta?: { content?: string } }> };
+      const token = parsed.choices?.[0]?.delta?.content ?? "";
+      if (token) {
+        full += token;
+        onToken?.(token);
       }
+    } catch {
+      /* skip */
     }
-  }
+  });
+
   return full;
 }
 
@@ -320,32 +361,25 @@ async function readClaudeSSEStream(
   response: Response,
   onToken?: (t: string) => void
 ): Promise<string> {
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error("No response stream");
-  const decoder = new TextDecoder();
   let full = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split("\n")) {
-      if (!line.startsWith("data: ")) continue;
-      const data = line.slice(6).trim();
-      try {
-        const parsed = JSON.parse(data) as { type?: string; delta?: { text?: string } };
-        if (parsed.type === "content_block_delta") {
-          const token = parsed.delta?.text ?? "";
-          if (token) {
-            full += token;
-            onToken?.(token);
-          }
+  await readLines(response, (line) => {
+    const data = sseData(line);
+    if (data === null || data === "[DONE]") return;
+    try {
+      const parsed = JSON.parse(data) as { type?: string; delta?: { text?: string } };
+      if (parsed.type === "content_block_delta") {
+        const token = parsed.delta?.text ?? "";
+        if (token) {
+          full += token;
+          onToken?.(token);
         }
-      } catch {
-        /* skip */
       }
+    } catch {
+      /* skip */
     }
-  }
+  });
+
   return full;
 }
 
@@ -353,31 +387,32 @@ async function readGeminiSSEStream(
   response: Response,
   onToken?: (t: string) => void
 ): Promise<string> {
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error("No response stream");
-  const decoder = new TextDecoder();
   let full = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split("\n")) {
-      if (!line.startsWith("data: ")) continue;
-      const data = line.slice(6).trim();
-      try {
-        const parsed = JSON.parse(data) as {
-          candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-        };
-        const token = parsed.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-        if (token) {
-          full += token;
-          onToken?.(token);
-        }
-      } catch {
-        /* skip */
+  await readLines(response, (line) => {
+    const data = sseData(line);
+    if (data === null || data === "[DONE]") return;
+    try {
+      const parsed = JSON.parse(data) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      };
+      const token = parsed.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      if (token) {
+        full += token;
+        onToken?.(token);
       }
+    } catch {
+      /* skip */
     }
-  }
+  });
+
   return full;
 }
+
+// Exportados solo para los tests: no forman parte de la API del paquete.
+export const __testing = {
+  readNDJsonStream,
+  readSSEStream,
+  readClaudeSSEStream,
+  readGeminiSSEStream,
+};
