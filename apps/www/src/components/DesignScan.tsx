@@ -10,6 +10,7 @@
  * que existe solo porque el CORS no deja leer un sitio ajeno desde la página.
  */
 
+import DesignScanExport from "@components/DesignScanExport";
 import DesignScanPhases from "@components/DesignScanPhases";
 import DesignScanTokens from "@components/DesignScanTokens";
 import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/design-scan/engine";
@@ -387,6 +388,18 @@ export default function DesignScan() {
             front={frontmatter}
             prose={prose}
             yaml={frontmatterToYaml(frontmatter, prose?.components)}
+            designMd={toDesignMd(
+              frontmatter,
+              prose ? renderBody(prose.sections) : undefined,
+              prose?.components
+            )}
+          />
+        )}
+
+        {frontmatter && (
+          <DesignScanExport
+            front={frontmatter}
+            components={prose?.components ?? {}}
             designMd={toDesignMd(
               frontmatter,
               prose ? renderBody(prose.sections) : undefined,

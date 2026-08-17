@@ -1,0 +1,269 @@
+/**
+ * Fase 4 — sacar el design system a formatos que otros proyectos entienden.
+ *
+ * Los tres targets son los que declara la spec: config de Tailwind v3, tema de
+ * Tailwind v4 y DTCG (el formato de design tokens del W3C). Se escriben a mano
+ * porque `@google/design.md` no corre en el navegador — su linter lee su propia
+ * configuración con `readFileSync`, y aquí no hay disco (ver DESIGN_MD.md § 3).
+ *
+ * La otra mitad del trabajo es el contraste: el linter oficial valida WCAG AA
+ * en cada par de fondo y texto, y un design system que no lo cumple es un
+ * problema que hay que enseñar, no esconder.
+ */
+
+import { luminance } from "./css";
+import type { Components } from "./serialize";
+import type { Frontmatter, Typography } from "./tokens";
+
+// ─── Contraste ───────────────────────────────────────────────────────────────
+
+export type ContrastFinding = {
+  component: string;
+  background: string;
+  text: string;
+  ratio: number;
+  /** AA pide 4.5 para texto normal y 3.0 para texto grande. */
+  passesAA: boolean;
+  passesAALarge: boolean;
+};
+
+/** Razón de contraste WCAG entre dos colores. Va de 1 (igual) a 21 (extremo). */
+export function contrastRatio(a: string, b: string): number {
+  const la = luminance(a);
+  const lb = luminance(b);
+  const [light, dark] = la >= lb ? [la, lb] : [lb, la];
+  return Math.round(((light + 0.05) / (dark + 0.05)) * 100) / 100;
+}
+
+/** Resuelve `{colors.primary}` contra el frontmatter; devuelve null si no puede. */
+function resolveColor(front: Frontmatter, value: string): string | null {
+  const ref = value.match(/^\{colors\.([a-zA-Z0-9_-]+)\}$/);
+  if (ref) return front.colors?.[ref[1]] ?? null;
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : null;
+}
+
+/**
+ * Revisa cada componente que declare fondo y texto. Solo se puede juzgar lo que
+ * resuelve a un hex: un `oklch()` o un `rgba()` translúcido no tiene una
+ * luminancia que podamos calcular sin renderizarlo, y adivinarla sería peor que
+ * no decir nada.
+ */
+export function checkContrast(front: Frontmatter, components: Components): ContrastFinding[] {
+  const findings: ContrastFinding[] = [];
+
+  for (const [component, props] of Object.entries(components)) {
+    const bgRaw = props.backgroundColor;
+    const fgRaw = props.textColor;
+    if (!bgRaw || !fgRaw) continue;
+
+    const background = resolveColor(front, bgRaw);
+    const text = resolveColor(front, fgRaw);
+    if (!background || !text) continue;
+
+    const ratio = contrastRatio(background, text);
+    findings.push({
+      component,
+      background,
+      text,
+      ratio,
+      passesAA: ratio >= 4.5,
+      passesAALarge: ratio >= 3,
+    });
+  }
+
+  return findings.sort((a, b) => a.ratio - b.ratio);
+}
+
+// ─── Exportadores ────────────────────────────────────────────────────────────
+
+/** Nombre de token → clave de Tailwind. `on-surface` ya vale; se limpia el resto. */
+function tailwindKey(name: string): string {
+  return name.replace(/[^a-zA-Z0-9-]/g, "-").replace(/^-+|-+$/g, "") || "token";
+}
+
+function fontSizeEntry(t: Typography): [string, { lineHeight?: string; letterSpacing?: string }] {
+  const extras: { lineHeight?: string; letterSpacing?: string } = {};
+  if (t.lineHeight !== undefined) extras.lineHeight = String(t.lineHeight);
+  if (t.letterSpacing) extras.letterSpacing = t.letterSpacing;
+  return [t.fontSize ?? "1rem", extras];
+}
+
+/**
+ * `json-tailwind` — un tailwind.config.js listo para pegar. Se emite bajo
+ * `theme.extend` y no bajo `theme`: sustituir el tema entero borraría la escala
+ * de Tailwind y rompería las clases que el proyecto ya usa.
+ */
+export function toTailwindV3(front: Frontmatter): string {
+  const colors: Record<string, string> = {};
+  for (const [name, value] of Object.entries(front.colors ?? {})) colors[tailwindKey(name)] = value;
+
+  const fontSize: Record<string, unknown> = {};
+  const fontFamily: Record<string, string[]> = {};
+  for (const [name, t] of Object.entries(front.typography ?? {})) {
+    const [size, extras] = fontSizeEntry(t);
+    fontSize[tailwindKey(name)] = Object.keys(extras).length ? [size, extras] : size;
+    if (t.fontFamily) fontFamily[tailwindKey(name)] = [t.fontFamily];
+  }
+
+  const borderRadius: Record<string, string> = {};
+  for (const [name, value] of Object.entries(front.rounded ?? {}))
+    borderRadius[tailwindKey(name)] = value;
+
+  const spacing: Record<string, string> = {};
+  for (const [name, value] of Object.entries(front.spacing ?? {}))
+    spacing[tailwindKey(name)] = value;
+
+  const extend: Record<string, unknown> = {};
+  if (Object.keys(colors).length) extend.colors = colors;
+  if (Object.keys(fontSize).length) extend.fontSize = fontSize;
+  if (Object.keys(fontFamily).length) extend.fontFamily = fontFamily;
+  if (Object.keys(borderRadius).length) extend.borderRadius = borderRadius;
+  if (Object.keys(spacing).length) extend.spacing = spacing;
+
+  return [
+    `/** Generated by Design Scan from ${front.name}. Tailwind v3. */`,
+    "/** @type {import('tailwindcss').Config} */",
+    "module.exports = {",
+    "  // Point this at your own templates — Tailwind needs it to know what to emit.",
+    "  content: [],",
+    `  theme: { extend: ${JSON.stringify(extend, null, 2).split("\n").join("\n  ")} },`,
+    "};",
+    "",
+  ].join("\n");
+}
+
+/**
+ * `css-tailwind` — el bloque `@theme` de Tailwind v4, donde los tokens ya son
+ * variables CSS con nombres que la propia herramienta reconoce por prefijo.
+ */
+export function toTailwindV4(front: Frontmatter): string {
+  const lines: string[] = [
+    `/* Generated by Design Scan from ${front.name}. Tailwind v4. */`,
+    "@theme {",
+  ];
+
+  for (const [name, value] of Object.entries(front.colors ?? {}))
+    lines.push(`  --color-${tailwindKey(name)}: ${value};`);
+
+  for (const [name, t] of Object.entries(front.typography ?? {})) {
+    const k = tailwindKey(name);
+    if (t.fontSize) lines.push(`  --text-${k}: ${t.fontSize};`);
+    if (t.lineHeight !== undefined) lines.push(`  --text-${k}--line-height: ${t.lineHeight};`);
+    if (t.letterSpacing) lines.push(`  --text-${k}--letter-spacing: ${t.letterSpacing};`);
+    if (t.fontWeight !== undefined) lines.push(`  --text-${k}--font-weight: ${t.fontWeight};`);
+    if (t.fontFamily) lines.push(`  --font-${k}: ${t.fontFamily};`);
+  }
+
+  for (const [name, value] of Object.entries(front.rounded ?? {}))
+    lines.push(`  --radius-${tailwindKey(name)}: ${value};`);
+
+  for (const [name, value] of Object.entries(front.spacing ?? {}))
+    lines.push(`  --spacing-${tailwindKey(name)}: ${value};`);
+
+  lines.push("}", "");
+  return lines.join("\n");
+}
+
+/**
+ * `dtcg` — el formato de design tokens del W3C, que es del que la propia spec
+ * dice inspirarse. Cada token lleva su `$type` y su `$value`; los grupos son
+ * objetos anidados.
+ */
+export function toDtcg(front: Frontmatter): string {
+  const doc: Record<string, unknown> = {
+    $description: `Design tokens extracted from ${front.name} by Design Scan`,
+  };
+
+  if (front.colors) {
+    const group: Record<string, unknown> = { $type: "color" };
+    for (const [name, value] of Object.entries(front.colors)) group[name] = { $value: value };
+    doc.color = group;
+  }
+
+  if (front.typography) {
+    const group: Record<string, unknown> = { $type: "typography" };
+    for (const [name, t] of Object.entries(front.typography)) {
+      const value: Record<string, unknown> = {};
+      if (t.fontFamily) value.fontFamily = t.fontFamily;
+      if (t.fontSize) value.fontSize = t.fontSize;
+      if (t.fontWeight !== undefined) value.fontWeight = t.fontWeight;
+      if (t.lineHeight !== undefined) value.lineHeight = t.lineHeight;
+      if (t.letterSpacing) value.letterSpacing = t.letterSpacing;
+      group[name] = { $value: value };
+    }
+    doc.typography = group;
+  }
+
+  if (front.rounded) {
+    const group: Record<string, unknown> = { $type: "dimension" };
+    for (const [name, value] of Object.entries(front.rounded)) group[name] = { $value: value };
+    doc.radius = group;
+  }
+
+  if (front.spacing) {
+    const group: Record<string, unknown> = { $type: "dimension" };
+    for (const [name, value] of Object.entries(front.spacing)) group[name] = { $value: value };
+    doc.spacing = group;
+  }
+
+  return `${JSON.stringify(doc, null, 2)}\n`;
+}
+
+/** Variables CSS planas — lo que STL-031 necesita para vestir los snippets. */
+export function toCssVariables(front: Frontmatter): string {
+  const lines: string[] = [`/* ${front.name} — extracted by Design Scan */`, ":root {"];
+
+  for (const [name, value] of Object.entries(front.colors ?? {}))
+    lines.push(`  --color-${tailwindKey(name)}: ${value};`);
+  for (const [name, value] of Object.entries(front.rounded ?? {}))
+    lines.push(`  --radius-${tailwindKey(name)}: ${value};`);
+  for (const [name, value] of Object.entries(front.spacing ?? {}))
+    lines.push(`  --spacing-${tailwindKey(name)}: ${value};`);
+  for (const [name, t] of Object.entries(front.typography ?? {})) {
+    const k = tailwindKey(name);
+    if (t.fontFamily) lines.push(`  --font-${k}: ${t.fontFamily};`);
+    if (t.fontSize) lines.push(`  --text-${k}: ${t.fontSize};`);
+  }
+
+  lines.push("}", "");
+  return lines.join("\n");
+}
+
+export type ExportTarget = {
+  id: string;
+  label: string;
+  filename: string;
+  mime: string;
+  build: (front: Frontmatter) => string;
+};
+
+export const EXPORT_TARGETS: ExportTarget[] = [
+  {
+    id: "tailwind-v3",
+    label: "tailwind.config.js",
+    filename: "tailwind.config.js",
+    mime: "text/javascript",
+    build: toTailwindV3,
+  },
+  {
+    id: "tailwind-v4",
+    label: "@theme (v4)",
+    filename: "theme.css",
+    mime: "text/css",
+    build: toTailwindV4,
+  },
+  {
+    id: "dtcg",
+    label: "tokens.json (W3C)",
+    filename: "design_tokens.json",
+    mime: "application/json",
+    build: toDtcg,
+  },
+  {
+    id: "css-vars",
+    label: "CSS variables",
+    filename: "tokens.css",
+    mime: "text/css",
+    build: toCssVariables,
+  },
+];
