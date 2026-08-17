@@ -3,6 +3,22 @@ import DesignScan from "@components/DesignScan.tsx";
 import { getAlternateLinks, getLocaleFromUrl, useTranslations } from "@i18n/index";
 import Base from "@layouts/Base.astro";
 
+/**
+ * Ruta solo de desarrollo.
+ *
+ * /design-scan hace que un worker propio salga a internet a buscar la URL que
+ * le peguen. Publicarlo en stealthis.dev seria ofrecer ese fetcher a cualquiera
+ * — el CORS solo frena a los navegadores, no a curl.
+ *
+ * Al ser una ruta dinamica, en produccion `getStaticPaths` no devuelve ningun
+ * camino y Astro no emite el HTML. Se cierra la RUTA, no solo el enlace del
+ * menu: esconder el enlace dejaria la URL accesible a quien la escriba.
+ */
+export function getStaticPaths() {
+  if (import.meta.env.PROD) return [];
+  return [{ params: { path: undefined } }];
+}
+
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 const alternateLinks = getAlternateLinks("/design-scan");
