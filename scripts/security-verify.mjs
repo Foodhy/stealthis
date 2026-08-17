@@ -15,9 +15,9 @@
  */
 
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => {
@@ -50,17 +50,20 @@ const cooldownMatch = bunfig.match(/minimumReleaseAge\s*=\s*(\d+)/);
 add(
   "Install cooldown (minimumReleaseAge)",
   Boolean(cooldownMatch),
-  cooldownMatch ? `${cooldownMatch[1]}s (${(Number(cooldownMatch[1]) / 86400).toFixed(0)} days)` : "MISSING from bunfig.toml",
+  cooldownMatch
+    ? `${cooldownMatch[1]}s (${(Number(cooldownMatch[1]) / 86400).toFixed(0)} days)`
+    : "MISSING from bunfig.toml"
 );
 
 // 3. Socket scanner configured + installed
-const scannerConfigured = /\[install\.security\][\s\S]*scanner\s*=\s*"@socketsecurity\/bun-security-scanner"/.test(bunfig);
+const scannerConfigured =
+  /\[install\.security\][\s\S]*scanner\s*=\s*"@socketsecurity\/bun-security-scanner"/.test(bunfig);
 const pkg = JSON.parse(read("package.json") || "{}");
 const scannerInstalled = Boolean(pkg.devDependencies?.["@socketsecurity/bun-security-scanner"]);
 add(
   "Socket pre-install scanner",
   scannerConfigured && scannerInstalled,
-  `${scannerConfigured ? "configured" : "NOT configured"} / ${scannerInstalled ? "installed" : "NOT installed"}`,
+  `${scannerConfigured ? "configured" : "NOT configured"} / ${scannerInstalled ? "installed" : "NOT installed"}`
 );
 
 // 4. No reckless blanket trust
@@ -68,13 +71,127 @@ const trusted = pkg.trustedDependencies ?? [];
 add(
   "Postinstall scripts not blanket-trusted",
   !trusted.includes("*") && !trusted.includes("--all"),
-  trusted.length ? `${trusted.length} explicitly trusted` : "none explicitly trusted (bun default allow-list only)",
+  trusted.length
+    ? `${trusted.length} explicitly trusted`
+    : "none explicitly trusted (bun default allow-list only)"
+);
+
+// 5. No install-time worm markers in the installed tree.
+//
+// Generic detector for the class of attack seen in the keyv/cacheable compromise
+// (2026-08-04): the worm appends `"preinstall": "node setup.mjs"` to every
+// package.json it poisons and ships `setup.mjs` + `Math_Symbol.js` alongside.
+// We flag ANY install-time lifecycle script in a dependency, plus those two
+// filenames, rather than pinning to that one campaign's package names.
+const WORM_FILES = new Set(["setup.mjs", "Math_Symbol.js"]);
+const INSTALL_HOOKS = ["preinstall", "install", "postinstall"];
+// Dependencies we have reviewed and expect to declare an install hook (native
+// binary downloads / platform builds). Anything OUTSIDE this list that grows a
+// hook is the signal worth acting on — keep the list tight and re-review on add.
+const EXPECTED_HOOK_PKGS = new Set(["@biomejs/biome", "@swc/core", "esbuild", "sharp", "workerd"]);
+const wormHits = [];
+const expectedHooks = new Set();
+
+const scanPackageDir = (dir, rel) => {
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    if (e.isFile() && WORM_FILES.has(e.name))
+      wormHits.push(`${rel}/${e.name} (worm payload filename)`);
+  }
+  if (!entries.some((e) => e.isFile() && e.name === "package.json")) return;
+  let manifest;
+  try {
+    manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+  } catch {
+    return; // unparseable package.json — not our concern here
+  }
+  const scripts = manifest.scripts ?? {};
+  for (const hook of INSTALL_HOOKS) {
+    if (!scripts[hook]) continue;
+    if (EXPECTED_HOOK_PKGS.has(manifest.name))
+      expectedHooks.add(`${manifest.name} → "${hook}": ${scripts[hook]}`);
+    else wormHits.push(`${rel} → "${hook}": ${JSON.stringify(scripts[hook])}`);
+  }
+};
+
+// Walk every node_modules tree, visiting each package root once.
+//
+// A "modules dir" holds package dirs, not packages: `node_modules` itself,
+// scope dirs (`@scope`), and bun's content store (`.bun/`, whose children are
+// `pkg@version/` — again containers, each holding a `node_modules/`).
+// Everything else is a package root. Entries may be symlinks into the store,
+// so resolve with statSync rather than trusting the dirent type.
+const seen = new Set();
+const isModulesDir = (name) =>
+  name === "node_modules" || name === ".bun" || name.startsWith("@") || name.includes("@");
+
+const walkModules = (nmDir, rel, depth = 0) => {
+  if (depth > 10 || seen.has(nmDir)) return;
+  seen.add(nmDir);
+  let entries;
+  try {
+    entries = readdirSync(nmDir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    const child = join(nmDir, e.name);
+    const childRel = `${rel}/${e.name}`;
+    try {
+      if (!statSync(child).isDirectory()) continue;
+    } catch {
+      continue; // broken symlink
+    }
+    if (isModulesDir(e.name)) {
+      walkModules(child, childRel, depth + 1);
+      continue;
+    }
+    if (seen.has(child)) continue;
+    seen.add(child);
+    scanPackageDir(child, childRel);
+    walkModules(join(child, "node_modules"), `${childRel}/node_modules`, depth + 1);
+  }
+};
+
+const workspaceRoots = ["."];
+for (const group of ["apps", "packages"]) {
+  try {
+    for (const d of readdirSync(join(root, group), { withFileTypes: true })) {
+      if (d.isDirectory()) workspaceRoots.push(`${group}/${d.name}`);
+    }
+  } catch {
+    /* group missing */
+  }
+}
+let scannedTrees = 0;
+for (const ws of workspaceRoots) {
+  const nm = join(root, ws, "node_modules");
+  try {
+    if (!statSync(nm).isDirectory()) continue;
+  } catch {
+    continue;
+  }
+  scannedTrees++;
+  walkModules(nm, `${ws}/node_modules`);
+}
+add(
+  "No install-time worm markers in node_modules",
+  wormHits.length === 0,
+  wormHits.length
+    ? `${wormHits.length} unexpected marker(s) across ${scannedTrees} tree(s) — see report`
+    : `clean across ${scannedTrees} node_modules tree(s) (${expectedHooks.size} reviewed hook(s) ignored)`
 );
 
 // --- on-demand scans -------------------------------------------------------
 
 const auditOut = run("bun audit");
-const vulnLine = auditOut.match(/(\d+) vulnerabilities?.*$/m)?.[0] ?? "audit produced no summary line";
+const vulnLine =
+  auditOut.match(/(\d+) vulnerabilities?.*$/m)?.[0] ?? "audit produced no summary line";
 const vulnCount = Number(auditOut.match(/(\d+) vulnerabilities/)?.[1] ?? 0);
 
 const untrustedOut = run("bun pm untrusted");
@@ -111,6 +228,29 @@ their glob/parse deps). Triage with \`/pkg-audit\`; fix with \`bun update\` once
 patched version clears the 3-day cooldown. CVEs here do **not** mean the repo is
 compromised — the cooldown + Socket scanner are what guard against malicious
 *new* releases.
+
+## Install-time worm markers in \`node_modules\`
+
+Scanned ${scannedTrees} \`node_modules\` tree(s) for the markers used by the
+keyv/cacheable worm class: install-time lifecycle hooks (\`preinstall\`,
+\`install\`, \`postinstall\`) declared by dependencies, plus the payload filenames
+\`setup.mjs\` / \`Math_Symbol.js\` at a package root.
+
+Hooks from reviewed packages (\`EXPECTED_HOOK_PKGS\` in the script — native binary
+downloads) are ignored; this run ignored ${expectedHooks.size}:
+
+${
+  [...expectedHooks]
+    .sort()
+    .map((h) => `- \`${h}\``)
+    .join("\n") || "- _(none)_"
+}
+
+${
+  wormHits.length
+    ? `⚠️ **${wormHits.length} UNEXPECTED marker(s) — investigate each before running \`bun install\` again:**\n\n${wormHits.map((h) => `- \`${h}\``).join("\n")}\n\nA hook alone is not proof of malware. Read the script it points at; if it is legitimate, add the package to \`EXPECTED_HOOK_PKGS\`.`
+    : "No unexpected markers found."
+}
 
 ## Blocked postinstall scripts (\`bun pm untrusted\`)
 

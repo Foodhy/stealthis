@@ -4,29 +4,50 @@
 > Regenerate before pulling new dependencies, before a deploy, or routinely.
 > See **SUPPLY_CHAIN_SECURITY.md** for what each layer does.
 
-- **Generated:** 2026-06-17T00:00:37.672Z
-- **Defense layers:** ✅ ALL ACTIVE
-- **Known CVEs in lockfile:** 119 (transitive dev-dep advisories expected; not malware)
+- **Generated:** 2026-08-16T23:57:35.469Z
+- **Defense layers:** ❌ ONE OR MORE BROKEN — repo not hardened
+- **Known CVEs in lockfile:** 179 (transitive dev-dep advisories expected; not malware)
 - **Blocked postinstall scripts:** 1
 
 ## Defense layers (must all pass)
 
 | Layer | Status | Detail |
 | --- | --- | --- |
-| bun >= 1.3 | ✅ | found 1.3.9 |
+| bun >= 1.3 | ❌ | found {"type":"message","message":"Detected an AI agent environment, printing as NDJSON. Trace logs are written to stderr, while user-facing logs are written to stdout."}
+1.3.9 |
 | Install cooldown (minimumReleaseAge) | ✅ | 259200s (3 days) |
 | Socket pre-install scanner | ✅ | configured / installed |
 | Postinstall scripts not blanket-trusted | ✅ | none explicitly trusted (bun default allow-list only) |
+| No install-time worm markers in node_modules | ✅ | clean across 13 node_modules tree(s) (6 reviewed hook(s) ignored) |
 
 ## Known vulnerabilities (`bun audit`)
 
-`119 vulnerabilities (34 high, 74 moderate, 11 low)`
+`179 vulnerabilities (59 high, 100 moderate, 20 low)`
 
 These are almost always **transitive** advisories inside dev tooling (astro, vite,
 their glob/parse deps). Triage with `/pkg-audit`; fix with `bun update` once a
 patched version clears the 3-day cooldown. CVEs here do **not** mean the repo is
 compromised — the cooldown + Socket scanner are what guard against malicious
 *new* releases.
+
+## Install-time worm markers in `node_modules`
+
+Scanned 13 `node_modules` tree(s) for the markers used by the
+keyv/cacheable worm class: install-time lifecycle hooks (`preinstall`,
+`install`, `postinstall`) declared by dependencies, plus the payload filenames
+`setup.mjs` / `Math_Symbol.js` at a package root.
+
+Hooks from reviewed packages (`EXPECTED_HOOK_PKGS` in the script — native binary
+downloads) are ignored; this run ignored 6:
+
+- `@biomejs/biome → "postinstall": node scripts/postinstall.js`
+- `@swc/core → "postinstall": node postinstall.js`
+- `esbuild → "postinstall": node install.js`
+- `sharp → "install": node install/check`
+- `sharp → "install": node install/check.js || npm run build`
+- `workerd → "postinstall": node install.js`
+
+No unexpected markers found.
 
 ## Blocked postinstall scripts (`bun pm untrusted`)
 

@@ -4,13 +4,14 @@ How this repo defends against malicious dependency updates — the npm/registry 
 attack pattern, where an attacker publishes a compromised version of a real package and your
 next `install` pulls (and historically, runs) it.
 
-Three layers, all active in this **bun** monorepo:
+Four layers, all active in this **bun** monorepo:
 
 | Layer | What it does | Where |
 | --- | --- | --- |
 | **Install cooldown** | Refuses versions published < 3 days ago | `bunfig.toml` → `minimumReleaseAge` |
 | **Pre-install scanner** | Scans every package against Socket before install | `bunfig.toml` → `[install.security]` |
 | **No postinstall scripts** | bun blocks lifecycle scripts by default | built-in (allow-list = `trustedDependencies`) |
+| **Worm-marker scan** | Flags unexpected install hooks / payload files in `node_modules` | `scripts/security-verify.mjs` |
 
 Plus on-demand vuln scanning (`bun audit`) and the `/pkg-audit` command for routine review.
 
@@ -71,6 +72,53 @@ bun pm trust <pkg>       # allow ONE package you actually depend on and recogniz
 Add genuinely-needed build deps (native addons, `sharp`, etc. — bun already ships a ~366-pkg
 default allow-list) to `trustedDependencies` in the root `package.json`. **Never `bun pm trust --all`.**
 
+## 4. Worm-marker scan of the installed tree
+
+The first three layers stop a poisoned version from *landing*. This one asks whether something
+already landed. `bun run security:verify` walks every `node_modules` tree in the monorepo
+(13 of them, bun content store included) and flags:
+
+- any dependency declaring `preinstall` / `install` / `postinstall`, **except** the reviewed
+  list in `EXPECTED_HOOK_PKGS` (`@biomejs/biome`, `@swc/core`, `esbuild`, `sharp`, `workerd` —
+  all native-binary downloads);
+- the payload filenames `setup.mjs` and `Math_Symbol.js` at a package root.
+
+An unexpected hook fails the check. That is a prompt to **read the script it points at**, not
+proof of malware — if it is legitimate, add the package to `EXPECTED_HOOK_PKGS` in
+`scripts/security-verify.mjs` so the list stays a reviewed allow-list rather than noise.
+
+---
+
+## Incident log
+
+### 2026-08-04 — `keyv` / `cacheable` worm (a.k.a. ChainDrop / "mini Shai-Hulud") — **not affected**
+
+The maintainer's GitHub account behind `keyv` (~127M downloads/week) was compromised; the
+attacker pushed to `main` and cut releases, so ~2,234 poisoned versions across 444 package names
+shipped **with valid GitHub Actions provenance** — signature verification was not a usable signal.
+Each poisoned package gained `"preinstall": "node setup.mjs"` plus `setup.mjs` / `Math_Symbol.js`,
+which downloaded a standalone Bun runtime and ran a 728 KB obfuscated stealer (`.npmrc` tokens,
+`gh` CLI tokens, AWS creds, Vault tokens, kubeconfigs, crypto wallets) and tampered with Claude
+Code and VS Code configuration. Seed versions: `keyv@6.0.0`, `cacheable@2.5.1`, `flat-cache@6.1.24`,
+`file-entry-cache@11.1.6`, `cacheable-request@13.0.20`, `cache-manager@7.2.10`,
+`@cacheable/utils@2.5.1`, `@cacheable/memory@2.2.1`, `@cacheable/node-cache@2.0.4`.
+
+Audit of this repo on 2026-08-05 — **clean**:
+
+- `bun.lock` pins `keyv@4.5.4`, `flat-cache@4.0.1`, `file-entry-cache@8.0.0` (transitive, via
+  eslint-family tooling) — all far below the seed versions. No `cacheable*` / `cache-manager` /
+  `@cacheable/*` anywhere in the tree.
+- Zero `setup.mjs` / `Math_Symbol.js` / unexpected install hooks across all 13 `node_modules`
+  trees, and no poisoned tarballs in `~/.bun/install/cache`. (A `Math_Symbol` string match inside
+  `workerd`/`miniflare` is the Unicode property table for `\p{Math_Symbol}` — false positive.)
+
+**Why we were fine:** the 3-day cooldown plus a committed `bun.lock`. A `bun install` run on
+2026-08-05 could not have resolved anything published on 2026-08-04. No credential rotation was
+needed because the payload never executed. Layer 4 above was added in response to this incident.
+
+Unrelated finding from the same audit: local Node was `v22.22.3`, below the **2026-07-29** security
+release (11 CVEs — 3 High). Patched lines: `22.23.2` / `24.18.1` / `26.5.1`.
+
 ---
 
 ## Daily / routine workflow
@@ -83,8 +131,9 @@ bun run security:trust   # review blocked postinstall scripts
 ```
 
 **`bun run security:verify`** (`scripts/security-verify.mjs`) is the "are we still hardened /
-not compromised?" check. It confirms bun ≥ 1.3, the cooldown, the Socket scanner, and that
-postinstall scripts aren't blanket-trusted; counts known CVEs and blocked install scripts; and
+not compromised?" check. It confirms bun ≥ 1.3, the cooldown, the Socket scanner, that
+postinstall scripts aren't blanket-trusted, and that no unexpected install hooks or worm payload
+files sit in `node_modules`; counts known CVEs and blocked install scripts; and
 writes a timestamped **`SECURITY_REPORT.md`**. It exits non-zero **only when a defense layer is
 broken** — known transitive CVEs don't fail it. Run it before pulling new deps, before a deploy,
 and routinely.
