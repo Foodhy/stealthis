@@ -86,33 +86,33 @@ export function checkUrlShape(raw: string): GuardResult {
   try {
     url = new URL(raw);
   } catch {
-    return { ok: false, reason: "La URL no se puede interpretar." };
+    return { ok: false, reason: "That URL cannot be parsed." };
   }
 
   if (url.protocol !== "http:" && url.protocol !== "https:")
-    return { ok: false, reason: `Esquema no permitido: ${url.protocol.replace(":", "")}` };
+    return { ok: false, reason: `Scheme not allowed: ${url.protocol.replace(":", "")}` };
 
   if (url.username || url.password)
-    return { ok: false, reason: "La URL no puede llevar credenciales." };
+    return { ok: false, reason: "The URL cannot carry credentials." };
 
   const host = url.hostname.replace(/^\[|\]$/g, "");
 
-  if (!host) return { ok: false, reason: "La URL no tiene host." };
+  if (!host) return { ok: false, reason: "The URL has no host." };
   if (HOST_DENY.some((re) => re.test(host)))
-    return { ok: false, reason: `Host interno no permitido: ${host}` };
+    return { ok: false, reason: `Internal host not allowed: ${host}` };
 
   // Host escrito como IP: se decide aquí mismo, sin consultar DNS.
   if (IPV4.test(host) || host.includes(":")) {
-    if (isPrivateAddress(host)) return { ok: false, reason: `Dirección no pública: ${host}` };
+    if (isPrivateAddress(host)) return { ok: false, reason: `Not a public address: ${host}` };
     return { ok: true, url };
   }
 
   // Formas alternativas de escribir una IP (decimal, octal, hex) que el parser
   // de URL acepta pero que no parecen una IP a simple vista: 2130706433 = 127.0.0.1
   if (/^\d+$/.test(host) || /^0[xX][0-9a-fA-F]+$/.test(host))
-    return { ok: false, reason: `Host numérico ambiguo: ${host}` };
+    return { ok: false, reason: `Ambiguous numeric host: ${host}` };
 
-  if (!host.includes(".")) return { ok: false, reason: `Host sin dominio: ${host}` };
+  if (!host.includes(".")) return { ok: false, reason: `Host is not a domain: ${host}` };
 
   return { ok: true, url };
 }
@@ -154,13 +154,13 @@ export async function resolvesToPublicAddress(
     const [v4, v6] = await Promise.all([ask("A"), ask("AAAA")]);
     addresses = [...v4, ...v6];
   } catch {
-    return { ok: false, reason: "No se pudo resolver el dominio." };
+    return { ok: false, reason: "The domain could not be resolved." };
   }
 
-  if (addresses.length === 0) return { ok: false, reason: "El dominio no resuelve." };
+  if (addresses.length === 0) return { ok: false, reason: "The domain does not resolve." };
 
   const bad = addresses.find((ip) => isPrivateAddress(ip));
-  if (bad) return { ok: false, reason: `El dominio resuelve a una dirección no pública: ${bad}` };
+  if (bad) return { ok: false, reason: `The domain resolves to a non-public address: ${bad}` };
 
   return null; // null = sin objeción
 }

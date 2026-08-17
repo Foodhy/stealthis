@@ -58,14 +58,14 @@ describe("direcciones no públicas", () => {
 
 describe("forma de la URL", () => {
   test("el criterio de cierre de la tarea: la IP de metadatos se rechaza", () => {
-    expect(rechaza("http://169.254.169.254/")).toContain("no pública");
+    expect(rechaza("http://169.254.169.254/")).toContain("Not a public address");
   });
 
   test("solo http y https", () => {
-    expect(rechaza("file:///etc/passwd")).toContain("Esquema");
-    expect(rechaza("ftp://example.com")).toContain("Esquema");
-    expect(rechaza("gopher://example.com")).toContain("Esquema");
-    expect(rechaza("data:text/html,hola")).toContain("Esquema");
+    expect(rechaza("file:///etc/passwd")).toContain("Scheme");
+    expect(rechaza("ftp://example.com")).toContain("Scheme");
+    expect(rechaza("gopher://example.com")).toContain("Scheme");
+    expect(rechaza("data:text/html,hola")).toContain("Scheme");
   });
 
   test("hosts internos por nombre", () => {
@@ -88,11 +88,11 @@ describe("forma de la URL", () => {
   });
 
   test("credenciales en la URL", () => {
-    expect(rechaza("http://user:pass@example.com/")).toContain("credenciales");
+    expect(rechaza("http://user:pass@example.com/")).toContain("credentials");
   });
 
   test("un host sin punto no es un dominio", () => {
-    expect(rechaza("http://intranet/")).toContain("sin dominio");
+    expect(rechaza("http://intranet/")).toContain("not a domain");
   });
 
   test("una URL rota no revienta, se rechaza", () => {

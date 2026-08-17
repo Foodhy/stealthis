@@ -120,8 +120,8 @@ async function guardedFetch(startUrl: URL, accept: string): Promise<Response> {
 
     if (res.status >= 300 && res.status < 400) {
       const location = res.headers.get("location");
-      if (!location) throw new CaptureError("Redirección sin destino.", 502);
-      if (hop === LIMITS.maxRedirects) throw new CaptureError("Demasiadas redirecciones.", 502);
+      if (!location) throw new CaptureError("Redirect with no destination.", 502);
+      if (hop === LIMITS.maxRedirects) throw new CaptureError("Too many redirects.", 502);
       url = new URL(location, url); // relativa o absoluta, ambas valen
       continue;
     }
@@ -165,15 +165,15 @@ export async function capture(target: string): Promise<Capture> {
   const notes: string[] = [];
   const res = await guardedFetch(shape.url, "text/html,application/xhtml+xml");
 
-  if (!res.ok) throw new CaptureError(`La página respondió ${res.status}.`, 502);
+  if (!res.ok) throw new CaptureError(`The page responded ${res.status}.`, 502);
 
   const type = res.headers.get("content-type") ?? "";
   if (type && !/text\/html|application\/xhtml/i.test(type))
-    throw new CaptureError(`La URL no devuelve HTML sino ${type.split(";")[0]}.`, 415);
+    throw new CaptureError(`That URL returns ${type.split(";")[0]}, not HTML.`, 415);
 
   const finalUrl = new URL(res.url || shape.url.toString());
   const { text: html, cut } = await readCapped(res, LIMITS.htmlBytes);
-  if (cut) notes.push(`El HTML se cortó en ${LIMITS.htmlBytes} bytes.`);
+  if (cut) notes.push(`The HTML was truncated at ${LIMITS.htmlBytes} bytes.`);
 
   let bytes = html.length;
   const inlineStyles = findInlineStyles(html);
@@ -184,23 +184,23 @@ export async function capture(target: string): Promise<Capture> {
 
   if (hrefs.length > LIMITS.maxStylesheets)
     notes.push(
-      `La página enlaza ${hrefs.length} hojas de estilo; se descargaron las primeras ${LIMITS.maxStylesheets}.`
+      `The page links ${hrefs.length} stylesheets; the first ${LIMITS.maxStylesheets} were downloaded.`
     );
 
   for (const [i, href] of hrefs.entries()) {
     if (i >= LIMITS.maxStylesheets) {
-      stylesheets.push({ url: href, css: "", bytes: 0, skipped: "fuera del límite de hojas" });
+      stylesheets.push({ url: href, css: "", bytes: 0, skipped: "over the stylesheet limit" });
       continue;
     }
     if (bytes >= LIMITS.totalBytes) {
-      stylesheets.push({ url: href, css: "", bytes: 0, skipped: "límite total alcanzado" });
+      stylesheets.push({ url: href, css: "", bytes: 0, skipped: "total size limit reached" });
       continue;
     }
 
     try {
       const sheetRes = await guardedFetch(new URL(href), "text/css,*/*;q=0.1");
       if (!sheetRes.ok) {
-        stylesheets.push({ url: href, css: "", bytes: 0, skipped: `respondió ${sheetRes.status}` });
+        stylesheets.push({ url: href, css: "", bytes: 0, skipped: `responded ${sheetRes.status}` });
         continue;
       }
       const room = Math.min(LIMITS.cssBytes, LIMITS.totalBytes - bytes);
@@ -210,7 +210,7 @@ export async function capture(target: string): Promise<Capture> {
         url: href,
         css: sheet.text,
         bytes: sheet.text.length,
-        ...(sheet.cut ? { skipped: "cortada por tamaño" } : {}),
+        ...(sheet.cut ? { skipped: "truncated by size" } : {}),
       });
     } catch (err) {
       // Una hoja que falla no tumba la captura entera: se anota y se sigue.
@@ -218,7 +218,7 @@ export async function capture(target: string): Promise<Capture> {
         url: href,
         css: "",
         bytes: 0,
-        skipped: err instanceof CaptureError ? err.message : "no se pudo descargar",
+        skipped: err instanceof CaptureError ? err.message : "could not be downloaded",
       });
     }
   }

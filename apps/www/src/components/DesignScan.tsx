@@ -1,15 +1,19 @@
 /**
  * Design Scan — pega la URL de una página y obtén su design system.
  *
- * Esta es la cáscara (STL-025): campo de URL, selector de modelo y la llamada
- * al worker de captura. El motor de fases lo añade STL-026, la extracción de
- * tokens STL-027 y el resto de las fases van detrás.
+ * Campo de URL, selector de modelo y el pipeline por fases. De las cinco fases
+ * solo `capture` está construida; las demás las levantan STL-027 a STL-031 y
+ * hasta entonces el motor las marca como no disponibles en vez de fingir.
  *
  * Todo vive en el navegador: la clave de API y lo capturado se quedan en
  * localStorage, nada pasa por un servidor nuestro salvo el proxy de captura,
  * que existe solo porque el CORS no deja leer un sitio ajeno desde la página.
  */
 
+import DesignScanPhases from "@components/DesignScanPhases";
+import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/design-scan/engine";
+import { clearRun, loadRun } from "@lib/design-scan/store";
+import type { PhaseId, RunState } from "@lib/design-scan/types";
 import {
   type AiModel,
   type AiProvider,
@@ -19,11 +23,10 @@ import {
   loadProviderConfig,
   saveProviderConfig,
 } from "@stealthis/ai-providers";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Clave versionada desde el día uno. Sin `legacyKeys`: esta página es nueva. */
 const PROVIDER_STORAGE = { key: "design-scan-ai-provider-v1" };
-const CAPTURE_STORAGE_KEY = "design-scan-capture-v1";
 
 /**
  * El worker de captura. En desarrollo apunta al `wrangler dev` local; en
@@ -46,30 +49,23 @@ type Capture = {
   notes: string[];
 };
 
-type StoredCapture = { version: 1; capturedAt: string; capture: Capture };
-
-function loadCapture(): StoredCapture | null {
+/**
+ * La captura es la fase 1 del pipeline. Su persistencia ya no vive aquí: la
+ * lleva el motor de fases junto con la del resto, bajo una sola clave
+ * versionada, para que recargar a mitad de un escaneo no pierda nada.
+ */
+async function captureRunner(url: string): Promise<Capture> {
+  const res = await fetch(`${SCAN_PROXY_URL}/capture?url=${encodeURIComponent(url)}`);
+  let body: Capture | { error: string };
   try {
-    const raw = localStorage.getItem(CAPTURE_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoredCapture;
-    return parsed.version === 1 ? parsed : null;
+    body = (await res.json()) as Capture | { error: string };
   } catch {
-    return null;
+    throw new Error(`The proxy responded ${res.status} with something that is not JSON.`);
   }
-}
-
-function saveCapture(capture: Capture) {
-  try {
-    const payload: StoredCapture = {
-      version: 1,
-      capturedAt: new Date().toISOString(),
-      capture,
-    };
-    localStorage.setItem(CAPTURE_STORAGE_KEY, JSON.stringify(payload));
-  } catch {
-    // Cuota llena: la captura sigue en memoria, solo no sobrevive a la recarga.
+  if (!res.ok || "error" in body) {
+    throw new Error("error" in body ? body.error : `The proxy responded ${res.status}.`);
   }
+  return body;
 }
 
 /** Añade https:// si el usuario pegó el dominio a secas. */
@@ -95,19 +91,19 @@ export default function DesignScan() {
   const [loadingModels, setLoadingModels] = useState(false);
 
   const [url, setUrl] = useState("");
-  const [capture, setCapture] = useState<Capture | null>(null);
-  const [capturedAt, setCapturedAt] = useState("");
-  const [capturing, setCapturing] = useState(false);
-  const [captureError, setCaptureError] = useState("");
+  const [run, setRun] = useState<RunState | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [urlError, setUrlError] = useState("");
+  const [storageWarning, setStorageWarning] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
 
   // localStorage no existe hasta que el componente monta en el cliente.
   useEffect(() => {
     setConfig(loadProviderConfig(PROVIDER_STORAGE));
-    const stored = loadCapture();
-    if (stored) {
-      setCapture(stored.capture);
-      setCapturedAt(stored.capturedAt);
-      setUrl(stored.capture.requestedUrl);
+    const saved = loadRun();
+    if (saved) {
+      setRun(saved);
+      setUrl(saved.url);
     }
   }, []);
 
@@ -152,44 +148,60 @@ export default function DesignScan() {
     }
   }, [config, patchConfig]);
 
-  const runCapture = useCallback(async () => {
+  /**
+   * Solo `capture` está construida. El resto las levantan STL-027 a STL-031;
+   * hasta entonces el motor las marca `unavailable` y para ahí, en vez de
+   * fingir que pasaron.
+   */
+  const registry: PhaseRegistry = useMemo(() => ({ capture: (ctx) => captureRunner(ctx.url) }), []);
+
+  const execute = useCallback(
+    async (start: RunState) => {
+      setBusy(true);
+      setStorageWarning("");
+      const controller = new AbortController();
+      abortRef.current = controller;
+      try {
+        await runScan(start, registry, {
+          onChange: setRun,
+          onStorageProblem: setStorageWarning,
+          signal: controller.signal,
+        });
+      } finally {
+        setBusy(false);
+        abortRef.current = null;
+      }
+    },
+    [registry]
+  );
+
+  const startScan = useCallback(() => {
     const target = normalizeUrl(url);
     if (!target) {
-      setCaptureError("That URL does not parse. Try something like example.com");
+      setUrlError("That URL does not parse. Try something like example.com");
       return;
     }
+    setUrlError("");
+    // resumeOrStart es lo que hace que volver a darle no repita lo ya hecho.
+    void execute(resumeOrStart(target));
+  }, [url, execute]);
 
-    setCapturing(true);
-    setCaptureError("");
-    try {
-      const res = await fetch(`${SCAN_PROXY_URL}/capture?url=${encodeURIComponent(target)}`);
-      const body = (await res.json()) as Capture | { error: string };
+  const onRetry = useCallback(
+    (id: PhaseId) => {
+      if (!run) return;
+      void execute(retryPhase(run, id));
+    },
+    [run, execute]
+  );
 
-      if (!res.ok || "error" in body) {
-        setCaptureError("error" in body ? body.error : `The proxy responded ${res.status}.`);
-        return;
-      }
-
-      setCapture(body);
-      setCapturedAt(new Date().toISOString());
-      saveCapture(body);
-    } catch {
-      setCaptureError(`Could not reach the capture proxy (${SCAN_PROXY_URL}). Is it running?`);
-    } finally {
-      setCapturing(false);
-    }
-  }, [url]);
-
-  const clearCapture = useCallback(() => {
-    setCapture(null);
-    setCapturedAt("");
-    setCaptureError("");
-    try {
-      localStorage.removeItem(CAPTURE_STORAGE_KEY);
-    } catch {
-      /* nada que hacer */
-    }
+  const discard = useCallback(() => {
+    abortRef.current?.abort();
+    clearRun();
+    setRun(null);
+    setStorageWarning("");
   }, []);
+
+  const capture = (run?.phases.capture.output ?? null) as Capture | null;
 
   const cssBytes = useMemo(() => {
     if (!capture) return 0;
@@ -228,24 +240,24 @@ export default function DesignScan() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !capturing) runCapture();
+                if (e.key === "Enter" && !busy) startScan();
               }}
               placeholder="https://example.com"
               className="flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none transition-colors focus:border-brand-400"
             />
             <button
               type="button"
-              onClick={runCapture}
-              disabled={capturing || !url.trim()}
+              onClick={startScan}
+              disabled={busy || !url.trim()}
               className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-400 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {capturing ? "Capturing…" : "Capture"}
+              {busy ? "Scanning…" : run ? "Resume scan" : "Scan"}
             </button>
           </div>
 
-          {captureError && (
+          {urlError && (
             <p className="mt-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
-              {captureError}
+              {urlError}
             </p>
           )}
 
@@ -266,7 +278,7 @@ export default function DesignScan() {
               </div>
               <button
                 type="button"
-                onClick={clearCapture}
+                onClick={discard}
                 className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:border-white/25"
               >
                 Discard
@@ -319,20 +331,29 @@ export default function DesignScan() {
               </ul>
             )}
 
-            {capturedAt && (
+            {run?.updatedAt && (
               <p className="mt-4 text-[11px] text-slate-500">
-                Saved in this browser on {new Date(capturedAt).toLocaleString()}. Reloading the page
-                does not lose it.
+                Saved in this browser on {new Date(run.updatedAt).toLocaleString()}. Reloading the
+                page does not lose it.
               </p>
             )}
           </div>
         )}
 
-        <div className="rounded-xl border border-dashed border-white/10 p-5 text-xs text-slate-500">
-          The remaining phases — extracting the tokens, writing the DESIGN.md and recreating the
-          elements from the catalog — arrive in STL-026 through STL-031. This screen already has the
-          capture and the model working.
-        </div>
+        {run && (
+          <section>
+            <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-slate-400">
+              Phases
+            </h2>
+            <DesignScanPhases run={run} busy={busy} onRetry={onRetry} />
+          </section>
+        )}
+
+        {storageWarning && (
+          <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+            {storageWarning} The scan keeps running, but it will not survive a reload.
+          </p>
+        )}
       </div>
 
       {/* ── Modelo ──────────────────────────────────────────── */}

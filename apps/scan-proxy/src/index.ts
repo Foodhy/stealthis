@@ -44,7 +44,7 @@ app.use(
 app.get("/", (c) =>
   c.json({
     name: "stealthis-scan-proxy",
-    purpose: "Captura el HTML y el CSS de una URL pública para Design Scan.",
+    purpose: "Captures the HTML and CSS of a public URL for Design Scan.",
     endpoints: { capture: "/capture?url=<url>" },
     limits: LIMITS,
   })
@@ -52,7 +52,7 @@ app.get("/", (c) =>
 
 app.get("/capture", async (c) => {
   const target = c.req.query("url");
-  if (!target) return c.json({ error: "Falta el parámetro url." }, 400);
+  if (!target) return c.json({ error: "Missing the url parameter." }, 400);
 
   // Rate limit por IP. Si el binding no está (dev local sin configurar), se
   // sigue sin él: mejor un aviso en la respuesta que un endpoint caído.
@@ -63,7 +63,7 @@ app.get("/capture", async (c) => {
     if (!success) rateLimited = true;
   }
   if (rateLimited)
-    return c.json({ error: "Demasiadas capturas seguidas. Espera un momento." }, 429);
+    return c.json({ error: "Too many captures in a row. Wait a moment." }, 429);
 
   try {
     const result = await capture(target);
@@ -71,8 +71,8 @@ app.get("/capture", async (c) => {
   } catch (err) {
     if (err instanceof CaptureError) return c.json({ error: err.message }, err.status as 400);
     if (err instanceof Error && err.name === "TimeoutError")
-      return c.json({ error: "La página tardó demasiado en responder." }, 504);
-    return c.json({ error: "No se pudo capturar la página." }, 502);
+      return c.json({ error: "The page took too long to respond." }, 504);
+    return c.json({ error: "The page could not be captured." }, 502);
   }
 });
 
