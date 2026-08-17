@@ -79,6 +79,7 @@ const en = {
   "nav.showcase": "Showcase",
   "nav.uhd": "UHD",
   "nav.effects": "Effects",
+  "nav.designScan": "Design Scan",
   "nav.changelog": "Changelog",
   "nav.arcade": "Arcade",
   "recommendations.cat.agent-frameworks": "Agent Frameworks",
@@ -138,6 +139,13 @@ const en = {
   "recommendations.alternative": "Alternative",
   "recommendations.compare": "Compare",
   "recommendations.compareHint": "Tick the ones you want to compare",
+  "designScan.title": "Design Scan — extract any page's design system",
+  "designScan.description":
+    "Paste a URL and get its design system as a DESIGN.md: colors, typography, spacing, radii and components, stored in your browser.",
+  "designScan.eyebrow": "Design Scan",
+  "designScan.heading": "Paste a URL, get its design system",
+  "designScan.intro":
+    "Captures the page's HTML and CSS, then turns it into a DESIGN.md — the open format Google Labs published for describing a design system to coding agents. Everything stays in your browser: the API key and the capture live in localStorage.",
   "nav.applications": "Apps",
   "nav.applications.desc": "Tools and apps from the Stealthis suite",
   "nav.dbviz": "DbViz",
