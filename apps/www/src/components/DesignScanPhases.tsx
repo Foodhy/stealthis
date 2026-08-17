@@ -47,6 +47,15 @@ function describeOutput(id: PhaseId, output: unknown): string | null {
     return `${parts.join(" · ")}${omitted ? ` — omitted: ${omitted}` : ""}`;
   }
 
+  if (id === "components" && typeof output === "object") {
+    const m = output as { matches?: unknown[]; uncovered?: unknown[]; snippets?: object };
+    const total = m.matches?.length ?? 0;
+    const sin = m.uncovered?.length ?? 0;
+    return `${total - sin} of ${total} matched · ${Object.keys(m.snippets ?? {}).length} snippets fetched${
+      sin ? ` · ${sin} not covered` : ""
+    }`;
+  }
+
   if (Array.isArray(output)) return `${output.length} items`;
   if (typeof output === "string") return `${output.length} characters`;
   if (typeof output === "object") return `${Object.keys(output as object).length} keys`;

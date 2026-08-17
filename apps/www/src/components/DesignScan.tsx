@@ -11,9 +11,11 @@
  */
 
 import DesignScanExport from "@components/DesignScanExport";
+import DesignScanMatches from "@components/DesignScanMatches";
 import DesignScanPhases from "@components/DesignScanPhases";
 import DesignScanTokens from "@components/DesignScanTokens";
 import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/design-scan/engine";
+import { type MatchResult, matchComponents } from "@lib/design-scan/mcp";
 import { type ProseResult, renderBody, runProsePhase } from "@lib/design-scan/prose";
 import { frontmatterToYaml, toDesignMd } from "@lib/design-scan/serialize";
 import { clearRun, loadRun } from "@lib/design-scan/store";
@@ -179,6 +181,13 @@ export default function DesignScan() {
           ...(ctx.signal ? { signal: ctx.signal } : {}),
         });
       },
+      components: async (ctx) => {
+        const prosa = ctx.outputs.prose as ProseResult | undefined;
+        if (!prosa) throw new Error("The prose phase has to run first.");
+        const names = Object.keys(prosa.components);
+        if (names.length === 0) throw new Error("No components to match against the catalog.");
+        return matchComponents(names, { ...(ctx.signal ? { signal: ctx.signal } : {}) });
+      },
     }),
     [config]
   );
@@ -236,6 +245,7 @@ export default function DesignScan() {
   const capture = (run?.phases.capture.output ?? null) as Capture | null;
   const frontmatter = (run?.phases.tokens.output ?? null) as Frontmatter | null;
   const prose = (run?.phases.prose.output ?? null) as ProseResult | null;
+  const matches = (run?.phases.components.output ?? null) as MatchResult | null;
 
   const cssBytes = useMemo(() => {
     if (!capture) return 0;
@@ -395,6 +405,8 @@ export default function DesignScan() {
             )}
           />
         )}
+
+        {matches && <DesignScanMatches result={matches} />}
 
         {frontmatter && (
           <DesignScanExport

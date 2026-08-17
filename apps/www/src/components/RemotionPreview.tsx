@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
-import { Player } from "@remotion/player";
-import { remotionCompositions } from "@remotion-app/compositions";
 import { remotionCodeById } from "@lib/remotion-code";
+import { remotionCompositions } from "@remotion-app/compositions";
+import { Player } from "@remotion/player";
+import type React from "react";
+import { useMemo, useState } from "react";
 
 interface Props {
   slug: string;
