@@ -11,8 +11,11 @@
  */
 
 import DesignScanPhases from "@components/DesignScanPhases";
+import DesignScanTokens from "@components/DesignScanTokens";
 import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/design-scan/engine";
+import { frontmatterToYaml, toDesignMd } from "@lib/design-scan/serialize";
 import { clearRun, loadRun } from "@lib/design-scan/store";
+import { type CaptureInput, type Frontmatter, extractFrontmatter } from "@lib/design-scan/tokens";
 import type { PhaseId, RunState } from "@lib/design-scan/types";
 import {
   type AiModel,
@@ -149,11 +152,21 @@ export default function DesignScan() {
   }, [config, patchConfig]);
 
   /**
-   * Solo `capture` está construida. El resto las levantan STL-027 a STL-031;
-   * hasta entonces el motor las marca `unavailable` y para ahí, en vez de
-   * fingir que pasaron.
+   * `capture` y `tokens` están construidas. Las tres siguientes las levantan
+   * STL-028 a STL-031; hasta entonces el motor las marca `unavailable` y para
+   * ahí, en vez de fingir que pasaron.
    */
-  const registry: PhaseRegistry = useMemo(() => ({ capture: (ctx) => captureRunner(ctx.url) }), []);
+  const registry: PhaseRegistry = useMemo(
+    () => ({
+      capture: (ctx) => captureRunner(ctx.url),
+      tokens: async (ctx) => {
+        const cap = ctx.outputs.capture as CaptureInput | undefined;
+        if (!cap) throw new Error("No capture to read the CSS from.");
+        return extractFrontmatter(cap);
+      },
+    }),
+    []
+  );
 
   const execute = useCallback(
     async (start: RunState) => {
@@ -202,6 +215,7 @@ export default function DesignScan() {
   }, []);
 
   const capture = (run?.phases.capture.output ?? null) as Capture | null;
+  const frontmatter = (run?.phases.tokens.output ?? null) as Frontmatter | null;
 
   const cssBytes = useMemo(() => {
     if (!capture) return 0;
@@ -347,6 +361,14 @@ export default function DesignScan() {
             </h2>
             <DesignScanPhases run={run} busy={busy} onRetry={onRetry} />
           </section>
+        )}
+
+        {frontmatter && (
+          <DesignScanTokens
+            front={frontmatter}
+            yaml={frontmatterToYaml(frontmatter)}
+            designMd={toDesignMd(frontmatter)}
+          />
         )}
 
         {storageWarning && (

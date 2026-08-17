@@ -27,6 +27,26 @@ function describeOutput(id: PhaseId, output: unknown): string | null {
     return `${kb} KB of HTML · ${c.stylesheets?.length ?? 0} sheets · ${c.inlineStyles?.length ?? 0} inline`;
   }
 
+  if (id === "tokens" && typeof output === "object") {
+    // "8 keys" no dice nada. Lo que importa es cuánto se extrajo de cada grupo,
+    // y qué se dejó fuera a propósito.
+    const f = output as {
+      colors?: object;
+      typography?: object;
+      rounded?: object;
+      spacing?: object;
+      omitted?: { section: string }[];
+    };
+    const parts = [
+      `${Object.keys(f.colors ?? {}).length} colors`,
+      `${Object.keys(f.typography ?? {}).length} type levels`,
+      `${Object.keys(f.rounded ?? {}).length} radii`,
+      `${Object.keys(f.spacing ?? {}).length} spacing steps`,
+    ];
+    const omitted = (f.omitted ?? []).map((o) => o.section).join(", ");
+    return `${parts.join(" · ")}${omitted ? ` — omitted: ${omitted}` : ""}`;
+  }
+
   if (Array.isArray(output)) return `${output.length} items`;
   if (typeof output === "string") return `${output.length} characters`;
   if (typeof output === "object") return `${Object.keys(output as object).length} keys`;
