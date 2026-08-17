@@ -7,19 +7,23 @@
  * equivocó de familia o de tamaño.
  */
 
+import type { ProseResult } from "@lib/design-scan/prose";
+import { BODY_SECTIONS } from "@lib/design-scan/prose";
 import type { Frontmatter } from "@lib/design-scan/tokens";
 import { useState } from "react";
 
 export default function DesignScanTokens({
   front,
+  prose,
   yaml,
   designMd,
 }: {
   front: Frontmatter;
+  prose: ProseResult | null;
   yaml: string;
   designMd: string;
 }) {
-  const [tab, setTab] = useState<"preview" | "yaml">("preview");
+  const [tab, setTab] = useState<"preview" | "yaml" | "prose">("preview");
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -48,18 +52,20 @@ export default function DesignScanTokens({
         </div>
         <div className="flex items-center gap-2">
           <div className="flex overflow-hidden rounded-lg border border-white/10">
-            {(["preview", "yaml"] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTab(t)}
-                className={`px-3 py-1.5 text-[11px] transition-colors ${
-                  tab === t ? "bg-white/10 text-white" : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {t === "preview" ? "Preview" : "YAML"}
-              </button>
-            ))}
+            {(prose ? (["preview", "prose", "yaml"] as const) : (["preview", "yaml"] as const)).map(
+              (t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTab(t)}
+                  className={`px-3 py-1.5 text-[11px] capitalize transition-colors ${
+                    tab === t ? "bg-white/10 text-white" : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {t === "yaml" ? "YAML" : t}
+                </button>
+              )
+            )}
           </div>
           <button
             type="button"
@@ -71,7 +77,35 @@ export default function DesignScanTokens({
         </div>
       </div>
 
-      {tab === "yaml" ? (
+      {tab === "prose" && prose ? (
+        <div className="space-y-4">
+          {BODY_SECTIONS.map((name) => (
+            <div key={name}>
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                {name}
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                {prose.sections[name] ?? (
+                  <span className="text-slate-600">Nothing came back for this section.</span>
+                )}
+              </p>
+            </div>
+          ))}
+
+          {prose.discarded.length > 0 && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/[0.06] p-3">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.15em] text-amber-300/80">
+                Discarded from the model's answer
+              </h3>
+              <ul className="mt-1.5 space-y-0.5 text-[11px] text-amber-200/70">
+                {prose.discarded.map((d) => (
+                  <li key={d}>· {d}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      ) : tab === "yaml" ? (
         <pre className="max-h-96 overflow-auto rounded-lg border border-white/[0.06] bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-slate-300">
           {yaml}
         </pre>

@@ -13,6 +13,7 @@
 import DesignScanPhases from "@components/DesignScanPhases";
 import DesignScanTokens from "@components/DesignScanTokens";
 import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/design-scan/engine";
+import { type ProseResult, renderBody, runProsePhase } from "@lib/design-scan/prose";
 import { frontmatterToYaml, toDesignMd } from "@lib/design-scan/serialize";
 import { clearRun, loadRun } from "@lib/design-scan/store";
 import { type CaptureInput, type Frontmatter, extractFrontmatter } from "@lib/design-scan/tokens";
@@ -164,8 +165,21 @@ export default function DesignScan() {
         if (!cap) throw new Error("No capture to read the CSS from.");
         return extractFrontmatter(cap);
       },
+      prose: async (ctx) => {
+        const cap = ctx.outputs.capture as CaptureInput | undefined;
+        const front = ctx.outputs.tokens as Frontmatter | undefined;
+        if (!cap || !front) throw new Error("The tokens phase has to run first.");
+        if (!config) throw new Error("No model configured.");
+        return runProsePhase({
+          front,
+          html: cap.html,
+          url: ctx.url,
+          config,
+          ...(ctx.signal ? { signal: ctx.signal } : {}),
+        });
+      },
     }),
-    []
+    [config]
   );
 
   const execute = useCallback(
@@ -179,6 +193,10 @@ export default function DesignScan() {
           onChange: setRun,
           onStorageProblem: setStorageWarning,
           signal: controller.signal,
+          // Un solo intento en las fases que llaman al modelo: reintentar sola
+          // una llamada que paga el usuario le duplica la factura sin avisar.
+          // El botón Retry sigue estando para cuando él lo decida.
+          maxAttempts: { prose: 1 },
         });
       } finally {
         setBusy(false);
@@ -216,6 +234,7 @@ export default function DesignScan() {
 
   const capture = (run?.phases.capture.output ?? null) as Capture | null;
   const frontmatter = (run?.phases.tokens.output ?? null) as Frontmatter | null;
+  const prose = (run?.phases.prose.output ?? null) as ProseResult | null;
 
   const cssBytes = useMemo(() => {
     if (!capture) return 0;
@@ -366,8 +385,13 @@ export default function DesignScan() {
         {frontmatter && (
           <DesignScanTokens
             front={frontmatter}
-            yaml={frontmatterToYaml(frontmatter)}
-            designMd={toDesignMd(frontmatter)}
+            prose={prose}
+            yaml={frontmatterToYaml(frontmatter, prose?.components)}
+            designMd={toDesignMd(
+              frontmatter,
+              prose ? renderBody(prose.sections) : undefined,
+              prose?.components
+            )}
           />
         )}
 

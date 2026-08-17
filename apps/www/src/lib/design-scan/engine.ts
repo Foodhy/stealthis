@@ -32,6 +32,12 @@ export type PhaseRunner = (ctx: PhaseContext) => Promise<unknown>;
 export type PhaseRegistry = Partial<Record<PhaseId, PhaseRunner>>;
 
 export type EngineHooks = {
+  /**
+   * Intentos por fase, cuando MAX_ATTEMPTS no vale. Las fases que llaman a un
+   * modelo se configuran a 1: reintentar sola una llamada que el usuario paga
+   * duplica su factura sin preguntarle. Si falla, el botón Retry sigue ahí.
+   */
+  maxAttempts?: Partial<Record<PhaseId, number>>;
   /** Se llama en cada cambio de estado, para que la UI repinte y persista. */
   onChange?: (run: RunState) => void;
   /** Aviso de que no se pudo guardar; el escaneo sigue, pero no sobrevivirá. */
@@ -112,8 +118,9 @@ export async function runScan(
 
     let lastError = "";
     let attempts = current.phases[id].attempts;
+    const limit = Math.max(1, hooks.maxAttempts?.[id] ?? MAX_ATTEMPTS);
 
-    while (attempts < MAX_ATTEMPTS) {
+    while (attempts < limit) {
       attempts += 1;
       commit(
         setPhase(

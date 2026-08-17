@@ -13,6 +13,9 @@
 
 import type { Frontmatter, Typography } from "./tokens";
 
+/** `components` lo produce la fase de prosa, así que llega aparte. */
+export type Components = Record<string, Record<string, string>>;
+
 /** Cita cuando el valor podría leerse como otra cosa al volver a parsearlo. */
 function scalar(value: string | number): string {
   if (typeof value === "number") return String(value);
@@ -53,16 +56,20 @@ function mapBlock(name: string, map: Record<string, string>): string[] {
 }
 
 /** Solo el bloque YAML, sin los `---`. Útil para enseñarlo en pantalla. */
-export function frontmatterToYaml(front: Frontmatter): string {
+export function frontmatterToYaml(front: Frontmatter, components?: Components): string {
   const lines: string[] = [];
 
   lines.push(`version: ${scalar(front.version)}`);
   lines.push(`name: ${scalar(front.name)}`);
   if (front.description) lines.push(`description: ${scalar(front.description)}`);
 
-  if (front.omitted?.length) {
+  // `components` deja de estar omitido en cuanto la fase de prosa lo llena.
+  const stillOmitted = (front.omitted ?? []).filter(
+    (o) => !(o.section === "components" && components && Object.keys(components).length > 0)
+  );
+  if (stillOmitted.length) {
     lines.push("omitted:");
-    for (const o of front.omitted) {
+    for (const o of stillOmitted) {
       lines.push(`  - section: ${scalar(o.section)}`);
       lines.push(`    reason: ${scalar(o.reason)}`);
     }
@@ -79,6 +86,15 @@ export function frontmatterToYaml(front: Frontmatter): string {
   if (front.rounded) lines.push(...mapBlock("rounded", front.rounded));
   if (front.spacing) lines.push(...mapBlock("spacing", front.spacing));
 
+  if (components && Object.keys(components).length > 0) {
+    lines.push("components:");
+    for (const [name, props] of Object.entries(components)) {
+      lines.push(`  ${key(name)}:`);
+      for (const [prop, value] of Object.entries(props))
+        lines.push(`    ${key(prop)}: ${scalar(value)}`);
+    }
+  }
+
   return lines.join("\n");
 }
 
@@ -87,8 +103,8 @@ export function frontmatterToYaml(front: Frontmatter): string {
  * emiten las secciones de la spec vacías con una nota, para que el archivo sea
  * válido y se vea qué falta, en vez de fingir que está completo.
  */
-export function toDesignMd(front: Frontmatter, body?: string): string {
-  const yaml = frontmatterToYaml(front);
+export function toDesignMd(front: Frontmatter, body?: string, components?: Components): string {
+  const yaml = frontmatterToYaml(front, components);
   const prose = body ?? placeholderBody();
   return `---\n${yaml}\n---\n\n${prose}\n`;
 }
