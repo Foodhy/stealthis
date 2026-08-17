@@ -4,6 +4,71 @@
 
 ---
 
+## Big picture
+
+**Qué es.** Una librería de recursos de UI para copiar y pegar — HTML/CSS/JS y ports a React,
+Next, Vue, Svelte y Astro — más un servidor MCP para que los agentes la consulten sin navegar.
+El contenido es la fuente de la verdad: todo vive en `packages/content/resources/<slug>/`, y las
+apps lo consumen desde ahí.
+
+| | |
+|---|---|
+| Recursos construidos | **2127** en `packages/content` |
+| Indexados en el MCP | **2031** en `apps/mcp/src/catalog.json` — 96 de retraso, hay que regenerar |
+| Fases del roadmap | **101** — 100 cerradas, 1 abierta (la 101) |
+| Apps del monorepo | `www` · `docs` · `lab` · `build` · `mcp` · `arcade` · `dbviz` · `preview` · `prompt-designer` · `remotion` · `styleforge` · `vibe` |
+| Paquetes | `content` (recursos) · `schema` (Zod + tipos) · `config` (tsconfig, preset de Tailwind) |
+
+**Cómo se lee este archivo.** Cada `## Phase N` es una tanda de trabajo cerrada con una tabla de
+recursos y una nota `Progress` con la fecha y el workflow que la construyó. Una fase marcada
+`✅ DONE` está construida y verificada; el detalle no se reescribe, se deja como historia.
+
+### Familias de fases
+
+| Familia | Fases | Qué contiene | Estado |
+|---|---|---|---|
+| Fundación de la librería | 1 | Campo de autor, UX de la librería, arreglos de tarjeta | ✅ |
+| Librerías de componentes | 2, 6, 7 | Componentes sueltos, hueco de shadcn, DaisyUI/Flowbite/Ant/Radix/Headless | ✅ |
+| Movimiento y concepto | 3, 4 | Web Animations (`lg`), páginas de concepto (`lgc`) | ✅ |
+| Primitivas de React | 5 | Hooks y componentes (`rc`) | ✅ |
+| Sistemas de app y SaaS | 8, 9 | SaaS/Enterprise, shell de app y navegación | ✅ |
+| Datos y móvil | 10, 11 | Visualización de datos, mobile-first y táctil | ✅ |
+| Páginas y comunicación | 12, 13, 14 | Plantillas de página completa, email/notificaciones, patrones de integración | ✅ |
+| Widgets y avanzado | 15, 16 | Widgets/media/interactivos, herramientas de dev y UI de IA | ✅ |
+| Prompts y estructura | 17, 19, 20 | Prompts de IA, arquitecturas, boilerplates | ✅ |
+| Estilos y nativo | 21, 22, 23, 24 | Remotion I, estilos de diseño, React Native/Expo, plantillas extendidas | ✅ |
+| Accesibilidad y plugins | 25, 26 | Accesibilidad y RTL, plugins de herramientas de IA | ✅ |
+| Verticales (I) | 27–35 | Restaurante, hotel, clínica, gimnasio, salón, inmobiliaria, aerolínea, coworking, automoción | ✅ |
+| Verticales acotadas | 36–45 | Banca, LMS, ticketing, streaming, empleo, delivery, agencia, creator, D2C, producto de IA | ✅ |
+| Editorial y contenido | 46–56 | Prensa, ciencia, museo, videojuegos, cómic, cocina, música, wiki, infantil, viajes, portfolio | ✅ |
+| Verticales (II) | 57–60 | E-commerce, SaaS, cripto/Web3, ONG | ✅ |
+| Patrones y sistemas | 61–64 | Onboarding y vacíos, precios y paywall, formularios, dashboards | ✅ |
+| Vídeo y movimiento | 65–73 | Remotion II — anuncios, explicativos, música, datos, noticias, eventos, SaaS, shorts, clínica | ✅ |
+| Verticales de servicios | 74–77 | Legal, seguros, construcción, veterinaria | ✅ |
+| Verticales de estilo de vida | 78–81, 85–88 | Fotografía, dental, boda, podcast, citas, coaching, interiorismo, vídeo | ✅ |
+| Web moderna y IA | 82–84, 89 | CSS moderno, WebGL/shaders, UI de apps de IA, movimiento avanzado y WebGPU | ✅ |
+| Interacción y componentes avanzados | 90–99 | Drag & drop, gestos, scroll virtual, scroll-driven, editor rico, bento, mapas SVG, UX de formularios, WebGL crudo, morphing SVG | ✅ |
+| DIY / Maker | 100 | Guías de reparación, Arduino, impresión 3D, build logs, fondos blueprint | ✅ |
+| Distribución del MCP | 101 | Registrar el servidor en los marketplaces de agentes | 🔴 **abierta** |
+
+### Abierto ahora
+
+- **Phase 101 — MCP Distribution.** Registrar `https://mcp.stealthis.dev/mcp` en los directorios
+  de agentes (PulseMCP, Smithery, Glama, mcp.so, repo oficial de MCP, Cursor, VS Code, ChatGPT…)
+  y publicar los badges de instalación. No iniciado.
+- **Regenerar el catálogo del MCP.** 96 recursos construidos no están indexados:
+  `bun run --filter @stealthis/mcp catalog`.
+- **Decisiones sin cerrar.** Qué verticales candidatas se construyen (§ *Other candidates to
+  evaluate*) y si se extrae un `vertical-shared/` (§ *Cross-phase shared assets*).
+
+### Otros roadmaps del repo
+
+Este archivo es el principal. El trabajo de dos frentes vive aparte, con su propio formato:
+`ROADMAP_ARCADE.md` (la app de retos, con pendientes de integración y deploy) y
+`ROADMAP_RECOMMENDATION.md` (spec de los recursos tipo recommendation).
+
+---
+
 ## Phase 1 — Author + Library UX ✅ DONE
 
 ### Author field
