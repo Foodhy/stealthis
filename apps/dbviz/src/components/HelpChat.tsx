@@ -1,6 +1,10 @@
+import {
+  type AiProviderConfig,
+  type ChatMessage,
+  chat as providerChat,
+} from "@stealthis/ai-providers";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Locale, useTranslations } from "../i18n";
-import { type AiProviderConfig, type ChatMessage, chat as providerChat } from "../lib/ai-providers";
 import { renderMarkdown } from "../lib/markdown";
 
 const HELP_SYSTEM_PROMPT = `You are the DbViz Help Assistant — a bilingual (English/Spanish) guide for the DbViz platform.

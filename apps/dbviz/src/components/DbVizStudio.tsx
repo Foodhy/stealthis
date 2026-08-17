@@ -1,7 +1,4 @@
 import { PGlite, type Results } from "@electric-sql/pglite";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { tabTranslationKey, tourThemeTranslationKey } from "../i18n";
-import { LocaleProvider, useLocale } from "../i18n/LocaleContext";
 import {
   type AiModel,
   type AiProvider,
@@ -9,8 +6,13 @@ import {
   type ChatMessage,
   PROVIDER_DEFAULTS,
   listModels as listProviderModels,
+  loadProviderConfig as loadStoredConfig,
   chat as providerChat,
-} from "../lib/ai-providers";
+  saveProviderConfig as saveStoredConfig,
+} from "@stealthis/ai-providers";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { tabTranslationKey, tourThemeTranslationKey } from "../i18n";
+import { LocaleProvider, useLocale } from "../i18n/LocaleContext";
 import { renderMarkdown } from "../lib/markdown";
 import {
   QUERY_SYSTEM_PROMPT,
@@ -147,32 +149,20 @@ const TAB_COLORS: Record<WorkspaceTab, { dot: string; active: string }> = {
   results: { dot: "bg-slate-400", active: "bg-white/[0.08]" },
 };
 
-const STORAGE_KEY = "dbviz-ai-provider";
-
-type StoredProviderConfig = {
-  provider: AiProvider;
-  baseUrl: string;
-  apiKey: string;
-  model: string;
+// La persistencia vive en @stealthis/ai-providers. `legacyKeys` es lo que hace
+// que la configuracion guardada antes de este cambio se siga leyendo: se migra
+// a la clave versionada en la primera lectura y la vieja se deja intacta.
+const PROVIDER_STORAGE = {
+  key: "dbviz-ai-provider-v1",
+  legacyKeys: ["dbviz-ai-provider"],
 };
 
-function loadProviderConfig(): StoredProviderConfig {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as StoredProviderConfig;
-  } catch {
-    /* ignore */
-  }
-  return { provider: "ollama", baseUrl: PROVIDER_DEFAULTS.ollama.baseUrl, apiKey: "", model: "" };
-}
+type StoredProviderConfig = AiProviderConfig;
 
-function saveProviderConfig(config: StoredProviderConfig) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-  } catch {
-    /* ignore */
-  }
-}
+const loadProviderConfig = (): StoredProviderConfig => loadStoredConfig(PROVIDER_STORAGE);
+
+const saveProviderConfig = (config: StoredProviderConfig) =>
+  saveStoredConfig(PROVIDER_STORAGE, config);
 
 /* ── Project persistence (localStorage) ─────────────────────── */
 
