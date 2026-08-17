@@ -212,13 +212,20 @@ forma determinista; el modelo escribe prosa y propone nombres, nada más.
 
 ## 5. Verificación hecha
 
-Prototipo desechable (no entra en `apps/` ni en `packages/`; vive en el scratchpad de la sesión)
-que lee un DESIGN.md, valida el frontmatter contra este schema, detecta las secciones con sus
-alias, resuelve las referencias `{...}` y hace round-trip para comprobar que no se pierde ninguna
-clave.
+[`docs/design-md/check-design-md.ts`](docs/design-md/check-design-md.ts) lee un DESIGN.md, valida
+el frontmatter contra este schema, detecta las secciones con sus alias, resuelve las referencias
+`{...}` y hace round-trip para comprobar que no se pierde ninguna clave.
 
-Corrido sobre 7 archivos reales del repo oficial — los 3 ejemplos publicados y 4 fixtures del
-linter:
+**No es el parser de producción** — ese lo escribe STL-027 dentro de la app. Este script existe
+para demostrar que el mapeo se sostiene, y para volver a comprobarlo cuando la spec suba de
+versión. Cero dependencias: el YAML lo parsea `Bun.YAML`.
+
+```bash
+bun run docs/design-md/check-design-md.ts docs/design-md/fixtures/*.md
+```
+
+Sobre los fixtures fijados en [`docs/design-md/fixtures/`](docs/design-md/fixtures/) — los 3
+ejemplos publicados por Google y 2 casos límite del linter oficial:
 
 ```
 atmospheric-glass    colors:47 typography:6 rounded:6 spacing:5 components:10
@@ -227,24 +234,25 @@ paws-and-paths       colors:47 typography:8 rounded:6 spacing:8 components:10
                      7/8 secciones · 34 referencias, 0 rotas · 132 claves, sin pérdidas
 totality-festival    colors:47 typography:6 rounded:6 spacing:5 components:10
                      7/8 secciones · 23 referencias, 0 rotas · 123 claves, sin pérdidas
-HERITAGE             8/8 secciones ·  0 referencias      ·  93 claves, sin pérdidas
-MERIDIAN             7/8 secciones ·  0 referencias      ·  83 claves, sin pérdidas
 NO_FRONTMATTER       sin frontmatter — aceptado, la spec lo permite
 OUT_OF_ORDER         ERROR de orden de secciones — detectado, que es lo que ese fixture prueba
+
+TODO OK (1 con errores, de los cuales 1 esperados)   exit=0
 ```
 
-**Cero claves perdidas y cero referencias rotas en los seis archivos válidos**, y el único que
-falla es el que está construido para fallar. El mapeo se sostiene.
+**Cero claves perdidas y cero referencias rotas en los archivos válidos**, y el único que falla es
+el que está construido para fallar. `OUT_OF_ORDER.md` está en la lista `DEBEN_FALLAR`: si algún día
+**dejara** de fallar, el script sale con error — un comprobador que no detecta lo que debe detectar
+es peor que ninguno.
 
-Copias fijadas de los tres ejemplos en [`docs/design-md/fixtures/`](docs/design-md/fixtures/),
-para que STL-027 tenga contra qué probar sin depender de la red.
+Los fixtures se fijan en el repo para que STL-027 tenga contra qué probar sin depender de la red.
 
 ---
 
 ## 6. Lo que queda abierto
 
-- **La spec es `alpha`.** Puede romper. Por eso se ancla el commit y por eso el prototipo se
-  vuelve a correr al subir de versión.
+- **La spec es `alpha`.** Puede romper. Por eso se ancla el commit y por eso el comprobador del
+  § 5 se vuelve a correr al subir de versión.
 - **`components` está declarado en evolución** por la propia spec: *«The components specification
   is actively evolving»*. Es justo la parte de la que cuelga STL-030. Si cambia, cambia el
   emparejamiento con el MCP.
