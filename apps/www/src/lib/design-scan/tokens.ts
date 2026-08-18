@@ -21,6 +21,7 @@ import {
   normalizeColor,
   px,
   readDeclarations,
+  readDocumentBackground,
   readRootVariables,
   toPx,
 } from "./css";
@@ -117,7 +118,17 @@ function colorsFromVariables(css: string): Record<string, string> {
  * superficie, el texto dominante sobre ella es `on-surface`, y el acento es el
  * color vivo más usado. La spec exige `primary` como mínimo.
  */
-function colorsByRole(decls: Declaration[]): Record<string, string> {
+function contrast(a: string, b: string): number {
+  const la = luminance(a);
+  const lb = luminance(b);
+  const [light, dark] = la >= lb ? [la, lb] : [lb, la];
+  return (light + 0.05) / (dark + 0.05);
+}
+
+function colorsByRole(
+  decls: Declaration[],
+  documentBackground: string | null
+): Record<string, string> {
   const backgrounds: string[] = [];
   const texts: string[] = [];
   const borders: string[] = [];
@@ -136,13 +147,26 @@ function colorsByRole(decls: Declaration[]): Record<string, string> {
   }
 
   const out: Record<string, string> = {};
-  const topBackground = byFrequency(countBy(backgrounds))[0];
-  const topText = byFrequency(countBy(texts))[0];
+
+  // El fondo declarado en html/body/:root manda sobre el recuento. Contar
+  // declaraciones no dice qué pinta la página: en un sitio oscuro hecho con
+  // utilidades, las docenas de `.bg-white` ganan por frecuencia mientras el
+  // fondo real se declara una sola vez.
+  const topBackground = documentBackground ?? byFrequency(countBy(backgrounds))[0];
   const topBorder = byFrequency(countBy(borders))[0];
+
+  // Y el texto se elige por contraste real contra esa superficie: el color de
+  // texto más usado puede ser el de un componente sobre otro fondo.
+  const textsByUse = byFrequency(countBy(texts));
+  const topText =
+    textsByUse.find((c) => topBackground && contrast(c, topBackground) >= 4.5) ??
+    (topBackground
+      ? [...textsByUse].sort((a, b) => contrast(b, topBackground) - contrast(a, topBackground))[0]
+      : textsByUse[0]);
 
   if (topBackground) out.surface = topBackground;
   if (topText) out["on-surface"] = topText;
-  if (topBorder) out.outline = topBorder;
+  if (topBorder && topBorder !== topBackground) out.outline = topBorder;
 
   // `primary`: el color más usado que no sea ni el fondo ni el texto base, y
   // que no sea un gris. Un acento es lo que distingue a la marca.
@@ -387,8 +411,13 @@ export function extractFrontmatter(capture: CaptureInput): Frontmatter {
   // Las dos fuentes se suman: los nombres de la página son mejores, pero rara
   // vez cubren los roles (superficie, texto, borde) que necesita la spec.
   const fromVars = colorsFromVariables(css);
-  const fromRoles = colorsByRole(decls);
+  const fromRoles = colorsByRole(decls, readDocumentBackground(css));
   const colors: Record<string, string> = { ...fromRoles, ...fromVars };
+
+  // Si el documento declara su fondo, esa es la superficie — por encima de lo
+  // que diga una variable llamada `--surface` que quizá sea de otra cosa.
+  const documentBackground = readDocumentBackground(css);
+  if (documentBackground) colors.surface = documentBackground;
 
   // La spec exige al menos `primary`. Si no salió de las variables, se elige el
   // color con más contraste contra la superficie, que es lo que la página usa

@@ -214,3 +214,38 @@ describe("luminancia", () => {
     expect(luminance("#000000")).toBeCloseTo(0, 2);
   });
 });
+
+describe("la superficie sale del documento, no del recuento", () => {
+  test("un sitio oscuro con utilidades NO acaba con superficie blanca", () => {
+    // Caso real de stealthis.dev: el fondo se declara una vez en html, y el CSS
+    // trae docenas de .bg-white que ganaban por frecuencia.
+    const css = `
+      html { background-color: rgb(3 7 18 / var(--tw-bg-opacity, 1)); }
+      .bg-white { background-color: #ffffff; }
+      .bg-white\\/10 { background-color: #ffffff; }
+      .bg-white\\/5 { background-color: #ffffff; }
+      .a { background-color: #ffffff; }
+      .b { background-color: #ffffff; }
+      p { color: #e2e8f0; }
+    `;
+    const front = extractFrontmatter(capture(css));
+
+    expect(front.colors?.surface).toBe("#030712");
+    expect(front.colors?.surface).not.toBe("#ffffff");
+  });
+
+  test("un sitio claro sigue saliendo claro", () => {
+    const css = `body { background: #ffffff; } p { color: #111827; }`;
+    expect(extractFrontmatter(capture(css)).colors?.surface).toBe("#ffffff");
+  });
+
+  test("on-surface se elige por contraste contra la superficie, no por frecuencia", () => {
+    // El gris se usa más, pero es ilegible sobre el fondo oscuro.
+    const css = `
+      html { background: #030712; }
+      .a { color: #333333; } .b { color: #333333; } .c { color: #333333; }
+      .d { color: #e2e8f0; }
+    `;
+    expect(extractFrontmatter(capture(css)).colors?.["on-surface"]).toBe("#e2e8f0");
+  });
+});

@@ -19,6 +19,15 @@ import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/des
 import { toCssVariables } from "@lib/design-scan/export";
 import { type MatchResult, matchComponents } from "@lib/design-scan/mcp";
 import { type ProseResult, renderBody, runProsePhase } from "@lib/design-scan/prose";
+import {
+  DEFAULT_PROXY_URL,
+  type ProxyStatus,
+  clearProxyUrl,
+  loadProxyUrl,
+  normalizeProxyUrl,
+  pingProxy,
+  saveProxyUrl,
+} from "@lib/design-scan/proxy";
 import { frontmatterToYaml, toDesignMd } from "@lib/design-scan/serialize";
 import { clearRun, loadRun } from "@lib/design-scan/store";
 import { type CaptureInput, type Frontmatter, extractFrontmatter } from "@lib/design-scan/tokens";
@@ -37,15 +46,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 /** Clave versionada desde el día uno. Sin `legacyKeys`: esta página es nueva. */
 const PROVIDER_STORAGE = { key: "design-scan-ai-provider-v1" };
 
-/**
- * El worker de captura. En desarrollo apunta al `wrangler dev` local; en
- * producción, a lo que diga PUBLIC_SCAN_PROXY_URL. Se resuelve en el navegador
- * porque www es un build estático y no hay servidor donde leer variables.
- */
-const SCAN_PROXY_URL =
-  import.meta.env.PUBLIC_SCAN_PROXY_URL ??
-  (import.meta.env.DEV ? "http://localhost:8799" : "https://scan-proxy.stealthis.dev");
-
 type Stylesheet = { url: string; css: string; bytes: number; skipped?: string };
 
 type Capture = {
@@ -63,8 +63,8 @@ type Capture = {
  * lleva el motor de fases junto con la del resto, bajo una sola clave
  * versionada, para que recargar a mitad de un escaneo no pierda nada.
  */
-async function captureRunner(url: string): Promise<Capture> {
-  const res = await fetch(`${SCAN_PROXY_URL}/capture?url=${encodeURIComponent(url)}`);
+async function captureRunner(url: string, proxyUrl: string): Promise<Capture> {
+  const res = await fetch(`${proxyUrl}/capture?url=${encodeURIComponent(url)}`);
   let body: Capture | { error: string };
   try {
     body = (await res.json()) as Capture | { error: string };
@@ -104,16 +104,53 @@ export default function DesignScan() {
   const [busy, setBusy] = useState(false);
   const [urlError, setUrlError] = useState("");
   const [storageWarning, setStorageWarning] = useState("");
+  const [proxyUrl, setProxyUrl] = useState(DEFAULT_PROXY_URL);
+  const [proxyDraft, setProxyDraft] = useState(DEFAULT_PROXY_URL);
+  const [proxyStatus, setProxyStatus] = useState<ProxyStatus>("unknown");
+  const [proxyOpen, setProxyOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   // localStorage no existe hasta que el componente monta en el cliente.
   useEffect(() => {
     setConfig(loadProviderConfig(PROVIDER_STORAGE));
+    const savedProxy = loadProxyUrl();
+    setProxyUrl(savedProxy);
+    setProxyDraft(savedProxy);
     const saved = loadRun();
     if (saved) {
       setRun(saved);
       setUrl(saved.url);
     }
+  }, []);
+
+  // Comprobar que el worker responde ANTES de escanear: si no, la fase 1 falla
+  // y el usuario no sabe si el problema es la URL que pegó o el worker.
+  useEffect(() => {
+    let cancelled = false;
+    setProxyStatus("checking");
+    pingProxy(proxyUrl).then((r) => {
+      if (!cancelled) setProxyStatus(r.ok ? "up" : "down");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [proxyUrl]);
+
+  const applyProxy = useCallback(() => {
+    const normalized = normalizeProxyUrl(proxyDraft);
+    if (!normalized) {
+      setProxyStatus("down");
+      return;
+    }
+    saveProxyUrl(normalized);
+    setProxyUrl(normalized);
+    setProxyDraft(normalized);
+  }, [proxyDraft]);
+
+  const resetProxy = useCallback(() => {
+    clearProxyUrl();
+    setProxyUrl(DEFAULT_PROXY_URL);
+    setProxyDraft(DEFAULT_PROXY_URL);
   }, []);
 
   const patchConfig = useCallback((patch: Partial<AiProviderConfig>) => {
@@ -164,7 +201,7 @@ export default function DesignScan() {
    */
   const registry: PhaseRegistry = useMemo(
     () => ({
-      capture: (ctx) => captureRunner(ctx.url),
+      capture: (ctx) => captureRunner(ctx.url, proxyUrl),
       tokens: async (ctx) => {
         const cap = ctx.outputs.capture as CaptureInput | undefined;
         if (!cap) throw new Error("No capture to read the CSS from.");
@@ -203,7 +240,7 @@ export default function DesignScan() {
         return matchComponents(names, { ...(ctx.signal ? { signal: ctx.signal } : {}) });
       },
     }),
-    [config]
+    [config, proxyUrl]
   );
 
   const execute = useCallback(
@@ -319,10 +356,95 @@ export default function DesignScan() {
             </p>
           )}
 
-          <p className="mt-3 text-xs text-slate-500">
-            The capture runs through our own worker because the browser cannot read a third-party
-            site. Public URLs only.
-          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <p className="text-xs text-slate-500">
+              Captured through a worker of ours, because the browser cannot read a third-party site.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setProxyOpen(!proxyOpen)}
+              className="ml-auto flex items-center gap-1.5 rounded-lg border border-white/10 px-2 py-1 text-[10px] text-slate-400 transition-colors hover:border-white/25"
+              aria-expanded={proxyOpen}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  proxyStatus === "up"
+                    ? "bg-emerald-400"
+                    : proxyStatus === "checking"
+                      ? "animate-pulse bg-amber-400"
+                      : proxyStatus === "down"
+                        ? "bg-rose-400"
+                        : "bg-slate-600"
+                }`}
+                aria-hidden="true"
+              />
+              <span className="font-mono">{proxyUrl.replace(/^https?:\/\//, "")}</span>
+              <span className="text-slate-600">{proxyOpen ? "\u25b4" : "\u25be"}</span>
+            </button>
+          </div>
+
+          {proxyOpen && (
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-3">
+              <label
+                htmlFor="scan-proxy"
+                className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.15em] text-slate-500"
+              >
+                Capture worker
+              </label>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  id="scan-proxy"
+                  type="url"
+                  value={proxyDraft}
+                  onChange={(e) => setProxyDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") applyProxy();
+                  }}
+                  placeholder={DEFAULT_PROXY_URL}
+                  className="flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-xs text-slate-200 outline-none focus:border-brand-400"
+                />
+                <button
+                  type="button"
+                  onClick={applyProxy}
+                  disabled={proxyDraft.trim() === proxyUrl}
+                  className="rounded-lg border border-white/15 px-3 py-2 text-xs text-slate-200 transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Use this one
+                </button>
+                {proxyUrl !== DEFAULT_PROXY_URL && (
+                  <button
+                    type="button"
+                    onClick={resetProxy}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:border-white/25"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+
+              <p className="mt-2 text-[11px] text-slate-500">
+                {proxyStatus === "up" && (
+                  <span className="text-emerald-300">Responding. Ready to capture.</span>
+                )}
+                {proxyStatus === "checking" && "Checking\u2026"}
+                {proxyStatus === "down" && (
+                  <span className="text-rose-300">
+                    Not responding. Start it with{" "}
+                    <code className="font-mono">bun run dev:scan-proxy</code>, or point this at
+                    another instance.
+                  </span>
+                )}
+                {proxyStatus === "unknown" && "Not checked yet."}
+              </p>
+
+              <p className="mt-1.5 text-[11px] text-slate-600">
+                Saved in this browser. Any worker serving the same /capture endpoint works — your
+                own deployment, a colleague's, or a different port.
+              </p>
+            </div>
+          )}
         </div>
 
         {capture && (

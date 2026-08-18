@@ -58,6 +58,43 @@ export function readRootVariables(css: string): Map<string, string> {
   return vars;
 }
 
+/**
+ * El fondo que declara el documento: `html`, `body` o `:root`.
+ *
+ * Es la única forma fiable de saber si una página es clara u oscura sin
+ * renderizarla. Contar declaraciones no vale: el CSS de una web con utilidades
+ * trae docenas de `.bg-white` que ganan por frecuencia mientras el fondo real
+ * está declarado una sola vez.
+ */
+export function readDocumentBackground(css: string): string | null {
+  const clean = stripNoise(css);
+
+  // El último gana, como en la cascada: un tema oscuro suele redefinirlo.
+  let found: string | null = null;
+
+  for (const rule of clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selectors = rule[1]
+      .split(",")
+      .map((sel) => sel.trim().toLowerCase())
+      .filter(Boolean);
+
+    const isDocument = selectors.some((sel) => /^(html|body|:root)$/.test(sel));
+    if (!isDocument) continue;
+
+    for (const raw of rule[2].split(";")) {
+      const colon = raw.indexOf(":");
+      if (colon === -1) continue;
+      const property = raw.slice(0, colon).trim().toLowerCase();
+      if (property !== "background" && property !== "background-color") continue;
+      const value = raw.slice(colon + 1).trim();
+      const color = normalizeColor(value) ?? normalizeColor(value.split(/\s+/)[0] ?? "");
+      if (color) found = color;
+    }
+  }
+
+  return found;
+}
+
 // ─── Colores ─────────────────────────────────────────────────────────────────
 
 const NAMED: Record<string, string> = {
@@ -106,9 +143,16 @@ export function normalizeColor(input: string): string | null {
   if (/^#[0-9a-f]{8}$/.test(v)) return v.slice(0, 7); // se descarta el alfa
   if (/^#[0-9a-f]{4}$/.test(v)) return `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`;
 
-  const rgb = v.match(/^rgba?\(([^)]+)\)$/);
+  // Greedy a propósito: `rgb(3 7 18 / var(--tw-bg-opacity, 1))` lleva paréntesis
+  // dentro, y cortar en el primero se comía el color. Es exactamente la forma en
+  // que Tailwind declara el fondo del documento.
+  const rgb = v.match(/^rgba?\((.*)\)$/);
   if (rgb) {
-    const parts = rgb[1].split(/[\s,/]+/).filter(Boolean);
+    // El canal alfa se descarta: se separa por la barra antes de leer números.
+    const parts = rgb[1]
+      .split("/")[0]
+      .split(/[\s,]+/)
+      .filter(Boolean);
     if (parts.length < 3) return null;
     const nums = parts.slice(0, 3).map((p) => {
       const n = Number.parseFloat(p);
@@ -118,9 +162,12 @@ export function normalizeColor(input: string): string | null {
     return `#${hex2(nums[0])}${hex2(nums[1])}${hex2(nums[2])}`;
   }
 
-  const hsl = v.match(/^hsla?\(([^)]+)\)$/);
+  const hsl = v.match(/^hsla?\((.*)\)$/);
   if (hsl) {
-    const parts = hsl[1].split(/[\s,/]+/).filter(Boolean);
+    const parts = hsl[1]
+      .split("/")[0]
+      .split(/[\s,]+/)
+      .filter(Boolean);
     if (parts.length < 3) return null;
     const h = Number.parseFloat(parts[0]);
     const s = Number.parseFloat(parts[1]) / 100;
