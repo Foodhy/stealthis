@@ -13,8 +13,10 @@
 import DesignScanExport from "@components/DesignScanExport";
 import DesignScanMatches from "@components/DesignScanMatches";
 import DesignScanPhases from "@components/DesignScanPhases";
+import DesignScanRecreate from "@components/DesignScanRecreate";
 import DesignScanTokens from "@components/DesignScanTokens";
 import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/design-scan/engine";
+import { toCssVariables } from "@lib/design-scan/export";
 import { type MatchResult, matchComponents } from "@lib/design-scan/mcp";
 import { type ProseResult, renderBody, runProsePhase } from "@lib/design-scan/prose";
 import { frontmatterToYaml, toDesignMd } from "@lib/design-scan/serialize";
@@ -180,6 +182,18 @@ export default function DesignScan() {
           config,
           ...(ctx.signal ? { signal: ctx.signal } : {}),
         });
+      },
+      recreate: async (ctx) => {
+        // No hay nada que calcular aquí: los snippets ya están descargados y el
+        // revestido es determinista. La fase existe para que el pipeline se
+        // cierre entero y quede constancia de qué se recreó.
+        const m = ctx.outputs.components as MatchResult | undefined;
+        if (!m) throw new Error("The catalog matching has to run first.");
+        const withMarkup = m.matches.filter((x) => {
+          const slug = x.candidates[0]?.slug;
+          return slug ? Boolean(m.snippets[slug]?.html) : false;
+        });
+        return { recreated: withMarkup.map((x) => x.component) };
       },
       components: async (ctx) => {
         const prosa = ctx.outputs.prose as ProseResult | undefined;
@@ -403,6 +417,14 @@ export default function DesignScan() {
               prose ? renderBody(prose.sections) : undefined,
               prose?.components
             )}
+          />
+        )}
+
+        {matches && frontmatter && (
+          <DesignScanRecreate
+            front={frontmatter}
+            matches={matches}
+            tokensCss={toCssVariables(frontmatter)}
           />
         )}
 

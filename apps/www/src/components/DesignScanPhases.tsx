@@ -56,6 +56,11 @@ function describeOutput(id: PhaseId, output: unknown): string | null {
     }`;
   }
 
+  if (id === "recreate" && typeof output === "object") {
+    const r = output as { recreated?: unknown[] };
+    return `${r.recreated?.length ?? 0} blocks re-skinned with the extracted tokens`;
+  }
+
   if (Array.isArray(output)) return `${output.length} items`;
   if (typeof output === "string") return `${output.length} characters`;
   if (typeof output === "object") return `${Object.keys(output as object).length} keys`;
