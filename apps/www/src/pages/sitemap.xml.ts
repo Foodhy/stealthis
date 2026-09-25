@@ -1,9 +1,16 @@
 import { getCollection } from "astro:content";
-import type { APIRoute } from "astro";
 import { LOCALES, getLocalizedPath } from "@i18n/index";
+import type { APIRoute } from "astro";
 
 const DEFAULT_SITE = "https://stealthis.dev";
-const LOCALIZED_BASE_PATHS = ["/", "/library/", "/showcase/", "/changelog", "/skills"];
+const LOCALIZED_BASE_PATHS = [
+  "/",
+  "/library/",
+  "/showcase/",
+  "/changelog",
+  "/skills",
+  "/design-scan",
+];
 const STATIC_PATHS = [
   ...new Set(
     LOCALIZED_BASE_PATHS.flatMap((path) => LOCALES.map((locale) => getLocalizedPath(path, locale)))

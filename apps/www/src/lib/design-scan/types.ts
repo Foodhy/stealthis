@@ -8,9 +8,29 @@
  * estado y su salida por separado.
  */
 
-export type PhaseId = "capture" | "tokens" | "prose" | "components" | "recreate";
+export type PhaseId =
+  | "capture"
+  | "tokens"
+  | "prose"
+  | "brief"
+  | "replica"
+  | "components"
+  | "recreate";
 
-export const PHASE_ORDER: PhaseId[] = ["capture", "tokens", "prose", "components", "recreate"];
+/**
+ * El orden importa y no es casual. `brief` va DESPUÉS de la prosa y ANTES de la
+ * réplica: cuando el usuario interviene ya tiene delante el DESIGN.md completo,
+ * y lo que escriba llega a tiempo de decidir cómo se reconstruye la página.
+ */
+export const PHASE_ORDER: PhaseId[] = [
+  "capture",
+  "tokens",
+  "prose",
+  "brief",
+  "components",
+  "recreate",
+  "replica",
+];
 
 export type PhaseStatus =
   /** Aún no le ha tocado. */
@@ -21,6 +41,12 @@ export type PhaseStatus =
   | "done"
   /** Falló y se agotaron los reintentos. Las fases anteriores siguen intactas. */
   | "error"
+  /**
+   * Parada a propósito, esperando al usuario. No es un fallo y no se reintenta:
+   * el pipeline se queda aquí hasta que alguien conteste. Sobrevive a recargar
+   * la página, que es justo para lo que existe.
+   */
+  | "waiting"
   /** Declarada pero todavía sin implementar: la construye una tarea posterior. */
   | "unavailable";
 
@@ -36,6 +62,27 @@ export type PhaseState<T = unknown> = {
 };
 
 /**
+ * Lo que el usuario aporta en la pausa. Es la diferencia entre reconstruir la
+ * página a ciegas y reconstruirla sabiendo qué le importa a quien la pidió.
+ */
+export type Brief = {
+  /** Instrucciones en texto libre para el modelo. */
+  notes: string;
+  /** Los componentes que SÍ se van a generar. Manda sobre lo detectado. */
+  components: string[];
+  /** Componente → slug del catálogo fijado a mano, sin pasar por el ranking. */
+  pinned: Record<string, string>;
+  /** HTML o markup de referencia pegado por el usuario. */
+  reference: string;
+  /** Cuándo se contestó. Sin esto, la fase sigue esperando. */
+  answeredAt?: string;
+};
+
+export function emptyBrief(): Brief {
+  return { notes: "", components: [], pinned: {}, reference: "" };
+}
+
+/**
  * Un escaneo entero. `version` no es decorativo: es lo que permite cambiar
  * esta forma sin dejar tirado a quien tenga un escaneo a medias guardado.
  */
@@ -46,6 +93,8 @@ export type RunState = {
   startedAt: string;
   updatedAt: string;
   phases: Record<PhaseId, PhaseState>;
+  /** Lo que contestó el usuario en la pausa. Vacío hasta que contesta. */
+  brief: Brief;
 };
 
 export const PHASE_LABELS: Record<PhaseId, { title: string; blurb: string }> = {
@@ -61,13 +110,21 @@ export const PHASE_LABELS: Record<PhaseId, { title: string; blurb: string }> = {
     title: "Prose",
     blurb: "Ask the model for the DESIGN.md body — the why behind each decision.",
   },
+  brief: {
+    title: "Your turn",
+    blurb: "Say what matters before the page is rebuilt: notes, components, pinned resources.",
+  },
+  replica: {
+    title: "Replica",
+    blurb: "Compose the full page using catalog snippets and extracted tokens.",
+  },
   components: {
     title: "Components",
     blurb: "Match the detected components against the stealthis catalog.",
   },
   recreate: {
     title: "Recreate",
-    blurb: "Assemble the catalog snippets with the extracted tokens applied.",
+    blurb: "Re-skin each matched catalog snippet with the extracted tokens.",
   },
 };
 
@@ -85,11 +142,20 @@ export function newRun(url: string, now: string): RunState {
       capture: emptyPhase(),
       tokens: emptyPhase(),
       prose: emptyPhase(),
+      brief: emptyPhase(),
+      replica: emptyPhase(),
       components: emptyPhase(),
       recreate: emptyPhase(),
     },
+    brief: emptyBrief(),
   };
 }
 
-/** Sube cuando cambie la forma de RunState. Ver `migrate` en store.ts. */
-export const RUN_VERSION = 1;
+/**
+ * Sube cuando cambie la forma de RunState. Ver `migrate` en store.ts.
+ *
+ * v2: se añaden las fases `brief` y `replica`, y el campo `brief` del escaneo.
+ *
+ * v3: `components` y `recreate` van antes de `replica` (la página se compone al final).
+ */
+export const RUN_VERSION = 3;

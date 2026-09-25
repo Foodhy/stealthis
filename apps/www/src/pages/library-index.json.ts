@@ -1,6 +1,6 @@
 import { getCollection } from "astro:content";
-import type { APIRoute } from "astro";
 import { getResourceSearchTechTokens } from "@lib/resource-tech";
+import type { APIRoute } from "astro";
 
 export const GET: APIRoute = async () => {
   const resources = await getCollection("resources");

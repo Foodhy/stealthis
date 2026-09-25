@@ -509,10 +509,10 @@ export class ForceGraph {
 
   /** Fit pan/zoom so all nodes are visible */
   private fitView() {
-    let minX = Infinity,
-      maxX = -Infinity,
-      minY = Infinity,
-      maxY = -Infinity;
+    let minX = Number.POSITIVE_INFINITY,
+      maxX = Number.NEGATIVE_INFINITY,
+      minY = Number.POSITIVE_INFINITY,
+      maxY = Number.NEGATIVE_INFINITY;
     for (const nd of this.nodes) {
       if (nd.x < minX) minX = nd.x;
       if (nd.x > maxX) maxX = nd.x;
@@ -665,7 +665,7 @@ export class ForceGraph {
     const mx = (cx - rect.left - this.w / 2 - this.panX) / this.scale;
     const my = (cy - rect.top - this.h / 2 - this.panY) / this.scale;
     let best: GNode | null = null;
-    let bestD = Infinity;
+    let bestD = Number.POSITIVE_INFINITY;
 
     for (const nd of this.nodes) {
       if (nd.opacity < 0.08) continue;

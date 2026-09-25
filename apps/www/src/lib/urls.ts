@@ -14,4 +14,5 @@ export const SITE_URLS = {
   zenpomodoro: "https://zenpomodoro.app",
   feedbackForm: "https://forms.gle/6tD2iWDXRra58gGs7",
   changelog: "https://github.com/Foodhy/stealthis/releases",
+  buyMeACoffee: "https://buymeacoffee.com/gregoryinnovo",
 } as const;

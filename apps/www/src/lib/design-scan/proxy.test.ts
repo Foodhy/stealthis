@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import {
   DEFAULT_PROXY_URL,
+  captureStartCommand,
   clearProxyUrl,
+  isLoopbackProxy,
   loadProxyUrl,
   normalizeProxyUrl,
   saveProxyUrl,
@@ -36,6 +38,20 @@ describe("normalizar la URL del worker", () => {
     expect(normalizeProxyUrl("localhost:8799")).toBeNull();
     expect(normalizeProxyUrl("")).toBeNull();
     expect(normalizeProxyUrl("   ")).toBeNull();
+  });
+});
+
+describe("helper local", () => {
+  test("el valor por defecto es loopback", () => {
+    expect(DEFAULT_PROXY_URL).toBe("http://127.0.0.1:8799");
+    expect(isLoopbackProxy(DEFAULT_PROXY_URL)).toBe(true);
+    expect(isLoopbackProxy("https://scan-proxy.stealthis.dev")).toBe(false);
+  });
+
+  test("comando de arranque apunta al script estático", () => {
+    expect(captureStartCommand("https://stealthis.dev")).toContain(
+      "https://stealthis.dev/design-scan/local-proxy.mjs"
+    );
   });
 });
 

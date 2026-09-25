@@ -1,6 +1,13 @@
 import { SITE_URLS } from "@lib/urls";
 
-export type AppIcon = "dbviz" | "zenpomodoro" | "video" | "record" | "office" | "gitbattle";
+export type AppIcon =
+  | "dbviz"
+  | "zenpomodoro"
+  | "video"
+  | "record"
+  | "office"
+  | "gitbattle"
+  | "tools";
 
 export type AppEntry = {
   /** Stable slug — also the preview image filename: /apps/<slug>.webp */
@@ -24,6 +31,15 @@ export type AppEntry = {
  * a repo only, hosted apps ship a demo (and a repo when open source).
  */
 export const APPLICATIONS: AppEntry[] = [
+  {
+    slug: "essential-tools",
+    name: "Essential Tools",
+    desc: "Offline toolbox for PDF, image, audio, and data — 57 tools that run 100% in the browser. No upload, no server, files never leave your device.",
+    image: "/apps/essential-tools.webp",
+    icon: "tools",
+    demoHref: "https://your-essential-tools.pages.dev/",
+    repoHref: "https://github.com/Foodhy/essential-tools",
+  },
   {
     slug: "git-battle",
     name: "Git Battle",

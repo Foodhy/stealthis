@@ -6,32 +6,61 @@
  * hasta entonces el motor las marca como no disponibles en vez de fingir.
  *
  * Todo vive en el navegador: la clave de API y lo capturado se quedan en
- * localStorage, nada pasa por un servidor nuestro salvo el proxy de captura,
- * que existe solo porque el CORS no deja leer un sitio ajeno desde la página.
+ * localStorage. La captura pasa por un helper en loopback que el usuario arranca
+ * en su máquina — el CORS no deja leer un sitio ajeno desde la página.
  */
 
+import DesignScanBrief from "@components/DesignScanBrief";
 import DesignScanExport from "@components/DesignScanExport";
+import DesignScanLibrary from "@components/DesignScanLibrary";
 import DesignScanMatches from "@components/DesignScanMatches";
 import DesignScanPhases from "@components/DesignScanPhases";
 import DesignScanRecreate from "@components/DesignScanRecreate";
+import DesignScanReplica from "@components/DesignScanReplica";
 import DesignScanTokens from "@components/DesignScanTokens";
-import { type PhaseRegistry, resumeOrStart, retryPhase, runScan } from "@lib/design-scan/engine";
+import {
+  type Gate,
+  type PhaseRegistry,
+  answerBrief,
+  resumeOrStart,
+  retryPhase,
+  runScan,
+  stopRun,
+  waitingPhase,
+} from "@lib/design-scan/engine";
 import { toCssVariables } from "@lib/design-scan/export";
 import { type MatchResult, matchComponents } from "@lib/design-scan/mcp";
 import { type ProseResult, renderBody, runProsePhase } from "@lib/design-scan/prose";
 import {
   DEFAULT_PROXY_URL,
+  DEV_CAPTURE_START_COMMAND,
   type ProxyStatus,
+  captureStartCommand,
   clearProxyUrl,
+  isLoopbackProxy,
   loadProxyUrl,
   normalizeProxyUrl,
   pingProxy,
   saveProxyUrl,
+  shutdownProxy,
 } from "@lib/design-scan/proxy";
+import { resolveComponentNames } from "@lib/design-scan/resolve-components";
+import { type Replica, catalogPiecesFromMatch, runReplicaPhase } from "@lib/design-scan/replica";
 import { frontmatterToYaml, toDesignMd } from "@lib/design-scan/serialize";
-import { clearRun, loadRun } from "@lib/design-scan/store";
+import {
+  activateScan,
+  beginNewScan,
+  deleteScan,
+  downloadScanExport,
+  importScanJson,
+  listSavedScans,
+  loadActiveScan,
+  saveRun,
+} from "@lib/design-scan/store";
+import type { ScanListItem } from "@lib/design-scan/store";
+import { type PageStructure, readStructure } from "@lib/design-scan/structure";
 import { type CaptureInput, type Frontmatter, extractFrontmatter } from "@lib/design-scan/tokens";
-import type { PhaseId, RunState } from "@lib/design-scan/types";
+import type { Brief, PhaseId, RunState } from "@lib/design-scan/types";
 import {
   type AiModel,
   type AiProvider,
@@ -56,6 +85,7 @@ type Capture = {
   stylesheets: Stylesheet[];
   bytes: number;
   notes: string[];
+  structure: PageStructure;
 };
 
 /**
@@ -74,7 +104,7 @@ async function captureRunner(url: string, proxyUrl: string): Promise<Capture> {
   if (!res.ok || "error" in body) {
     throw new Error("error" in body ? body.error : `The proxy responded ${res.status}.`);
   }
-  return body;
+  return { ...body, structure: readStructure(body.html) };
 }
 
 /** Añade https:// si el usuario pegó el dominio a secas. */
@@ -93,7 +123,28 @@ function normalizeUrl(input: string): string | null {
 
 const kb = (bytes: number) => `${(bytes / 1024).toFixed(1)} KB`;
 
-export default function DesignScan() {
+export type DesignScanCopy = {
+  proxyLead: string;
+  proxyPanelTitle: string;
+  proxyUseThis: string;
+  proxyReset: string;
+  proxyCopyStart: string;
+  proxyCopied: string;
+  proxyStop: string;
+  proxyStopFailed: string;
+  proxyStatusUp: string;
+  proxyStatusChecking: string;
+  proxyStatusDown: string;
+  proxyStatusUnknown: string;
+  proxySavedHint: string;
+};
+
+type DesignScanProps = {
+  copy: DesignScanCopy;
+  siteOrigin: string;
+};
+
+export default function DesignScan({ copy, siteOrigin }: DesignScanProps) {
   const [config, setConfig] = useState<AiProviderConfig | null>(null);
   const [models, setModels] = useState<AiModel[]>([]);
   const [modelsError, setModelsError] = useState("");
@@ -108,7 +159,25 @@ export default function DesignScan() {
   const [proxyDraft, setProxyDraft] = useState(DEFAULT_PROXY_URL);
   const [proxyStatus, setProxyStatus] = useState<ProxyStatus>("unknown");
   const [proxyOpen, setProxyOpen] = useState(false);
+  const [startCopied, setStartCopied] = useState(false);
+  const [stopError, setStopError] = useState("");
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const [activeScanId, setActiveScanId] = useState<string | null>(null);
+  const [savedScans, setSavedScans] = useState<ScanListItem[]>([]);
+  const [forceNewScan, setForceNewScan] = useState(false);
+  const [importError, setImportError] = useState("");
   const abortRef = useRef<AbortController | null>(null);
+  const runRef = useRef<RunState | null>(null);
+
+  useEffect(() => {
+    runRef.current = run;
+  }, [run]);
+
+  const refreshLibrary = useCallback(() => {
+    setSavedScans(listSavedScans());
+    const active = loadActiveScan();
+    setActiveScanId(active?.id ?? null);
+  }, []);
 
   // localStorage no existe hasta que el componente monta en el cliente.
   useEffect(() => {
@@ -116,12 +185,14 @@ export default function DesignScan() {
     const savedProxy = loadProxyUrl();
     setProxyUrl(savedProxy);
     setProxyDraft(savedProxy);
-    const saved = loadRun();
-    if (saved) {
-      setRun(saved);
-      setUrl(saved.url);
+    refreshLibrary();
+    const active = loadActiveScan();
+    if (active) {
+      setRun(active.run);
+      setUrl(active.run.url);
+      setActiveScanId(active.id);
     }
-  }, []);
+  }, [refreshLibrary]);
 
   // Comprobar que el worker responde ANTES de escanear: si no, la fase 1 falla
   // y el usuario no sabe si el problema es la URL que pegó o el worker.
@@ -152,6 +223,31 @@ export default function DesignScan() {
     setProxyUrl(DEFAULT_PROXY_URL);
     setProxyDraft(DEFAULT_PROXY_URL);
   }, []);
+
+  const startCommand = useMemo(
+    () => (import.meta.env.DEV ? DEV_CAPTURE_START_COMMAND : captureStartCommand(siteOrigin)),
+    [siteOrigin]
+  );
+
+  const copyStartCommand = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(startCommand);
+      setStartCopied(true);
+      window.setTimeout(() => setStartCopied(false), 2000);
+    } catch {
+      /* clipboard blocked */
+    }
+  }, [startCommand]);
+
+  const stopHelper = useCallback(async () => {
+    setStopError("");
+    const ok = await shutdownProxy(proxyUrl);
+    if (ok) {
+      setProxyStatus("down");
+      return;
+    }
+    setStopError(copy.proxyStopFailed);
+  }, [copy.proxyStopFailed, proxyUrl]);
 
   const patchConfig = useCallback((patch: Partial<AiProviderConfig>) => {
     setConfig((prev) => {
@@ -194,11 +290,13 @@ export default function DesignScan() {
     }
   }, [config, patchConfig]);
 
-  /**
-   * `capture` y `tokens` están construidas. Las tres siguientes las levantan
-   * STL-028 a STL-031; hasta entonces el motor las marca `unavailable` y para
-   * ahí, en vez de fingir que pasaron.
-   */
+  /** La pausa. El escaneo no pasa de aquí hasta que alguien conteste. */
+  const gates: Gate[] = useMemo(
+    () => [{ id: "brief", isAnswered: (r) => Boolean(r.brief.answeredAt) }],
+    []
+  );
+
+  /** Las siete fases del pipeline. `brief` no está aquí: es una puerta, no código. */
   const registry: PhaseRegistry = useMemo(
     () => ({
       capture: (ctx) => captureRunner(ctx.url, proxyUrl),
@@ -220,10 +318,51 @@ export default function DesignScan() {
           ...(ctx.signal ? { signal: ctx.signal } : {}),
         });
       },
+      components: async (ctx) => {
+        const cap = ctx.outputs.capture as Capture | undefined;
+        const prosa = ctx.outputs.prose as ProseResult | undefined;
+        const { names, note } = resolveComponentNames({
+          briefComponents: ctx.brief.components,
+          html: cap?.html,
+          structure: cap?.structure,
+          proseComponents: prosa?.components,
+        });
+
+        let progress = { component: names[0] ?? "", index: 0, total: names.length };
+
+        const patchPartial = (partial: MatchResult) => {
+          const current = runRef.current;
+          if (!current) return;
+          const next: RunState = {
+            ...current,
+            updatedAt: new Date().toISOString(),
+            phases: {
+              ...current.phases,
+              components: {
+                ...current.phases.components,
+                status: "running",
+                output: { ...partial, progress },
+              },
+            },
+          };
+          runRef.current = next;
+          const saved = saveRun(next);
+          if (!saved.ok) setStorageWarning(saved.reason);
+          setRun(next);
+        };
+
+        const result = await matchComponents(names, {
+          pinned: ctx.brief.pinned,
+          siteHint: ctx.url,
+          ...(ctx.signal ? { signal: ctx.signal } : {}),
+          onProgress: (component, index, total) => {
+            progress = { component, index, total };
+          },
+          onMatch: patchPartial,
+        });
+        return note ? { ...result, resolutionNote: note } : result;
+      },
       recreate: async (ctx) => {
-        // No hay nada que calcular aquí: los snippets ya están descargados y el
-        // revestido es determinista. La fase existe para que el pipeline se
-        // cierre entero y quede constancia de qué se recreó.
         const m = ctx.outputs.components as MatchResult | undefined;
         if (!m) throw new Error("The catalog matching has to run first.");
         const withMarkup = m.matches.filter((x) => {
@@ -232,12 +371,25 @@ export default function DesignScan() {
         });
         return { recreated: withMarkup.map((x) => x.component) };
       },
-      components: async (ctx) => {
+      replica: async (ctx) => {
+        const cap = ctx.outputs.capture as Capture | undefined;
+        const front = ctx.outputs.tokens as Frontmatter | undefined;
         const prosa = ctx.outputs.prose as ProseResult | undefined;
-        if (!prosa) throw new Error("The prose phase has to run first.");
-        const names = Object.keys(prosa.components);
-        if (names.length === 0) throw new Error("No components to match against the catalog.");
-        return matchComponents(names, { ...(ctx.signal ? { signal: ctx.signal } : {}) });
+        const match = ctx.outputs.components as MatchResult | undefined;
+        if (!cap || !front) throw new Error("The tokens phase has to run first.");
+        if (!config) throw new Error("No model configured.");
+
+        const structure = cap.structure ?? readStructure(cap.html);
+
+        return runReplicaPhase({
+          front,
+          structure,
+          brief: ctx.brief,
+          designBody: prosa ? renderBody(prosa.sections) : "",
+          catalogPieces: match ? catalogPiecesFromMatch(front, match) : [],
+          config,
+          ...(ctx.signal ? { signal: ctx.signal } : {}),
+        });
       },
     }),
     [config, proxyUrl]
@@ -251,21 +403,35 @@ export default function DesignScan() {
       abortRef.current = controller;
       try {
         await runScan(start, registry, {
-          onChange: setRun,
+          onChange: (next) => {
+            setRun(next);
+            refreshLibrary();
+          },
           onStorageProblem: setStorageWarning,
           signal: controller.signal,
           // Un solo intento en las fases que llaman al modelo: reintentar sola
           // una llamada que paga el usuario le duplica la factura sin avisar.
           // El botón Retry sigue estando para cuando él lo decida.
-          maxAttempts: { prose: 1 },
+          gates,
+          // Las fases con modelo van a un intento: reintentar sola una llamada
+          // que paga el usuario le duplica la factura sin preguntarle.
+          maxAttempts: { prose: 1, replica: 1 },
         });
       } finally {
         setBusy(false);
         abortRef.current = null;
       }
     },
-    [registry]
+    [registry, gates, refreshLibrary]
   );
+
+  const scanButtonLabel = useMemo(() => {
+    if (busy) return "Scanning…";
+    if (forceNewScan || !run) return "Scan";
+    const target = normalizeUrl(url);
+    if (target && target === run.url) return "Resume scan";
+    return "Scan new URL";
+  }, [busy, forceNewScan, run, url]);
 
   const startScan = useCallback(() => {
     const target = normalizeUrl(url);
@@ -274,9 +440,19 @@ export default function DesignScan() {
       return;
     }
     setUrlError("");
-    // resumeOrStart es lo que hace que volver a darle no repita lo ya hecho.
-    void execute(resumeOrStart(target));
-  }, [url, execute]);
+
+    let start: RunState;
+    if (forceNewScan) {
+      const created = beginNewScan(target);
+      setActiveScanId(created.id);
+      setForceNewScan(false);
+      start = created.run;
+    } else {
+      start = resumeOrStart(target);
+      setActiveScanId(loadActiveScan()?.id ?? null);
+    }
+    void execute(start);
+  }, [url, execute, forceNewScan]);
 
   const onRetry = useCallback(
     (id: PhaseId) => {
@@ -286,17 +462,134 @@ export default function DesignScan() {
     [run, execute]
   );
 
-  const discard = useCallback(() => {
+  /**
+   * Para lo que esté corriendo y CONSERVA lo hecho. La petición en vuelo se
+   * cancela aquí; el estado lo arregla `stopRun`, que devuelve la fase a
+   * pendiente en vez de marcarla como fallida.
+   */
+  const stop = useCallback(() => {
     abortRef.current?.abort();
-    clearRun();
-    setRun(null);
-    setStorageWarning("");
+    setRun((prev) => {
+      if (!prev) return prev;
+      const stopped = stopRun(prev);
+      saveRun(stopped);
+      return stopped;
+    });
+    setBusy(false);
   }, []);
+
+  /**
+   * Borra el escaneo entero y vuelve al punto de partida. NO toca el modelo ni
+   * la URL del worker: son ajustes, no parte del escaneo, y perderlos cada vez
+   * que alguien quiere empezar de nuevo sería un castigo absurdo.
+   */
+  const resetAll = useCallback(() => {
+    abortRef.current?.abort();
+    if (activeScanId) {
+      const { activeId, run: nextRun } = deleteScan(activeScanId);
+      setActiveScanId(activeId);
+      setRun(nextRun);
+      setUrl(nextRun?.url ?? "");
+    } else {
+      setRun(null);
+      setUrl("");
+    }
+    setUrlError("");
+    setStorageWarning("");
+    setConfirmingReset(false);
+    setForceNewScan(false);
+    setBusy(false);
+    refreshLibrary();
+  }, [activeScanId, refreshLibrary]);
+
+  const openSavedScan = useCallback(
+    (id: string) => {
+      abortRef.current?.abort();
+      setBusy(false);
+      const next = activateScan(id);
+      if (!next) return;
+      setRun(next);
+      setUrl(next.url);
+      setActiveScanId(id);
+      setForceNewScan(false);
+      refreshLibrary();
+    },
+    [refreshLibrary]
+  );
+
+  const removeSavedScan = useCallback(
+    (id: string) => {
+      if (busy) return;
+      const { activeId, run: nextRun } = deleteScan(id);
+      setActiveScanId(activeId);
+      setRun(nextRun);
+      setUrl(nextRun?.url ?? "");
+      if (!nextRun) setForceNewScan(true);
+      refreshLibrary();
+    },
+    [busy, refreshLibrary]
+  );
+
+  const prepareNewScan = useCallback(() => {
+    abortRef.current?.abort();
+    setBusy(false);
+    setRun(null);
+    setUrl("");
+    setActiveScanId(null);
+    setForceNewScan(true);
+    setConfirmingReset(false);
+    setImportError("");
+  }, []);
+
+  const exportSavedScan = useCallback((id: string) => {
+    if (!downloadScanExport(id)) {
+      setImportError("Could not export that scan.");
+    }
+  }, []);
+
+  const importSavedScan = useCallback(
+    (file: File) => {
+      setImportError("");
+      void file.text().then((text) => {
+        const result = importScanJson(text);
+        if (!result.ok) {
+          setImportError(result.error);
+          return;
+        }
+        setRun(result.run);
+        setUrl(result.run.url);
+        setActiveScanId(result.id);
+        setForceNewScan(false);
+        refreshLibrary();
+      });
+    },
+    [refreshLibrary]
+  );
 
   const capture = (run?.phases.capture.output ?? null) as Capture | null;
   const frontmatter = (run?.phases.tokens.output ?? null) as Frontmatter | null;
   const prose = (run?.phases.prose.output ?? null) as ProseResult | null;
   const matches = (run?.phases.components.output ?? null) as MatchResult | null;
+  const replica = (run?.phases.replica.output ?? null) as Replica | null;
+
+  const structure: PageStructure | null = useMemo(
+    () => capture?.structure ?? (capture ? readStructure(capture.html) : null),
+    [capture]
+  );
+
+  const waiting = run ? waitingPhase(run) : null;
+
+  const continueWithBrief = useCallback(
+    (brief: Brief) => {
+      if (!run) return;
+      const components =
+        brief.components.length > 0
+          ? brief.components
+          : (structure?.components.map((c) => c.name) ?? []);
+      void execute(answerBrief(run, { ...brief, components }));
+    },
+    [run, execute, structure]
+  );
 
   const cssBytes = useMemo(() => {
     if (!capture) return 0;
@@ -346,9 +639,20 @@ export default function DesignScan() {
               disabled={busy || !url.trim()}
               className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-400 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {busy ? "Scanning…" : run ? "Resume scan" : "Scan"}
+              {scanButtonLabel}
             </button>
           </div>
+
+          <DesignScanLibrary
+            scans={savedScans}
+            activeId={activeScanId}
+            onOpen={openSavedScan}
+            onDelete={removeSavedScan}
+            onExport={exportSavedScan}
+            onImportFile={importSavedScan}
+            onNewScan={prepareNewScan}
+            importError={importError}
+          />
 
           {urlError && (
             <p className="mt-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
@@ -357,9 +661,7 @@ export default function DesignScan() {
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <p className="text-xs text-slate-500">
-              Captured through a worker of ours, because the browser cannot read a third-party site.
-            </p>
+            <p className="text-xs text-slate-500">{copy.proxyLead}</p>
 
             <button
               type="button"
@@ -390,8 +692,31 @@ export default function DesignScan() {
                 htmlFor="scan-proxy"
                 className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.15em] text-slate-500"
               >
-                Capture worker
+                {copy.proxyPanelTitle}
               </label>
+
+              <div className="mb-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void copyStartCommand()}
+                  className="rounded-lg border border-brand-400/40 bg-brand-400/10 px-3 py-2 text-xs text-brand-100 transition-colors hover:border-brand-400/60"
+                >
+                  {startCopied ? copy.proxyCopied : copy.proxyCopyStart}
+                </button>
+                {proxyStatus === "up" && isLoopbackProxy(proxyUrl) && (
+                  <button
+                    type="button"
+                    onClick={() => void stopHelper()}
+                    className="rounded-lg border border-white/15 px-3 py-2 text-xs text-slate-200 transition-colors hover:border-white/30"
+                  >
+                    {copy.proxyStop}
+                  </button>
+                )}
+              </div>
+
+              <pre className="mb-3 overflow-x-auto rounded-lg border border-white/10 bg-black/50 p-2 font-mono text-[10px] leading-relaxed text-slate-400">
+                {startCommand}
+              </pre>
 
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
@@ -411,7 +736,7 @@ export default function DesignScan() {
                   disabled={proxyDraft.trim() === proxyUrl}
                   className="rounded-lg border border-white/15 px-3 py-2 text-xs text-slate-200 transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Use this one
+                  {copy.proxyUseThis}
                 </button>
                 {proxyUrl !== DEFAULT_PROXY_URL && (
                   <button
@@ -419,30 +744,25 @@ export default function DesignScan() {
                     onClick={resetProxy}
                     className="rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition-colors hover:border-white/25"
                   >
-                    Reset
+                    {copy.proxyReset}
                   </button>
                 )}
               </div>
 
               <p className="mt-2 text-[11px] text-slate-500">
                 {proxyStatus === "up" && (
-                  <span className="text-emerald-300">Responding. Ready to capture.</span>
+                  <span className="text-emerald-300">{copy.proxyStatusUp}</span>
                 )}
-                {proxyStatus === "checking" && "Checking\u2026"}
+                {proxyStatus === "checking" && copy.proxyStatusChecking}
                 {proxyStatus === "down" && (
-                  <span className="text-rose-300">
-                    Not responding. Start it with{" "}
-                    <code className="font-mono">bun run dev:scan-proxy</code>, or point this at
-                    another instance.
-                  </span>
+                  <span className="text-rose-300">{copy.proxyStatusDown}</span>
                 )}
-                {proxyStatus === "unknown" && "Not checked yet."}
+                {proxyStatus === "unknown" && copy.proxyStatusUnknown}
               </p>
 
-              <p className="mt-1.5 text-[11px] text-slate-600">
-                Saved in this browser. Any worker serving the same /capture endpoint works — your
-                own deployment, a colleague's, or a different port.
-              </p>
+              {stopError && <p className="mt-1.5 text-[11px] text-rose-300">{stopError}</p>}
+
+              <p className="mt-1.5 text-[11px] text-slate-600">{copy.proxySavedHint}</p>
             </div>
           )}
         </div>
@@ -458,10 +778,10 @@ export default function DesignScan() {
               </div>
               <button
                 type="button"
-                onClick={discard}
+                onClick={() => setConfirmingReset(true)}
                 className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:border-white/25"
               >
-                Discard
+                Delete
               </button>
             </div>
 
@@ -522,11 +842,92 @@ export default function DesignScan() {
 
         {run && (
           <section>
-            <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-slate-400">
-              Phases
-            </h2>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-mono text-[11px] uppercase tracking-[0.15em] text-slate-400">
+                Phases
+              </h2>
+
+              <div className="flex items-center gap-1.5">
+                {busy && (
+                  <button
+                    type="button"
+                    onClick={stop}
+                    className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[11px] text-amber-200 transition-colors hover:border-amber-400/60"
+                  >
+                    Stop
+                  </button>
+                )}
+
+                {confirmingReset ? (
+                  <>
+                    <span className="text-[11px] text-slate-400">
+                      Remove this scan from the library?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={resetAll}
+                      className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-[11px] text-rose-200 transition-colors hover:border-rose-400/60"
+                    >
+                      Yes, delete
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingReset(false)}
+                      className="rounded-lg border border-white/10 px-3 py-1 text-[11px] text-slate-400 transition-colors hover:border-white/25"
+                    >
+                      Keep it
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingReset(true)}
+                    className="rounded-lg border border-white/10 px-3 py-1 text-[11px] text-slate-400 transition-colors hover:border-white/25"
+                  >
+                    Delete this scan
+                  </button>
+                )}
+              </div>
+            </div>
+
             <DesignScanPhases run={run} busy={busy} onRetry={onRetry} />
+
+            {confirmingReset && (
+              <p className="mt-2 text-[11px] text-slate-500">
+                Other saved scans stay in the list. Only this one is removed.
+              </p>
+            )}
           </section>
+        )}
+
+        {waiting === "brief" && run && (
+          <DesignScanBrief
+            structure={structure}
+            initial={run.brief}
+            busy={busy}
+            onContinue={continueWithBrief}
+          />
+        )}
+
+        {matches && frontmatter && (
+          <DesignScanRecreate
+            front={frontmatter}
+            matches={matches}
+            tokensCss={toCssVariables(frontmatter)}
+          />
+        )}
+
+        {matches && <DesignScanMatches result={matches} />}
+
+        {replica && frontmatter && (
+          <DesignScanReplica
+            replica={replica}
+            tokensCss={toCssVariables(frontmatter)}
+            siteName={frontmatter.name}
+            fontFamily={
+              Object.values(frontmatter.typography ?? {}).find((t) => t.fontFamily)?.fontFamily
+            }
+          />
         )}
 
         {frontmatter && (
@@ -541,16 +942,6 @@ export default function DesignScan() {
             )}
           />
         )}
-
-        {matches && frontmatter && (
-          <DesignScanRecreate
-            front={frontmatter}
-            matches={matches}
-            tokensCss={toCssVariables(frontmatter)}
-          />
-        )}
-
-        {matches && <DesignScanMatches result={matches} />}
 
         {frontmatter && (
           <DesignScanExport

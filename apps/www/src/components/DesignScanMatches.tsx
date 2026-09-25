@@ -22,6 +22,11 @@ export default function DesignScanMatches({ result }: { result: MatchResult }) {
           {covered.length} of {result.matches.length} components have a resource in the stealthis
           catalog.
         </p>
+        {result.resolutionNote && (
+          <p className="mt-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2 text-[11px] text-amber-200/90">
+            {result.resolutionNote}
+          </p>
+        )}
       </div>
 
       <ul className="space-y-2">

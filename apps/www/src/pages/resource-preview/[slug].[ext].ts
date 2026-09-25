@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { getCollection } from "astro:content";
-import type { APIRoute } from "astro";
 import { findResourcePreview } from "@lib/resource-preview";
+import type { APIRoute } from "astro";
 
 type PreviewProps = {
   absolutePath: string;

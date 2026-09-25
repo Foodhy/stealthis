@@ -45,6 +45,8 @@ export type MatchResult = {
   uncovered: string[];
   /** Recursos ya traídos, listos para STL-031. */
   snippets: Record<string, { html?: string; css?: string }>;
+  /** Cuando los nombres no vinieron del brief (heurística o defaults). */
+  resolutionNote?: string;
 };
 
 /**
@@ -65,9 +67,54 @@ export function parseSearchResponse(raw: string): CatalogEntry[] {
 /** Variantes de estado que no cambian QUÉ componente es. */
 const VARIANT_SUFFIX = /-(hover|active|focus|pressed|disabled|selected|open|checked)$/;
 
+/** Consultas preferidas por rol — evita caer en "input" o "field" sueltos. */
+const ROLE_SEARCH_QUERIES: Record<string, string[]> = {
+  "search-field": ["search bar", "search input"],
+  "input-field": ["text input", "input field"],
+  "email-field": ["email input"],
+  "password-field": ["password input"],
+  "nav-link": ["navbar", "nav link"],
+  "button-primary": ["button"],
+  "button-secondary": ["button secondary", "button"],
+  logo: ["logo"],
+  hero: ["hero section", "hero"],
+  card: ["card"],
+  footer: ["footer"],
+  modal: ["modal"],
+  textarea: ["textarea"],
+  select: ["select"],
+  checkbox: ["checkbox"],
+  "radio-group": ["radio"],
+};
+
+/** Slugs de verticales que suelen ser ruido fuera de su industria. */
+const VERTICAL_SLUG_PREFIXES = [
+  "clinic-",
+  "dental-",
+  "gym-",
+  "salon-",
+  "bank-",
+  "real-estate-",
+  "restaurant-",
+  "hotel-",
+  "vet-",
+  "pharmacy-",
+];
+
+/** Palabras demasiado genéricas para buscar solas en el catálogo. */
+const GENERIC_QUERY_WORDS = new Set(["input", "field", "button", "link", "form"]);
+
 /** `button-primary-hover` → `button primary`. Es lo que se manda a buscar. */
 export function toQuery(component: string): string {
   return component.replace(VARIANT_SUFFIX, "").replace(/-/g, " ").trim();
+}
+
+/** Consultas en orden para un componente deducido. */
+export function searchQueriesForComponent(component: string): string[] {
+  const base = component.replace(VARIANT_SUFFIX, "");
+  const mapped = ROLE_SEARCH_QUERIES[base];
+  if (mapped?.length) return [...mapped];
+  return [toQuery(component)];
 }
 
 /**
@@ -84,6 +131,7 @@ export function queryVariants(query: string): string[] {
   const variants = [query];
   // La palabra más larga suele ser el sustantivo: "field" antes que "input".
   for (const word of [...words].sort((a, b) => b.length - a.length)) {
+    if (GENERIC_QUERY_WORDS.has(word)) continue;
     if (!variants.includes(word)) variants.push(word);
   }
   return variants;
@@ -105,19 +153,37 @@ const CATEGORY_WEIGHT: Record<string, number> = {
   remotion: -30,
 };
 
+function verticalPenalty(slug: string, siteHint: string): number {
+  const lower = slug.toLowerCase();
+  const hint = siteHint.toLowerCase();
+  for (const prefix of VERTICAL_SLUG_PREFIXES) {
+    if (!lower.startsWith(prefix)) continue;
+    const vertical = prefix.replace(/-$/, "");
+    if (hint.includes(vertical.replace("-", " ")) || hint.includes(vertical)) return 0;
+    return -55;
+  }
+  return 0;
+}
+
 /**
  * Puntúa un recurso contra el componente buscado. Lo que más pesa es que el
  * nombre aparezca en el slug o el título: la descripción menciona de todo.
  */
-export function scoreCandidate(query: string, entry: CatalogEntry): number {
+export function scoreCandidate(
+  query: string,
+  entry: CatalogEntry,
+  options: { component?: string; siteHint?: string } = {}
+): number {
   const words = query.split(/\s+/).filter((w) => w.length > 2);
   if (words.length === 0) return 0;
 
   const slug = entry.slug.toLowerCase();
   const title = entry.title.toLowerCase();
   const description = (entry.description ?? "").toLowerCase();
+  const component = options.component?.replace(VARIANT_SUFFIX, "") ?? "";
 
   let score = CATEGORY_WEIGHT[entry.category] ?? 0;
+  score += verticalPenalty(slug, options.siteHint ?? "");
   let namedHit = false;
 
   for (const word of words) {
@@ -125,7 +191,12 @@ export function scoreCandidate(query: string, entry: CatalogEntry): number {
       score += 45;
       namedHit = true;
     } else if (slug.includes(word)) {
-      score += 30;
+      // "input" dentro de clinic-vitals-input no debe ganar a un search bar.
+      if (GENERIC_QUERY_WORDS.has(word) && !slug.endsWith(`-${word}`) && slug !== word) {
+        score += 8;
+      } else {
+        score += 30;
+      }
       namedHit = true;
     }
     if (title.includes(word)) {
@@ -142,6 +213,7 @@ export function scoreCandidate(query: string, entry: CatalogEntry): number {
 
   // Un recurso cuyo slug es literalmente lo buscado gana a cualquier otro.
   if (slug === words.join("-")) score += 50;
+  if (component && slug === component) score += 60;
 
   // Preferimos lo simple: para vestirlo con otros tokens, cuanto menos traiga
   // de su propio contexto, mejor.
@@ -190,9 +262,32 @@ export const MIN_SCORE = 45;
 export const KEEP_CANDIDATES = 3;
 
 export type MatchOptions = SearchOptions & {
+  /**
+   * Componente → slug elegido a mano por el usuario. Se usa tal cual, sin
+   * buscar ni puntuar: si alguien se ha molestado en elegirlo, el ranking no
+   * tiene nada que aportar.
+   */
+  pinned?: Record<string, string>;
+  /** Nombre del sitio o URL, para no emparejar verticales ajenas. */
+  siteHint?: string;
   /** Se llama al empezar cada componente, para poder pintar el progreso. */
   onProgress?: (component: string, index: number, total: number) => void;
+  /** Resultado parcial tras cada componente (para pintar matches en vivo). */
+  onMatch?: (partial: MatchResult) => void;
 };
+
+function emitPartial(
+  matches: ComponentMatch[],
+  uncovered: string[],
+  snippets: MatchResult["snippets"],
+  options: MatchOptions
+): void {
+  options.onMatch?.({
+    matches: [...matches],
+    uncovered: [...uncovered],
+    snippets: { ...snippets },
+  });
+}
 
 export async function matchComponents(
   components: string[],
@@ -208,26 +303,52 @@ export async function matchComponents(
 
   for (const [index, component] of components.entries()) {
     options.onProgress?.(component, index, components.length);
-    const query = toQuery(component);
+    const searchQueries = searchQueriesForComponent(component);
+    const query = searchQueries[0] ?? toQuery(component);
+
+    // Un recurso fijado a mano gana a cualquier búsqueda.
+    const pinnedSlug = options.pinned?.[component];
+    if (pinnedSlug) {
+      matches.push({
+        component,
+        query: `pinned: ${pinnedSlug}`,
+        candidates: [
+          {
+            slug: pinnedSlug,
+            title: pinnedSlug,
+            description: "Pinned by hand",
+            category: "pinned",
+            score: Number.POSITIVE_INFINITY,
+          },
+        ],
+      });
+      if (!snippets[pinnedSlug]) {
+        const [html, css] = await Promise.all([
+          getSnippet(pinnedSlug, "html", options).catch(() => null),
+          getSnippet(pinnedSlug, "css", options).catch(() => null),
+        ]);
+        snippets[pinnedSlug] = { ...(html ? { html } : {}), ...(css ? { css } : {}) };
+      }
+      emitPartial(matches, uncovered, snippets, options);
+      continue;
+    }
 
     let results = cache.get(query);
     if (!results) {
       const collected: CatalogEntry[] = [];
       const seen = new Set<string>();
 
-      // Se prueban TODAS las variantes, sin cortar por cantidad. Cortar al
-      // llenar un cupo hacía que "button primary" se quedara con los resultados
-      // de "primary" y no llegara nunca a buscar "button", que era justo el que
-      // tenía los 279 botones del catálogo.
-      for (const variant of queryVariants(query)) {
-        try {
-          for (const entry of await searchCatalog(variant, options)) {
-            if (seen.has(entry.slug)) continue;
-            seen.add(entry.slug);
-            collected.push(entry);
+      for (const searchQuery of searchQueries) {
+        for (const variant of queryVariants(searchQuery)) {
+          try {
+            for (const entry of await searchCatalog(variant, options)) {
+              if (seen.has(entry.slug)) continue;
+              seen.add(entry.slug);
+              collected.push(entry);
+            }
+          } catch {
+            // Una variante que falla no invalida las demás.
           }
-        } catch {
-          // Una variante que falla no invalida las demás.
         }
       }
 
@@ -236,7 +357,13 @@ export async function matchComponents(
     }
 
     const candidates = results
-      .map((entry) => ({ ...entry, score: scoreCandidate(query, entry) }))
+      .map((entry) => ({
+        ...entry,
+        score: scoreCandidate(query, entry, {
+          component,
+          siteHint: options.siteHint,
+        }),
+      }))
       .filter((c) => c.score >= MIN_SCORE)
       .sort((a, b) => b.score - a.score)
       .slice(0, KEEP_CANDIDATES);
@@ -251,6 +378,7 @@ export async function matchComponents(
         uncovered: "no close match in the catalog",
       });
       uncovered.push(component);
+      emitPartial(matches, uncovered, snippets, options);
       continue;
     }
 
@@ -269,6 +397,7 @@ export async function matchComponents(
         ...(css ? { css } : {}),
       };
     }
+    emitPartial(matches, uncovered, snippets, options);
   }
 
   return { matches, uncovered, snippets };

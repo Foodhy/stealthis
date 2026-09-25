@@ -1,0 +1,465 @@
+---
+/**
+ * Homepage hero backdrop. One of three canvases is chosen at random on load:
+ *  - grid: flickering rounded tiles (the original hero mosaic)
+ *  - shader: WebGL fragment field from three-shader-hero
+ *  - particles: constellation of drifting dots + proximity lines
+ * Force a variant with ?heroBg=grid|shader|particles
+ */
+---
+
+<canvas class="hero-ambient-canvas" data-hero-ambient aria-hidden="true"></canvas>
+
+<script>
+  type Variant = "grid" | "shader" | "particles";
+  const VARIANTS: Variant[] = ["grid", "shader", "particles"];
+
+  function pickVariant(): Variant {
+    const forced = new URLSearchParams(window.location.search).get("heroBg");
+    if (forced && (VARIANTS as string[]).includes(forced)) return forced as Variant;
+    return VARIANTS[Math.floor(Math.random() * VARIANTS.length)];
+  }
+
+  function prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function initHeroAmbient() {
+    const canvas = document.querySelector<HTMLCanvasElement>("[data-hero-ambient]");
+    if (!canvas) return;
+    const variant = pickVariant();
+    canvas.dataset.variant = variant;
+
+    if (prefersReducedMotion()) return;
+
+    if (variant === "grid") startGrid(canvas);
+    else if (variant === "shader") startShader(canvas);
+    else startParticles(canvas);
+  }
+
+  function startGrid(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const CELL_SIZE = 24;
+    const GAP = 2;
+    const BASE_OPACITY = 0.06;
+    const MAX_OPACITY = 0.35;
+    const FLICKER_CHANCE = 0.005;
+    const LERP_SPEED = 0.04;
+    const COLOR = { r: 59, g: 130, b: 246 };
+
+    let cols = 0;
+    let rows = 0;
+    let cells: { x: number; y: number; opacity: number; target: number }[] = [];
+    let animId = 0;
+    let dpr = 1;
+
+    function resize() {
+      dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement!.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      cols = Math.ceil(rect.width / (CELL_SIZE + GAP));
+      rows = Math.ceil(rect.height / (CELL_SIZE + GAP));
+      cells = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          cells.push({
+            x: c * (CELL_SIZE + GAP),
+            y: r * (CELL_SIZE + GAP),
+            opacity: BASE_OPACITY + Math.random() * 0.03,
+            target: BASE_OPACITY,
+          });
+        }
+      }
+    }
+
+    function animate() {
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+      ctx.clearRect(0, 0, w, h);
+
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        if (Math.random() < FLICKER_CHANCE) {
+          cell.target = BASE_OPACITY + Math.random() * (MAX_OPACITY - BASE_OPACITY);
+        }
+        cell.opacity += (cell.target - cell.opacity) * LERP_SPEED;
+        cell.target += (BASE_OPACITY - cell.target) * 0.01;
+        ctx.fillStyle = `rgba(${COLOR.r}, ${COLOR.g}, ${COLOR.b}, ${cell.opacity})`;
+        ctx.beginPath();
+        ctx.roundRect(cell.x, cell.y, CELL_SIZE, CELL_SIZE, 2);
+        ctx.fill();
+      }
+      animId = requestAnimationFrame(animate);
+    }
+
+    resize();
+    animate();
+    bindLifecycle(canvas, () => animId, (id) => {
+      animId = id;
+    }, resize, animate);
+  }
+
+  function startShader(canvas: HTMLCanvasElement) {
+    const gl = (canvas.getContext("webgl") ??
+      canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+    if (!gl) {
+      canvas.dataset.variant = "grid";
+      startGrid(canvas);
+      return;
+    }
+
+    const VERT = [
+      "attribute vec2 aPos;",
+      "void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }",
+    ].join("\n");
+
+    const FRAG = [
+      "precision highp float;",
+      "uniform vec2 uRes;",
+      "uniform float uTime;",
+      "uniform float uHue;",
+      "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }",
+      "float noise(vec2 p){",
+      "  vec2 i = floor(p), f = fract(p);",
+      "  vec2 u = f * f * (3.0 - 2.0 * f);",
+      "  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),",
+      "             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);",
+      "}",
+      "float fbm(vec2 p){",
+      "  float v = 0.0, a = 0.5;",
+      "  for (int i = 0; i < 5; i++){ v += a * noise(p); p *= 2.02; a *= 0.5; }",
+      "  return v;",
+      "}",
+      "vec3 hsl2rgb(vec3 c){",
+      "  vec3 k = mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0);",
+      "  vec3 rgb = clamp(min(k, 4.0 - k), 0.0, 1.0);",
+      "  return c.z + c.y * (rgb - 0.5) * (1.0 - abs(2.0 * c.z - 1.0));",
+      "}",
+      "void main(){",
+      "  vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / min(uRes.x, uRes.y);",
+      "  float t = uTime;",
+      "  vec2 q = vec2(fbm(uv * 2.0 + t * 0.08), fbm(uv * 2.0 + vec2(5.2, 1.3) - t * 0.06));",
+      "  vec2 r = vec2(fbm(uv * 2.4 + 3.5 * q + t * 0.05), fbm(uv * 2.4 + 3.5 * q + vec2(8.3, 2.8)));",
+      "  float f = fbm(uv * 2.0 + 3.2 * r);",
+      "  float hue = fract(uHue + f * 0.22 + r.x * 0.12);",
+      "  float sat = 0.62 + 0.25 * r.y;",
+      "  float lum = 0.10 + 0.55 * pow(f, 1.4);",
+      "  vec3 col = hsl2rgb(vec3(hue, sat, lum));",
+      "  col += pow(max(0.0, 1.0 - length(uv - vec2(0.55, 0.30))), 4.0) * 0.35;",
+      "  col *= 1.0 - 0.35 * length(uv) * 0.6;",
+      "  col += (hash(gl_FragCoord.xy + t) - 0.5) * 0.02;",
+      "  gl_FragColor = vec4(col, 1.0);",
+      "}",
+    ].join("\n");
+
+    function compile(type: number, src: string) {
+      const s = gl.createShader(type);
+      if (!s) throw new Error("shader create failed");
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        throw new Error(gl.getShaderInfoLog(s) || "shader compile failed");
+      }
+      return s;
+    }
+
+    let program: WebGLProgram;
+    try {
+      program = gl.createProgram() as WebGLProgram;
+      gl.attachShader(program, compile(gl.VERTEX_SHADER, VERT));
+      gl.attachShader(program, compile(gl.FRAGMENT_SHADER, FRAG));
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        throw new Error(gl.getProgramInfoLog(program) || "link failed");
+      }
+    } catch {
+      canvas.style.background =
+        "radial-gradient(120% 120% at 75% 25%, #2b6cb0 0%, #4c1d95 45%, #07080c 100%)";
+      return;
+    }
+
+    gl.useProgram(program);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(program, "aPos");
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const uRes = gl.getUniformLocation(program, "uRes");
+    const uTime = gl.getUniformLocation(program, "uTime");
+    const uHue = gl.getUniformLocation(program, "uHue");
+    const hue = 215 / 360;
+    const speed = 0.85;
+    let shaderTime = 0;
+    let last = 0;
+    let animId = 0;
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const parent = canvas.parentElement!;
+      const wCss = parent.clientWidth;
+      const hCss = parent.clientHeight;
+      canvas.style.width = `${wCss}px`;
+      canvas.style.height = `${hCss}px`;
+      const w = Math.max(1, Math.round(wCss * dpr));
+      const h = Math.max(1, Math.round(hCss * dpr));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+      }
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+    }
+
+    function animate(now: number) {
+      const dt = last ? (now - last) / 1000 : 0;
+      last = now;
+      shaderTime += dt * speed;
+      resize();
+      gl.uniform1f(uTime, shaderTime);
+      gl.uniform1f(uHue, hue);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      animId = requestAnimationFrame(animate);
+    }
+
+    resize();
+    animId = requestAnimationFrame(animate);
+    bindLifecycle(canvas, () => animId, (id) => {
+      animId = id;
+      last = 0;
+    }, resize, () => {
+      animId = requestAnimationFrame(animate);
+    });
+  }
+
+  function startParticles(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const PARTICLE_RGB = [125, 211, 252];
+    const LINE_RGB = [56, 189, 248];
+    const LINK_DIST = 118;
+    const POINTER_RADIUS = 160;
+    const POINTER_FORCE = 0.42;
+
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+    let particles: { x: number; y: number; vx: number; vy: number; r: number; _cx?: number; _cy?: number }[] = [];
+    let targetCount = 90;
+    let animId = 0;
+    const pointer = { x: -9999, y: -9999, active: false };
+
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+    const makeParticle = () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: rand(-0.35, 0.35),
+      vy: rand(-0.35, 0.35),
+      r: rand(0.8, 2.2),
+    });
+
+    function resize() {
+      const rect = canvas.parentElement!.getBoundingClientRect();
+      W = Math.max(1, rect.width);
+      H = Math.max(1, rect.height);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = `${W}px`;
+      canvas.style.height = `${H}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      targetCount = Math.round(Math.min(160, Math.max(70, (W * H) / 14000)));
+      while (particles.length < targetCount) particles.push(makeParticle());
+      if (particles.length > targetCount) particles.length = targetCount;
+    }
+
+    function step() {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        if (pointer.active) {
+          const dx = p.x - pointer.x;
+          const dy = p.y - pointer.y;
+          const d2 = dx * dx + dy * dy;
+          const R = POINTER_RADIUS;
+          if (d2 < R * R && d2 > 0.01) {
+            const d = Math.sqrt(d2);
+            const falloff = (1 - d / R) * POINTER_FORCE;
+            p.vx -= (dx / d) * falloff;
+            p.vy -= (dy / d) * falloff;
+          }
+        }
+        p.vx *= 0.96;
+        p.vy *= 0.96;
+        const speed = Math.hypot(p.vx, p.vy);
+        if (speed < 0.12) {
+          p.vx += rand(-0.06, 0.06);
+          p.vy += rand(-0.06, 0.06);
+        }
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < -5) p.x = W + 5;
+        else if (p.x > W + 5) p.x = -5;
+        if (p.y < -5) p.y = H + 5;
+        else if (p.y > H + 5) p.y = -5;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const cell = LINK_DIST;
+      const cols = Math.max(1, Math.ceil(W / cell));
+      const rows = Math.max(1, Math.ceil(H / cell));
+      const grid: (typeof particles)[] = new Array(cols * rows);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const cx = Math.min(cols - 1, Math.max(0, (p.x / cell) | 0));
+        const cy = Math.min(rows - 1, Math.max(0, (p.y / cell) | 0));
+        p._cx = cx;
+        p._cy = cy;
+        (grid[cy * cols + cx] || (grid[cy * cols + cx] = [])).push(p);
+      }
+
+      const maxD2 = LINK_DIST * LINK_DIST;
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        for (let oy = -1; oy <= 1; oy++) {
+          for (let ox = -1; ox <= 1; ox++) {
+            const gx = (p._cx ?? 0) + ox;
+            const gy = (p._cy ?? 0) + oy;
+            if (gx < 0 || gy < 0 || gx >= cols || gy >= rows) continue;
+            const bucket = grid[gy * cols + gx];
+            if (!bucket) continue;
+            for (let j = 0; j < bucket.length; j++) {
+              const q = bucket[j];
+              if (q === p) continue;
+              if (q.x < p.x || (q.x === p.x && q.y <= p.y)) continue;
+              const ddx = p.x - q.x;
+              const ddy = p.y - q.y;
+              const dd2 = ddx * ddx + ddy * ddy;
+              if (dd2 > maxD2) continue;
+              const alpha = (1 - Math.sqrt(dd2) / LINK_DIST) * 0.55;
+              ctx.strokeStyle = `rgba(${LINE_RGB[0]},${LINE_RGB[1]},${LINE_RGB[2]},${alpha})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(q.x, q.y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        let glow = 0;
+        if (pointer.active) {
+          const md2 = (p.x - pointer.x) ** 2 + (p.y - pointer.y) ** 2;
+          if (md2 < POINTER_RADIUS * POINTER_RADIUS) {
+            glow = 1 - Math.sqrt(md2) / POINTER_RADIUS;
+          }
+        }
+        const rr = p.r + glow * 1.6;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${PARTICLE_RGB[0]},${PARTICLE_RGB[1]},${PARTICLE_RGB[2]},${0.55 + glow * 0.4})`;
+        ctx.arc(p.x, p.y, rr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function animate() {
+      step();
+      draw();
+      animId = requestAnimationFrame(animate);
+    }
+
+    const hero = canvas.closest(".hero-stage") ?? document;
+    const onMove = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.active = true;
+    };
+    const onLeave = () => {
+      pointer.active = false;
+    };
+    hero.addEventListener("pointermove", onMove);
+    hero.addEventListener("pointerleave", onLeave);
+
+    resize();
+    animate();
+    bindLifecycle(canvas, () => animId, (id) => {
+      animId = id;
+    }, resize, animate);
+  }
+
+  function bindLifecycle(
+    canvas: HTMLCanvasElement,
+    getAnimId: () => number,
+    setAnimId: (id: number) => void,
+    resize: () => void,
+    restart: () => void,
+  ) {
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        cancelAnimationFrame(getAnimId());
+        resize();
+        restart();
+      }, 100);
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        cancelAnimationFrame(getAnimId());
+        setAnimId(0);
+      } else if (!getAnimId()) {
+        restart();
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      cancelAnimationFrame(getAnimId());
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initHeroAmbient, { once: true });
+  } else {
+    initHeroAmbient();
+  }
+</script>
+
+<style>
+  .hero-ambient-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-ambient-canvas[data-variant="grid"] {
+    -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 25%, rgba(0, 0, 0, 0.7) 70%);
+    mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 25%, rgba(0, 0, 0, 0.7) 70%);
+  }
+  .hero-ambient-canvas[data-variant="particles"] {
+    -webkit-mask-image: radial-gradient(ellipse 62% 70% at 50% 50%, transparent 18%, rgba(0, 0, 0, 0.85) 68%);
+    mask-image: radial-gradient(ellipse 62% 70% at 50% 50%, transparent 18%, rgba(0, 0, 0, 0.85) 68%);
+  }
+  .hero-ambient-canvas[data-variant="shader"] {
+    opacity: 0.42;
+    -webkit-mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, rgba(0, 0, 0, 0.35) 12%, rgba(0, 0, 0, 0.85) 72%);
+    mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, rgba(0, 0, 0, 0.35) 12%, rgba(0, 0, 0, 0.85) 72%);
+  }
+</style>

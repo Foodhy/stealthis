@@ -1,4 +1,4 @@
-import { test, expect } from "bun:test";
+import { expect, test } from "bun:test";
 
 // Note: This is a placeholder for a real E2E test.
 // Since the environment doesn't have a configured E2E runner like Playwright,

@@ -1,11 +1,12 @@
 ---
-import Base from "@layouts/Base.astro";
-import HeroCodeSpaceBackground from "@components/HeroCodeSpaceBackground.astro";
 import { getCollection } from "astro:content";
+import HeroAmbientBackground from "@components/HeroAmbientBackground.astro";
+import HeroCodeSpaceBackground from "@components/HeroCodeSpaceBackground.astro";
 import { getAlternateLinks, getLocaleFromUrl, getLocalePrefix, useTranslations } from "@i18n/index";
-import { SITE_URLS } from "@lib/urls";
-import { BRAND_ALIASES, BRAND_NAME, BRAND_SHORT_NAME, mergeKeywords } from "@lib/seo";
+import Base from "@layouts/Base.astro";
 import { CATEGORY_ICONS } from "@lib/icons";
+import { BRAND_ALIASES, BRAND_NAME, BRAND_SHORT_NAME, mergeKeywords } from "@lib/seo";
+import { SITE_URLS } from "@lib/urls";
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -236,8 +237,7 @@ const structuredData = [
 
   <!-- Hero -->
   <section class="hero-stage relative overflow-hidden py-16 min-w-0 min-h-[calc(100vh-3.5rem)] flex flex-col justify-center">
-    <!-- Flickering grid background -->
-    <canvas class="hero-flicker-canvas" aria-hidden="true"></canvas>
+    <HeroAmbientBackground />
 
     <div class="container-xl text-center hero-container min-w-0 relative">
       <div class="hero-cta-shell mx-auto max-w-5xl px-5 py-9 sm:px-10 sm:py-12">
@@ -794,100 +794,6 @@ const structuredData = [
     });
   </script>
 
-  <!-- Flickering grid canvas -->
-  <script>
-    (function () {
-      "use strict";
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const canvas = document.querySelector<HTMLCanvasElement>(".hero-flicker-canvas");
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const CELL_SIZE = 24;
-      const GAP = 2;
-      const BASE_OPACITY = 0.06;
-      const MAX_OPACITY = 0.35;
-      const FLICKER_CHANCE = 0.005;
-      const LERP_SPEED = 0.04;
-      const COLOR = { r: 59, g: 130, b: 246 }; // blue
-
-      let cols = 0;
-      let rows = 0;
-      let cells: { x: number; y: number; opacity: number; target: number }[] = [];
-      let animId = 0;
-      let dpr = 1;
-
-      function resize() {
-        dpr = window.devicePixelRatio || 1;
-        const rect = canvas!.parentElement!.getBoundingClientRect();
-        canvas!.width = rect.width * dpr;
-        canvas!.height = rect.height * dpr;
-        canvas!.style.width = rect.width + "px";
-        canvas!.style.height = rect.height + "px";
-        ctx!.scale(dpr, dpr);
-
-        cols = Math.ceil(rect.width / (CELL_SIZE + GAP));
-        rows = Math.ceil(rect.height / (CELL_SIZE + GAP));
-
-        cells = [];
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            cells.push({
-              x: c * (CELL_SIZE + GAP),
-              y: r * (CELL_SIZE + GAP),
-              opacity: BASE_OPACITY + Math.random() * 0.03,
-              target: BASE_OPACITY,
-            });
-          }
-        }
-      }
-
-      function animate() {
-        const w = canvas!.width / dpr;
-        const h = canvas!.height / dpr;
-        ctx!.clearRect(0, 0, w, h);
-
-        for (let i = 0; i < cells.length; i++) {
-          const cell = cells[i];
-
-          if (Math.random() < FLICKER_CHANCE) {
-            cell.target = BASE_OPACITY + Math.random() * (MAX_OPACITY - BASE_OPACITY);
-          }
-
-          cell.opacity += (cell.target - cell.opacity) * LERP_SPEED;
-          cell.target += (BASE_OPACITY - cell.target) * 0.01;
-
-          ctx!.fillStyle = `rgba(${COLOR.r}, ${COLOR.g}, ${COLOR.b}, ${cell.opacity})`;
-          ctx!.beginPath();
-          ctx!.roundRect(cell.x, cell.y, CELL_SIZE, CELL_SIZE, 2);
-          ctx!.fill();
-        }
-
-        animId = requestAnimationFrame(animate);
-      }
-
-      resize();
-      animate();
-
-      let resizeTimer: ReturnType<typeof setTimeout>;
-      window.addEventListener("resize", () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-          cancelAnimationFrame(animId);
-          ctx!.setTransform(1, 0, 0, 1, 0, 0);
-          resize();
-          animate();
-        }, 100);
-      });
-
-      window.addEventListener("beforeunload", () => {
-        cancelAnimationFrame(animId);
-      });
-    })();
-  </script>
-
   <script>
     // CMD+K / Ctrl+K → focus hero search input + dynamic placeholder
     const isMac = navigator.platform?.toUpperCase().includes("MAC") || navigator.userAgent?.includes("Mac");
@@ -976,17 +882,6 @@ const structuredData = [
       z-index: 1;
     }
 
-    /* --- Flickering grid canvas --- */
-    .hero-flicker-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      z-index: 0;
-      -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 25%, rgba(0,0,0,0.7) 70%);
-      mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 25%, rgba(0,0,0,0.7) 70%);
-    }
     .hero-title-gradient > span {
       background: linear-gradient(to bottom, white, rgb(148 163 184));
       -webkit-background-clip: text;

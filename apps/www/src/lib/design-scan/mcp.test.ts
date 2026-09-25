@@ -172,20 +172,36 @@ describe("emparejar contra un catálogo simulado", () => {
 
   test("informa del progreso para poder pintarlo", async () => {
     const vistos: string[] = [];
+    const parciales: number[] = [];
     await matchComponents(["card-tilt", "button-primary"], {
       fetchImpl: fakeFetch(),
       onProgress: (c) => vistos.push(c),
+      onMatch: (p) => parciales.push(p.matches.length),
     });
 
     expect(vistos).toEqual(["card-tilt", "button-primary"]);
+    expect(parciales).toEqual([1, 2]);
+  });
+
+  test("no elige un input de clínica para search-field", () => {
+    const clinic = scoreCandidate(
+      "search bar",
+      entry({ slug: "clinic-vitals-input", title: "Vitals input", category: "ui-components" }),
+      { component: "search-field", siteHint: "https://www.google.com" }
+    );
+    const search = scoreCandidate(
+      "search bar",
+      entry({ slug: "search-bar", title: "Search bar", category: "ui-components" }),
+      { component: "search-field", siteHint: "https://www.google.com" }
+    );
+    expect(clinic).toBeLessThan(MIN_SCORE);
+    expect(search).toBeGreaterThan(clinic);
   });
 });
 
 describe("respaldo por palabras — el buscador del MCP casa la frase", () => {
-  test('"button primary" no devuelve nada, así que se prueba "button"', () => {
-    // Comprobado contra el MCP real: "button" da 279 resultados y
-    // "button primary" da cero. Sin esto, medio DESIGN.md se queda sin cubrir.
-    expect(queryVariants("button primary")).toEqual(["button primary", "primary", "button"]);
+  test('"button primary" prueba la frase y "primary", no la palabra suelta "button"', () => {
+    expect(queryVariants("button primary")).toEqual(["button primary", "primary"]);
   });
 
   test("una sola palabra no genera consultas de más", () => {
@@ -216,5 +232,44 @@ describe("un acierto solo en la descripción no es un acierto", () => {
     expect(
       scoreCandidate("button", entry({ slug: "shimmer-cta", title: "Shimmer button" }))
     ).toBeGreaterThan(MIN_SCORE);
+  });
+});
+
+describe("un recurso fijado a mano", () => {
+  const fetchPinned = (calls: string[]) =>
+    (async (url: string) => {
+      calls.push(url);
+      if (url.includes("/tools/get_snippet")) return new Response("<div>fijado</div>");
+      return new Response('Found 0 result(s) for "x":\n\n[]');
+    }) as unknown as typeof fetch;
+
+  test("se usa tal cual y NO se busca en el catálogo", async () => {
+    const calls: string[] = [];
+    const r = await matchComponents(["card"], {
+      fetchImpl: fetchPinned(calls),
+      pinned: { card: "dental-appointment-card" },
+    });
+
+    expect(r.matches[0].candidates[0].slug).toBe("dental-appointment-card");
+    expect(calls.some((c) => c.includes("/tools/search"))).toBe(false);
+    expect(r.uncovered).toEqual([]);
+  });
+
+  test("su snippet sí se descarga, que es lo que hace falta para recrear", async () => {
+    const calls: string[] = [];
+    await matchComponents(["card"], {
+      fetchImpl: fetchPinned(calls),
+      pinned: { card: "mi-recurso" },
+    });
+    expect(calls.filter((c) => c.includes("/tools/get_snippet"))).toHaveLength(2);
+  });
+
+  test("los componentes sin fijar siguen buscándose", async () => {
+    const calls: string[] = [];
+    await matchComponents(["card", "button-primary"], {
+      fetchImpl: fetchPinned(calls),
+      pinned: { card: "mi-recurso" },
+    });
+    expect(calls.some((c) => c.includes("/tools/search"))).toBe(true);
   });
 });

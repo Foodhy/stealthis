@@ -14,6 +14,7 @@ const STATUS_STYLE: Record<PhaseState["status"], { dot: string; label: string; t
   running: { dot: "bg-brand-400 animate-pulse", label: "Running…", text: "text-brand-200" },
   done: { dot: "bg-emerald-400", label: "Done", text: "text-emerald-300" },
   error: { dot: "bg-rose-400", label: "Failed", text: "text-rose-300" },
+  waiting: { dot: "bg-brand-400", label: "Waiting for you", text: "text-brand-200" },
   unavailable: { dot: "bg-slate-700", label: "Not built yet", text: "text-slate-600" },
 };
 
@@ -48,12 +49,21 @@ function describeOutput(id: PhaseId, output: unknown): string | null {
   }
 
   if (id === "components" && typeof output === "object") {
-    const m = output as { matches?: unknown[]; uncovered?: unknown[]; snippets?: object };
+    const m = output as {
+      matches?: unknown[];
+      uncovered?: unknown[];
+      snippets?: object;
+      progress?: { index: number; total: number; component: string };
+    };
     const total = m.matches?.length ?? 0;
     const sin = m.uncovered?.length ?? 0;
+    const progress = m.progress;
+    const progressLine = progress
+      ? ` · matching ${progress.index + 1}/${progress.total} · ${progress.component}`
+      : "";
     return `${total - sin} of ${total} matched · ${Object.keys(m.snippets ?? {}).length} snippets fetched${
       sin ? ` · ${sin} not covered` : ""
-    }`;
+    }${progressLine}`;
   }
 
   if (id === "recreate" && typeof output === "object") {
@@ -133,6 +143,12 @@ export default function DesignScanPhases({
                       Retry
                     </button>
                   </div>
+                )}
+
+                {phase.status === "waiting" && (
+                  <p className="mt-2 text-[11px] text-brand-200/80">
+                    The scan stops here until you answer — see the panel below.
+                  </p>
                 )}
 
                 {phase.status === "unavailable" && (

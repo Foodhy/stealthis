@@ -13,9 +13,14 @@
  *    no aporta nada a una vista previa.
  */
 
+import DesignScanFontToggle from "@components/DesignScanFontToggle";
+import DesignScanPreviewActions from "@components/DesignScanPreviewActions";
+import { stripMcpSnippetHeader } from "@lib/codepen-prefill";
+import { type FontMode, fontStack, googleFontsUrl } from "@lib/design-scan/fonts";
 import type { MatchResult } from "@lib/design-scan/mcp";
 import { applyTokens, buildPreviewDocument } from "@lib/design-scan/recreate";
 import type { Frontmatter } from "@lib/design-scan/tokens";
+import { SITE_URLS } from "@lib/urls";
 import { useMemo, useState } from "react";
 
 type Block = {
@@ -38,6 +43,10 @@ export default function DesignScanRecreate({
 }) {
   const [copied, setCopied] = useState("");
   const [showSwaps, setShowSwaps] = useState("");
+  const [fontMode, setFontMode] = useState<FontMode>("system");
+  const [loadWebfont, setLoadWebfont] = useState(false);
+
+  const fontFamily = Object.values(front.typography ?? {}).find((t) => t.fontFamily)?.fontFamily;
 
   const blocks = useMemo<Block[]>(() => {
     const out: Block[] = [];
@@ -53,28 +62,32 @@ export default function DesignScanRecreate({
       const snippet = matches.snippets[slug];
       if (!snippet?.html) continue;
 
-      const { css, swaps } = applyTokens(snippet.css ?? "", front);
+      const html = stripMcpSnippetHeader(snippet.html);
+      const rawCss = stripMcpSnippetHeader(snippet.css ?? "");
+      const { css, swaps } = applyTokens(rawCss, front, fontMode);
       out.push({
         component: match.component,
         slug,
-        html: snippet.html,
+        html,
         css,
         swaps,
-        doc: buildPreviewDocument({ html: snippet.html, css, tokensCss }),
+        doc: buildPreviewDocument({
+          html,
+          css,
+          tokensCss,
+          baseFont: fontStack(fontFamily, fontMode),
+          ...(fontMode === "extracted" && loadWebfont && fontFamily
+            ? { fontHref: googleFontsUrl(fontFamily) }
+            : {}),
+        }),
       });
     }
     return out;
-  }, [front, matches, tokensCss]);
+  }, [front, matches, tokensCss, fontMode, loadWebfont, fontFamily]);
 
-  const copy = async (id: string, text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(id);
-      setTimeout(() => setCopied(""), 1500);
-    } catch {
-      // Sin permiso de portapapeles no se puede hacer más; el código sigue
-      // siendo descargable desde el DESIGN.md.
-    }
+  const copy = async (id: string) => {
+    setCopied(id);
+    setTimeout(() => setCopied(""), 1500);
   };
 
   if (blocks.length === 0) {
@@ -88,14 +101,24 @@ export default function DesignScanRecreate({
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-      <div className="mb-4">
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.15em] text-slate-400">
-          Recreated with the catalog
-        </h2>
-        <p className="mt-1 text-xs text-slate-500">
-          {blocks.length} resource{blocks.length === 1 ? "" : "s"} re-skinned with the tokens of{" "}
-          {front.name}. Previews are sandboxed: no scripts, no styles escaping.
-        </p>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-mono text-[11px] uppercase tracking-[0.15em] text-slate-400">
+            Recreated with the catalog
+          </h2>
+          <p className="mt-1 text-xs text-slate-500">
+            {blocks.length} resource{blocks.length === 1 ? "" : "s"} re-skinned with the tokens of{" "}
+            {front.name}. Previews are sandboxed: no scripts, no styles escaping.
+          </p>
+        </div>
+
+        <DesignScanFontToggle
+          family={fontFamily}
+          mode={fontMode}
+          onMode={setFontMode}
+          loadWebfont={loadWebfont}
+          onLoadWebfont={setLoadWebfont}
+        />
       </div>
 
       <div className="space-y-4">
@@ -107,31 +130,25 @@ export default function DesignScanRecreate({
                 <span className="ml-2 font-mono text-[10px] text-slate-600">{block.slug}</span>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                {block.swaps.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowSwaps(showSwaps === block.slug ? "" : block.slug)}
-                    className="rounded border border-white/10 px-2 py-1 text-[10px] text-slate-400 transition-colors hover:border-white/25"
-                  >
-                    {block.swaps.length} swaps
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => copy(`${block.slug}-html`, block.html)}
-                  className="rounded border border-white/10 px-2 py-1 text-[10px] text-slate-300 transition-colors hover:border-white/25"
-                >
-                  {copied === `${block.slug}-html` ? "Copied" : "HTML"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => copy(`${block.slug}-css`, block.css)}
-                  className="rounded border border-white/10 px-2 py-1 text-[10px] text-slate-300 transition-colors hover:border-white/25"
-                >
-                  {copied === `${block.slug}-css` ? "Copied" : "CSS"}
-                </button>
-              </div>
+              <DesignScanPreviewActions
+                copiedId={copied}
+                copyKey={block.slug}
+                html={block.html}
+                css={block.css}
+                tokensCss={tokensCss}
+                codepenTitle={`${block.slug} — ${front.name} tokens`}
+                codepenDescription={`Re-skinned from ${front.name} · ${SITE_URLS.www}/r/${block.slug}`}
+                resourceSlug={block.slug}
+                onCopied={copy}
+                showSwaps={
+                  block.swaps.length > 0
+                    ? {
+                        count: block.swaps.length,
+                        onToggle: () => setShowSwaps(showSwaps === block.slug ? "" : block.slug),
+                      }
+                    : undefined
+                }
+              />
             </header>
 
             {showSwaps === block.slug && (

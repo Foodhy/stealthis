@@ -7,52 +7,52 @@ import fadeSlideCode from "@remotion-app/animations/06-FadeSlide.tsx?raw";
 import pieChartCode from "@remotion-app/animations/07-PieChart.tsx?raw";
 import skillsPresentationCode from "@remotion-app/animations/08-SkillsPresentation.tsx?raw";
 
-import remotionIntroCode from "@remotion-app/animations/remotion-intro.tsx?raw";
-import remotionOutroCode from "@remotion-app/animations/remotion-outro.tsx?raw";
-import remotionLowerThirdCode from "@remotion-app/animations/remotion-lower-third.tsx?raw";
-import remotionLogoRevealCode from "@remotion-app/animations/remotion-logo-reveal.tsx?raw";
-import remotionInstagramCode from "@remotion-app/animations/remotion-instagram.tsx?raw";
-import remotionTiktokCode from "@remotion-app/animations/remotion-tiktok.tsx?raw";
-import remotionLinkedinCode from "@remotion-app/animations/remotion-linkedin.tsx?raw";
-import remotionCtaCode from "@remotion-app/animations/remotion-cta.tsx?raw";
-import remotionTestimonialCode from "@remotion-app/animations/remotion-testimonial.tsx?raw";
-import remotionSumbnailCode from "@remotion-app/animations/remotion-sumbnail.tsx?raw";
 import remotionChartCode from "@remotion-app/animations/remotion-chart.tsx?raw";
 import remotionCounterCode from "@remotion-app/animations/remotion-counter.tsx?raw";
+import remotionCtaCode from "@remotion-app/animations/remotion-cta.tsx?raw";
+import remotionInstagramCode from "@remotion-app/animations/remotion-instagram.tsx?raw";
+import remotionIntroCode from "@remotion-app/animations/remotion-intro.tsx?raw";
+import remotionLinkedinCode from "@remotion-app/animations/remotion-linkedin.tsx?raw";
+import remotionLogoRevealCode from "@remotion-app/animations/remotion-logo-reveal.tsx?raw";
+import remotionLowerThirdCode from "@remotion-app/animations/remotion-lower-third.tsx?raw";
+import remotionOutroCode from "@remotion-app/animations/remotion-outro.tsx?raw";
+import remotionSumbnailCode from "@remotion-app/animations/remotion-sumbnail.tsx?raw";
+import remotionTestimonialCode from "@remotion-app/animations/remotion-testimonial.tsx?raw";
+import remotionTiktokCode from "@remotion-app/animations/remotion-tiktok.tsx?raw";
 import remotionTimelineCode from "@remotion-app/animations/remotion-timeline.tsx?raw";
 
-import remotionKineticTextCode from "@remotion-app/animations/remotion-kinetic-text.tsx?raw";
-import remotionPodcastAudiogramCode from "@remotion-app/animations/remotion-podcast-audiogram.tsx?raw";
-import remotionProductShowcaseCode from "@remotion-app/animations/remotion-product-showcase.tsx?raw";
 import remotionCodeWalkthroughCode from "@remotion-app/animations/remotion-code-walkthrough.tsx?raw";
 import remotionCountdownCode from "@remotion-app/animations/remotion-countdown.tsx?raw";
-import remotionSplitScreenCode from "@remotion-app/animations/remotion-split-screen.tsx?raw";
+import remotionKineticTextCode from "@remotion-app/animations/remotion-kinetic-text.tsx?raw";
 import remotionNewsTickerCode from "@remotion-app/animations/remotion-news-ticker.tsx?raw";
+import remotionPodcastAudiogramCode from "@remotion-app/animations/remotion-podcast-audiogram.tsx?raw";
+import remotionProductShowcaseCode from "@remotion-app/animations/remotion-product-showcase.tsx?raw";
 import remotionProgressRingCode from "@remotion-app/animations/remotion-progress-ring.tsx?raw";
+import remotionSplitScreenCode from "@remotion-app/animations/remotion-split-screen.tsx?raw";
 
-import remotionTextRevealCode from "@remotion-app/animations/remotion-text-reveal.tsx?raw";
-import remotionSocialProofCode from "@remotion-app/animations/remotion-social-proof.tsx?raw";
-import remotionLogoGridCode from "@remotion-app/animations/remotion-logo-grid.tsx?raw";
-import remotionPricingTableCode from "@remotion-app/animations/remotion-pricing-table.tsx?raw";
-import remotionNotificationCode from "@remotion-app/animations/remotion-notification.tsx?raw";
-import remotionMapPinsCode from "@remotion-app/animations/remotion-map-pins.tsx?raw";
-import remotionPhotoCollageCode from "@remotion-app/animations/remotion-photo-collage.tsx?raw";
-import remotionQuoteCardCode from "@remotion-app/animations/remotion-quote-card.tsx?raw";
-import remotionStepProcessCode from "@remotion-app/animations/remotion-step-process.tsx?raw";
 import remotionGradientWaveCode from "@remotion-app/animations/remotion-gradient-wave.tsx?raw";
+import remotionLogoGridCode from "@remotion-app/animations/remotion-logo-grid.tsx?raw";
+import remotionMapPinsCode from "@remotion-app/animations/remotion-map-pins.tsx?raw";
+import remotionNotificationCode from "@remotion-app/animations/remotion-notification.tsx?raw";
+import remotionPhotoCollageCode from "@remotion-app/animations/remotion-photo-collage.tsx?raw";
+import remotionPricingTableCode from "@remotion-app/animations/remotion-pricing-table.tsx?raw";
+import remotionQuoteCardCode from "@remotion-app/animations/remotion-quote-card.tsx?raw";
+import remotionSocialProofCode from "@remotion-app/animations/remotion-social-proof.tsx?raw";
+import remotionStepProcessCode from "@remotion-app/animations/remotion-step-process.tsx?raw";
+import remotionTextRevealCode from "@remotion-app/animations/remotion-text-reveal.tsx?raw";
 
-import remotionProductAdCode from "@remotion-app/animations/remotion-product-ad.tsx?raw";
 import remotionAppPromoCode from "@remotion-app/animations/remotion-app-promo.tsx?raw";
-import remotionSaleSpotCode from "@remotion-app/animations/remotion-sale-spot.tsx?raw";
-import remotionFlashSaleCode from "@remotion-app/animations/remotion-flash-sale.tsx?raw";
-import remotionHolidayPromoCode from "@remotion-app/animations/remotion-holiday-promo.tsx?raw";
 import remotionBlackFridayCode from "@remotion-app/animations/remotion-black-friday.tsx?raw";
-import remotionEventPromoCode from "@remotion-app/animations/remotion-event-promo.tsx?raw";
-import remotionWebinarPromoCode from "@remotion-app/animations/remotion-webinar-promo.tsx?raw";
 import remotionCouponRevealCode from "@remotion-app/animations/remotion-coupon-reveal.tsx?raw";
 import remotionDiscountBannerCode from "@remotion-app/animations/remotion-discount-banner.tsx?raw";
-import remotionLimitedOfferCode from "@remotion-app/animations/remotion-limited-offer.tsx?raw";
+import remotionEventPromoCode from "@remotion-app/animations/remotion-event-promo.tsx?raw";
+import remotionFlashSaleCode from "@remotion-app/animations/remotion-flash-sale.tsx?raw";
 import remotionGiveawayCode from "@remotion-app/animations/remotion-giveaway.tsx?raw";
+import remotionHolidayPromoCode from "@remotion-app/animations/remotion-holiday-promo.tsx?raw";
+import remotionLimitedOfferCode from "@remotion-app/animations/remotion-limited-offer.tsx?raw";
+import remotionProductAdCode from "@remotion-app/animations/remotion-product-ad.tsx?raw";
+import remotionSaleSpotCode from "@remotion-app/animations/remotion-sale-spot.tsx?raw";
+import remotionWebinarPromoCode from "@remotion-app/animations/remotion-webinar-promo.tsx?raw";
 
 export const remotionCodeById = {
   "01-Typewriter": { file: "01-Typewriter.tsx", code: typewriterCode },
@@ -112,7 +112,10 @@ export const remotionCodeById = {
   "remotion-event-promo": { file: "remotion-event-promo.tsx", code: remotionEventPromoCode },
   "remotion-webinar-promo": { file: "remotion-webinar-promo.tsx", code: remotionWebinarPromoCode },
   "remotion-coupon-reveal": { file: "remotion-coupon-reveal.tsx", code: remotionCouponRevealCode },
-  "remotion-discount-banner": { file: "remotion-discount-banner.tsx", code: remotionDiscountBannerCode },
+  "remotion-discount-banner": {
+    file: "remotion-discount-banner.tsx",
+    code: remotionDiscountBannerCode,
+  },
   "remotion-limited-offer": { file: "remotion-limited-offer.tsx", code: remotionLimitedOfferCode },
   "remotion-giveaway": { file: "remotion-giveaway.tsx", code: remotionGiveawayCode },
 } as const;

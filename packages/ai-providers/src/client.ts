@@ -147,7 +147,16 @@ async function ollamaChat(
     const text = await res.text().catch(() => "");
     throw new Error(`Ollama error (${res.status}): ${text || "No response"}`);
   }
-  return readNDJsonStream(res, (parsed) => parsed.message?.content ?? "", onToken);
+  // Se tipa lo que se lee: `parsed` es JSON ajeno, y dar por hecho que trae
+  // `message.content` es cómo un cambio en la API se convierte en un error raro.
+  return readNDJsonStream(
+    res,
+    (parsed) => {
+      const message = parsed.message as { content?: unknown } | undefined;
+      return typeof message?.content === "string" ? message.content : "";
+    },
+    onToken
+  );
 }
 
 // ─── OpenAI ──────────────────────────────────────────────────────────────────

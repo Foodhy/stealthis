@@ -149,11 +149,24 @@ describe("DTCG (W3C)", () => {
 });
 
 describe("variables CSS", () => {
-  test("planas y con los prefijos que espera STL-031", () => {
+  test("planas y con los prefijos que espera la recreación", () => {
     const out = toCssVariables(front);
     expect(out).toContain(":root {");
     expect(out).toContain("--color-primary: #2563eb;");
-    expect(out).toContain("--font-body-md: Inter;");
+  });
+
+  test("la familia NUNCA sale sola: siempre con pila de respaldo", () => {
+    // Emitir `--font-body-md: Inter;` a secas es lo que dejaba la vista previa
+    // en el serif inicial del navegador cuando la fuente no está instalada.
+    const out = toCssVariables(front);
+    expect(out).not.toContain("--font-body-md: Inter;");
+    expect(out).toContain("--font-body-md: Inter, ui-sans-serif");
+  });
+
+  test("en modo sistema ni se pide la fuente original", () => {
+    const out = toCssVariables(front, "system");
+    expect(out).not.toContain("Inter");
+    expect(out).toContain("--font-body-md: ui-sans-serif");
   });
 });
 

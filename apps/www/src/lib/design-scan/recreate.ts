@@ -13,6 +13,8 @@
  */
 
 import { byFrequency, countBy, normalizeColor, readDeclarations, toPx } from "./css";
+import { contrastRatio } from "./export";
+import { type FontMode, SYSTEM_SANS, fontStack } from "./fonts";
 import type { Frontmatter } from "./tokens";
 
 /** Distancia entre dos colores en RGB. Suficiente para elegir el más parecido. */
@@ -102,7 +104,11 @@ export type RecreateResult = {
 };
 
 /** Sustituye colores, familia tipográfica y radios del snippet por los nuestros. */
-export function applyTokens(snippetCss: string, front: Frontmatter): RecreateResult {
+export function applyTokens(
+  snippetCss: string,
+  front: Frontmatter,
+  fontMode: FontMode = "system"
+): RecreateResult {
   const palette = paletteOf(front);
   const roles = snippetRoles(snippetCss);
   const swaps: RecreateResult["swaps"] = [];
@@ -144,13 +150,21 @@ export function applyTokens(snippetCss: string, front: Frontmatter): RecreateRes
     }
   }
 
-  // Tipografía: una sola familia, la que domine en la página escaneada.
+  // Tipografía: una sola familia, la que domine en la página escaneada, y
+  // SIEMPRE con pila de respaldo. Sustituirla por el nombre desnudo dejaba el
+  // snippet en el serif inicial del navegador cuando la fuente no está
+  // instalada — que es casi siempre, porque el iframe no descarga nada.
   const family = Object.values(front.typography ?? {}).find((t) => t.fontFamily)?.fontFamily;
   if (family) {
+    const stack = fontStack(family, fontMode);
     const before = css;
-    css = css.replace(/font-family\s*:\s*[^;}]+/gi, `font-family: ${family}`);
+    css = css.replace(/font-family\s*:\s*[^;}]+/gi, `font-family: ${stack}`);
     if (css !== before)
-      swaps.push({ from: "font-family", to: family, reason: "typography of the scanned site" });
+      swaps.push({
+        from: "font-family",
+        to: fontMode === "system" ? `system stack (${family} is not loaded)` : family,
+        reason: "typography of the scanned site",
+      });
   }
 
   // Radios: cada uno al escalón más cercano de nuestra escala.
@@ -178,7 +192,41 @@ export function applyTokens(snippetCss: string, front: Frontmatter): RecreateRes
     });
   }
 
+  css = enforcePreviewContrast(css, palette);
+
   return { css, swaps };
+}
+
+const MIN_TEXT_CONTRAST = 4.5;
+
+/**
+ * Tras el mapeo por tokens, algunos grises del catálogo acaban demasiado cerca
+ * del surface oscuro de la página escaneada. Corregimos solo `color:` y fondos
+ * sólidos para que la vista previa siga siendo legible.
+ */
+function enforcePreviewContrast(css: string, palette: TokenPalette): string {
+  const surface = palette.surface;
+  const onSurface = palette.onSurface;
+  if (!surface || !onSurface) return css;
+
+  let out = css.replace(/(?<![a-z-])color\s*:\s*(#[0-9a-fA-F]{3,8})\b/gi, (match, hex: string) => {
+    const normalized = normalizeColor(hex);
+    if (!normalized || !/^#[0-9a-f]{6}$/i.test(normalized)) return match;
+    if (contrastRatio(normalized, surface) >= MIN_TEXT_CONTRAST) return match;
+    return match.replace(hex, onSurface);
+  });
+
+  out = out.replace(
+    /(?:background-color|background)\s*:\s*(#[0-9a-fA-F]{3,8})\b/gi,
+    (match, hex: string) => {
+      const normalized = normalizeColor(hex);
+      if (!normalized || !/^#[0-9a-f]{6}$/i.test(normalized)) return match;
+      if (contrastRatio(normalized, onSurface) >= MIN_TEXT_CONTRAST) return match;
+      return match.replace(hex, surface);
+    }
+  );
+
+  return out;
 }
 
 /** Todos los colores hex que aparecen en el CSS, normalizados. */
@@ -220,18 +268,39 @@ export function buildPreviewDocument(options: {
   html: string;
   css: string;
   tokensCss: string;
+  /** Pila tipográfica base del documento. Sin esto, el navegador pone serif. */
+  baseFont?: string;
+  /**
+   * Hoja de una fuente externa. Solo se pasa si el usuario lo ha pedido a
+   * propósito: es una petición a un tercero desde la vista previa.
+   */
+  fontHref?: string;
 }): string {
+  const fontLink = options.fontHref ? `<link rel="stylesheet" href="${options.fontHref}">` : "";
+
   return `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${fontLink}
 <style>
 /* Restaura la semántica de [hidden] por encima de cualquier regla del recurso. */
 [hidden] { display: none !important; }
 
 *, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; padding: 24px; }
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-on-surface, #111827);
+  /* La base tipográfica va aquí y no en el recurso: sin ella, todo lo que no
+     declare familia hereda el serif inicial del navegador y el texto se lee
+     mal. Es el fallo que hacía parecer roto lo que solo era una fuente que
+     falta. */
+  font-family: ${options.baseFont ?? SYSTEM_SANS};
+  line-height: 1.5;
+}
 </style>
 <style>
 ${options.tokensCss}

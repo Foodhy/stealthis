@@ -13,9 +13,22 @@ URL arbitraria.
 
 ## Uso
 
+**Helper local (Design Scan en stealthis.dev):**
+
 ```bash
-bun run dev:scan-proxy                    # desde la raíz → http://localhost:8799
-curl "http://localhost:8799/capture?url=https://example.com/"
+bun run dev:scan-proxy                    # desde la raíz → http://127.0.0.1:8799
+# o sin clonar el repo:
+curl -fsSL https://stealthis.dev/design-scan/local-proxy.mjs -o /tmp/stealthis-capture.mjs && node /tmp/stealthis-capture.mjs
+```
+
+**Worker en Cloudflare (opcional, despliegue propio):**
+
+```bash
+bun run dev:scan-proxy:cf                 # wrangler dev --port 8799
+```
+
+```bash
+curl "http://127.0.0.1:8799/capture?url=https://example.com/"
 ```
 
 Respuesta:

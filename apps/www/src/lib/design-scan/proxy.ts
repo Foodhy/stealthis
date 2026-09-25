@@ -1,19 +1,20 @@
 /**
  * De dónde sale el worker de captura.
  *
- * Estaba quemado en el componente, así que cambiar de puerto obligaba a
- * recompilar. Ahora manda lo que elija la persona, y el valor por defecto solo
- * se usa hasta que toque algo.
+ * El helper corre en la máquina del usuario (loopback). stealthis.dev no
+ * hospeda el proxy en producción.
  *
- * El orden es: lo guardado > PUBLIC_SCAN_PROXY_URL > el local de desarrollo.
+ * Orden: lo guardado > PUBLIC_SCAN_PROXY_URL > 127.0.0.1:8799.
  */
 
 const ENV_URL = import.meta.env.PUBLIC_SCAN_PROXY_URL as string | undefined;
 
-export const DEFAULT_PROXY_URL =
-  ENV_URL ?? (import.meta.env.DEV ? "http://localhost:8799" : "https://scan-proxy.stealthis.dev");
+export const DEFAULT_PROXY_URL = ENV_URL ?? "http://127.0.0.1:8799";
 
 const STORAGE_KEY = "design-scan-proxy-v1";
+
+/** Ruta estática del script Node empaquetado (servido por www). */
+export const LOCAL_PROXY_SCRIPT_PATH = "/design-scan/local-proxy.mjs";
 
 type Stored = { version: 1; url: string };
 
@@ -23,7 +24,6 @@ export function normalizeProxyUrl(raw: string): string | null {
   if (!trimmed) return null;
   try {
     const url = new URL(trimmed);
-    // Solo http/https: un `file://` aquí no significa nada.
     if (url.protocol !== "http:" && url.protocol !== "https:") return null;
     return url.origin + (url.pathname === "/" ? "" : url.pathname.replace(/\/+$/, ""));
   } catch {
@@ -48,7 +48,7 @@ export function saveProxyUrl(url: string): void {
     const payload: Stored = { version: 1, url };
     globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
-    // Sin almacenamiento se sigue usando en memoria; solo no sobrevive a la recarga.
+    /* sin almacenamiento */
   }
 }
 
@@ -56,17 +56,31 @@ export function clearProxyUrl(): void {
   try {
     globalThis.localStorage?.removeItem(STORAGE_KEY);
   } catch {
-    /* nada que hacer */
+    /* nada */
   }
 }
 
 export type ProxyStatus = "unknown" | "checking" | "up" | "down";
 
-/**
- * Llama a la raíz del worker, que es su ficha de identidad. Sirve para decir
- * "está vivo" antes de escanear, en vez de que el usuario lo descubra cuando
- * la fase 1 falle.
- */
+export function isLoopbackProxy(url: string): boolean {
+  const normalized = normalizeProxyUrl(url);
+  if (!normalized) return false;
+  try {
+    const { hostname } = new URL(normalized);
+    return hostname === "127.0.0.1" || hostname === "localhost";
+  } catch {
+    return false;
+  }
+}
+
+/** Comando para usuarios que visitan stealthis.dev (Node 18+). */
+export function captureStartCommand(siteOrigin = "https://stealthis.dev"): string {
+  const base = siteOrigin.replace(/\/$/, "");
+  return `curl -fsSL ${base}${LOCAL_PROXY_SCRIPT_PATH} -o /tmp/stealthis-capture.mjs && node /tmp/stealthis-capture.mjs`;
+}
+
+export const DEV_CAPTURE_START_COMMAND = "bun run --filter @stealthis/scan-proxy serve";
+
 export async function pingProxy(
   url: string,
   signal?: AbortSignal
@@ -80,5 +94,16 @@ export async function pingProxy(
     return { ok: true, ...(body.name ? { name: body.name } : {}) };
   } catch {
     return { ok: false };
+  }
+}
+
+/** Solo el helper local expone POST /shutdown. */
+export async function shutdownProxy(url: string): Promise<boolean> {
+  if (!isLoopbackProxy(url)) return false;
+  try {
+    const res = await fetch(`${url}/shutdown`, { method: "POST" });
+    return res.ok;
+  } catch {
+    return false;
   }
 }

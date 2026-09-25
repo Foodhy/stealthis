@@ -1,6 +1,6 @@
-import type { CollectionEntry } from "astro:content";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import type { CollectionEntry } from "astro:content";
 
 const CONTENT_DIR = path.resolve(process.cwd(), "../../packages/content");
 const TS_SNIPPETS = ["react.tsx", "next.tsx", "typescript.ts", "typescript.tsx"];

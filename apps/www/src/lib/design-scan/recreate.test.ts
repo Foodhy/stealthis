@@ -52,10 +52,22 @@ describe("vestir un snippet con los tokens", () => {
     expect(css).not.toContain("#2563eb");
   });
 
-  test("la tipografía es la de la página escaneada, no la del catálogo", () => {
+  test("subtítulos grises del catálogo siguen legibles sobre surface oscuro", () => {
+    const conSubtitulo = `
+      .card { background-color: #ffffff; color: #111827; }
+      .card h2 { color: #374151; }
+    `;
+    const { css } = applyTokens(conSubtitulo, front);
+    expect(css).toContain("#0b1020");
+    expect(css).toMatch(/h2[^}]*#e2e8f0/i);
+  });
+
+  test("la tipografía del catálogo se sustituye, con respaldo legible", () => {
+    // Por defecto NO se pide Inter: no está instalada en la mayoría de máquinas
+    // y el iframe no descarga fuentes, así que pedirla dejaba el serif inicial.
     const { css } = applyTokens(snippet, front);
-    expect(css).toContain("font-family: Inter");
     expect(css).not.toContain("Georgia");
+    expect(css).toContain("ui-sans-serif");
   });
 
   test("cada radio va al escalón más cercano de NUESTRA escala", () => {
@@ -158,5 +170,39 @@ describe("qué cuenta como acento", () => {
     const accent = swaps.find((s) => s.reason === "accent → primary");
 
     expect(accent?.from).toBe("#e11d48");
+  });
+});
+
+describe("la fuente en el revestido", () => {
+  test("por defecto NO se pide la fuente del sitio, que casi nunca está instalada", () => {
+    const { css } = applyTokens(".a { font-family: Georgia, serif; }", front);
+
+    expect(css).not.toContain("Inter");
+    expect(css).toContain("ui-sans-serif");
+  });
+
+  test("pidiéndola, va primero pero con respaldo detrás", () => {
+    const { css } = applyTokens(".a { font-family: Georgia; }", front, "extracted");
+
+    expect(css).toContain("font-family: Inter, ui-sans-serif");
+  });
+
+  test("el documento de la vista previa fija una base legible", () => {
+    // Sin esto, todo lo que no declare familia hereda el serif del navegador.
+    const doc = buildPreviewDocument({ html: "<p>x</p>", css: "", tokensCss: "" });
+    expect(doc).toContain("ui-sans-serif");
+  });
+
+  test("la fuente externa solo se enlaza si se pide", () => {
+    const sin = buildPreviewDocument({ html: "", css: "", tokensCss: "" });
+    expect(sin).not.toContain("<link");
+
+    const con = buildPreviewDocument({
+      html: "",
+      css: "",
+      tokensCss: "",
+      fontHref: "https://fonts.googleapis.com/css2?family=Fraunces",
+    });
+    expect(con).toContain('<link rel="stylesheet"');
   });
 });
