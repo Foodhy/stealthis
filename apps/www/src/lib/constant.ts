@@ -6,6 +6,8 @@ export const SHOW_LOWER_BG_ANIMATION = true;
 export const SHOW_STYLEFORGE_STUDIO = false;
 export const SHOW_BUILD_BUTTON = false;
 export const SHOW_ARCADE_HEADER = false;
+/** Header link for /design-scan. The route stays reachable; flip to true to show it. */
+export const SHOW_DESIGN_SCAN_HEADER = false;
 export const SHOW_DBVIZ = true;
 export const SHOW_PROMPT_DESIGNER = true;
 
