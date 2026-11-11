@@ -1,13 +1,13 @@
 (() => {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const desk = { ctx: null, master: null, muted: reduced, noise: null };
+  const desk = { ctx: null, master: null, muted: reduced, noise: null, voices: [] };
 
   function context() {
     if (!desk.ctx) {
       const AudioCtor = window.AudioContext || window.webkitAudioContext;
       desk.ctx = new AudioCtor();
       desk.master = desk.ctx.createGain();
-      desk.master.gain.value = 0.22;
+      desk.master.gain.value = desk.muted ? 0 : 0.22;
       const compressor = desk.ctx.createDynamicsCompressor();
       compressor.threshold.value = -16;
       compressor.knee.value = 10;
@@ -19,6 +19,32 @@
     }
     if (desk.ctx.state === "suspended") desk.ctx.resume();
     return desk.ctx;
+  }
+
+  function setMaster(value) {
+    if (!desk.master || !desk.ctx) return;
+    const now = desk.ctx.currentTime;
+    desk.master.gain.cancelScheduledValues(now);
+    desk.master.gain.setValueAtTime(value, now);
+  }
+
+  function silenceNow() {
+    setMaster(0);
+    if (!desk.ctx) return;
+    const now = desk.ctx.currentTime;
+    for (const voice of desk.voices) {
+      voice.gain.gain.cancelScheduledValues(now);
+      voice.gain.gain.setValueAtTime(0, now);
+    }
+    desk.voices = [];
+  }
+
+  function remember(source, gain) {
+    const voice = { source, gain };
+    desk.voices.push(voice);
+    source.onended = () => {
+      desk.voices = desk.voices.filter((item) => item !== voice);
+    };
   }
 
   function burst(freq, dur, type, peak, delay, slide) {
@@ -40,6 +66,7 @@
     gain.connect(desk.master);
     osc.start(start);
     osc.stop(start + dur + 0.04);
+    remember(osc, gain);
   }
 
   function air(dur, peak, from, to, delay) {
@@ -69,6 +96,7 @@
     gain.connect(desk.master);
     source.start(start);
     source.stop(start + dur + 0.02);
+    remember(source, gain);
   }
 
   const tones = {
@@ -180,8 +208,10 @@
       syncMute();
       if (!desk.muted) {
         context();
+        setMaster(0.22);
         say("Sonido listo");
       } else {
+        silenceNow();
         say("Sonido en pausa");
       }
     });
