@@ -187,6 +187,10 @@ const en = {
     "Lightweight native menubar screen recorder with global hotkeys and built-in video trimming.",
   "apps.multi-office.desc":
     "Word, Excel, and PowerPoint in one web app — a unified .mox file with Document, Spreadsheet, and Slides views.",
+  "apps.connecto.desc":
+    "The Mac, on the iPad — screen, pointer, and keyboard over the same Wi-Fi, paired with a 6-digit code.",
+  "apps.githydra.desc":
+    "Native macOS Git client — branches, commit graph, staging, terminal, Monaco editor, and an MCP server for agents.",
   "hero.eyebrow": "Steal This",
   "hero.titlePrefix": "Steal this ",
   "hero.titleSuffix": " — all free to copy.",
@@ -833,6 +837,10 @@ const es = {
     "Grabador de pantalla nativo y ligero en la barra de menú, con atajos globales y recorte de video integrado.",
   "apps.multi-office.desc":
     "Word, Excel y PowerPoint en una sola app web — un archivo .mox unificado con vistas de Documento, Hoja y Diapositivas.",
+  "apps.connecto.desc":
+    "El Mac, en el iPad — pantalla, cursor y teclado por la misma Wi-Fi, emparejados con un código de 6 dígitos.",
+  "apps.githydra.desc":
+    "Cliente Git nativo para macOS — ramas, grafo de commits, staging, terminal, editor Monaco y un servidor MCP para agentes.",
   "hero.eyebrow": "Steal This",
   "hero.titlePrefix": "Steal this ",
   "hero.titleSuffix": " — todos gratuitos para copiar.",
@@ -1372,6 +1380,10 @@ const fr: Record<keyof typeof en, string> = {
     "Enregistreur d'écran natif et léger dans la barre de menus, avec raccourcis globaux et découpage vidéo intégré.",
   "apps.multi-office.desc":
     "Word, Excel et PowerPoint dans une seule app web — un fichier .mox unifié avec vues Document, Feuille et Diapositives.",
+  "apps.connecto.desc":
+    "Le Mac, sur l'iPad — écran, pointeur et clavier sur le même Wi-Fi, appairés avec un code à 6 chiffres.",
+  "apps.githydra.desc":
+    "Client Git natif pour macOS — branches, graphe de commits, staging, terminal, éditeur Monaco et un serveur MCP pour les agents.",
   "hero.titleSuffix": " — tout est gratuit à copier.",
   "hero.subtitle.before": "Snippets et démos prêts à l'emploi. Serveur ",
   "hero.subtitle.after": " inclus. Explorez, copiez, intégrez.",
@@ -1890,6 +1902,10 @@ const ja: Record<keyof typeof en, string> = {
     "メニューバー常駐の軽量ネイティブ画面録画 — グローバルホットキーと動画トリミング内蔵。",
   "apps.multi-office.desc":
     "Word・Excel・PowerPointを1つのWebアプリに — ドキュメント／スプレッドシート／スライド表示の統合.moxファイル。",
+  "apps.connecto.desc":
+    "MacをiPadで操作 — 同じWi-Fiで画面・ポインタ・キーボードを、6桁のコードでペアリング。",
+  "apps.githydra.desc":
+    "macOSネイティブのGitクライアント — ブランチ、コミットグラフ、ステージング、ターミナル、Monacoエディタ、エージェント向けMCPサーバー。",
   "hero.titleSuffix": " — すべて無料でコピーできます。",
   "hero.subtitle.before": "すぐ使えるスニペットとデモ。",
   "hero.subtitle.after": " サーバー付き。探索して、コピーして、統合。",
@@ -2400,6 +2416,10 @@ const ms: Record<keyof typeof en, string> = {
     "Perakam skrin natif ringan pada bar menu dengan kekunci pintas global dan pemangkasan video terbina.",
   "apps.multi-office.desc":
     "Word, Excel dan PowerPoint dalam satu apl web — satu fail .mox bersatu dengan paparan Dokumen, Helaian dan Slaid.",
+  "apps.connecto.desc":
+    "Mac, pada iPad — skrin, penuding dan papan kekunci melalui Wi-Fi yang sama, dipasangkan dengan kod 6 digit.",
+  "apps.githydra.desc":
+    "Klien Git asli untuk macOS — cabang, graf komit, staging, terminal, editor Monaco dan pelayan MCP untuk ejen.",
   "nav.docs": "Dokumen",
   "nav.lab": "Makmal",
   "nav.build": "Pembina",
@@ -2889,6 +2909,9 @@ const hi: Record<keyof typeof en, string> = {
     "मेन्यूबार पर हल्का नेटिव स्क्रीन रिकॉर्डर — ग्लोबल हॉटकीज़ और बिल्ट-इन वीडियो ट्रिमिंग के साथ।",
   "apps.multi-office.desc":
     "Word, Excel और PowerPoint एक ही वेब ऐप में — Document, Spreadsheet और Slides व्यू के साथ एकीकृत .mox फ़ाइल।",
+  "apps.connecto.desc": "Mac, iPad पर — एक ही Wi-Fi पर स्क्रीन, पॉइंटर और कीबोर्ड, 6 अंकों के कोड से पेयर।",
+  "apps.githydra.desc":
+    "macOS के लिए नेटिव Git क्लाइंट — ब्रांच, कमिट ग्राफ़, स्टेजिंग, टर्मिनल, Monaco एडिटर और एजेंटों के लिए MCP सर्वर।",
   "nav.docs": "डॉक्स",
   "nav.lab": "लैब",
   "nav.build": "बिल्डर",
@@ -3369,6 +3392,9 @@ const ko: Record<keyof typeof en, string> = {
     "메뉴바 상주 경량 네이티브 화면 녹화 — 전역 단축키와 동영상 트리밍 내장.",
   "apps.multi-office.desc":
     "Word, Excel, PowerPoint를 하나의 웹 앱으로 — 문서/스프레드시트/슬라이드 보기를 가진 통합 .mox 파일.",
+  "apps.connecto.desc": "Mac을 iPad에서 — 같은 Wi-Fi로 화면, 포인터, 키보드를 6자리 코드로 페어링.",
+  "apps.githydra.desc":
+    "macOS 네이티브 Git 클라이언트 — 브랜치, 커밋 그래프, 스테이징, 터미널, Monaco 에디터, 에이전트용 MCP 서버.",
   "nav.docs": "문서",
   "nav.lab": "랩",
   "nav.build": "빌더",
@@ -3851,6 +3877,10 @@ const nl: Record<keyof typeof en, string> = {
     "Lichte native schermrecorder in de menubalk met globale sneltoetsen en ingebouwd video-trimmen.",
   "apps.multi-office.desc":
     "Word, Excel en PowerPoint in één webapp — één .mox-bestand met Document-, Spreadsheet- en Slides-weergaven.",
+  "apps.connecto.desc":
+    "De Mac, op de iPad — scherm, aanwijzer en toetsenbord via hetzelfde wifi-netwerk, gekoppeld met een 6-cijferige code.",
+  "apps.githydra.desc":
+    "Native Git-client voor macOS — branches, commitgrafiek, staging, terminal, Monaco-editor en een MCP-server voor agents.",
   "nav.docs": "Documentatie",
   "nav.lab": "Lab",
   "nav.build": "Builder",
@@ -4339,6 +4369,10 @@ const de: Record<keyof typeof en, string> = {
     "Leichter nativer Bildschirmrekorder in der Menüleiste mit globalen Hotkeys und integriertem Videoschnitt.",
   "apps.multi-office.desc":
     "Word, Excel und PowerPoint in einer Web-App — eine vereinheitlichte .mox-Datei mit Dokument-, Tabellen- und Folien-Ansicht.",
+  "apps.connecto.desc":
+    "Der Mac, auf dem iPad — Bildschirm, Zeiger und Tastatur über dasselbe WLAN, gekoppelt mit einem 6-stelligen Code.",
+  "apps.githydra.desc":
+    "Nativer Git-Client für macOS — Branches, Commit-Graph, Staging, Terminal, Monaco-Editor und ein MCP-Server für Agents.",
   "nav.docs": "Doku",
   "nav.lab": "Lab",
   "nav.build": "Builder",
@@ -4829,6 +4863,10 @@ const ptBr: Record<keyof typeof en, string> = {
     "Gravador de tela nativo e leve na barra de menus, com atalhos globais e corte de vídeo integrado.",
   "apps.multi-office.desc":
     "Word, Excel e PowerPoint em um só app web — um arquivo .mox unificado com visões de Documento, Planilha e Slides.",
+  "apps.connecto.desc":
+    "O Mac, no iPad — tela, ponteiro e teclado na mesma Wi-Fi, pareados com um código de 6 dígitos.",
+  "apps.githydra.desc":
+    "Cliente Git nativo para macOS — branches, grafo de commits, staging, terminal, editor Monaco e um servidor MCP para agentes.",
   "nav.docs": "Documentação",
   "nav.lab": "Lab",
   "nav.build": "Construtor",
@@ -5316,6 +5354,10 @@ const zhCn: Record<keyof typeof en, string> = {
   "apps.insta-record.desc": "菜单栏轻量原生录屏 — 支持全局快捷键和内置视频裁剪。",
   "apps.multi-office.desc":
     "在一个网页应用中集成 Word、Excel 和 PowerPoint — 统一的 .mox 文件，含文档、表格和幻灯片视图。",
+  "apps.connecto.desc":
+    "把 Mac 放到 iPad 上 — 同一 Wi-Fi 下的屏幕、指针和键盘，用 6 位配对码连接。",
+  "apps.githydra.desc":
+    "macOS 原生 Git 客户端 — 分支、提交图、暂存、终端、Monaco 编辑器，以及面向智能体的 MCP 服务器。",
   "nav.docs": "文档",
   "nav.lab": "实验室",
   "nav.build": "构建器",
@@ -5818,6 +5860,10 @@ const zhHk: Record<keyof typeof en, string> = {
   "apps.insta-record.desc": "選單列輕量原生螢幕錄影 — 支援全域快速鍵與內建影片修剪。",
   "apps.multi-office.desc":
     "將 Word、Excel 和 PowerPoint 整合於一個網頁應用 — 統一的 .mox 檔案，含文件、試算表與簡報檢視。",
+  "apps.connecto.desc":
+    "把 Mac 放到 iPad 上 — 同一 Wi-Fi 下的螢幕、指標和鍵盤，用 6 位配對碼連接。",
+  "apps.githydra.desc":
+    "macOS 原生 Git 用戶端 — 分支、提交圖、暫存、終端機、Monaco 編輯器，以及面向代理的 MCP 伺服器。",
   "nav.docs": "文件",
   "nav.lab": "實驗室",
   "nav.build": "建置器",
@@ -6267,6 +6313,10 @@ const it: Record<keyof typeof en, string> = {
     "Registratore dello schermo nativo e leggero nella barra dei menu, con scorciatoie globali e taglio video integrato.",
   "apps.multi-office.desc":
     "Word, Excel e PowerPoint in un'unica web app — un file .mox unificato con viste Documento, Foglio e Diapositive.",
+  "apps.connecto.desc":
+    "Il Mac, sull'iPad — schermo, puntatore e tastiera sulla stessa Wi-Fi, abbinati con un codice a 6 cifre.",
+  "apps.githydra.desc":
+    "Client Git nativo per macOS — branch, grafo dei commit, staging, terminale, editor Monaco e un server MCP per gli agenti.",
   "nav.docs": "Documentazione",
   "nav.lab": "Lab",
   "nav.build": "Builder",
@@ -6793,6 +6843,10 @@ const pl: Record<keyof typeof en, string> = {
     "Lekki natywny rejestrator ekranu w pasku menu z globalnymi skrótami i wbudowanym przycinaniem wideo.",
   "apps.multi-office.desc":
     "Word, Excel i PowerPoint w jednej aplikacji webowej — ujednolicony plik .mox z widokami Dokument, Arkusz i Slajdy.",
+  "apps.connecto.desc":
+    "Mac na iPadzie — ekran, wskaźnik i klawiatura w tej samej sieci Wi-Fi, sparowane 6-cyfrowym kodem.",
+  "apps.githydra.desc":
+    "Natywny klient Git na macOS — gałęzie, graf commitów, staging, terminal, edytor Monaco i serwer MCP dla agentów.",
   "nav.docs": "Dokumentacja",
   "nav.lab": "Lab",
   "nav.build": "Builder",
@@ -7319,6 +7373,10 @@ const uk: Record<keyof typeof en, string> = {
     "Легкий нативний запис екрана в рядку меню з глобальними гарячими клавішами та вбудованим обрізанням відео.",
   "apps.multi-office.desc":
     "Word, Excel і PowerPoint в одному вебзастосунку — уніфікований файл .mox із виглядами Документ, Таблиця та Слайди.",
+  "apps.connecto.desc":
+    "Mac на iPad — екран, вказівник і клавіатура в тій самій Wi-Fi, з'єднання 6-значним кодом.",
+  "apps.githydra.desc":
+    "Нативний Git-клієнт для macOS — гілки, граф комітів, staging, термінал, редактор Monaco і MCP-сервер для агентів.",
   "nav.docs": "Документація",
   "nav.lab": "Lab",
   "nav.build": "Builder",
@@ -7852,6 +7910,10 @@ const ru: Record<keyof typeof en, string> = {
     "Лёгкая нативная запись экрана в строке меню с глобальными горячими клавишами и встроенной обрезкой видео.",
   "apps.multi-office.desc":
     "Word, Excel и PowerPoint в одном веб-приложении — единый файл .mox с видами Документ, Таблица и Слайды.",
+  "apps.connecto.desc":
+    "Mac на iPad — экран, указатель и клавиатура в одной Wi-Fi, сопряжение 6-значным кодом.",
+  "apps.githydra.desc":
+    "Нативный Git-клиент для macOS — ветки, граф коммитов, staging, терминал, редактор Monaco и MCP-сервер для агентов.",
   "hero.titleSuffix": " — все можно бесплатно копировать.",
   "hero.subtitle.before": "Готовые сниппеты и демо. Сервер ",
   "hero.subtitle.after": " включен. Изучайте, копируйте, интегрируйте.",
@@ -8197,6 +8259,10 @@ const ar: Record<keyof typeof en, string> = {
   "apps.insta-record.desc": "مسجّل شاشة أصلي خفيف في شريط القوائم مع اختصارات عامة وقص فيديو مدمج.",
   "apps.multi-office.desc":
     "Word وExcel وPowerPoint في تطبيق ويب واحد — ملف .mox موحّد بعروض المستند والجدول والشرائح.",
+  "apps.connecto.desc":
+    "الـ Mac على الـ iPad — الشاشة والمؤشر ولوحة المفاتيح عبر شبكة Wi-Fi نفسها، مع إقران برمز من 6 أرقام.",
+  "apps.githydra.desc":
+    "عميل Git أصلي لـ macOS — الفروع ورسم الالتزامات والتجهيز والطرفية ومحرر Monaco وخادم MCP للوكلاء.",
   "nav.docs": "التوثيق",
   "nav.lab": "المختبر",
   "nav.build": "البناء",

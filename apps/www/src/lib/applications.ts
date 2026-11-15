@@ -1,6 +1,8 @@
 import { SITE_URLS } from "@lib/urls";
 
 export type AppIcon =
+  | "connecto"
+  | "githydra"
   | "dbviz"
   | "zenpomodoro"
   | "video"
@@ -31,6 +33,22 @@ export type AppEntry = {
  * a repo only, hosted apps ship a demo (and a repo when open source).
  */
 export const APPLICATIONS: AppEntry[] = [
+  {
+    slug: "connecto",
+    name: "connecTO",
+    desc: "The Mac, on the iPad — screen, pointer, and keyboard over the same Wi-Fi, paired with a 6-digit code.",
+    image: "/apps/connecto.webp",
+    icon: "connecto",
+    repoHref: "https://github.com/Foodhy/connecTO",
+  },
+  {
+    slug: "githydra",
+    name: "GitHydra",
+    desc: "Native macOS Git client — branches, commit graph, staging, terminal, Monaco editor, and an MCP server for agents.",
+    image: "/apps/githydra.webp",
+    icon: "githydra",
+    repoHref: "https://github.com/Foodhy/GitHydra",
+  },
   {
     slug: "essential-tools",
     name: "Essential Tools",
